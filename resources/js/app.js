@@ -1,0 +1,617 @@
+const sidebar = document.querySelector('[data-sidebar]');
+const overlay = document.querySelector('[data-sidebar-overlay]');
+const toast = document.querySelector('[data-toast]');
+const currencyInputs = Array.from(document.querySelectorAll('[data-currency-input]'));
+const digitsOnly = (value) => String(value ?? '').replace(/\D/g, '');
+const formatThousands = (value) => {
+    const digits = digitsOnly(value).replace(/^0+(?=\d)/, '');
+    return digits ? new Intl.NumberFormat('id-ID').format(Number(digits)) : '';
+};
+
+const formatCurrencyInput = (input) => {
+    if (input.dataset.currencyDisabled === 'true') return;
+    input.value = formatThousands(input.value);
+};
+
+currencyInputs.forEach((input) => {
+    formatCurrencyInput(input);
+    input.addEventListener('input', () => formatCurrencyInput(input));
+});
+
+document.querySelectorAll('form').forEach((form) => form.addEventListener('submit', () => {
+    form.querySelectorAll('[data-currency-input]').forEach((input) => {
+        if (input.dataset.currencyDisabled !== 'true') input.value = digitsOnly(input.value);
+    });
+}));
+
+document.querySelector('[data-spp-import-file]')?.addEventListener('change', (event) => {
+    const file = event.target.files?.[0];
+    const label = document.querySelector('[data-spp-import-filename]');
+    if (label) label.textContent = file?.name || 'Pilih file laporan';
+    event.target.closest('.spp-file-picker')?.classList.toggle('has-file', Boolean(file));
+});
+
+const setSidebar = (open) => {
+    sidebar?.classList.toggle('open', open);
+    overlay?.classList.toggle('show', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+};
+
+const toggleSidebar = () => {
+    if (!sidebar) return;
+    if (window.matchMedia('(max-width: 850px)').matches) {
+        setSidebar(!sidebar.classList.contains('open'));
+        return;
+    }
+    sidebar.classList.toggle('collapsed');
+};
+
+document.querySelector('[data-sidebar-toggle]')?.addEventListener('click', toggleSidebar);
+document.querySelector('[data-sidebar-open]')?.addEventListener('click', () => setSidebar(true));
+document.querySelector('[data-sidebar-close]')?.addEventListener('click', () => setSidebar(false));
+overlay?.addEventListener('click', () => setSidebar(false));
+
+document.querySelectorAll('[data-alert-close]').forEach((button) => {
+    button.addEventListener('click', () => button.closest('[data-alert]')?.remove());
+});
+
+document.querySelectorAll('[data-alert]').forEach((alert) => {
+    alert.addEventListener('click', (event) => {
+        if (event.target === alert) alert.remove();
+    });
+});
+
+document.querySelectorAll('[data-master-nav-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const group = button.closest('.master-nav');
+        const open = group.classList.toggle('open');
+        button.setAttribute('aria-expanded', String(open));
+    });
+});
+
+document.querySelectorAll('[data-nav-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const group = button.closest('.nested-nav');
+        const open = group.classList.toggle('open');
+        button.setAttribute('aria-expanded', String(open));
+    });
+});
+
+const periodValues = {
+    Mingguan: ['Rp 112,8 jt', [56, 72, 64, 83, 76, 91, 86, 62, 78, 88, 74, 94]],
+    Bulanan: ['Rp 482,6 jt', [42, 54, 48, 69, 63, 82, 72, 89, 76, 92, 84, 96]],
+    Tahunan: ['Rp 3,8 M', [68, 74, 70, 78, 81, 76, 84, 88, 86, 92, 89, 95]],
+};
+
+document.querySelectorAll('[data-period]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const [total, heights] = periodValues[button.dataset.period];
+        document.querySelectorAll('[data-period]').forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        document.querySelector('[data-chart-total]').textContent = total;
+        document.querySelectorAll('[data-chart] .bar-track span').forEach((bar, index) => {
+            bar.style.height = `${heights[index]}%`;
+            bar.style.animation = 'none';
+            requestAnimationFrame(() => { bar.style.animation = ''; });
+        });
+        toast.classList.add('show');
+        window.clearTimeout(window.dashboardToastTimer);
+        window.dashboardToastTimer = window.setTimeout(() => toast.classList.remove('show'), 1800);
+    });
+});
+
+document.addEventListener('keydown', (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        document.querySelector('.search-box input')?.focus();
+    }
+    if (event.key === 'Escape') setSidebar(false);
+});
+
+const modal = document.querySelector('[data-modal]');
+const masterForm = document.querySelector('[data-master-form]');
+const formMethod = document.querySelector('[data-form-method]');
+const modalTitle = document.querySelector('[data-modal-title]');
+const studentUnit = document.querySelector('[data-student-unit]');
+const studentClass = document.querySelector('[data-student-class]');
+const studentClassOptions = studentClass ? Array.from(studentClass.options) : [];
+const studentStatus = document.querySelector('[data-student-status]');
+const inactiveFields = document.querySelector('[data-inactive-fields]');
+const discountSource = document.querySelector('[data-discount-source]');
+const discountFeeType = document.querySelector('[data-discount-fee-type]');
+const discountType = document.querySelector('[data-discount-type]');
+const discountValue = document.querySelector('[data-discount-value]');
+const fatherWhatsapp = document.querySelector('[data-father-whatsapp]');
+const motherWhatsapp = document.querySelector('[data-mother-whatsapp]');
+const studentRegions = {
+    province: document.querySelector('[data-student-region="province"]'),
+    city: document.querySelector('[data-student-region="city"]'),
+    district: document.querySelector('[data-student-region="district"]'),
+    village: document.querySelector('[data-student-region="village"]'),
+};
+const regionApiBase = 'https://www.emsifa.com/api-wilayah-indonesia/api';
+
+const regionPlaceholder = {
+    province: 'Pilih Provinsi',
+    city: 'Pilih Kabupaten/Kota',
+    district: 'Pilih Kecamatan',
+    village: 'Pilih Desa',
+};
+
+const resetRegionSelect = (level, disabled = true) => {
+    const select = studentRegions[level];
+    if (!select) return;
+    select.replaceChildren(new Option(regionPlaceholder[level], ''));
+    select.disabled = disabled;
+};
+
+const fillRegionSelect = (level, regions, selectedName = '') => {
+    const select = studentRegions[level];
+    if (!select) return;
+    const options = [new Option(regionPlaceholder[level], '')];
+    regions.forEach((region) => {
+        const option = new Option(region.name, region.name);
+        option.dataset.regionId = region.id;
+        options.push(option);
+    });
+    if (selectedName && !regions.some((region) => region.name === selectedName)) {
+        options.push(new Option(selectedName, selectedName));
+    }
+    select.replaceChildren(...options);
+    select.disabled = false;
+    select.value = selectedName;
+};
+
+const loadRegions = async (level, path, selectedName = '') => {
+    const select = studentRegions[level];
+    if (!select) return;
+    select.replaceChildren(new Option('Memuat pilihan...', ''));
+    select.disabled = true;
+    try {
+        const response = await fetch(`${regionApiBase}/${path}`, { headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error('Daftar wilayah gagal dimuat.');
+        fillRegionSelect(level, await response.json(), selectedName);
+    } catch {
+        fillRegionSelect(level, [], selectedName);
+        select.options[0].textContent = 'Daftar wilayah tidak tersedia';
+    }
+};
+
+const selectedRegionId = (level) => studentRegions[level]?.selectedOptions[0]?.dataset.regionId;
+
+const restoreStudentRegions = async (record = {}) => {
+    if (!studentRegions.province) return;
+    const values = {
+        province: record.province ?? studentRegions.province.value,
+        city: record.city ?? studentRegions.city.value,
+        district: record.district ?? studentRegions.district.value,
+        village: record.village ?? studentRegions.village.value,
+    };
+    await loadRegions('province', 'provinces.json', values.province);
+    const provinceId = selectedRegionId('province');
+    if (!provinceId) {
+        Object.values(studentRegions).forEach((select) => { if (select?.value) select.disabled = false; });
+        return;
+    }
+    await loadRegions('city', `regencies/${provinceId}.json`, values.city);
+    const cityId = selectedRegionId('city');
+    if (!cityId) {
+        Object.values(studentRegions).forEach((select) => { if (select?.value) select.disabled = false; });
+        return;
+    }
+    await loadRegions('district', `districts/${cityId}.json`, values.district);
+    const districtId = selectedRegionId('district');
+    if (!districtId) {
+        Object.values(studentRegions).forEach((select) => { if (select?.value) select.disabled = false; });
+        return;
+    }
+    await loadRegions('village', `villages/${districtId}.json`, values.village);
+};
+
+const toggleInactiveFields = () => {
+    if (!studentStatus || !inactiveFields) return;
+    const inactive = !studentStatus.checked;
+    inactiveFields.hidden = !inactive;
+    inactiveFields.querySelectorAll('input').forEach((input) => { input.required = inactive; });
+};
+
+const toggleDiscountFeeType = () => {
+    if (!discountSource || !discountFeeType) return;
+    const show = discountSource.value === 'fee_type';
+    discountFeeType.hidden = !show;
+    const select = discountFeeType.querySelector('select');
+    if (select) {
+        select.required = show;
+        if (!show) select.value = '';
+    }
+};
+
+const toggleDiscountValueFormat = () => {
+    if (!discountType || !discountValue) return;
+    const percentage = discountType.value === 'percentage';
+    discountValue.dataset.currencyDisabled = String(percentage);
+    discountValue.value = percentage ? digitsOnly(discountValue.value) : formatThousands(discountValue.value);
+    discountValue.placeholder = percentage ? 'Contoh: 50' : 'Contoh: 300.000';
+};
+
+const filterStudentClasses = (selectedClass = '') => {
+    if (!studentUnit || !studentClass) return;
+    const unitId = studentUnit.value;
+    studentClassOptions.forEach((option) => {
+        option.hidden = Boolean(option.value) && !option.hasAttribute('data-all-classes') && option.dataset.unitId !== unitId;
+    });
+    if (selectedClass && studentClassOptions.some((option) => option.value === String(selectedClass) && !option.hidden)) {
+        studentClass.value = String(selectedClass);
+    } else if (studentClass.selectedOptions[0]?.hidden) {
+        studentClass.value = '';
+    }
+};
+
+studentUnit?.addEventListener('change', () => filterStudentClasses());
+studentStatus?.addEventListener('change', toggleInactiveFields);
+discountSource?.addEventListener('change', toggleDiscountFeeType);
+discountType?.addEventListener('change', toggleDiscountValueFormat);
+toggleDiscountValueFormat();
+document.querySelector('[data-copy-father-whatsapp]')?.addEventListener('click', () => {
+    if (!fatherWhatsapp || !motherWhatsapp) return;
+    motherWhatsapp.value = fatherWhatsapp.value;
+    motherWhatsapp.focus();
+});
+studentRegions.province?.addEventListener('change', async () => {
+    resetRegionSelect('city');
+    resetRegionSelect('district');
+    resetRegionSelect('village');
+    const id = selectedRegionId('province');
+    if (id) await loadRegions('city', `regencies/${id}.json`);
+});
+studentRegions.city?.addEventListener('change', async () => {
+    resetRegionSelect('district');
+    resetRegionSelect('village');
+    const id = selectedRegionId('city');
+    if (id) await loadRegions('district', `districts/${id}.json`);
+});
+studentRegions.district?.addEventListener('change', async () => {
+    resetRegionSelect('village');
+    const id = selectedRegionId('district');
+    if (id) await loadRegions('village', `villages/${id}.json`);
+});
+studentRegions.province?.closest('form')?.addEventListener('submit', () => {
+    Object.values(studentRegions).forEach((select) => { if (select) select.disabled = false; });
+});
+restoreStudentRegions();
+
+const closeModal = () => modal?.classList.remove('show');
+document.querySelectorAll('[data-modal-close]').forEach((button) => button.addEventListener('click', closeModal));
+document.querySelector('[data-modal-open]')?.addEventListener('click', () => {
+    masterForm?.reset();
+    masterForm.action = masterForm.dataset.storeAction;
+    formMethod.value = 'POST';
+    modalTitle.textContent = document.querySelector('[data-modal-open]').textContent.trim();
+    filterStudentClasses();
+    toggleInactiveFields();
+    toggleDiscountFeeType();
+    toggleDiscountValueFormat();
+    masterForm?.querySelectorAll('[data-currency-input]').forEach(formatCurrencyInput);
+    modal?.classList.add('show');
+});
+modal?.addEventListener('click', (event) => { if (event.target === modal) closeModal(); });
+
+document.querySelectorAll('[data-edit-record]').forEach((button) => {
+    button.addEventListener('click', () => {
+        const record = JSON.parse(button.dataset.editRecord);
+        masterForm.action = button.dataset.updateAction;
+        formMethod.value = 'PUT';
+        modalTitle.textContent = 'Edit Data';
+        const selectedClass = studentClassOptions.find((option) => option.value === String(record.school_class_id));
+        const allClasses = studentClassOptions.find((option) => option.hasAttribute('data-all-classes'));
+        if (studentUnit && selectedClass) studentUnit.value = selectedClass.dataset.unitId;
+        if (studentUnit && !record.school_class_id && record.education_unit_id) studentUnit.value = String(record.education_unit_id);
+        filterStudentClasses(record.school_class_id ?? allClasses?.value);
+        Object.entries(record).forEach(([key, value]) => {
+            const field = masterForm.elements.namedItem(key);
+            if (!field) return;
+            if (key === 'school_class_id' && value === null && allClasses) {
+                field.value = allClasses.value;
+                return;
+            }
+            if (field.type === 'checkbox') field.checked = Boolean(value);
+            else if (field.type === 'date') field.value = value ? String(value).slice(0, 10) : '';
+            else field.value = value ?? '';
+        });
+        toggleInactiveFields();
+        toggleDiscountFeeType();
+        toggleDiscountValueFormat();
+        masterForm.querySelectorAll('[data-currency-input]').forEach(formatCurrencyInput);
+        restoreStudentRegions(record);
+        modal?.classList.add('show');
+    });
+});
+
+const sppForm = document.querySelector('[data-spp-form]');
+if (sppForm) {
+    const currency = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+    const student = sppForm.querySelector('[data-spp-student]');
+    const year = sppForm.querySelector('[data-spp-year]');
+    const monthInputs = Array.from(sppForm.querySelectorAll('input[name="months[]"]'));
+    const message = sppForm.querySelector('[data-spp-message]');
+    const outputs = {
+        base: sppForm.querySelector('[data-spp-base]'),
+        original: sppForm.querySelector('[data-spp-original]'),
+        discount: sppForm.querySelector('[data-spp-discount]'),
+        total: sppForm.querySelector('[data-spp-total]'),
+        paid: sppForm.querySelector('[data-spp-paid]'),
+        remaining: sppForm.querySelector('[data-spp-remaining]'),
+    };
+    const paymentStatus = sppForm.querySelector('[data-spp-status]');
+    const paidInput = sppForm.querySelector('[data-spp-paid-input]');
+    const transactionDate = sppForm.querySelector('[data-spp-date]');
+    const transactionTime = sppForm.querySelector('[data-spp-time]');
+    const padTime = (value) => String(value).padStart(2, '0');
+    const updateTransactionClock = () => {
+        const now = new Date();
+        transactionDate.value = `${now.getFullYear()}-${padTime(now.getMonth() + 1)}-${padTime(now.getDate())}`;
+        transactionTime.value = `${padTime(now.getHours())}:${padTime(now.getMinutes())}:${padTime(now.getSeconds())}`;
+    };
+    updateTransactionClock();
+    window.setInterval(updateTransactionClock, 1000);
+
+    const resetQuote = (text = 'Pilih siswa dan bulan untuk menghitung pembayaran.') => {
+        Object.values(outputs).forEach((output) => { output.textContent = currency.format(0); });
+        paymentStatus.textContent = 'Belum Lunas';
+        paidInput.removeAttribute('max');
+        message.textContent = text;
+        message.classList.remove('error');
+    };
+
+    const updateQuote = async () => {
+        const months = monthInputs.filter((input) => input.checked).map((input) => input.value);
+        if (!student.value || !year.value || months.length === 0) {
+            resetQuote();
+            return;
+        }
+        const params = new URLSearchParams({ student_id: student.value, year: year.value });
+        months.forEach((month) => params.append('months[]', month));
+        message.textContent = 'Menghitung nominal dan keringanan...';
+        message.classList.remove('error');
+        try {
+            const response = await fetch(`${sppForm.dataset.quoteUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
+            const data = await response.json();
+            if (!response.ok) throw new Error(Object.values(data.errors ?? {}).flat()[0] ?? data.message ?? 'Perhitungan gagal.');
+            outputs.base.textContent = currency.format(data.items[0]?.original_amount ?? 0);
+            outputs.original.textContent = currency.format(data.original_amount);
+            outputs.discount.textContent = currency.format(data.discount_amount);
+            outputs.total.textContent = currency.format(data.total_amount);
+            outputs.paid.textContent = currency.format(data.paid_amount);
+            outputs.remaining.textContent = currency.format(data.remaining_amount);
+            paymentStatus.textContent = data.payment_status;
+            paidInput.max = data.remaining_amount;
+            message.textContent = data.remaining_amount > 0
+                ? `${months.length} bulan dipilih. Masukkan titipan atau pelunasan maksimal ${currency.format(data.remaining_amount)}.`
+                : 'Seluruh bulan yang dipilih sudah lunas.';
+        } catch (error) {
+            resetQuote(error.message);
+            message.classList.add('error');
+        }
+    };
+
+    const applyMonthAvailability = () => {
+        monthInputs.forEach((input) => {
+            const label = input.closest('label');
+            const status = input.dataset.paymentStatus || 'Belum Dibayar';
+            const statusLabel = label.querySelector('.spp-month-status');
+            label.classList.toggle('is-paid', status === 'Lunas');
+            label.classList.toggle('is-partial', status === 'Belum Lunas');
+            label.classList.toggle('is-unpaid', status === 'Belum Dibayar');
+            statusLabel.textContent = status === 'Lunas' ? 'Sudah Dibayar' : status;
+            input.disabled = input.dataset.paymentStatus === 'Lunas' || !input.dataset.paymentStatus;
+        });
+        const payableInputs = monthInputs.filter((input) => input.dataset.paymentStatus && input.dataset.paymentStatus !== 'Lunas');
+        payableInputs.forEach((input, index) => {
+            const previousSelected = index === 0 || payableInputs[index - 1].checked;
+            input.disabled = !previousSelected;
+            if (!previousSelected) input.checked = false;
+        });
+    };
+
+    const loadMonthAvailability = async (clearSelection = false) => {
+        if (clearSelection) monthInputs.forEach((input) => { input.checked = false; });
+        monthInputs.forEach((input) => {
+            input.disabled = true;
+            delete input.dataset.paymentStatus;
+            const label = input.closest('label');
+            label.classList.remove('is-paid', 'is-partial', 'is-unpaid');
+            label.querySelector('.spp-month-status').textContent = 'Memuat...';
+        });
+        resetQuote(student.value ? 'Memuat status pembayaran bulan...' : 'Pilih siswa untuk melihat bulan yang dapat dibayar.');
+        if (!student.value || !year.value) {
+            monthInputs.forEach((input) => { input.closest('label').querySelector('.spp-month-status').textContent = 'Pilih siswa'; });
+            return;
+        }
+
+        const params = new URLSearchParams({ student_id: student.value, year: year.value });
+        try {
+            const response = await fetch(`${sppForm.dataset.monthsUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
+            const data = await response.json();
+            if (!response.ok) throw new Error(Object.values(data.errors ?? {}).flat()[0] ?? data.message ?? 'Status bulan gagal dimuat.');
+            data.months.forEach((month) => {
+                const input = monthInputs.find((item) => Number(item.value) === Number(month.month));
+                if (input) input.dataset.paymentStatus = month.payment_status;
+            });
+            applyMonthAvailability();
+            const firstPayable = data.months.find((month) => Number(month.month) === Number(data.first_payable_month));
+            resetQuote(firstPayable
+                ? `Pembayaran berikutnya dimulai dari bulan ${firstPayable.month_name}. Pilih bulan secara berurutan.`
+                : 'Seluruh pembayaran SPP pada tahun ini sudah lunas.');
+            if (monthInputs.some((input) => input.checked)) updateQuote();
+        } catch (error) {
+            resetQuote(error.message);
+            message.classList.add('error');
+        }
+    };
+
+    student.addEventListener('change', () => loadMonthAvailability(true));
+    year.addEventListener('change', () => loadMonthAvailability(true));
+    monthInputs.forEach((input) => input.addEventListener('change', () => {
+        applyMonthAvailability();
+        updateQuote();
+    }));
+    sppForm.addEventListener('reset', () => window.setTimeout(resetQuote, 0));
+    loadMonthAvailability();
+}
+
+const sppDetailModal = document.querySelector('[data-spp-detail-modal]');
+const sppEditModal = document.querySelector('[data-spp-edit-modal]');
+const sppCorrectionModal = document.querySelector('[data-spp-correction-modal]');
+const sppDeleteModal = document.querySelector('[data-spp-delete-modal]');
+const sppCrudModals = [sppDetailModal, sppEditModal, sppCorrectionModal, sppDeleteModal].filter(Boolean);
+const sppCurrency = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+const sppMonthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const escapeHtml = (value) => String(value ?? '-').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
+const closeSppCrudModals = () => sppCrudModals.forEach((modal) => modal.classList.remove('show'));
+
+document.querySelectorAll('[data-spp-row-toggle]').forEach((button) => button.addEventListener('click', () => {
+    const detail = document.querySelector(`[data-spp-row-detail="${button.dataset.sppRowToggle}"]`);
+    const isOpen = button.getAttribute('aria-expanded') === 'true';
+    button.setAttribute('aria-expanded', String(!isOpen));
+    button.textContent = isOpen ? '+' : '−';
+    button.classList.toggle('open', !isOpen);
+    detail.hidden = isOpen;
+}));
+
+document.querySelectorAll('[data-spp-crud-close]').forEach((button) => button.addEventListener('click', closeSppCrudModals));
+sppCrudModals.forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) closeSppCrudModals(); }));
+
+document.querySelectorAll('[data-spp-detail-url]').forEach((button) => button.addEventListener('click', async () => {
+    const content = document.querySelector('[data-spp-detail-content]');
+    content.innerHTML = '<p class="spp-crud-loading">Memuat detail transaksi...</p>';
+    sppDetailModal.classList.add('show');
+    try {
+        const response = await fetch(button.dataset.sppDetailUrl, { headers: { Accept: 'application/json' } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message ?? 'Detail transaksi gagal dimuat.');
+        const items = data.items.map((item) => `<tr><td>${escapeHtml(sppMonthNames[item.month])} ${escapeHtml(item.year)}</td><td>${sppCurrency.format(item.total_amount)}</td><td>${sppCurrency.format(item.paid_amount)}</td><td>${sppCurrency.format(item.remaining_amount)}</td><td><span class="status ${item.payment_status === 'Lunas' ? 'success' : 'neutral'}">${escapeHtml(item.payment_status)}</span></td></tr>`).join('');
+        const corrections = data.corrections.length
+            ? `<div class="spp-correction-history"><strong>Histori Koreksi</strong>${data.corrections.map((correction) => `<div><span>${escapeHtml(correction.corrected_at)} · ${escapeHtml(correction.reason)}</span><b>${sppCurrency.format(correction.old_paid_amount)} → ${sppCurrency.format(correction.new_paid_amount)}</b><small>Refund ${sppCurrency.format(correction.refund_amount)}</small></div>`).join('')}</div>`
+            : '';
+        content.innerHTML = `<div class="spp-detail-person"><strong>${escapeHtml(data.student.name)}</strong><span>${escapeHtml(data.student.nis)} · ${escapeHtml(data.student.unit)} · ${escapeHtml(data.student.class)}</span></div><div class="spp-detail-grid"><div><span>Waktu Transaksi</span><strong>${escapeHtml(data.transaction_at)}</strong></div><div><span>Cara Bayar</span><strong>${escapeHtml(data.payment_method)}</strong></div><div><span>Status Penerimaan</span><strong>${escapeHtml(data.status)}</strong></div><div><span>Status Pembayaran</span><strong>${escapeHtml(data.payment_status)}</strong></div><div><span>Total Wajib</span><strong>${sppCurrency.format(data.total_amount)}</strong></div><div><span>Dibayar Sekarang</span><strong>${sppCurrency.format(data.paid_amount)}</strong></div><div><span>Keringanan</span><strong>${sppCurrency.format(data.discount_amount)}</strong></div><div><span>Sisa Tagihan</span><strong>${sppCurrency.format(data.remaining_amount)}</strong></div></div><div class="table-wrap spp-detail-table"><table class="data-table"><thead><tr><th>Bulan</th><th>Wajib</th><th>Dibayar</th><th>Sisa</th><th>Status</th></tr></thead><tbody>${items}</tbody></table></div>${corrections}`;
+    } catch (error) {
+        content.innerHTML = `<p class="spp-crud-error">${escapeHtml(error.message)}</p>`;
+    }
+}));
+
+document.querySelectorAll('[data-spp-edit-url]').forEach((button) => button.addEventListener('click', async () => {
+    const form = document.querySelector('[data-spp-edit-form]');
+    try {
+        const response = await fetch(button.dataset.sppEditUrl, { headers: { Accept: 'application/json' } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message ?? 'Data transaksi gagal dimuat.');
+        form.action = button.dataset.sppUpdateUrl;
+        form.elements.transaction_date.value = data.transaction_date;
+        form.elements.transaction_time.value = data.transaction_time;
+        form.elements.payment_method.value = data.payment_method;
+        form.elements.status.value = data.status;
+        sppEditModal.classList.add('show');
+    } catch (error) {
+        window.alert(error.message);
+    }
+}));
+
+document.querySelectorAll('[data-spp-delete-url]').forEach((button) => button.addEventListener('click', () => {
+    document.querySelector('[data-spp-delete-form]').action = button.dataset.sppDeleteUrl;
+    document.querySelector('[data-spp-delete-name]').textContent = button.dataset.sppDeleteName;
+    sppDeleteModal.classList.add('show');
+}));
+
+document.querySelectorAll('[data-spp-correction-url]').forEach((button) => button.addEventListener('click', () => {
+    const form = document.querySelector('[data-spp-correction-form]');
+    const amount = Number(button.dataset.sppCorrectionAmount);
+    form.reset();
+    form.action = button.dataset.sppCorrectionUrl;
+    document.querySelector('[data-spp-correction-name]').value = button.dataset.sppCorrectionName;
+    document.querySelector('[data-spp-correction-old]').value = sppCurrency.format(amount);
+    const newAmount = document.querySelector('[data-spp-correction-new]');
+    newAmount.value = amount;
+    formatCurrencyInput(newAmount);
+    newAmount.dataset.max = Math.max(0, amount - 1);
+    sppCorrectionModal.classList.add('show');
+}));
+
+const otherForm = document.querySelector('[data-other-form]');
+if (otherForm) {
+    const currency = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+    const student = otherForm.querySelector('[data-other-student]');
+    const fee = otherForm.querySelector('[data-other-fee]');
+    const message = otherForm.querySelector('[data-other-message]');
+    const original = otherForm.querySelector('[data-other-original]');
+    const discount = otherForm.querySelector('[data-other-discount]');
+    const paid = otherForm.querySelector('[data-other-paid]');
+    const total = otherForm.querySelector('[data-other-total]');
+    const paidInput = otherForm.querySelector('[data-other-paid-input]');
+    const date = otherForm.querySelector('[data-other-date]');
+    const time = otherForm.querySelector('[data-other-time]');
+    const feeOptions = Array.from(fee.options).filter((option) => option.value);
+    const pad = (value) => String(value).padStart(2, '0');
+    const updateClock = () => {
+        const now = new Date();
+        date.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+        time.value = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    };
+    const resetOtherQuote = (text = 'Pilih siswa dan jenis pembayaran untuk menghitung nominal.') => {
+        original.textContent = currency.format(0);
+        discount.textContent = currency.format(0);
+        paid.textContent = currency.format(0);
+        total.textContent = currency.format(0);
+        paidInput.dataset.max = '';
+        message.textContent = text;
+        message.classList.remove('error');
+    };
+    const filterOtherFees = () => {
+        const classId = student.selectedOptions[0]?.dataset.classId;
+        const unitId = student.selectedOptions[0]?.dataset.unitId;
+        feeOptions.forEach((option) => {
+            option.hidden = !classId || option.dataset.unitId !== unitId || (option.dataset.classId && option.dataset.classId !== classId);
+        });
+        if (fee.selectedOptions[0]?.hidden) fee.value = '';
+    };
+    const updateOtherQuote = async () => {
+        if (!student.value || !fee.value) {
+            resetOtherQuote();
+            return;
+        }
+        const params = new URLSearchParams({ student_id: student.value, fee_type_id: fee.value });
+        try {
+            message.textContent = 'Menghitung nominal dan keringanan...';
+            const response = await fetch(`${otherForm.dataset.quoteUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
+            const data = await response.json();
+            if (!response.ok) throw new Error(Object.values(data.errors ?? {}).flat()[0] ?? data.message ?? 'Perhitungan gagal.');
+            original.textContent = currency.format(data.original_amount);
+            discount.textContent = currency.format(data.discount_amount);
+            paid.textContent = currency.format(data.paid_amount);
+            total.textContent = currency.format(data.remaining_amount);
+            paidInput.dataset.max = data.remaining_amount;
+            message.textContent = data.remaining_amount > 0 ? 'Masukkan pembayaran maksimal sebesar sisa tagihan.' : 'Kategori pembayaran ini sudah lunas.';
+        } catch (error) {
+            resetOtherQuote(error.message);
+            message.classList.add('error');
+        }
+    };
+    student.addEventListener('change', () => { filterOtherFees(); updateOtherQuote(); });
+    fee.addEventListener('change', updateOtherQuote);
+    updateClock();
+    window.setInterval(updateClock, 1000);
+    filterOtherFees();
+    updateOtherQuote();
+}
+
+const billBuilder = document.querySelector('[data-bill-builder]');
+const setBillBuilder = (open) => {
+    if (!billBuilder) return;
+    billBuilder.hidden = !open;
+    if (open) billBuilder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+document.querySelector('[data-bill-panel-toggle]')?.addEventListener('click', () => setBillBuilder(true));
+document.querySelector('[data-bill-panel-close]')?.addEventListener('click', () => setBillBuilder(false));
+document.querySelectorAll('[data-bill-tab]').forEach((button) => button.addEventListener('click', () => {
+    document.querySelectorAll('[data-bill-tab]').forEach((tab) => tab.classList.toggle('active', tab === button));
+    document.querySelectorAll('[data-bill-panel]').forEach((panel) => { panel.hidden = panel.dataset.billPanel !== button.dataset.billTab; });
+}));
