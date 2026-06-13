@@ -20,7 +20,7 @@ class ReportController extends Controller
         $filters = $this->filters($request);
         $transactions = $this->transactions($filters);
         $page = LengthAwarePaginator::resolveCurrentPage();
-        $perPage = 20;
+        $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
 
         return view('reports.index', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
@@ -53,7 +53,7 @@ class ReportController extends Controller
 
         return response()->streamDownload(function () use ($transactions) {
             $file = fopen('php://output', 'w');
-            fputs($file, "\xEF\xBB\xBF");
+            fwrite($file, "\xEF\xBB\xBF");
             fputcsv($file, ['Tanggal', 'Jenis', 'NIS', 'Nama Siswa', 'Unit', 'Kelas', 'Keterangan', 'Metode', 'Nominal']);
             foreach ($transactions as $item) {
                 fputcsv($file, [

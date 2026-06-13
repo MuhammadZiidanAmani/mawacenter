@@ -6,8 +6,8 @@ use App\Models\AcademicYear;
 use App\Models\EducationUnit;
 use App\Models\SchoolClass;
 use App\Services\OutstandingBillService;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class BillController extends Controller
 {
@@ -22,7 +22,7 @@ class BillController extends Controller
             'class_id' => $request->integer('class_id') ?: null,
             'search' => $request->string('search')->value() ?: null,
         ]);
-        $perPage = 20;
+        $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
         $page = LengthAwarePaginator::resolveCurrentPage();
         $students = new LengthAwarePaginator(
             $summaries->forPage($page, $perPage)->values(),
@@ -48,5 +48,4 @@ class BillController extends Controller
             'months' => [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'],
         ]);
     }
-
 }

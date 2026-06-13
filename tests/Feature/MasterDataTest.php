@@ -4,15 +4,18 @@ namespace Tests\Feature;
 
 use App\Models\AcademicYear;
 use App\Models\AppSetting;
+use App\Models\Bill;
+use App\Models\BillManualPayment;
 use App\Models\EducationUnit;
 use App\Models\FeeDiscount;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\SchoolClass;
-use App\Models\SppSetting;
 use App\Models\SppPayment;
 use App\Models\SppPaymentItem;
+use App\Models\SppSetting;
 use App\Models\Student;
+use App\Models\User;
 use App\Services\ChargeCalculator;
 use App\Support\StudentXlsx;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,9 +26,46 @@ class MasterDataTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(User::factory()->create());
+    }
+
     public function test_master_data_page_can_be_opened(): void
     {
-        $this->get('/master-data')->assertOk()->assertSee('Data Siswa');
+        $this->get('/master-data?per_page=25')
+            ->assertOk()
+            ->assertSee('Data Siswa')
+            ->assertDontSee('* Wajib diisi')
+            ->assertSee('Show')
+            ->assertSee('Search:')
+            ->assertSee('data-student-filter-unit', false)
+            ->assertSee('data-student-filter-class disabled', false)
+            ->assertSee('Pilih Unit Pendidikan Dahulu');
+    }
+
+    public function test_student_filter_unit_shows_codes_and_class_filter_depends_on_selected_unit(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $mi = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $mts = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $miClass = SchoolClass::create(['education_unit_id' => $mi->id, 'name' => 'I A', 'level' => 'Kelas I']);
+        $mtsClass = SchoolClass::create(['education_unit_id' => $mts->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        Student::create(['nis' => '1001', 'name' => 'Siswa MI', 'gender' => 'L', 'school_class_id' => $miClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        Student::create(['nis' => '1002', 'name' => 'Siswa MTs', 'gender' => 'L', 'school_class_id' => $mtsClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+
+        $this->get('/master-data?tab=students&unit_id='.$mi->id)
+            ->assertOk()
+            ->assertSee('<option value="'.$mi->id.'" selected>MI</option>', false)
+            ->assertDontSee('<option value="'.$mi->id.'" selected>MI - Madrasah Ibtidaiyah</option>', false)
+            ->assertSee('data-student-filter-class', false)
+            ->assertDontSee('data-student-filter-class disabled', false)
+            ->assertSee('data-unit-id="'.$mi->id.'"', false)
+            ->assertSee('data-unit-id="'.$mts->id.'"', false)
+            ->assertSee('Siswa MI')
+            ->assertDontSee('Siswa MTs');
     }
 
     public function test_all_master_create_forms_use_dedicated_pages(): void
@@ -41,6 +81,8 @@ class MasterDataTest extends TestCase
         ] as $tab => $heading) {
             $this->get('/master-data?tab='.$tab)
                 ->assertOk()
+                ->assertSee('Show')
+                ->assertSee('Search:')
                 ->assertSee('/master-data/create?tab='.$tab, false);
 
             $this->get('/master-data/create?tab='.$tab)
@@ -65,6 +107,12 @@ class MasterDataTest extends TestCase
         $this->get('/master-data/create?tab=spp-settings')
             ->assertOk()
             ->assertSee('data-currency-input', false);
+
+        EducationUnit::create(['code' => 'PAUD', 'name' => 'Pendidikan Anak Usia Dini', 'is_active' => true]);
+        $this->get('/master-data/create?tab=classes')
+            ->assertOk()
+            ->assertSee('<select name="education_unit_id" required><option value="">Pilih Unit Pendidikan</option>', false)
+            ->assertDontSee('<select name="education_unit_id" required><option value="1">', false);
     }
 
     public function test_all_master_data_can_be_created(): void
@@ -88,6 +136,87 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseCount('students', 1);
         $this->assertTrue(Student::first()->is_active);
         $this->assertTrue(FeeType::first()->is_active);
+    }
+
+    public function test_class_list_can_be_filtered_by_education_unit(): void
+    {
+        $firstUnit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $secondUnit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $paudUnit = EducationUnit::create(['code' => 'PAUD', 'name' => 'Pendidikan Anak Usia Dini', 'is_active' => true]);
+        $raUnit = EducationUnit::create(['code' => 'RA', 'name' => 'Raudlatul Athfal', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'BAKULAN', 'name' => 'Bakulan', 'is_active' => true]);
+        SchoolClass::create(['education_unit_id' => $firstUnit->id, 'name' => 'Kelas MI', 'level' => 'Kelas MI']);
+        $secondClass = SchoolClass::create(['education_unit_id' => $secondUnit->id, 'name' => 'Kelas MTs', 'level' => 'Kelas MTs']);
+        SchoolClass::create(['education_unit_id' => $raUnit->id, 'name' => 'A2', 'level' => 'Kelas A2']);
+        SchoolClass::create(['education_unit_id' => $raUnit->id, 'name' => 'A1', 'level' => 'Kelas A1']);
+        SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'Kelas Bakulan', 'level' => 'Kelas Bakulan']);
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        Student::create(['nis' => '2001', 'name' => 'Siswa Pertama', 'gender' => 'L', 'school_class_id' => $secondClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        Student::create(['nis' => '2002', 'name' => 'Siswa Kedua', 'gender' => 'P', 'school_class_id' => $secondClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+
+        $this->get('/master-data?tab=classes&unit_id='.$firstUnit->id)
+            ->assertOk()
+            ->assertSee('Filter unit pendidikan', false)
+            ->assertSee('<option value="'.$firstUnit->id.'" selected>MI</option>', false)
+            ->assertDontSee('<option value="'.$firstUnit->id.'" selected>MI - Madrasah Ibtidaiyah</option>', false)
+            ->assertSeeInOrder([
+                '<option value="'.$paudUnit->id.'" >PAUD</option>',
+                '<option value="'.$raUnit->id.'" >RA</option>',
+                '<option value="'.$firstUnit->id.'" selected>MI</option>',
+                '<option value="'.$secondUnit->id.'" >MTs</option>',
+                '<option value="'.$otherUnit->id.'" >BAKULAN</option>',
+            ], false)
+            ->assertViewHas('data', fn ($data) => $data->total() === 1 && $data->first()->education_unit_id === $firstUnit->id);
+
+        $this->get('/master-data?tab=classes')
+            ->assertOk()
+            ->assertSee('<td><strong>2</strong></td>', false)
+            ->assertViewHas('data', fn ($data) => $data->getCollection()->pluck('name')->all() === [
+                'A1', 'A2', 'Kelas MI', 'Kelas MTs', 'Kelas Bakulan',
+            ] && $data->getCollection()->firstWhere('name', 'Kelas MTs')->students_count === 2);
+    }
+
+    public function test_academic_year_list_only_shows_requested_columns(): void
+    {
+        AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+
+        $this->get('/master-data?tab=academic-years')
+            ->assertOk()
+            ->assertSee('<th>No.</th><th>Tahun Pelajaran</th><th>Status</th><th>Aksi</th>', false)
+            ->assertDontSee('<th>Jumlah Siswa</th>', false)
+            ->assertDontSee('<th>Dibuat</th>', false);
+    }
+
+    public function test_student_with_financial_history_can_be_deleted_with_related_sample_data(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'I A', 'level' => 'Kelas I']);
+        $student = Student::create(['nis' => '1001', 'name' => 'Siswa Bertagihan', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        Bill::create([
+            'student_id' => $student->id, 'academic_year_id' => $year->id, 'source_type' => 'manual',
+            'generation_key' => 'test-bill-'.$student->id, 'title' => 'Tagihan Uji', 'issue_date' => '2026-06-13',
+            'original_amount' => 100000, 'discount_amount' => 0, 'total_amount' => 100000,
+            'paid_amount' => 0, 'remaining_amount' => 100000, 'status' => 'Belum Dibayar',
+        ]);
+
+        $bill = Bill::create([
+            'student_id' => $student->id, 'academic_year_id' => $year->id, 'source_type' => 'manual',
+            'generation_key' => 'test-bill-second-'.$student->id, 'title' => 'Tagihan Uji Kedua', 'issue_date' => '2026-06-13',
+            'original_amount' => 50000, 'discount_amount' => 0, 'total_amount' => 50000,
+            'paid_amount' => 0, 'remaining_amount' => 50000, 'status' => 'Belum Dibayar',
+        ]);
+        BillManualPayment::create([
+            'bill_id' => $bill->id, 'transaction_at' => '2026-06-13 10:00:00', 'payment_method' => 'Cash', 'paid_amount' => 10000,
+        ]);
+
+        $this->delete('/master-data/students/'.$student->id)
+            ->assertRedirect('/master-data?tab=students')
+            ->assertSessionHas('success', 'Data siswa beserta seluruh data contoh terkait berhasil dihapus.');
+
+        $this->assertDatabaseMissing('students', ['id' => $student->id]);
+        $this->assertDatabaseMissing('bills', ['student_id' => $student->id]);
+        $this->assertDatabaseMissing('bill_manual_payments', ['bill_id' => $bill->id]);
     }
 
     public function test_fee_type_uses_matching_education_unit_and_class(): void
@@ -243,6 +372,47 @@ class MasterDataTest extends TestCase
         ])->assertSessionHasErrors('start_date');
     }
 
+    public function test_payment_student_options_show_unit_code_nis_and_name_in_unit_order(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $mts = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $paud = EducationUnit::create(['code' => 'PAUD', 'name' => 'Pendidikan Anak Usia Dini', 'is_active' => true]);
+        $mtsClass = SchoolClass::create(['education_unit_id' => $mts->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        $paudClass = SchoolClass::create(['education_unit_id' => $paud->id, 'name' => 'Kelompok Bermain', 'level' => 'Kelompok Bermain']);
+        Student::create(['nis' => '1001', 'name' => 'Alya MTs', 'gender' => 'P', 'school_class_id' => $mtsClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        Student::create(['nis' => '2002', 'name' => 'Zara PAUD', 'gender' => 'P', 'school_class_id' => $paudClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+
+        foreach (['/keuangan/pembayaran/spp/create', '/keuangan/pembayaran/lain-lain/create'] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSeeInOrder(['PAUD - 2002 - Zara PAUD', 'MTs - 1001 - Alya MTs'])
+                ->assertSee('Waktu Transaksi')
+                ->assertSee('placeholder="DD/MM/YYYY"', false)
+                ->assertSee('data-date-picker-button', false)
+                ->assertSee('Ketik NIS atau nama siswa...')
+                ->assertSee('data-student-picker', false)
+                ->assertDontSee('* Wajib diisi')
+                ->assertDontSee('2002 - Zara PAUD · PAUD');
+        }
+
+        $this->get('/keuangan/pembayaran/spp/create')
+            ->assertDontSee('required readonly data-spp-date', false)
+            ->assertDontSee('type="date" name="transaction_date"', false)
+            ->assertSee('type="text" value="', false)
+            ->assertSee('readonly data-wib-clock', false)
+            ->assertSee('type="hidden" name="transaction_time"', false)
+            ->assertDontSee('type="time" name="transaction_time"', false);
+
+        $this->get('/keuangan/pembayaran/lain-lain/create')
+            ->assertDontSee('required readonly data-other-date', false)
+            ->assertDontSee('type="date" name="transaction_date"', false)
+            ->assertSee('readonly data-wib-clock', false)
+            ->assertSee('type="hidden" name="transaction_time"', false)
+            ->assertDontSee('type="time" name="transaction_time"', false);
+
+        $this->assertSame('Asia/Jakarta', config('app.timezone'));
+    }
+
     public function test_spp_payment_supports_installment_and_later_settlement(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
@@ -307,13 +477,14 @@ class MasterDataTest extends TestCase
         $this->assertStringStartsWith('%PDF-', $receipt->getContent());
 
         $this->put('/keuangan/pembayaran/spp/'.$payment->id, [
-            'transaction_date' => '2026-06-13',
-            'transaction_time' => '09:45',
+            'transaction_date' => '13/06/2026',
+            'transaction_time' => '18.00',
             'payment_method' => 'Transfer',
             'status' => 'Pending',
         ])->assertRedirect('/keuangan/pembayaran/spp');
         $this->assertDatabaseHas('spp_payments', [
             'id' => $payment->id,
+            'transaction_at' => '2026-06-13 18:00:00',
             'payment_method' => 'Transfer',
             'status' => 'Pending',
         ]);
@@ -520,9 +691,11 @@ class MasterDataTest extends TestCase
             'months' => [1], 'year' => 2026, 'payment_method' => 'Cash', 'status' => 'Diterima', 'paid_amount' => 600000,
         ])->assertRedirect();
 
-        $this->get('/keuangan/tagihan?year=2026&until_month=6')
+        $this->get('/keuangan/tagihan?year=2026&until_month=6&per_page=25')
             ->assertOk()
             ->assertSee('Pantau seluruh kewajiban siswa secara otomatis')
+            ->assertSee('Show')
+            ->assertSee('Search:')
             ->assertSee('Tagihan Siswa')
             ->assertDontSee('Januari 2026')
             ->assertSee('Februari 2026')
@@ -551,8 +724,8 @@ class MasterDataTest extends TestCase
             'total_amount' => 200000, 'paid_amount' => 200000, 'remaining_amount' => 0, 'payment_status' => 'Lunas',
         ]);
 
-        $this->get('/laporan?start_date=2026-06-01&end_date=2026-06-30')
-            ->assertOk()->assertSee('Rp 500.000')->assertSee('Siswa Laporan')->assertSee('Buku');
+        $this->get('/laporan?start_date=2026-06-01&end_date=2026-06-30&per_page=25')
+            ->assertOk()->assertSee('Show')->assertSee('Search:')->assertSee('Rp 500.000')->assertSee('Siswa Laporan')->assertSee('Buku');
         $this->get('/laporan?start_date=2026-06-01&end_date=2026-06-30&type=spp')
             ->assertOk()->assertSee('Rp 300.000')->assertDontSee('Buku');
         $this->get('/laporan/export?start_date=2026-06-01&end_date=2026-06-30')

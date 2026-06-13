@@ -121,7 +121,7 @@
                     <a href="{{ route('master.index', ['tab' => $tab]) }}" class="button button-secondary">Kembali ke Daftar</a>
                 </section>
                 <section class="card master-create-card">
-                    <div class="master-create-heading"><div><strong>Informasi {{ $labels[$tab][0] }}</strong><span>Pastikan data yang dimasukkan sudah benar.</span></div><span><b>*</b> Wajib diisi</span></div>
+                    <div class="master-create-heading"><div><strong>Informasi {{ $labels[$tab][0] }}</strong><span>Pastikan data yang dimasukkan sudah benar.</span></div></div>
                     <form method="POST" action="{{ route('master.'.$tab.'.store') }}" class="master-form master-create-form">
                         @csrf
                         @include('master.partials.form-fields')
@@ -150,12 +150,22 @@
 
                     <form method="GET" action="{{ route('master.index') }}" class="student-filter-panel">
                         <input type="hidden" name="tab" value="students">
-                        <label><span>Unit Pendidikan</span><select name="unit_id"><option value="">Semua Unit Pendidikan</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>@endforeach</select></label>
-                        <label><span>Kelas</span><select name="class_id"><option value="">Semua Kelas</option>@foreach ($classes as $class)<option value="{{ $class->id }}" @selected(request('class_id') == $class->id)>{{ $class->educationUnit?->code }} · {{ $class->name }}</option>@endforeach</select></label>
+                        <div class="student-filter-heading">
+                            <span class="student-filter-icon">{!! $icon('search') !!}</span>
+                            <div><strong>Filter Data Siswa</strong><small>Pilih kriteria untuk mempersempit daftar siswa.</small></div>
+                            @php($activeStudentFilters = collect(['unit_id', 'class_id', 'year_id', 'status'])->filter(fn ($key) => request()->filled($key))->count())
+                            @if ($activeStudentFilters)
+                                <b>{{ $activeStudentFilters }} filter aktif</b>
+                            @endif
+                        </div>
+                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">Pilih Unit Pendidikan</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                        <label><span>Kelas</span><select name="class_id" data-student-filter-class @disabled(! request()->filled('unit_id'))><option value="">{{ request()->filled('unit_id') ? 'Semua Kelas' : 'Pilih Unit Pendidikan Dahulu' }}</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
                         <label><span>Tahun Pelajaran</span><select name="year_id"><option value="">Semua Tahun Pelajaran</option>@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected(request('year_id') == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
                         <label><span>Status Data</span><select name="status"><option value="">Semua Status</option><option value="active" @selected(request('status') === 'active')>Aktif</option><option value="inactive" @selected(request('status') === 'inactive')>Nonaktif</option></select></label>
-                        <label><span>Pencarian</span><input name="search" value="{{ request('search') }}" placeholder="NIS atau nama siswa"></label>
-                        <button class="button student-search-button">{!! $icon('search') !!} Tampilkan Data</button>
+                        <div class="student-filter-actions">
+                            <a href="{{ route('master.index', ['tab' => 'students']) }}" class="button student-filter-reset">Reset</a>
+                            <button class="button student-search-button">{!! $icon('search') !!} Tampilkan Data</button>
+                        </div>
                     </form>
                 </section>
             @elseif (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'spp-settings', 'fee-discounts']))
@@ -216,6 +226,11 @@
                 </div>
                 @endif
 
+                @include('partials.list-toolbar', [
+                    'action' => route('master.index'),
+                    'searchLabel' => 'Cari data master',
+                    'unitFilter' => $tab === 'classes' ? $educationUnits : null,
+                ])
                 <div class="table-wrap"><table class="data-table">
                     @if ($tab === 'students')
                         <thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>Jenis Kelamin</th><th>Unit Pendidikan</th><th>Kelas</th><th>Status</th><th>Aksi</th></tr></thead>
@@ -224,11 +239,11 @@
                         <thead><tr><th>No.</th><th>Kode</th><th>Nama Unit Pendidikan</th><th>Jumlah Kelas</th><th>Status</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><span class="code-badge">{{ $row->code }}</span></td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->school_classes_count }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'education-units', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'classes')
-                        <thead><tr><th>No.</th><th>Nama Kelas</th><th>Nama Unit Pendidikan</th><th>Jumlah Siswa</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>No.</th><th>Nama Kelas</th><th>Unit Pendidikan</th><th>Jumlah Siswa</th><th>Status</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->educationUnit?->name ?? '-' }}</strong></td><td><strong>{{ $row->students_count }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'classes', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'academic-years')
-                        <thead><tr><th>Tahun Pelajaran</th><th>Status</th><th>Jumlah Siswa</th><th>Dibuat</th><th>Aksi</th></tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td><strong>{{ $row->name }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}</span></td><td><strong>{{ $row->students_count }} siswa</strong></td><td><small>{{ $row->created_at->format('d M Y') }}</small></td><td>@include('master.partials.actions', ['type' => 'academic-years', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                        <thead><tr><th>No.</th><th>Tahun Pelajaran</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'academic-years', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'fee-types')
                         <thead><tr><th>No.</th><th>Jenis Pembayaran</th><th>Unit Pendidikan</th><th>Kelas</th><th>Periode</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->educationUnit?->name ?? '-' }}</strong></td><td><strong>{{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong></td><td><span class="status neutral">{{ $row->period }}</span></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
@@ -240,18 +255,7 @@
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->student?->name ?? '-' }}</strong><small>{{ $row->student?->schoolClass?->educationUnit?->code }} · {{ $row->student?->schoolClass?->name }}</small></td><td><strong>{{ $row->source_type === 'spp' ? 'SPP' : ($row->feeType?->name ?? '-') }}</strong></td><td><strong>Rp {{ number_format($row->original_amount, 0, ',', '.') }}</strong></td><td><strong>{{ $row->discount_type === 'percentage' ? $row->discount_value.'%' : 'Rp '.number_format($row->discount_amount, 0, ',', '.') }}</strong></td><td><strong>Rp {{ number_format($row->final_amount, 0, ',', '.') }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'fee-discounts', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @endif
                 </table></div>
-                @if ($tab === 'students')
-                    <div class="student-table-footer">
-                        <form method="GET" action="{{ route('master.index') }}" class="student-table-length">
-                            @foreach (request()->except('per_page', 'page') as $key => $value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
-                            <span>Menampilkan {{ $data->firstItem() ?? 0 }}-{{ $data->lastItem() ?? 0 }} dari {{ $data->total() }} siswa</span>
-                            <select name="per_page" aria-label="Jumlah data per halaman" onchange="this.form.submit()">@foreach ([10,25,50,100] as $size)<option value="{{ $size }}" @selected(request('per_page', 10) == $size)>{{ $size }}</option>@endforeach</select>
-                        </form>
-                        <div class="pagination-wrap">{{ $data->links() }}</div>
-                    </div>
-                @else
-                    <div class="pagination-wrap">{{ $data->links() }}</div>
-                @endif
+                <div class="pagination-wrap">{{ $data->links() }}</div>
             </section>
             @endif
         </main>

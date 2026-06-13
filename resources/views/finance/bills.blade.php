@@ -63,7 +63,6 @@
             <section class="card outstanding-filter-card">
                 <div class="outstanding-filter-heading"><span>{!! $icon('filter') !!}</span><div><strong>Filter Daftar Tagihan</strong><span>Cari siswa atau sesuaikan periode, unit, dan kelas.</span></div><a href="{{ route('finance.bills.index') }}">Reset filter</a></div>
                 <form method="GET" class="outstanding-filter">
-                    <label class="outstanding-search"><b>Cari siswa</b><span>{!! $icon('search') !!}</span><input name="search" value="{{ request('search') }}" placeholder="Masukkan NIS atau nama siswa"></label>
                     <label><b>Tahun</b><select name="year">@for($optionYear = now()->year - 2; $optionYear <= now()->year + 1; $optionYear++)<option value="{{ $optionYear }}" @selected($year === $optionYear)>{{ $optionYear }}</option>@endfor</select></label>
                     <label><b>Periode SPP</b><select name="until_month">@foreach($months as $number => $name)<option value="{{ $number }}" @selected($untilMonth === $number)>Sampai {{ $name }}</option>@endforeach</select></label>
                     <label><b>Unit pendidikan</b><select name="unit_id"><option value="">Semua Unit</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->name }}</option>@endforeach</select></label>
@@ -74,6 +73,7 @@
 
             <section class="outstanding-list">
                 <div class="outstanding-list-heading"><div><p class="eyebrow">Daftar Tagihan</p><strong>Siswa yang Belum Lunas</strong><span>{{ $studentsWithBills->total() }} siswa ditemukan pada periode ini</span></div><span class="outstanding-list-hint">{!! $icon('alert') !!} Klik rincian untuk melihat nominal lengkap</span></div>
+                @include('partials.list-toolbar', ['action' => route('finance.bills.index'), 'searchLabel' => 'Cari siswa dalam daftar tagihan'])
                 @forelse($studentsWithBills as $summary)
                     @php($student = $summary['student'])
                     <article class="outstanding-student-card">

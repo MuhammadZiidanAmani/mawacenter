@@ -1,12 +1,77 @@
 const sidebar = document.querySelector('[data-sidebar]');
 const overlay = document.querySelector('[data-sidebar-overlay]');
 const toast = document.querySelector('[data-toast]');
+const passwordInput = document.querySelector('[data-password]');
+const passwordToggle = document.querySelector('[data-password-toggle]');
 const currencyInputs = Array.from(document.querySelectorAll('[data-currency-input]'));
 const digitsOnly = (value) => String(value ?? '').replace(/\D/g, '');
 const formatThousands = (value) => {
     const digits = digitsOnly(value).replace(/^0+(?=\d)/, '');
     return digits ? new Intl.NumberFormat('id-ID').format(Number(digits)) : '';
 };
+const wibTime = () => Object.fromEntries(
+    new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Jakarta',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hourCycle: 'h23',
+    }).formatToParts(new Date()).filter((part) => part.type !== 'literal').map((part) => [part.type, part.value]),
+);
+const currentWibClock = () => {
+    const { hour, minute, second } = wibTime();
+    return {
+        display: `${hour}.${minute}`,
+        value: `${hour}:${minute}:${second}`,
+    };
+};
+const formatIndonesianDate = (value) => {
+    const [year, month, day] = String(value ?? '').slice(0, 10).split('-');
+    return day && month && year ? `${day}/${month}/${year}` : '';
+};
+const formatDateInput = (value) => {
+    if (/^\d{4}-\d{2}-\d{2}/.test(value)) return formatIndonesianDate(value);
+    const digits = String(value ?? '').replace(/\D/g, '').slice(0, 8);
+    return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean).join('/');
+};
+const indonesianDateToIso = (value) => {
+    const match = String(value ?? '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+};
+
+passwordToggle?.addEventListener('click', () => {
+    const revealing = passwordInput.type === 'password';
+    passwordInput.type = revealing ? 'text' : 'password';
+    passwordToggle.classList.toggle('active', revealing);
+    passwordToggle.setAttribute('aria-label', revealing ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+    passwordToggle.setAttribute('title', revealing ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+});
+
+document.querySelectorAll('.logout-button').forEach((button) => {
+    button.addEventListener('click', () => { window.location.href = '/logout'; });
+});
+
+document.querySelectorAll('[data-indonesian-date]').forEach((input) => {
+    input.value = formatDateInput(input.value);
+    input.addEventListener('input', () => { input.value = formatDateInput(input.value); });
+});
+document.querySelectorAll('[data-date-picker-control]').forEach((control) => {
+    const display = control.querySelector('[data-indonesian-date]');
+    const picker = control.querySelector('[data-date-picker]');
+    const button = control.querySelector('[data-date-picker-button]');
+    picker.value = indonesianDateToIso(display.value);
+    display.addEventListener('input', () => { picker.value = indonesianDateToIso(display.value); });
+    picker.addEventListener('change', () => {
+        if (picker.value) {
+            display.value = formatIndonesianDate(picker.value);
+            display.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    });
+    button.addEventListener('click', () => {
+        if (typeof picker.showPicker === 'function') picker.showPicker();
+        else picker.click();
+    });
+});
 
 const formatCurrencyInput = (input) => {
     if (input.dataset.currencyDisabled === 'true') return;
@@ -115,6 +180,9 @@ const modalTitle = document.querySelector('[data-modal-title]');
 const studentUnit = document.querySelector('[data-student-unit]');
 const studentClass = document.querySelector('[data-student-class]');
 const studentClassOptions = studentClass ? Array.from(studentClass.options) : [];
+const studentFilterUnit = document.querySelector('[data-student-filter-unit]');
+const studentFilterClass = document.querySelector('[data-student-filter-class]');
+const studentFilterClassOptions = studentFilterClass ? Array.from(studentFilterClass.options) : [];
 const studentStatus = document.querySelector('[data-student-status]');
 const inactiveFields = document.querySelector('[data-inactive-fields]');
 const discountSource = document.querySelector('[data-discount-source]');
@@ -248,6 +316,26 @@ const filterStudentClasses = (selectedClass = '') => {
 };
 
 studentUnit?.addEventListener('change', () => filterStudentClasses());
+const filterStudentListClasses = (preserveSelection = false) => {
+    if (!studentFilterUnit || !studentFilterClass) return;
+    const unitId = studentFilterUnit.value;
+    const currentClass = preserveSelection ? studentFilterClass.value : '';
+    studentFilterClass.disabled = !unitId;
+    studentFilterClassOptions.forEach((option) => {
+        if (!option.value) {
+            option.textContent = unitId ? 'Semua Kelas' : 'Pilih Unit Pendidikan Dahulu';
+            option.hidden = false;
+            return;
+        }
+        option.hidden = option.dataset.unitId !== unitId;
+        option.disabled = option.hidden;
+    });
+    studentFilterClass.value = currentClass && studentFilterClassOptions.some((option) => option.value === currentClass && !option.hidden)
+        ? currentClass
+        : '';
+};
+studentFilterUnit?.addEventListener('change', () => filterStudentListClasses());
+filterStudentListClasses(true);
 studentStatus?.addEventListener('change', toggleInactiveFields);
 discountSource?.addEventListener('change', toggleDiscountFeeType);
 discountType?.addEventListener('change', toggleDiscountValueFormat);
@@ -279,6 +367,65 @@ studentRegions.province?.closest('form')?.addEventListener('submit', () => {
     Object.values(studentRegions).forEach((select) => { if (select) select.disabled = false; });
 });
 restoreStudentRegions();
+
+document.querySelectorAll('[data-student-picker]').forEach((picker) => {
+    const search = picker.querySelector('[data-student-search]');
+    const select = picker.querySelector('[data-student-source]');
+    const results = picker.querySelector('[data-student-results]');
+    const options = Array.from(select.options).filter((option) => option.value);
+    const selected = options.find((option) => option.selected);
+
+    if (selected) search.value = selected.textContent.trim();
+
+    const chooseStudent = (option) => {
+        select.value = option.value;
+        search.value = option.textContent.trim();
+        search.setCustomValidity('');
+        results.hidden = true;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    const renderStudentResults = () => {
+        const query = search.value.trim().toLocaleLowerCase('id-ID');
+        const matches = options.filter((option) => option.textContent.toLocaleLowerCase('id-ID').includes(query)).slice(0, 100);
+        results.replaceChildren(...matches.map((option) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = option.textContent.trim();
+            button.addEventListener('mousedown', (event) => event.preventDefault());
+            button.addEventListener('click', () => chooseStudent(option));
+            return button;
+        }));
+        if (!matches.length) {
+            const empty = document.createElement('span');
+            empty.textContent = 'Siswa tidak ditemukan';
+            results.append(empty);
+        }
+        results.hidden = false;
+    };
+
+    search.addEventListener('focus', renderStudentResults);
+    search.addEventListener('input', () => {
+        select.value = '';
+        search.setCustomValidity('Pilih siswa dari hasil pencarian.');
+        renderStudentResults();
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    search.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') results.hidden = true;
+        if (event.key === 'Enter' && !results.hidden) {
+            const firstResult = results.querySelector('button');
+            if (firstResult) {
+                event.preventDefault();
+                firstResult.click();
+            }
+        }
+    });
+    search.addEventListener('blur', () => window.setTimeout(() => { results.hidden = true; }, 120));
+    search.closest('form')?.addEventListener('submit', () => {
+        if (!select.value) search.setCustomValidity('Pilih siswa dari hasil pencarian.');
+    });
+});
 
 const closeModal = () => modal?.classList.remove('show');
 document.querySelectorAll('[data-modal-close]').forEach((button) => button.addEventListener('click', closeModal));
@@ -344,13 +491,12 @@ if (sppForm) {
     };
     const paymentStatus = sppForm.querySelector('[data-spp-status]');
     const paidInput = sppForm.querySelector('[data-spp-paid-input]');
-    const transactionDate = sppForm.querySelector('[data-spp-date]');
     const transactionTime = sppForm.querySelector('[data-spp-time]');
-    const padTime = (value) => String(value).padStart(2, '0');
+    const transactionClock = sppForm.querySelector('[data-wib-clock]');
     const updateTransactionClock = () => {
-        const now = new Date();
-        transactionDate.value = `${now.getFullYear()}-${padTime(now.getMonth() + 1)}-${padTime(now.getDate())}`;
-        transactionTime.value = `${padTime(now.getHours())}:${padTime(now.getMinutes())}:${padTime(now.getSeconds())}`;
+        const clock = currentWibClock();
+        transactionTime.value = clock.value;
+        transactionClock.value = clock.display;
     };
     updateTransactionClock();
     window.setInterval(updateTransactionClock, 1000);
@@ -506,8 +652,9 @@ document.querySelectorAll('[data-spp-edit-url]').forEach((button) => button.addE
         const data = await response.json();
         if (!response.ok) throw new Error(data.message ?? 'Data transaksi gagal dimuat.');
         form.action = button.dataset.sppUpdateUrl;
-        form.elements.transaction_date.value = data.transaction_date;
-        form.elements.transaction_time.value = data.transaction_time;
+        form.elements.transaction_date.value = formatIndonesianDate(data.transaction_date);
+        form.elements.transaction_date.dispatchEvent(new Event('input', { bubbles: true }));
+        form.elements.transaction_time.value = data.transaction_time.slice(0, 5).replace(':', '.');
         form.elements.payment_method.value = data.payment_method;
         form.elements.status.value = data.status;
         sppEditModal.classList.add('show');
@@ -547,14 +694,13 @@ if (otherForm) {
     const paid = otherForm.querySelector('[data-other-paid]');
     const total = otherForm.querySelector('[data-other-total]');
     const paidInput = otherForm.querySelector('[data-other-paid-input]');
-    const date = otherForm.querySelector('[data-other-date]');
     const time = otherForm.querySelector('[data-other-time]');
+    const clockDisplay = otherForm.querySelector('[data-wib-clock]');
     const feeOptions = Array.from(fee.options).filter((option) => option.value);
-    const pad = (value) => String(value).padStart(2, '0');
     const updateClock = () => {
-        const now = new Date();
-        date.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-        time.value = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        const clock = currentWibClock();
+        time.value = clock.value;
+        clockDisplay.value = clock.display;
     };
     const resetOtherQuote = (text = 'Pilih siswa dan jenis pembayaran untuk menghitung nominal.') => {
         original.textContent = currency.format(0);

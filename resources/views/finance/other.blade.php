@@ -102,10 +102,7 @@
                         <div><strong>Data Transaksi</strong><span>{{ $payments->total() }} transaksi tersimpan</span></div>
                         <a href="{{ route('finance.other.create') }}" class="button button-primary">{!! $icon('plus') !!} Tambah</a>
                     </div>
-                    <form method="GET" action="{{ route('finance.other.index') }}" class="spp-list-toolbar">
-                        <label>Show <select name="per_page" onchange="this.form.submit()">@foreach([10,25,50,100] as $size)<option value="{{ $size }}" @selected(request('per_page', 10)==$size)>{{ $size }}</option>@endforeach</select> entries</label>
-                        <label>Search: <input name="search" value="{{ request('search') }}" aria-label="Cari pembayaran lain-lain"><button class="button button-primary">Cari</button></label>
-                    </form>
+                    @include('partials.list-toolbar', ['action' => route('finance.other.index'), 'searchLabel' => 'Cari pembayaran lain-lain'])
                     <div class="table-wrap"><table class="data-table other-payment-table"><thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>Pendidikan</th><th>Kelas</th><th>Kategori</th><th>Cara Bayar</th><th>Status</th><th>Nominal</th><th>Waktu</th></tr></thead><tbody>
                         @forelse($payments as $payment)
                             <tr>
@@ -118,7 +115,7 @@
                                 <td><span class="payment-method">{{ strtolower($payment->payment_method) }}</span></td>
                                 <td><span class="status {{ $payment->status==='Diterima'?'success':'neutral' }}">{{ strtolower($payment->status) }}</span></td>
                                 <td class="other-payment-amount"><strong>{{ number_format($payment->paid_amount,0,',','.') }}</strong>@if($payment->discount_amount > 0)<small>Potongan {{ number_format($payment->discount_amount,0,',','.') }}</small>@endif</td>
-                                <td class="other-payment-time">{{ $payment->transaction_at->format('Y-m-d H:i:s') }}</td>
+                                <td class="other-payment-time">{{ $payment->transaction_at->format('Y-m-d H.i') }} WIB</td>
                             </tr>
                         @empty @include('master.partials.empty') @endforelse
                     </tbody></table></div><div class="pagination-wrap">{{ $payments->links() }}</div>
@@ -128,9 +125,9 @@
             <section class="spp-form-page payment-create-page">
                 <section class="hero master-hero"><div><p class="eyebrow">Pembayaran · Lain-lain</p><h1>Tambah Pembayaran Lain-lain</h1><p>Pilih siswa dan kategori pembayaran yang berlaku untuk kelasnya.</p></div><a href="{{ route('finance.other.index') }}" class="button button-secondary">Kembali ke Daftar</a></section>
                 <form method="POST" action="{{ route('finance.other.store') }}" class="card spp-payment-form" data-other-form data-quote-url="{{ route('finance.other.quote') }}">@csrf
-                    <div class="spp-form-section"><div class="spp-form-heading"><strong>Informasi Transaksi</strong><span><b>*</b> Wajib diisi</span></div><div class="spp-form-grid">
-                        <label>Waktu Transaksi <span class="spp-inline"><input type="date" name="transaction_date" value="{{ old('transaction_date', now()->toDateString()) }}" required data-other-date><input type="time" name="transaction_time" step="1" value="{{ old('transaction_time', now()->format('H:i:s')) }}" required data-other-time></span></label>
-                        <label>Siswa <select name="student_id" required data-other-student><option value="">Pilih siswa...</option>@foreach($students as $student)<option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-unit-id="{{ $student->schoolClass?->education_unit_id }}" @selected(old('student_id')==$student->id)>{{ $student->nis }} - {{ $student->name }} · {{ $student->schoolClass?->name }}</option>@endforeach</select></label>
+                    <div class="spp-form-section"><div class="spp-form-heading"><strong>Informasi Transaksi</strong></div><div class="spp-form-grid">
+                        <label>Waktu Transaksi <span class="spp-inline"><span class="date-picker-field" data-date-picker-control><input type="text" name="transaction_date" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ old('transaction_date', now()->format('d/m/Y')) }}" required data-other-date data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal" data-date-picker-button>{!! $icon('calendar') !!}</button></span><span class="wib-clock-field"><input type="text" value="{{ now()->format('H.i') }}" readonly data-wib-clock><b>WIB</b></span><input type="hidden" name="transaction_time" value="{{ old('transaction_time', now()->format('H:i:s')) }}" data-other-time></span></label>
+                        <div class="spp-form-field"><span>Siswa</span><div class="student-search-picker" data-student-picker><input type="search" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" required data-student-search><select name="student_id" data-other-student data-student-source><option value="">Pilih siswa...</option>@foreach($students as $student)<option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-unit-id="{{ $student->schoolClass?->education_unit_id }}" @selected(old('student_id')==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>@endforeach</select><div class="student-search-results" data-student-results hidden></div></div></div>
                         <label>Jenis Pembayaran <select name="fee_type_id" required data-other-fee><option value="">Pilih jenis pembayaran...</option>@foreach($feeTypes as $feeType)<option value="{{ $feeType->id }}" data-class-id="{{ $feeType->school_class_id }}" data-unit-id="{{ $feeType->education_unit_id }}" @selected(old('fee_type_id')==$feeType->id)>{{ $feeType->name }} · {{ $feeType->educationUnit?->code }} · {{ $feeType->schoolClass?->name ?? 'Semua Kelas' }}</option>@endforeach</select></label>
                         <label>Cara Bayar <select name="payment_method" required><option @selected(($defaultPaymentMethod ?? 'Cash')==='Cash')>Cash</option><option @selected(($defaultPaymentMethod ?? 'Cash')==='Transfer')>Transfer</option></select></label>
                         <label>Status <select name="status" required><option>Diterima</option><option>Pending</option></select></label>

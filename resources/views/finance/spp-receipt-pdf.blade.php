@@ -91,7 +91,7 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ $payment->transaction_at->format('d-m-Y H:i:s') }}</td>
+                <td>{{ $payment->transaction_at->format('d-m-Y H.i') }} WIB</td>
                 <td>{{ $payment->items->map(fn ($item) => $months[$item->month])->join(', ') }}</td>
                 <td>{{ $payment->items->pluck('year')->unique()->join(', ') }}</td>
                 <td>{{ $payment->payment_method }}</td>
@@ -108,7 +108,7 @@
     <table class="notes">
         <tr>
             <td></td>
-            <td class="right">{{ config('receipt.city') }}, {{ now()->format('d-m-Y H:i:s') }}</td>
+            <td class="right">{{ config('receipt.city') }}, {{ now()->format('d-m-Y H.i') }} WIB</td>
         </tr>
         <tr>
             <td>{{ $receiptSettings['receipt_footer'] ?? 'Pendidikan Anak Tanggungjawab Orang Tua' }}</td>

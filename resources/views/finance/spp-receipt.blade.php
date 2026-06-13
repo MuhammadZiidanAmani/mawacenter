@@ -8,8 +8,8 @@
         * { box-sizing: border-box; }
         body { margin: 0; color: #222; background: #eef1f5; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.2; }
         .receipt-actions { width: min(21.5cm, calc(100% - 24px)); margin: 18px auto 10px; display: flex; justify-content: flex-end; gap: 8px; }
-        .receipt-actions button, .receipt-actions a { min-height: 40px; padding: 0 16px; display: inline-flex; align-items: center; color: #173b7a; background: white; border: 1px solid #cfd7e3; border-radius: 7px; cursor: pointer; font: inherit; font-weight: 700; text-decoration: none; }
-        .receipt-actions .print { color: white; background: #123b8f; border-color: #123b8f; }
+        .receipt-actions button, .receipt-actions a { min-height: 40px; padding: 0 16px; display: inline-flex; align-items: center; color: #0d5f36; background: white; border: 1px solid #cfd7e3; border-radius: 7px; cursor: pointer; font: inherit; font-weight: 700; text-decoration: none; }
+        .receipt-actions .print { color: white; background: #0d5f36; border-color: #0d5f36; }
         .receipt { width: 21.5cm; height: 11cm; margin: 0 auto 1cm; padding: .42cm .62cm .25cm; overflow: hidden; background: white; border: 1px solid #d5d9df; box-shadow: 0 8px 30px #17203314; }
         .receipt-header { padding-bottom: 3px; display: grid; grid-template-columns: 58px 1fr auto; align-items: center; gap: 8px; border-bottom: 1.5px solid #555; }
         .receipt-logo { width: 52px; height: 52px; display: block; object-fit: contain; }
@@ -80,7 +80,7 @@
         <thead><tr><th>Waktu Transaksi</th><th>Bulan</th><th>Tahun</th><th>Cara Bayar</th><th class="number">Nominal Dibayar</th></tr></thead>
         <tbody>
             <tr>
-                <td>{{ $payment->transaction_at->format('d-m-Y H:i:s') }}</td>
+                <td>{{ $payment->transaction_at->format('d-m-Y H.i') }} WIB</td>
                 <td>{{ $payment->items->map(fn ($item) => $months[$item->month])->join(', ') }}</td>
                 <td>{{ $payment->items->pluck('year')->unique()->join(', ') }}</td>
                 <td>{{ $payment->payment_method }}</td>
@@ -94,7 +94,7 @@
 
     <div class="receipt-notes">
         <div>{{ config('receipt.footer_note') }}</div>
-        <div><span class="receipt-meta">{{ config('receipt.city') }}, {{ now()->format('d-m-Y H:i:s') }}</span><br>Infaq yang sudah terbayar mohon diikhlaskan</div>
+        <div><span class="receipt-meta">{{ config('receipt.city') }}, {{ now()->format('d-m-Y H.i') }} WIB</span><br>Infaq yang sudah terbayar mohon diikhlaskan</div>
     </div>
 
     <section class="signatures">

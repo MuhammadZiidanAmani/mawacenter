@@ -24,7 +24,7 @@
     <label>Kode Unit <input name="code" required value="{{ old('code') }}" placeholder="Contoh: MTs"></label><label>Nama Unit <input name="name" required value="{{ old('name') }}" placeholder="Madrasah Tsanawiyah"></label>
     <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Unit pendidikan aktif</label>
 @elseif ($tab === 'classes')
-    <label>Unit Pendidikan <select name="education_unit_id" required>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}">{{ $unit->code }} - {{ $unit->name }}</option>@endforeach</select></label>
+    <label>Unit Pendidikan <select name="education_unit_id" required><option value="">Pilih Unit Pendidikan</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(old('education_unit_id') == $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>@endforeach</select></label>
     <label>Nama Kelas <input name="name" required value="{{ old('name') }}" placeholder="Contoh: VII A"></label>
     <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Kelas aktif</label>
 @elseif ($tab === 'academic-years')

@@ -9,8 +9,8 @@ use App\Models\AppSetting;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\Student;
-use App\Services\OtherPaymentService;
 use App\Services\OtherPaymentImportService;
+use App\Services\OtherPaymentService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -53,7 +53,14 @@ class OtherPaymentController extends Controller
     {
         return view('finance.other', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
-            'students' => Student::with('schoolClass.educationUnit')->where('is_active', true)->orderBy('name')->get(),
+            'students' => Student::select('students.*')->with('schoolClass.educationUnit')
+                ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
+                ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                ->where('students.is_active', true)
+                ->orderByRaw("CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+                ->orderBy('education_units.name')
+                ->orderBy('students.name')
+                ->get(),
             'feeTypes' => FeeType::with(['educationUnit', 'schoolClass'])->where('is_active', true)->orderBy('name')->get(),
             'defaultPaymentMethod' => AppSetting::where('key', 'default_payment_method')->value('value') ?? 'Cash',
             'showCreate' => true,

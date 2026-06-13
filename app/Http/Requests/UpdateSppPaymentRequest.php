@@ -14,8 +14,12 @@ class UpdateSppPaymentRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if (preg_match('/^\d{2}:\d{2}$/', (string) $this->input('transaction_time'))) {
-            $this->merge(['transaction_time' => $this->input('transaction_time').':00']);
+        if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', (string) $this->input('transaction_date'), $matches)) {
+            $this->merge(['transaction_date' => "{$matches[3]}-{$matches[2]}-{$matches[1]}"]);
+        }
+
+        if (preg_match('/^([01]\d|2[0-3])[.:]([0-5]\d)$/', (string) $this->input('transaction_time'), $matches)) {
+            $this->merge(['transaction_time' => "{$matches[1]}:{$matches[2]}:00"]);
         }
     }
 
