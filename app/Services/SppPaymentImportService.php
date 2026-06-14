@@ -58,7 +58,7 @@ class SppPaymentImportService
         ]);
 
         foreach ($prepared as $row) {
-            if (SppPayment::where('import_key', $row['import_key'])->exists()) {
+            if (SppPayment::whereIn('import_key', [$row['import_key'], $row['legacy_import_key']])->exists()) {
                 $row['status'] = 'Duplikat';
                 $row['message'] = 'Transaksi ini sudah pernah diimpor.';
                 $result['duplicates']++;
@@ -66,10 +66,13 @@ class SppPaymentImportService
                 continue;
             }
 
-            $student = Student::with('schoolClass.educationUnit')->where('nis', $row['nis'])->first();
+            $student = Student::with('schoolClass.educationUnit')
+                ->where('nis', $row['nis'])
+                ->get()
+                ->first(fn (Student $candidate) => $this->matchesUnit($candidate, $row['unit']));
             if (! $student) {
                 $row['status'] = 'Gagal';
-                $row['message'] = "NIS {$row['nis']} tidak ditemukan.";
+                $row['message'] = "NIS {$row['nis']} tidak ditemukan. Unit: {$row['unit']}.";
                 $result['failures'][] = $row;
                 $result['rows'][] = $row;
                 continue;
@@ -139,7 +142,7 @@ class SppPaymentImportService
         }
 
         $headers = array_map($this->normalizeHeader(...), $rows[$headerIndex]);
-        $required = ['nis', 'nama', 'cara_bayar', 'bulan', 'tahun', 'waktu', 'nominal'];
+        $required = ['nis', 'nama', 'jenis_pendidikan', 'cara_bayar', 'bulan', 'tahun', 'waktu', 'nominal'];
         if ($missing = array_diff($required, $headers)) {
             throw ValidationException::withMessages(['file' => 'Kolom wajib belum tersedia: '.implode(', ', $missing).'.']);
         }
@@ -160,16 +163,18 @@ class SppPaymentImportService
         $row = array_combine($headers, array_slice(array_pad($values, count($headers), null), 0, count($headers)));
         $nis = trim((string) ($row['nis'] ?? ''));
         $name = trim((string) ($row['nama'] ?? ''));
+        $unit = trim((string) ($row['jenis_pendidikan'] ?? ''));
         $monthName = strtolower(trim((string) ($row['bulan'] ?? '')));
         $year = filter_var($row['tahun'] ?? null, FILTER_VALIDATE_INT);
         $nominal = $this->normalizeNominal($row['nominal'] ?? null);
         $method = strtolower(trim((string) ($row['cara_bayar'] ?? '')));
         $transactionAt = $this->normalizeDateTime($row['waktu'] ?? null);
 
-        $base = ['line' => $line, 'nis' => $nis, 'name' => $name, 'month_name' => $monthName, 'year' => (int) $year, 'nominal' => $nominal];
+        $base = ['line' => $line, 'nis' => $nis, 'name' => $name, 'unit' => $unit, 'month_name' => $monthName, 'year' => (int) $year, 'nominal' => $nominal];
         $error = match (true) {
             $nis === '' => 'NIS kosong.',
             $name === '' => 'Nama siswa kosong.',
+            $unit === '' => 'Jenis pendidikan kosong.',
             ! isset(self::MONTHS[$monthName]) => 'Nama bulan tidak valid.',
             ! $year || $year < 2000 || $year > 2100 => 'Tahun tidak valid.',
             $nominal < 1 => 'Nominal harus lebih dari nol.',
@@ -185,7 +190,7 @@ class SppPaymentImportService
         $month = self::MONTHS[$monthName];
         $paymentMethod = ucfirst($method);
         $operator = trim((string) ($row['petugas'] ?? ''));
-        $importKey = hash('sha256', implode('|', [$nis, $year, $month, $transactionAt, $nominal, $paymentMethod]));
+        $importKey = hash('sha256', implode('|', [$unit, $nis, $year, $month, $transactionAt, $nominal, $paymentMethod]));
 
         return $base + [
             'month' => $month,
@@ -193,6 +198,7 @@ class SppPaymentImportService
             'transaction_at' => $transactionAt,
             'operator_name' => $operator !== '' ? $operator : null,
             'import_key' => $importKey,
+            'legacy_import_key' => hash('sha256', implode('|', [$nis, $year, $month, $transactionAt, $nominal, $paymentMethod])),
         ];
     }
 
@@ -225,5 +231,17 @@ class SppPaymentImportService
     private function normalizeLookup(string $value): string
     {
         return preg_replace('/[^a-z0-9]/', '', strtolower(trim($value)));
+    }
+
+    private function matchesUnit(Student $student, string $unit): bool
+    {
+        $educationUnit = $student->schoolClass?->educationUnit;
+        $normalized = $this->normalizeLookup($unit);
+
+        return $educationUnit
+            && in_array($normalized, [
+                $this->normalizeLookup($educationUnit->code),
+                $this->normalizeLookup($educationUnit->name),
+            ], true);
     }
 }

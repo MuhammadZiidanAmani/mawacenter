@@ -15,8 +15,12 @@ class StoreOtherPaymentRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if (! $this->filled('student_id') && preg_match('/^[^-]+-\s*([^-]+?)\s*-/', (string) $this->input('student_search'), $matches)) {
-            $this->merge(['student_id' => Student::where('nis', trim($matches[1]))->value('id')]);
+        if (! $this->filled('student_id') && preg_match('/^([^-]+)-\s*([^-]+?)\s*-/', (string) $this->input('student_search'), $matches)) {
+            $unit = trim($matches[1]);
+            $studentId = Student::where('nis', trim($matches[2]))
+                ->whereHas('schoolClass.educationUnit', fn ($query) => $query->where('code', $unit))
+                ->value('id');
+            $this->merge(['student_id' => $studentId]);
         }
 
         if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', (string) $this->input('transaction_date'), $matches)) {

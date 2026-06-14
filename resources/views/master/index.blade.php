@@ -38,14 +38,14 @@
         'classes' => ['Kelas', 'database', $stats['classes']],
         'students' => ['Siswa', 'users', $stats['students']],
         'spp-settings' => ['Set SPP', 'wallet', $stats['spp_settings']],
-        'fee-types' => ['Kategori Pembayaran', 'receipt', $stats['fee_types']],
+        'fee-types' => ['Jenis Pembayaran', 'receipt', $stats['fee_types']],
     ];
     $labels = [
         'students' => ['Data Siswa', 'Kelola identitas, kelas, wali, dan status siswa.', 'Tambah Siswa'],
         'education-units' => ['Unit Pendidikan', 'Daftar unit pendidikan yang tersedia.', 'Tambah Unit Pendidikan'],
         'classes' => ['Kelas', 'Daftar kelas yang tersedia.', 'Tambah Kelas'],
         'academic-years' => ['Tahun Pelajaran', 'Daftar tahun pelajaran yang tersedia.', 'Tambah Tahun Pelajaran'],
-        'fee-types' => ['Kategori Pembayaran', 'Atur daftar ulang, laundry, dan pembayaran lainnya.', 'Tambah Kategori Pembayaran'],
+        'fee-types' => ['Jenis Pembayaran', 'Atur daftar ulang, laundry, dan pembayaran lainnya.', 'Tambah Jenis Pembayaran'],
         'spp-settings' => ['Set SPP', 'Atur nominal SPP untuk setiap unit pendidikan.', 'Tambah Set SPP'],
         'fee-discounts' => ['Keringanan Biaya', 'Atur potongan SPP atau pembayaran lainnya untuk siswa.', 'Tambah Keringanan'],
     ];
@@ -64,7 +64,7 @@
                         'classes' => ['Kelas', 'database'],
                         'students' => ['Siswa', 'users'],
                         'spp-settings' => ['Set SPP', 'wallet'],
-                        'fee-types' => ['Kategori Pembayaran', 'receipt'],
+                        'fee-types' => ['Jenis Pembayaran', 'receipt'],
                         'fee-discounts' => ['Keringanan Biaya', 'wallet'],
                     ] as $key => $item)
                         <a href="{{ route('master.index', ['tab' => $key]) }}" class="{{ $tab === $key ? 'active' : '' }}">{!! $icon($item[1]) !!}<span>{{ $item[0] }}</span></a>
@@ -144,13 +144,42 @@
                     @php($activeStudentFilters = collect(['unit_id', 'class_id', 'year_id', 'status'])->filter(fn ($key) => request()->filled($key))->count())
                     <div class="student-action-bar">
                         <a href="{{ route('master.create', ['tab' => 'students']) }}" class="button button-primary">{!! $icon('plus') !!} Tambah Siswa</a>
-                        <form method="POST" action="{{ route('master.students.import') }}" enctype="multipart/form-data" class="import-form">
-                            @csrf
-                            <label class="button action-purple">{!! $icon('upload') !!} Upload Excel<input type="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required onchange="this.form.submit()"></label>
-                        </form>
                         <a href="{{ route('master.students.template') }}" class="button action-orange">{!! $icon('download') !!} Download Template</a>
+                        <button type="button" class="button action-purple {{ $studentImportPreview || $errors->has('file') ? 'active' : '' }}" data-spp-import-toggle aria-expanded="{{ $errors->has('file') ? 'true' : 'false' }}">{!! $icon('upload') !!} Import Data</button>
                         <button type="button" class="button action-green" data-student-export-toggle aria-expanded="false">{!! $icon('download') !!} Export Data</button>
                         <button type="button" class="button student-filter-toggle {{ $activeStudentFilters ? 'active' : '' }}" data-student-filter-toggle aria-expanded="{{ $activeStudentFilters ? 'true' : 'false' }}">{!! $icon('search') !!} Filter Siswa @if($activeStudentFilters)<b>{{ $activeStudentFilters }}</b>@endif</button>
+                    </div>
+
+                    <div class="spp-import-modal-backdrop {{ $errors->has('file') ? 'show' : '' }}" data-spp-import-panel @if(! $errors->has('file')) hidden @endif>
+                        <section class="spp-import-modal" role="dialog" aria-modal="true" aria-labelledby="student-import-title">
+                            <header class="spp-import-modal-head">
+                                <div><span class="spp-import-kicker">Pengelolaan Data · Siswa</span><h2 id="student-import-title">Import Data Siswa</h2><p>Unggah data siswa untuk diperiksa sebelum disimpan.</p></div>
+                                <button type="button" class="spp-import-close" data-spp-import-close aria-label="Tutup modal import">×</button>
+                            </header>
+                            <div class="spp-import-progress">
+                                <div class="active"><b>1</b><span>Pilih file</span></div>
+                                <div><b>2</b><span>Preview data</span></div>
+                                <div><b>3</b><span>Konfirmasi</span></div>
+                            </div>
+                            <div class="spp-import-info">
+                                <span><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg></span>
+                                <div><strong>Validasi Sistem</strong><p>Sistem memeriksa <b>NIS per unit pendidikan, NISN, kelas, dan kelengkapan data</b> sebelum siswa disimpan.</p></div>
+                            </div>
+                            <form method="POST" action="{{ route('master.students.import.preview') }}" enctype="multipart/form-data" class="spp-import-modal-form">
+                                @csrf
+                                <label class="spp-import-dropzone">
+                                    <input type="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required data-spp-import-file>
+                                    <span class="spp-import-drop-icon">{!! $icon('upload') !!}</span>
+                                    <strong data-spp-import-filename>Ketuk untuk pilih berkas</strong>
+                                    <small>Format XLSX · Maksimal 5 MB</small>
+                                    <span class="spp-import-browse">Cari di Dokumen Saya</span>
+                                </label>
+                                <div class="spp-import-modal-actions">
+                                    <button class="button button-primary spp-preview-button">{!! $icon('upload') !!} Preview Data</button>
+                                    <button type="button" class="button button-secondary" data-spp-import-close>Batal</button>
+                                </div>
+                            </form>
+                        </section>
                     </div>
 
                     <form method="GET" action="{{ route('master.index') }}" class="student-filter-panel" data-student-filter-panel @if(! $activeStudentFilters) hidden @endif>
@@ -187,6 +216,31 @@
                         </div>
                     </form>
                 </section>
+                @if($studentImportPreview)
+                <section class="card spp-import-preview student-import-preview">
+                    <div class="spp-preview-header">
+                        <div class="spp-preview-title">
+                            <span class="spp-preview-icon">✓</span>
+                            <div><span class="spp-import-kicker">Hasil Validasi</span><strong>Preview Import Data Siswa</strong><span>{{ $studentImportPreview['valid'] > 0 ? 'Data valid siap disimpan setelah hasil pemeriksaan dikonfirmasi.' : 'Belum ada data siswa yang dapat diimpor.' }}</span></div>
+                        </div>
+                        <form method="POST" action="{{ route('master.students.import') }}">@csrf<input type="hidden" name="token" value="{{ $studentImportToken }}"><button class="button button-primary spp-confirm-button" @disabled($studentImportPreview['valid'] < 1)><span>Konfirmasi Import</span><b>{{ $studentImportPreview['valid'] }} Siswa</b></button></form>
+                    </div>
+                    <div class="spp-import-stats">
+                        <div class="total"><span class="spp-stat-icon">Σ</span><p><span>Total Baris</span><strong>{{ $studentImportPreview['total'] }}</strong><small>data diperiksa</small></p></div>
+                        <div class="valid"><span class="spp-stat-icon">✓</span><p><span>Valid</span><strong>{{ $studentImportPreview['valid'] }}</strong><small>siap diimpor</small></p></div>
+                        <div class="duplicate"><span class="spp-stat-icon">↻</span><p><span>Duplikat</span><strong>{{ $studentImportPreview['duplicates'] }}</strong><small>akan dilewati</small></p></div>
+                        <div class="failed"><span class="spp-stat-icon">!</span><p><span>Gagal</span><strong>{{ count($studentImportPreview['failures']) }}</strong><small>perlu diperiksa</small></p></div>
+                    </div>
+                    <div class="spp-validation-bar"><span style="width: {{ $studentImportPreview['total'] > 0 ? ($studentImportPreview['valid'] / $studentImportPreview['total']) * 100 : 0 }}%"></span></div>
+                    <div class="spp-preview-table-head"><div><strong>Rincian Hasil Pemeriksaan</strong><span>Data belum disimpan sampai tombol konfirmasi ditekan.</span></div><span class="spp-preview-count">{{ count($studentImportPreview['rows']) }} baris</span></div>
+                    <div class="table-wrap spp-import-table-wrap"><table class="data-table spp-import-table student-import-preview-table"><thead><tr><th>Baris</th><th>Unit</th><th>NIS</th><th>Nama Siswa</th><th>Kelas</th><th>Status</th><th>Keterangan</th></tr></thead><tbody>
+                        @foreach(array_slice($studentImportPreview['rows'], 0, 100) as $row)
+                        <tr class="spp-import-row {{ strtolower($row['status']) }}"><td><span class="spp-line-number">{{ $row['line'] }}</span></td><td><span class="education-code">{{ $row['unit'] ?: '-' }}</span></td><td><strong class="spp-import-nis">{{ $row['nis'] ?: '-' }}</strong></td><td><strong>{{ $row['name'] ?: '-' }}</strong></td><td>{{ $row['class'] ?: '-' }}</td><td><span class="status {{ $row['status']==='Valid'?'success':($row['status']==='Duplikat'?'warning':'danger') }}">{{ $row['status'] }}</span></td><td><span class="spp-import-message">{{ $row['message'] }}</span></td></tr>
+                        @endforeach
+                    </tbody></table></div>
+                    @if(count($studentImportPreview['rows']) > 100)<p class="spp-import-note"><span>i</span> Menampilkan 100 dari {{ count($studentImportPreview['rows']) }} baris hasil validasi.</p>@endif
+                </section>
+                @endif
             @elseif (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'spp-settings', 'fee-discounts']))
             <section class="master-stats">
                 <div><span class="metric-icon blue">{!! $icon('users') !!}</span><p>Total Siswa<strong>{{ number_format($stats['students'], 0, ',', '.') }}</strong><small>{{ $stats['active_students'] }} aktif</small></p></div>
@@ -219,30 +273,6 @@
                     <span>Menampilkan {{ $data->firstItem() ?? 0 }}-{{ $data->lastItem() ?? 0 }} dari {{ $data->total() }} data</span>
                 </div>
                 @endif
-                @elseif ($tab === 'academic-years')
-                <div class="simple-list-header">
-                    <div><strong>Daftar Tahun Pelajaran</strong><span>{{ $data->total() }} tahun pelajaran tersedia</span></div>
-                </div>
-                @elseif ($tab === 'education-units')
-                <div class="simple-list-header">
-                    <div><strong>Daftar Unit Pendidikan</strong><span>{{ $data->total() }} unit pendidikan tersedia</span></div>
-                </div>
-                @elseif ($tab === 'classes')
-                <div class="simple-list-header">
-                    <div><strong>Daftar Kelas</strong><span>{{ $data->total() }} kelas tersedia</span></div>
-                </div>
-                @elseif ($tab === 'fee-types')
-                <div class="simple-list-header">
-                    <div><strong>Daftar Kategori Pembayaran</strong><span>{{ $data->total() }} kategori pembayaran tersedia</span></div>
-                </div>
-                @elseif ($tab === 'spp-settings')
-                <div class="simple-list-header">
-                    <div><strong>Daftar Set SPP</strong><span>{{ $data->total() }} set SPP tersedia</span></div>
-                </div>
-                @else
-                <div class="simple-list-header">
-                    <div><strong>Daftar Keringanan Biaya</strong><span>{{ $data->total() }} keringanan tersedia</span></div>
-                </div>
                 @endif
 
                 @include('partials.list-toolbar', [
@@ -252,26 +282,55 @@
                 ])
                 <div class="table-wrap"><table class="data-table">
                     @if ($tab === 'students')
-                        <thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>Jenis Kelamin</th><th>Unit Pendidikan</th><th>Kelas</th><th>Status</th><th>Aksi</th></tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->nis }}</strong></td><td><div class="table-person"><div><strong>{{ $row->name }}</strong></div></div></td><td>{{ $row->gender === 'L' ? 'Laki-laki' : 'Perempuan' }}</td><td><span class="code-badge">{{ $row->schoolClass->educationUnit?->code ?? '-' }}</span></td><td><strong>{{ $row->schoolClass->name }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'students', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                        <thead><tr>
+                            <th>No</th>
+                            @foreach ([
+                                'nis' => 'NIS',
+                                'name' => 'Nama',
+                                'gender' => 'Jenis Kelamin',
+                                'unit' => 'Unit Pendidikan',
+                                'class' => 'Kelas',
+                            ] as $sortColumn => $sortLabel)
+                                <th>@include('partials.sortable-heading', ['column' => $sortColumn, 'label' => $sortLabel])</th>
+                            @endforeach
+                            <th class="student-action-column">Aksi</th>
+                        </tr></thead>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->nis }}</strong></td><td><div class="table-person"><div><strong>{{ $row->name }}</strong></div></div></td><td>{{ $row->gender === 'L' ? 'Laki-laki' : 'Perempuan' }}</td><td><span class="code-badge">{{ $row->schoolClass->educationUnit?->code ?? '-' }}</span></td><td><strong>{{ $row->schoolClass->name }}</strong></td><td>@include('master.partials.actions', ['type' => 'students', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'education-units')
-                        <thead><tr><th>No.</th><th>Kode</th><th>Nama Unit Pendidikan</th><th>Jumlah Kelas</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'code', 'label' => 'Kode'])</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'school_classes_count', 'label' => 'Jumlah Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'is_active', 'label' => 'Status'])</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><span class="code-badge">{{ $row->code }}</span></td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->school_classes_count }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'education-units', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'classes')
-                        <thead><tr><th>No.</th><th>Nama Kelas</th><th>Unit Pendidikan</th><th>Jumlah Siswa</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'students_count', 'label' => 'Jumlah Siswa'])</th><th>@include('partials.sortable-heading', ['column' => 'is_active', 'label' => 'Status'])</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->educationUnit?->name ?? '-' }}</strong></td><td><strong>{{ $row->students_count }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'classes', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'academic-years')
-                        <thead><tr><th>No.</th><th>Tahun Pelajaran</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Tahun Pelajaran'])</th><th>@include('partials.sortable-heading', ['column' => 'is_active', 'label' => 'Status'])</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'academic-years', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'fee-types')
-                        <thead><tr><th>No.</th><th>Jenis Pembayaran</th><th>Unit Pendidikan</th><th>Kelas</th><th>Tahun Pelajaran</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->educationUnit?->code ?? '-' }}</strong></td><td><strong>{{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong></td><td><span class="status neutral">{{ $row->academicYear?->name ?? '-' }}</span></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                        <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Jenis Pembayaran'])</th><th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'amount', 'label' => 'Nominal'])</th><th>Aksi</th></tr></thead>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->educationUnit?->code ?? '-' }}</strong></td><td><strong>{{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'spp-settings')
-                        <thead><tr><th>No.</th><th>Unit Pendidikan</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'amount', 'label' => 'Nominal'])</th><th>@include('partials.sortable-heading', ['column' => 'is_active', 'label' => 'Status'])</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->educationUnit?->name ?? '-' }}</strong></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'spp-settings', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @else
-                        <thead><tr><th>No.</th><th>Nama</th><th>Pembayaran</th><th>Set Biaya</th><th>Keringanan</th><th>Yang Dibayarkan</th><th>Status</th><th>Aksi</th></tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->student?->name ?? '-' }}</strong><small>{{ $row->student?->schoolClass?->educationUnit?->code }} · {{ $row->student?->schoolClass?->name }}</small></td><td><strong>{{ $row->source_type === 'spp' ? 'SPP' : ($row->feeType?->name ?? '-') }}</strong></td><td><strong>Rp {{ number_format($row->original_amount, 0, ',', '.') }}</strong></td><td><strong>{{ $row->discount_type === 'percentage' ? $row->discount_value.'%' : 'Rp '.number_format($row->discount_amount, 0, ',', '.') }}</strong></td><td><strong>Rp {{ number_format($row->final_amount, 0, ',', '.') }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'fee-discounts', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                        <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'student', 'label' => 'Nama'])</th><th>Unit Pendidikan</th><th>Kelas</th><th>@include('partials.sortable-heading', ['column' => 'payment', 'label' => 'Pembayaran'])</th><th>Aksi</th></tr></thead>
+                        <tbody>@forelse ($data as $row)
+                            <tr class="fee-discount-main-row">
+                                <td>{{ $data->firstItem() + $loop->index }}</td>
+                                <td><strong>{{ $row->student?->name ?? '-' }}</strong></td>
+                                <td><span class="code-badge">{{ $row->student?->schoolClass?->educationUnit?->code ?? '-' }}</span></td>
+                                <td><strong>{{ $row->student?->schoolClass?->name ?? '-' }}</strong></td>
+                                <td><strong>{{ $row->source_type === 'spp' ? 'SPP' : ($row->feeType?->name ?? '-') }}</strong></td>
+                                <td><div class="fee-discount-actions">@include('master.partials.actions', ['type' => 'fee-discounts', 'row' => $row])<button type="button" class="spp-expand-button" data-spp-row-toggle="fee-discount-{{ $row->id }}" aria-expanded="false" title="Lihat rincian" aria-label="Lihat rincian keringanan">+</button></div></td>
+                            </tr>
+                            <tr class="spp-expanded-row fee-discount-detail-row" data-spp-row-detail="fee-discount-{{ $row->id }}" hidden><td colspan="6">
+                                <div class="fee-discount-detail">
+                                    <div><span>Set Biaya</span><strong>Rp {{ number_format($row->original_amount, 0, ',', '.') }}</strong></div>
+                                    <div><span>Keringanan</span><strong>{{ $row->discount_type === 'percentage' ? $row->discount_value.'%' : 'Rp '.number_format($row->discount_amount, 0, ',', '.') }}</strong></div>
+                                    <div><span>Yang Dibayarkan</span><strong>Rp {{ number_format($row->final_amount, 0, ',', '.') }}</strong></div>
+                                    <div><span>Alasan</span><strong>{{ $row->reason ?: '-' }}</strong></div>
+                                </div>
+                            </td></tr>
+                        @empty @include('master.partials.empty') @endforelse</tbody>
                     @endif
                 </table></div>
                 <div class="pagination-wrap">{{ $data->links() }}</div>
@@ -282,7 +341,7 @@
 </div>
 
 @unless ($showCreate)
-<div class="modal-backdrop {{ $errors->any() ? 'show' : '' }}" data-modal>
+<div class="modal-backdrop {{ $errors->any() && ! $errors->has('file') ? 'show' : '' }}" data-modal>
     <div class="form-modal">
         <div class="form-modal-header"><div><p class="eyebrow">Master Data</p><h2 data-modal-title>Edit Data</h2></div><button class="icon-button" data-modal-close>×</button></div>
         <form method="POST" action="{{ route('master.'.$tab.'.store') }}" data-master-form data-store-action="{{ route('master.'.$tab.'.store') }}" class="master-form">

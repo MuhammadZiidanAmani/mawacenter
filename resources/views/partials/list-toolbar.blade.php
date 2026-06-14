@@ -22,6 +22,13 @@
             </select>
         </label>
     @endisset
+    @isset($sortOptions)
+        <div class="list-toolbar-sort" aria-label="Urutkan daftar">
+            @foreach ($sortOptions as $column => $label)
+                @include('partials.sortable-heading', ['column' => $column, 'label' => $label])
+            @endforeach
+        </div>
+    @endisset
     <label>Search:
         <input name="search" value="{{ request('search') }}" aria-label="{{ $searchLabel ?? 'Cari data' }}">
     </label>

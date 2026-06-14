@@ -19,6 +19,11 @@ class ReportController extends Controller
     {
         $filters = $this->filters($request);
         $transactions = $this->transactions($filters);
+        $sort = in_array($request->string('sort')->value(), ['date', 'student', 'type', 'description', 'unit', 'method', 'amount'], true)
+            ? $request->string('sort')->value()
+            : 'date';
+        $direction = $request->string('direction')->value() === 'asc' ? 'asc' : 'desc';
+        $transactions = $transactions->sortBy($sort, SORT_NATURAL | SORT_FLAG_CASE, $direction === 'desc')->values();
         $page = LengthAwarePaginator::resolveCurrentPage();
         $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
 

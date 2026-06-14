@@ -236,6 +236,7 @@ document.querySelector('[data-student-export-close]')?.addEventListener('click',
 });
 const studentStatus = document.querySelector('[data-student-status]');
 const inactiveFields = document.querySelector('[data-inactive-fields]');
+const discountPayment = document.querySelector('[data-discount-payment]');
 const discountSource = document.querySelector('[data-discount-source]');
 const discountFeeType = document.querySelector('[data-discount-fee-type]');
 const discountType = document.querySelector('[data-discount-type]');
@@ -334,15 +335,19 @@ const toggleInactiveFields = () => {
     inactiveFields.querySelectorAll('input').forEach((input) => { input.required = inactive; });
 };
 
-const toggleDiscountFeeType = () => {
-    if (!discountSource || !discountFeeType) return;
-    const show = discountSource.value === 'fee_type';
-    discountFeeType.hidden = !show;
-    const select = discountFeeType.querySelector('select');
-    if (select) {
-        select.required = show;
-        if (!show) select.value = '';
-    }
+const syncDiscountPaymentFields = () => {
+    if (!discountPayment || !discountSource || !discountFeeType) return;
+    const [sourceType, feeTypeId = ''] = discountPayment.value.split(':');
+    discountSource.value = sourceType;
+    discountFeeType.value = sourceType === 'fee_type' ? feeTypeId : '';
+};
+
+const syncDiscountPaymentControl = () => {
+    if (!discountPayment || !discountSource || !discountFeeType) return;
+    discountPayment.value = discountSource.value === 'fee_type' && discountFeeType.value
+        ? `fee_type:${discountFeeType.value}`
+        : 'spp';
+    syncDiscountPaymentFields();
 };
 
 const toggleDiscountValueFormat = () => {
@@ -441,7 +446,8 @@ const filterStudentExportClasses = () => {
 studentExportUnit?.addEventListener('change', filterStudentExportClasses);
 filterStudentExportClasses();
 studentStatus?.addEventListener('change', toggleInactiveFields);
-discountSource?.addEventListener('change', toggleDiscountFeeType);
+discountPayment?.addEventListener('change', syncDiscountPaymentFields);
+syncDiscountPaymentFields();
 discountType?.addEventListener('change', toggleDiscountValueFormat);
 toggleDiscountValueFormat();
 document.querySelector('[data-copy-father-whatsapp]')?.addEventListener('click', () => {
@@ -574,7 +580,7 @@ document.querySelector('[data-modal-open]')?.addEventListener('click', () => {
     modalTitle.textContent = document.querySelector('[data-modal-open]').textContent.trim();
     filterStudentClasses();
     toggleInactiveFields();
-    toggleDiscountFeeType();
+    syncDiscountPaymentFields();
     toggleDiscountValueFormat();
     masterForm?.querySelectorAll('[data-currency-input]').forEach(formatCurrencyInput);
     modal?.classList.add('show');
@@ -605,8 +611,14 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
         });
         if (registrationClassList) filterStudentClasses(record.school_class_id ? [record.school_class_id] : []);
         toggleInactiveFields();
-        toggleDiscountFeeType();
+        syncDiscountPaymentControl();
         toggleDiscountValueFormat();
+        masterForm.querySelectorAll('[data-student-picker]').forEach((picker) => {
+            const select = picker.querySelector('[data-student-source]');
+            const search = picker.querySelector('[data-student-search]');
+            search.value = select.selectedOptions[0]?.value ? select.selectedOptions[0].textContent.trim() : '';
+            search.setCustomValidity('');
+        });
         masterForm.querySelectorAll('[data-currency-input]').forEach(formatCurrencyInput);
         restoreStudentRegions(record);
         modal?.classList.add('show');

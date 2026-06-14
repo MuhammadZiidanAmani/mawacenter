@@ -47,19 +47,32 @@
             @endforeach
             <p data-registration-class-empty>Pilih unit pendidikan terlebih dahulu.</p>
         </div>
-        <small>Ceklis kelas yang memakai kategori pembayaran ini.</small>
+        <small>Ceklis kelas yang memakai jenis pembayaran ini.</small>
     </div>
     <label>Nominal <input type="text" inputmode="numeric" name="amount" required value="{{ old('amount') }}" placeholder="0" data-currency-input></label>
     <label>Periode Tagihan <select name="period" required><option>Bulanan</option><option>Tahunan</option><option>Sekali Bayar</option></select></label>
-    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Kategori pembayaran aktif</label>
+    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Jenis pembayaran aktif</label>
 @elseif ($tab === 'spp-settings')
     <label class="span-2">Unit Pendidikan <select name="education_unit_id" required><option value="">Pilih Unit Pendidikan</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}">{{ $unit->code }} - {{ $unit->name }}</option>@endforeach</select></label>
     <label class="span-2">Nominal SPP <input type="text" inputmode="numeric" name="amount" required value="{{ old('amount') }}" placeholder="0" data-currency-input></label>
     <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Set SPP aktif</label>
 @else
-    <label class="span-2">Siswa <select name="student_id" required><option value="">Pilih Siswa</option>@foreach($studentOptions as $student)<option value="{{ $student->id }}">{{ $student->nis }} - {{ $student->name }} ({{ $student->schoolClass?->educationUnit?->code }} · {{ $student->schoolClass?->name }})</option>@endforeach</select></label>
-    <label>Sumber Pembayaran <select name="source_type" required data-discount-source><option value="spp">SPP</option><option value="fee_type">Pembayaran Lainnya</option></select></label>
-    <label data-discount-fee-type hidden>Jenis Pembayaran <select name="fee_type_id"><option value="">Pilih Jenis Pembayaran</option>@foreach($feeTypeOptions as $feeType)<option value="{{ $feeType->id }}">{{ $feeType->name }} · {{ $feeType->educationUnit?->code }} · {{ $feeType->schoolClass?->name ?? 'Semua Kelas' }}</option>@endforeach</select></label>
+    <label class="span-2">Siswa
+        <div class="student-search-picker" data-student-picker>
+            <input type="search" placeholder="Ketik nama siswa atau NIS..." autocomplete="off" required data-student-search>
+            <select name="student_id" required data-student-source><option value="">Pilih Siswa</option>@foreach($studentOptions as $student)<option value="{{ $student->id }}" @selected(old('student_id') == $student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>@endforeach</select>
+            <div class="student-search-results" data-student-results hidden></div>
+        </div>
+    </label>
+    @php($selectedDiscountPayment = old('source_type', 'spp') === 'fee_type' && old('fee_type_id') ? 'fee_type:'.old('fee_type_id') : 'spp')
+    <label>Jenis Pembayaran
+        <select required data-discount-payment>
+            <option value="spp" @selected($selectedDiscountPayment === 'spp')>SPP</option>
+            @foreach($feeTypeOptions as $feeType)<option value="fee_type:{{ $feeType->id }}" @selected($selectedDiscountPayment === 'fee_type:'.$feeType->id)>{{ $feeType->name }}</option>@endforeach
+        </select>
+        <input type="hidden" name="source_type" value="{{ old('source_type', 'spp') }}" data-discount-source>
+        <input type="hidden" name="fee_type_id" value="{{ old('fee_type_id') }}" data-discount-fee-type>
+    </label>
     <label>Jenis Keringanan <select name="discount_type" required data-discount-type><option value="amount">Potongan Nominal</option><option value="percentage">Potongan Persentase</option></select></label>
     <label>Nilai Keringanan <input type="text" inputmode="numeric" name="discount_value" required value="{{ old('discount_value') }}" placeholder="Contoh: 300.000 atau 50" data-discount-value data-currency-input></label>
     <label>Tanggal Mulai <input type="date" name="start_date" required value="{{ old('start_date', now()->toDateString()) }}"></label>

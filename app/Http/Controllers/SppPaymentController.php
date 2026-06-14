@@ -29,17 +29,32 @@ class SppPaymentController extends Controller
     {
         $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
         $search = $request->string('search')->value();
+        $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'unit', 'class', 'method', 'total'], true)
+            ? $request->string('sort')->value()
+            : 'date';
+        $direction = $request->string('direction')->value() === 'asc' ? 'asc' : 'desc';
 
         return view('finance.spp', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
-            'payments' => SppPayment::with(['student.schoolClass.educationUnit', 'items', 'corrections'])
+            'payments' => SppPayment::select('spp_payments.*')->with(['student.schoolClass.educationUnit', 'items', 'corrections'])
                 ->when($search, fn ($query) => $query->whereHas('student', fn ($student) => $student
                     ->where('nis', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%")
                     ->orWhereHas('schoolClass', fn ($class) => $class
                         ->where('name', 'like', "%{$search}%")
                         ->orWhereHas('educationUnit', fn ($unit) => $unit->where('name', 'like', "%{$search}%")))))
-                ->latest('transaction_at')->paginate($perPage)->withQueryString(),
+                ->when(in_array($sort, ['nis', 'name', 'unit', 'class'], true), fn ($query) => $query
+                    ->join('students', 'students.id', '=', 'spp_payments.student_id')
+                    ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id'))
+                ->when($sort === 'unit', fn ($query) => $query
+                    ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                    ->orderBy('education_units.name', $direction))
+                ->when($sort === 'class', fn ($query) => $query->orderBy('school_classes.name', $direction))
+                ->when(in_array($sort, ['nis', 'name'], true), fn ($query) => $query->orderBy('students.'.$sort, $direction))
+                ->when($sort === 'method', fn ($query) => $query->orderBy('spp_payments.payment_method', $direction))
+                ->when($sort === 'total', fn ($query) => $query->orderBy('spp_payments.paid_amount', $direction))
+                ->when($sort === 'date', fn ($query) => $query->orderBy('spp_payments.transaction_at', $direction))
+                ->paginate($perPage)->withQueryString(),
             'showCreate' => false,
             'importPreview' => null,
             'importToken' => null,

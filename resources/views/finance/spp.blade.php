@@ -38,7 +38,7 @@
             <div class="nav-group master-nav">
                 <button type="button" class="nav-item nav-parent" data-master-nav-toggle aria-expanded="false">{!! $icon('database') !!}<span>Data Master</span>{!! $icon('chevron', 'nav-chevron') !!}</button>
                 <div class="nav-submenu">
-                    @foreach (['academic-years'=>['Tahun Pelajaran','calendar'],'education-units'=>['Unit Pendidikan','grid'],'classes'=>['Kelas','database'],'students'=>['Siswa','users'],'spp-settings'=>['Set SPP','wallet'],'fee-types'=>['Kategori Pembayaran','receipt'],'fee-discounts'=>['Keringanan Biaya','wallet']] as $key=>$item)
+                    @foreach (['academic-years'=>['Tahun Pelajaran','calendar'],'education-units'=>['Unit Pendidikan','grid'],'classes'=>['Kelas','database'],'students'=>['Siswa','users'],'spp-settings'=>['Set SPP','wallet'],'fee-types'=>['Jenis Pembayaran','receipt'],'fee-discounts'=>['Keringanan Biaya','wallet']] as $key=>$item)
                         <a href="{{ route('master.index', ['tab'=>$key]) }}">{!! $icon($item[1]) !!}<span>{{ $item[0] }}</span></a>
                     @endforeach
                 </div>
@@ -136,12 +136,11 @@
                 </section>
                 @endif
                 <section class="card master-card spp-history">
-                    <div class="simple-list-header"><div><strong>Data Pembayaran SPP</strong><span>{{ $payments->total() }} transaksi tersimpan</span></div></div>
                     @include('partials.list-toolbar', ['action' => route('finance.spp.index'), 'searchLabel' => 'Cari pembayaran SPP'])
-                    <div class="table-wrap"><table class="data-table spp-list-table registration-payment-table"><thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>Unit Pendidikan</th><th>Kelas</th><th>Cara Bayar</th><th>Total</th><th></th></tr></thead><tbody>
+                    <div class="table-wrap"><table class="data-table spp-list-table registration-payment-table"><thead><tr><th>No</th><th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th><th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'method', 'label' => 'Cara Bayar'])</th><th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th><th></th></tr></thead><tbody>
                         @forelse($payments as $payment)
                             <tr class="spp-main-row">
-                                <td>{{ $payments->firstItem()+$loop->index }}</td><td>{{ $payment->student?->nis }}</td><td><strong>{{ $payment->student?->name }}</strong></td><td><span class="education-code">{{ $payment->student?->schoolClass?->educationUnit?->code ?? '-' }}</span></td><td>{{ $payment->student?->schoolClass?->name ?? '-' }}</td><td><span class="payment-method">{{ strtolower($payment->payment_method) }}</span></td><td><strong>Rp {{ number_format($payment->paid_amount,0,',','.') }}</strong></td><td><button type="button" class="spp-expand-button" data-spp-row-toggle="{{ $payment->id }}" aria-expanded="false">+</button></td>
+                                <td>{{ $payments->firstItem()+$loop->index }}</td><td>{{ $payment->student?->nis }}</td><td><strong>{{ $payment->student?->name }}</strong></td><td><span class="education-code">{{ $payment->student?->schoolClass?->educationUnit?->code ?? '-' }}</span></td><td class="spp-class-cell">{{ $payment->student?->schoolClass?->name ?? '-' }}</td><td><span class="payment-method">{{ strtolower($payment->payment_method) }}</span></td><td class="spp-total-cell"><strong>Rp {{ number_format($payment->paid_amount,0,',','.') }}</strong></td><td><button type="button" class="spp-expand-button" data-spp-row-toggle="{{ $payment->id }}" aria-expanded="false">+</button></td>
                             </tr>
                             <tr class="spp-expanded-row" data-spp-row-detail="{{ $payment->id }}" hidden><td colspan="8">
                                 <div class="registration-payment-detail spp-payment-detail">

@@ -25,6 +25,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -39,37 +40,82 @@ class MasterDataController extends Controller
         $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
         $studentYearId = $request->integer('year_id') ?: $activeAcademicYear?->id;
+        $studentSort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'class'], true)
+            ? $request->string('sort')->value()
+            : 'name';
+        $studentSortDirection = $request->string('direction')->value() === 'desc' ? 'desc' : 'asc';
+        $listSort = $request->string('sort')->value();
+        $listDirection = $request->string('direction')->value() === 'desc' ? 'desc' : 'asc';
 
         $data = match ($tab) {
             'academic-years' => AcademicYear::withCount('students')
                 ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))
-                ->latest()->paginate($perPage)->withQueryString(),
+                ->orderBy(in_array($listSort, ['name', 'is_active'], true) ? $listSort : 'created_at', $listSort ? $listDirection : 'desc')
+                ->paginate($perPage)->withQueryString(),
             'education-units' => EducationUnit::withCount('schoolClasses')
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
-                ->orderByRaw("CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
-                ->orderBy('name')->paginate($perPage)->withQueryString(),
+                ->when(
+                    in_array($listSort, ['code', 'name', 'school_classes_count', 'is_active'], true),
+                    fn ($query) => $query->orderBy($listSort, $listDirection),
+                    fn ($query) => $query
+                        ->orderByRaw("CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+                        ->orderBy('name')
+                )->paginate($perPage)->withQueryString(),
             'classes' => SchoolClass::select('school_classes.*')->with(['educationUnit'])->withCount('students')
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('school_classes.name', 'like', "%{$search}%")->orWhere('school_classes.level', 'like', "%{$search}%")))
                 ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->where('school_classes.education_unit_id', $unitId))
                 ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
-                ->orderByRaw("CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
-                ->orderBy('education_units.name')->orderBy('school_classes.name')->paginate($perPage)->withQueryString(),
+                ->when(
+                    in_array($listSort, ['name', 'unit', 'students_count', 'is_active'], true),
+                    fn ($query) => $query->orderBy(match ($listSort) {
+                        'unit' => 'education_units.name',
+                        'students_count' => 'students_count',
+                        'is_active' => 'school_classes.is_active',
+                        default => 'school_classes.name',
+                    }, $listDirection),
+                    fn ($query) => $query
+                        ->orderByRaw("CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+                        ->orderBy('education_units.name')->orderBy('school_classes.name')
+                )->paginate($perPage)->withQueryString(),
             'fee-types' => FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
-                ->orderBy('education_unit_id')->orderBy('school_class_id')->orderBy('name')->paginate($perPage)->withQueryString(),
+                ->orderBy(match ($listSort) {
+                    'name' => 'name', 'unit' => 'education_unit_id', 'class' => 'school_class_id',
+                    'year' => 'academic_year_id', 'amount' => 'amount', 'is_active' => 'is_active',
+                    default => 'education_unit_id',
+                }, $listSort ? $listDirection : 'asc')
+                ->orderBy('name')->paginate($perPage)->withQueryString(),
             'spp-settings' => SppSetting::with('educationUnit')
                 ->when($search, fn ($query) => $query->whereHas('educationUnit', fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
-                ->orderBy('education_unit_id')->paginate($perPage)->withQueryString(),
+                ->orderBy(match ($listSort) {
+                    'amount' => 'amount', 'is_active' => 'is_active', default => 'education_unit_id',
+                }, $listSort ? $listDirection : 'asc')->paginate($perPage)->withQueryString(),
             'fee-discounts' => FeeDiscount::with(['student.schoolClass.educationUnit', 'feeType'])
                 ->when($search, fn ($query) => $query->whereHas('student', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")))
-                ->latest()->paginate($perPage)->withQueryString(),
-            default => Student::with(['schoolClass.educationUnit', 'academicYear'])
-                ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")->orWhere('nisn', 'like', "%{$search}%")))
-                ->when($request->integer('class_id'), fn ($query, $classId) => $query->where('school_class_id', $classId))
-                ->when($request->integer('year_id'), fn ($query, $yearId) => $query->where('academic_year_id', $yearId))
-                ->when($request->filled('status'), fn ($query) => $query->where('is_active', $request->string('status')->value() === 'active'))
+                ->orderBy(match ($listSort) {
+                    'student' => 'student_id', 'payment' => 'source_type',
+                    'discount' => 'discount_value', 'is_active' => 'is_active',
+                    default => 'created_at',
+                }, $listSort ? $listDirection : 'desc')->paginate($perPage)->withQueryString(),
+            default => Student::select('students.*')->with(['schoolClass.educationUnit', 'academicYear'])
+                ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('students.name', 'like', "%{$search}%")->orWhere('students.nis', 'like', "%{$search}%")->orWhere('students.nisn', 'like', "%{$search}%")))
+                ->when($request->integer('class_id'), fn ($query, $classId) => $query->where('students.school_class_id', $classId))
+                ->when($request->integer('year_id'), fn ($query, $yearId) => $query->where('students.academic_year_id', $yearId))
+                ->when($request->filled('status'), fn ($query) => $query->where('students.is_active', $request->string('status')->value() === 'active'))
                 ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->whereHas('schoolClass', fn ($q) => $q->where('education_unit_id', $unitId)))
-                ->orderBy('name')->paginate($perPage)->withQueryString(),
+                ->when(in_array($studentSort, ['unit', 'class'], true), fn ($query) => $query
+                    ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id'))
+                ->when($studentSort === 'unit', fn ($query) => $query
+                    ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                    ->orderByRaw("CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END {$studentSortDirection}")
+                    ->orderBy('education_units.name', $studentSortDirection)
+                    ->orderBy('students.name'))
+                ->when($studentSort === 'class', fn ($query) => $query
+                    ->orderBy('school_classes.name', $studentSortDirection)
+                    ->orderBy('students.name'))
+                ->when(in_array($studentSort, ['nis', 'name', 'gender'], true), fn ($query) => $query
+                    ->orderBy('students.'.$studentSort, $studentSortDirection))
+                ->paginate($perPage)->withQueryString(),
         };
 
         if ($tab === 'fee-discounts') {
@@ -102,6 +148,8 @@ class MasterDataController extends Controller
                 'spp_settings' => SppSetting::where('is_active', true)->count(),
             ],
             'showCreate' => $request->routeIs('master.create'),
+            'studentImportPreview' => $this->studentImportPreview($request),
+            'studentImportToken' => $request->string('import_token')->value() ?: null,
         ]);
     }
 
@@ -274,21 +322,67 @@ class MasterDataController extends Controller
         }, 'template-import-data-siswa.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
 
-    public function importStudents(ImportStudentsRequest $request, StudentImportService $importer): RedirectResponse
+    public function previewStudentImport(ImportStudentsRequest $request, StudentImportService $importer): RedirectResponse
     {
         $activeYear = AcademicYear::where('is_active', true)->first();
         if (! $activeYear) {
-            return $this->done('students', 'Import gagal. Atur tahun pelajaran aktif terlebih dahulu.');
+            return redirect()->route('master.index', ['tab' => 'students'])
+                ->withErrors(['file' => 'Atur tahun pelajaran aktif terlebih dahulu.']);
         }
 
-        $result = $importer->import($request->file('file'), $activeYear);
+        $file = $request->file('file');
+        $token = (string) Str::uuid();
+        $path = $file->storeAs('student-imports', $token.'.xlsx');
+
+        try {
+            $preview = $importer->preview(Storage::path($path), $activeYear);
+            $request->session()->put("student_imports.{$token}", [
+                'path' => $path,
+                'name' => $file->getClientOriginalName(),
+                'academic_year_id' => $activeYear->id,
+                'preview' => $preview,
+            ]);
+        } catch (\Throwable $exception) {
+            Storage::delete($path);
+            throw $exception;
+        }
+
+        return redirect()->route('master.index', [
+            'tab' => 'students',
+            'import_token' => $token,
+        ]);
+    }
+
+    public function importStudents(Request $request, StudentImportService $importer): RedirectResponse
+    {
+        $validated = $request->validate(['token' => ['required', 'uuid']]);
+        $stored = $request->session()->pull("student_imports.{$validated['token']}");
+        if (! $stored || ! Storage::exists($stored['path'])) {
+            return redirect()->route('master.index', ['tab' => 'students'])
+                ->withErrors(['file' => 'File preview sudah tidak tersedia. Silakan unggah ulang.']);
+        }
+
+        $activeYear = AcademicYear::find($stored['academic_year_id']);
+        if (! $activeYear) {
+            Storage::delete($stored['path']);
+
+            return redirect()->route('master.index', ['tab' => 'students'])
+                ->withErrors(['file' => 'Tahun pelajaran untuk file ini sudah tidak tersedia.']);
+        }
+
+        try {
+            $result = $importer->import(Storage::path($stored['path']), $activeYear);
+        } finally {
+            Storage::delete($stored['path']);
+        }
+
         $imported = $result['imported'];
         $createdClasses = $result['created_classes'];
         $failures = $result['failures'];
 
         if ($imported === 0) {
             return redirect()->route('master.index', ['tab' => 'students'])
-                ->with('error', 'Tidak ada data yang berhasil diimpor. '.implode(' ', array_slice($failures, 0, 5)));
+                ->with('error', 'Tidak ada data yang berhasil diimpor. '.collect($failures)->pluck('message')->take(5)->implode(' '));
         }
 
         $message = "{$imported} data siswa berhasil diimpor.";
@@ -296,7 +390,7 @@ class MasterDataController extends Controller
             $message .= " {$createdClasses} kelas baru dibuat otomatis.";
         }
         if ($failures) {
-            $message .= ' '.count($failures).' baris dilewati: '.implode(' ', array_slice($failures, 0, 3));
+            $message .= ' '.count($failures).' baris dilewati: '.collect($failures)->pluck('message')->take(3)->implode(' ');
         }
 
         return $this->done('students', $message);
@@ -441,7 +535,7 @@ class MasterDataController extends Controller
     private function validateStudent(Request $request, ?Student $student = null): array
     {
         $validated = $request->validate([
-            'nis' => ['required', 'max:30', Rule::unique('students')->ignore($student)],
+            'nis' => ['required', 'max:30'],
             'nisn' => ['nullable', 'max:30', Rule::unique('students')->ignore($student)],
             'name' => ['required', 'max:120'],
             'birth_place' => ['nullable', 'max:120'],
@@ -466,6 +560,15 @@ class MasterDataController extends Controller
             'whatsapp' => ['nullable', 'max:25'],
             'is_active' => ['nullable', 'boolean'],
         ]);
+        $nisIsUsed = Student::where('nis', $validated['nis'])
+            ->when($student, fn ($query) => $query->whereKeyNot($student->id))
+            ->whereHas('schoolClass', fn ($query) => $query->where('education_unit_id', $validated['education_unit_id']))
+            ->exists();
+        if ($nisIsUsed) {
+            throw ValidationException::withMessages([
+                'nis' => 'NIS sudah digunakan pada unit pendidikan yang dipilih.',
+            ]);
+        }
         unset($validated['education_unit_id']);
         $validated['is_active'] = $request->boolean('is_active');
         if ($validated['is_active']) {
@@ -479,6 +582,16 @@ class MasterDataController extends Controller
     private function studentImportHeaders(): array
     {
         return ['No', 'NIS', 'NISN', 'Nama', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Kelamin', 'Nama Ayah', 'Nama Ibu', 'No. WA Ayah', 'No. WA Ibu', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Desa', 'Alamat', 'Unit Pendidikan', 'Kelas', 'Tanggal Masuk', 'Status', 'Tanggal Keluar', 'Alasan Nonaktif'];
+    }
+
+    private function studentImportPreview(Request $request): ?array
+    {
+        $token = $request->string('import_token')->value();
+        if ($token === '') {
+            return null;
+        }
+
+        return $request->session()->get("student_imports.{$token}.preview");
     }
 
     private function validateFeeType(Request $request, ?FeeType $feeType = null): array
@@ -611,6 +724,22 @@ class MasterDataController extends Controller
 
     private function done(string $tab, string $message): RedirectResponse
     {
-        return redirect()->route('master.index', ['tab' => $tab])->with('success', $message);
+        $parameters = ['tab' => $tab];
+
+        if ($tab === 'students') {
+            $parameters = array_merge($parameters, request()->only([
+                'unit_id',
+                'class_id',
+                'year_id',
+                'status',
+                'search',
+                'per_page',
+                'sort',
+                'direction',
+                'page',
+            ]));
+        }
+
+        return redirect()->route('master.index', $parameters)->with('success', $message);
     }
 }

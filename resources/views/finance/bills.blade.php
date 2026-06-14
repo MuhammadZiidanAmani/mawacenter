@@ -56,7 +56,7 @@
             <section class="bill-metrics">
                 <div class="students"><span class="bill-metric-icon">{!! $icon('users') !!}</span><p><span>Siswa Belum Lunas</span><strong>{{ number_format($stats['students'], 0, ',', '.') }}</strong><small>perlu ditindaklanjuti</small></p></div>
                 <div class="remaining"><span class="bill-metric-icon">{!! $icon('wallet') !!}</span><p><span>Sisa Tagihan SPP</span><strong>{{ $rupiah($stats['spp']) }}</strong><small>hingga periode terpilih</small></p></div>
-                <div class="other"><span class="bill-metric-icon">{!! $icon('receipt') !!}</span><p><span>Sisa Lain-lain</span><strong>{{ $rupiah($stats['other']) }}</strong><small>kategori pembayaran aktif</small></p></div>
+                <div class="other"><span class="bill-metric-icon">{!! $icon('receipt') !!}</span><p><span>Sisa Lain-lain</span><strong>{{ $rupiah($stats['other']) }}</strong><small>jenis pembayaran aktif</small></p></div>
                 <div class="overdue"><span class="bill-metric-icon">{!! $icon('alert') !!}</span><p><span>Total Seluruh Tagihan</span><strong>{{ $rupiah($stats['remaining']) }}</strong><small>akumulasi kewajiban siswa</small></p></div>
             </section>
 
@@ -72,8 +72,11 @@
             </section>
 
             <section class="outstanding-list">
-                <div class="outstanding-list-heading"><div><p class="eyebrow">Daftar Tagihan</p><strong>Siswa yang Belum Lunas</strong><span>{{ $studentsWithBills->total() }} siswa ditemukan pada periode ini</span></div><span class="outstanding-list-hint">{!! $icon('alert') !!} Klik rincian untuk melihat nominal lengkap</span></div>
-                @include('partials.list-toolbar', ['action' => route('finance.bills.index'), 'searchLabel' => 'Cari siswa dalam daftar tagihan'])
+                @include('partials.list-toolbar', [
+                    'action' => route('finance.bills.index'),
+                    'searchLabel' => 'Cari siswa dalam daftar tagihan',
+                    'sortOptions' => ['name' => 'Nama', 'nis' => 'NIS', 'unit' => 'Unit', 'class' => 'Kelas', 'total' => 'Total'],
+                ])
                 @forelse($studentsWithBills as $summary)
                     @php($student = $summary['student'])
                     <article class="outstanding-student-card">
@@ -103,7 +106,7 @@
                                     @forelse($summary['other'] as $item)
                                         <div class="outstanding-line"><span><strong>{{ $item['name'] }}</strong><small>Terbayar {{ $rupiah($item['paid']) }} dari {{ $rupiah($item['total']) }}</small></span><b>{{ $rupiah($item['remaining']) }}</b></div>
                                     @empty
-                                        <p class="outstanding-clear">{!! $icon('check') !!} Semua kategori pembayaran sudah lunas.</p>
+                                        <p class="outstanding-clear">{!! $icon('check') !!} Semua jenis pembayaran sudah lunas.</p>
                                     @endforelse
                                 </div>
                             </div>

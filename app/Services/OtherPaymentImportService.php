@@ -96,9 +96,12 @@ class OtherPaymentImportService
                     continue;
                 }
 
-                $student = Student::with('schoolClass.educationUnit')->where('nis', $row['nis'])->first();
+                $student = Student::with('schoolClass.educationUnit')
+                    ->where('nis', $row['nis'])
+                    ->get()
+                    ->first(fn (Student $candidate) => $this->matchesUnit($candidate, $row['unit']));
                 if (! $student) {
-                    $this->fail($result, $row, "NIS {$row['nis']} tidak ditemukan.");
+                    $this->fail($result, $row, "NIS {$row['nis']} tidak ditemukan. Unit: {$row['unit']}.");
 
                     continue;
                 }
@@ -241,6 +244,18 @@ class OtherPaymentImportService
     private function sourceKey(string $category, string $unit): string
     {
         return hash('sha256', $this->normalizeLookup($category).'|'.$this->normalizeLookup($unit));
+    }
+
+    private function matchesUnit(Student $student, string $unit): bool
+    {
+        $educationUnit = $student->schoolClass?->educationUnit;
+        $normalized = $this->normalizeLookup($unit);
+
+        return $educationUnit
+            && in_array($normalized, [
+                $this->normalizeLookup($educationUnit->code),
+                $this->normalizeLookup($educationUnit->name),
+            ], true);
     }
 
     private function normalizeHeader(string $header): string

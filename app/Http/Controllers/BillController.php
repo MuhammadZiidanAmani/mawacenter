@@ -22,6 +22,17 @@ class BillController extends Controller
             'class_id' => $request->integer('class_id') ?: null,
             'search' => $request->string('search')->value() ?: null,
         ]);
+        $sort = in_array($request->string('sort')->value(), ['name', 'nis', 'unit', 'class', 'total'], true)
+            ? $request->string('sort')->value()
+            : 'name';
+        $direction = $request->string('direction')->value() === 'desc' ? 'desc' : 'asc';
+        $summaries = $summaries->sortBy(match ($sort) {
+            'nis' => fn ($summary) => $summary['student']->nis,
+            'unit' => fn ($summary) => $summary['student']->schoolClass?->educationUnit?->name ?? '',
+            'class' => fn ($summary) => $summary['student']->schoolClass?->name ?? '',
+            'total' => fn ($summary) => $summary['total_remaining'],
+            default => fn ($summary) => $summary['student']->name,
+        }, SORT_NATURAL | SORT_FLAG_CASE, $direction === 'desc')->values();
         $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
         $page = LengthAwarePaginator::resolveCurrentPage();
         $students = new LengthAwarePaginator(

@@ -30,10 +30,14 @@ class OtherPaymentController extends Controller
         $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
         $search = $request->string('search')->value();
         $section = $this->section($request);
+        $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'unit', 'class', 'method', 'total'], true)
+            ? $request->string('sort')->value()
+            : 'date';
+        $direction = $request->string('direction')->value() === 'asc' ? 'asc' : 'desc';
 
         return view('finance.other', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
-            'payments' => OtherPayment::with(['student.schoolClass.educationUnit', 'feeType'])
+            'payments' => OtherPayment::select('other_payments.*')->with(['student.schoolClass.educationUnit', 'feeType'])
                 ->when($section['key'] !== 'all', fn ($query) => $this->filterPayments($query, $section['key']))
                 ->when($search, fn ($query) => $query->where(fn ($searchQuery) => $searchQuery
                     ->where('payment_method', 'like', "%{$search}%")
@@ -46,7 +50,18 @@ class OtherPaymentController extends Controller
                             ->where('name', 'like', "%{$search}%")
                             ->orWhereHas('educationUnit', fn ($unit) => $unit
                                 ->where('name', 'like', "%{$search}%"))))))
-                ->latest('transaction_at')->paginate($perPage)->withQueryString(),
+                ->when(in_array($sort, ['nis', 'name', 'unit', 'class'], true), fn ($query) => $query
+                    ->join('students', 'students.id', '=', 'other_payments.student_id')
+                    ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id'))
+                ->when($sort === 'unit', fn ($query) => $query
+                    ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                    ->orderBy('education_units.name', $direction))
+                ->when($sort === 'class', fn ($query) => $query->orderBy('school_classes.name', $direction))
+                ->when(in_array($sort, ['nis', 'name'], true), fn ($query) => $query->orderBy('students.'.$sort, $direction))
+                ->when($sort === 'method', fn ($query) => $query->orderBy('other_payments.payment_method', $direction))
+                ->when($sort === 'total', fn ($query) => $query->orderBy('other_payments.paid_amount', $direction))
+                ->when($sort === 'date', fn ($query) => $query->orderBy('other_payments.transaction_at', $direction))
+                ->paginate($perPage)->withQueryString(),
             'showCreate' => false,
             'importPreview' => null,
             'importSources' => [],
@@ -81,8 +96,12 @@ class OtherPaymentController extends Controller
     public function quote(Request $request, OtherPaymentService $payments): JsonResponse
     {
         $section = $this->section($request);
-        if (! $request->filled('student_id') && preg_match('/^[^-]+-\s*([^-]+?)\s*-/', $request->string('student_search')->value(), $matches)) {
-            $request->merge(['student_id' => Student::where('nis', trim($matches[1]))->value('id')]);
+        if (! $request->filled('student_id') && preg_match('/^([^-]+)-\s*([^-]+?)\s*-/', $request->string('student_search')->value(), $matches)) {
+            $request->merge([
+                'student_id' => Student::where('nis', trim($matches[2]))
+                    ->whereHas('schoolClass.educationUnit', fn ($query) => $query->where('code', trim($matches[1])))
+                    ->value('id'),
+            ]);
         }
         $validated = $request->validate([
             'student_id' => ['required', 'exists:students,id'],

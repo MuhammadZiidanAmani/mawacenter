@@ -16,6 +16,7 @@ Route::prefix('master-data')->name('master.')->controller(MasterDataController::
     Route::put('/students/{student}', 'updateStudent')->name('students.update');
     Route::get('/students/export', 'exportStudents')->name('students.export');
     Route::get('/students/template', 'studentTemplate')->name('students.template');
+    Route::post('/students/import/preview', 'previewStudentImport')->name('students.import.preview');
     Route::post('/students/import', 'importStudents')->name('students.import');
     Route::post('/fee-types', 'storeFeeType')->name('fee-types.store');
     Route::put('/fee-types/{feeType}', 'updateFeeType')->name('fee-types.update');

@@ -6,105 +6,225 @@ use App\Models\AcademicYear;
 use App\Models\EducationUnit;
 use App\Models\Student;
 use App\Support\StudentXlsx;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class StudentImportService
 {
-    public function import(UploadedFile $file, AcademicYear $activeYear): array
+    public function preview(string $path, AcademicYear $activeYear): array
     {
-        $rows = StudentXlsx::read($file->getRealPath());
-        $rawHeaders = array_shift($rows) ?: [];
-        $headers = array_map($this->normalizeHeader(...), $rawHeaders);
-        $required = ['nis', 'nama', 'jenis_kelamin', 'unit_pendidikan', 'kelas'];
+        return $this->process($path, $activeYear, false);
+    }
 
-        if (array_diff($required, $headers)) {
-            return [
-                'imported' => 0,
-                'created_classes' => 0,
-                'failures' => ['Kolom NIS, Nama, Jenis Kelamin, Unit Pendidikan, dan Kelas wajib tersedia.'],
-            ];
-        }
+    public function import(string $path, AcademicYear $activeYear): array
+    {
+        return $this->process($path, $activeYear, true);
+    }
 
-        $result = ['imported' => 0, 'created_classes' => 0, 'failures' => []];
+    private function process(string $path, AcademicYear $activeYear, bool $persist): array
+    {
+        [$headers, $rows] = $this->readRows($path);
+        $result = [
+            'total' => count($rows),
+            'valid' => 0,
+            'imported' => 0,
+            'duplicates' => 0,
+            'created_classes' => 0,
+            'failures' => [],
+            'rows' => [],
+        ];
 
-        DB::transaction(function () use ($rows, $headers, $activeYear, &$result) {
+        DB::beginTransaction();
+
+        try {
             $units = EducationUnit::with('schoolClasses')->get();
 
-            foreach ($rows as $rowIndex => $values) {
-                $row = array_combine($headers, array_slice(array_pad($values, count($headers), null), 0, count($headers)));
-                $line = $rowIndex + 2;
-                $nis = trim((string) ($row['nis'] ?? ''));
-
-                if ($nis === '') {
-                    $result['failures'][] = "Baris {$line}: NIS kosong.";
+            foreach ($rows as $sourceRow) {
+                $row = $this->prepareRow($sourceRow['line'], $sourceRow['values'], $headers);
+                if (isset($row['error'])) {
+                    $this->fail($result, $row, $row['message']);
                     continue;
                 }
 
-                if (Student::where('nis', $nis)->exists()) {
-                    $result['failures'][] = "Baris {$line}: NIS \"{$nis}\" sudah digunakan.";
-                    continue;
-                }
-
-                $unitName = trim((string) ($row['unit_pendidikan'] ?? ''));
-                $unit = $units->first(fn ($item) => $this->normalizeLookup($item->code) === $this->normalizeLookup($unitName)
-                    || $this->normalizeLookup($item->name) === $this->normalizeLookup($unitName));
+                $unit = $units->first(fn (EducationUnit $item) => $this->matchesUnit($item, $row['unit']));
                 if (! $unit) {
-                    $result['failures'][] = "Baris {$line}: Unit Pendidikan \"{$unitName}\" tidak ditemukan.";
+                    $this->fail($result, $row, "Unit Pendidikan \"{$row['unit']}\" tidak ditemukan.");
                     continue;
                 }
 
-                $className = trim((string) ($row['kelas'] ?? ''));
-                if ($className === '') {
-                    $result['failures'][] = "Baris {$line}: Kelas kosong.";
+                $row['unit'] = $unit->code;
+                $existing = Student::where('nis', $row['nis'])
+                    ->whereHas('schoolClass', fn ($query) => $query->where('education_unit_id', $unit->id))
+                    ->exists();
+                if ($existing) {
+                    $row['status'] = 'Duplikat';
+                    $row['message'] = "NIS {$row['nis']} sudah digunakan pada unit {$unit->code}.";
+                    $result['duplicates']++;
+                    $result['rows'][] = $row;
                     continue;
                 }
 
-                $class = $unit->schoolClasses->first(fn ($item) => $this->normalizeLookup($item->name) === $this->normalizeLookup($className));
+                if ($row['nisn'] !== null && Student::where('nisn', $row['nisn'])->exists()) {
+                    $this->fail($result, $row, "NISN {$row['nisn']} sudah digunakan.");
+                    continue;
+                }
+
+                $class = $unit->schoolClasses->first(
+                    fn ($item) => $this->normalizeLookup($item->name) === $this->normalizeLookup($row['class'])
+                );
                 if (! $class) {
-                    $class = $unit->schoolClasses()->create(['name' => $className, 'level' => 'Kelas '.$className]);
+                    $class = $unit->schoolClasses()->create([
+                        'name' => $row['class'],
+                        'level' => 'Kelas '.$row['class'],
+                    ]);
                     $unit->schoolClasses->push($class);
                     $result['created_classes']++;
                 }
 
-                $gender = strtolower(trim((string) ($row['jenis_kelamin'] ?? '')));
-                $status = strtolower(trim((string) ($row['status'] ?? 'aktif')));
-                $isActive = ! in_array($status, ['nonaktif', 'tidak aktif', 'keluar']);
-                $exitDate = $this->normalizeDate($row['tanggal_keluar'] ?? null);
-                $inactiveReason = trim((string) ($row['alasan_nonaktif'] ?? ''));
-                if (! $isActive && (! $exitDate || $inactiveReason === '')) {
-                    $result['failures'][] = "Baris {$line}: siswa nonaktif wajib memiliki Tanggal Keluar dan Alasan Nonaktif.";
-                    continue;
+                try {
+                    Student::create([
+                        'nis' => $row['nis'],
+                        'nisn' => $row['nisn'],
+                        'name' => $row['name'],
+                        'birth_place' => $row['birth_place'],
+                        'birth_date' => $row['birth_date'],
+                        'gender' => $row['gender'],
+                        'father_name' => $row['father_name'],
+                        'mother_name' => $row['mother_name'],
+                        'father_whatsapp' => $row['father_whatsapp'],
+                        'mother_whatsapp' => $row['mother_whatsapp'],
+                        'province' => $row['province'],
+                        'city' => $row['city'],
+                        'district' => $row['district'],
+                        'village' => $row['village'],
+                        'address' => $row['address'],
+                        'school_class_id' => $class->id,
+                        'academic_year_id' => $activeYear->id,
+                        'entry_date' => $row['entry_date'] ?? now()->toDateString(),
+                        'exit_date' => $row['is_active'] ? null : $row['exit_date'],
+                        'inactive_reason' => $row['is_active'] ? null : $row['inactive_reason'],
+                        'is_active' => $row['is_active'],
+                    ]);
+
+                    $row['status'] = 'Valid';
+                    $row['message'] = $persist ? 'Berhasil diimpor.' : 'Siap diimpor.';
+                    $result['valid']++;
+                    $result['imported'] += $persist ? 1 : 0;
+                    $result['rows'][] = $row;
+                } catch (Throwable $exception) {
+                    $this->fail($result, $row, 'Data siswa tidak dapat diproses: '.$exception->getMessage());
                 }
-
-                Student::create([
-                    'nis' => $nis,
-                    'nisn' => $row['nisn'] ?: null,
-                    'name' => $row['nama'],
-                    'birth_place' => $row['tempat_lahir'] ?: null,
-                    'birth_date' => $this->normalizeDate($row['tanggal_lahir'] ?? null),
-                    'gender' => in_array($gender, ['l', 'laki-laki', 'laki laki', 'male']) ? 'L' : 'P',
-                    'father_name' => $row['nama_ayah'] ?: null,
-                    'mother_name' => $row['nama_ibu'] ?: null,
-                    'father_whatsapp' => $row['no_wa_ayah'] ?: null,
-                    'mother_whatsapp' => $row['no_wa_ibu'] ?: null,
-                    'province' => $row['provinsi'] ?: null,
-                    'city' => $row['kabupaten_kota'] ?: null,
-                    'district' => $row['kecamatan'] ?: null,
-                    'village' => $row['desa'] ?: null,
-                    'address' => $row['alamat'] ?: null,
-                    'school_class_id' => $class->id,
-                    'academic_year_id' => $activeYear->id,
-                    'entry_date' => $this->normalizeDate($row['tanggal_masuk'] ?? null) ?? now()->toDateString(),
-                    'exit_date' => $isActive ? null : $exitDate,
-                    'inactive_reason' => $isActive ? null : $inactiveReason,
-                    'is_active' => $isActive,
-                ]);
-                $result['imported']++;
             }
-        });
 
-        return $result;
+            if ($persist) {
+                DB::commit();
+            }
+
+            return $result;
+        } finally {
+            if (! $persist && DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+        }
+    }
+
+    private function readRows(string $path): array
+    {
+        $rows = StudentXlsx::read($path);
+        $headerIndex = collect($rows)->search(
+            fn (array $row) => in_array('nis', array_map($this->normalizeHeader(...), $row), true)
+        );
+        if ($headerIndex === false) {
+            throw ValidationException::withMessages(['file' => 'Header NIS tidak ditemukan pada file Excel.']);
+        }
+
+        $headers = array_map($this->normalizeHeader(...), $rows[$headerIndex]);
+        $required = ['nis', 'nama', 'jenis_kelamin', 'unit_pendidikan', 'kelas'];
+        if ($missing = array_diff($required, $headers)) {
+            throw ValidationException::withMessages(['file' => 'Kolom wajib belum tersedia: '.implode(', ', $missing).'.']);
+        }
+
+        $data = [];
+        foreach (array_slice($rows, $headerIndex + 1) as $offset => $values) {
+            if (array_filter($values, fn ($value) => trim((string) $value) !== '')) {
+                $data[] = ['line' => $headerIndex + $offset + 2, 'values' => $values];
+            }
+        }
+
+        return [$headers, $data];
+    }
+
+    private function prepareRow(int $line, array $values, array $headers): array
+    {
+        $source = array_combine($headers, array_slice(array_pad($values, count($headers), null), 0, count($headers)));
+        $nis = trim((string) ($source['nis'] ?? ''));
+        $nisn = $this->nullable($source['nisn'] ?? null);
+        $name = trim((string) ($source['nama'] ?? ''));
+        $unit = trim((string) ($source['unit_pendidikan'] ?? ''));
+        $class = trim((string) ($source['kelas'] ?? ''));
+        $genderValue = strtolower(trim((string) ($source['jenis_kelamin'] ?? '')));
+        $gender = in_array($genderValue, ['l', 'laki-laki', 'laki laki', 'male'], true)
+            ? 'L'
+            : (in_array($genderValue, ['p', 'perempuan', 'female'], true) ? 'P' : null);
+        $status = strtolower(trim((string) ($source['status'] ?? 'aktif')));
+        $isActive = ! in_array($status, ['nonaktif', 'tidak aktif', 'keluar'], true);
+        $entryDate = $this->normalizeDate($source['tanggal_masuk'] ?? null);
+        $exitDate = $this->normalizeDate($source['tanggal_keluar'] ?? null);
+        $inactiveReason = $this->nullable($source['alasan_nonaktif'] ?? null);
+
+        $base = [
+            'line' => $line,
+            'nis' => $nis,
+            'nisn' => $nisn,
+            'name' => $name,
+            'unit' => $unit,
+            'class' => $class,
+            'gender' => $gender,
+            'birth_place' => $this->nullable($source['tempat_lahir'] ?? null),
+            'birth_date' => $this->normalizeDate($source['tanggal_lahir'] ?? null),
+            'father_name' => $this->nullable($source['nama_ayah'] ?? null),
+            'mother_name' => $this->nullable($source['nama_ibu'] ?? null),
+            'father_whatsapp' => $this->nullable($source['no_wa_ayah'] ?? null),
+            'mother_whatsapp' => $this->nullable($source['no_wa_ibu'] ?? null),
+            'province' => $this->nullable($source['provinsi'] ?? null),
+            'city' => $this->nullable($source['kabupaten_kota'] ?? null),
+            'district' => $this->nullable($source['kecamatan'] ?? null),
+            'village' => $this->nullable($source['desa'] ?? null),
+            'address' => $this->nullable($source['alamat'] ?? null),
+            'entry_date' => $entryDate,
+            'exit_date' => $exitDate,
+            'inactive_reason' => $inactiveReason,
+            'is_active' => $isActive,
+        ];
+
+        $error = match (true) {
+            $nis === '' => 'NIS kosong.',
+            $name === '' => 'Nama siswa kosong.',
+            $unit === '' => 'Unit pendidikan kosong.',
+            $class === '' => 'Kelas kosong.',
+            $gender === null => 'Jenis kelamin tidak valid.',
+            ! $isActive && ($exitDate === null || $inactiveReason === null) => 'Siswa nonaktif wajib memiliki Tanggal Keluar dan Alasan Nonaktif.',
+            default => null,
+        };
+
+        return $error ? $base + ['status' => 'Gagal', 'message' => $error, 'error' => true] : $base;
+    }
+
+    private function fail(array &$result, array $row, string $message): void
+    {
+        $row['status'] = 'Gagal';
+        $row['message'] = $message;
+        $result['failures'][] = $row;
+        $result['rows'][] = $row;
+    }
+
+    private function matchesUnit(EducationUnit $unit, string $value): bool
+    {
+        $normalized = $this->normalizeLookup($value);
+
+        return $this->normalizeLookup($unit->code) === $normalized
+            || $this->normalizeLookup($unit->name) === $normalized;
     }
 
     private function normalizeHeader(string $header): string
@@ -116,7 +236,7 @@ class StudentImportService
         return preg_replace('/_+/', '_', $header);
     }
 
-    private function normalizeDate(?string $date): ?string
+    private function normalizeDate(mixed $date): ?string
     {
         $date = trim((string) $date);
         if ($date === '') {
@@ -135,6 +255,13 @@ class StudentImportService
         }
 
         return null;
+    }
+
+    private function nullable(mixed $value): ?string
+    {
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
     }
 
     private function normalizeLookup(string $value): string
