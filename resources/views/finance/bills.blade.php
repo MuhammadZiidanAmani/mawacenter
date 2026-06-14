@@ -38,7 +38,7 @@
         <nav class="sidebar-nav">
             <a href="{{ route('dashboard') }}" class="nav-item">{!! $icon('grid') !!}<span>Dashboard</span></a>
             <a href="{{ route('master.index') }}" class="nav-item">{!! $icon('database') !!}<span>Data Master</span></a>
-            <div class="nav-group nested-nav open"><button type="button" class="nav-item nav-parent" data-nav-toggle aria-expanded="true">{!! $icon('card') !!}<span>Pembayaran</span>{!! $icon('chevron','nav-chevron') !!}</button><div class="nav-submenu"><a href="{{ route('finance.spp.index') }}">{!! $icon('wallet') !!}<span>SPP</span></a><a href="{{ route('finance.other.index') }}">{!! $icon('receipt') !!}<span>Lain-lain</span></a></div></div>
+            <div class="nav-group nested-nav open"><button type="button" class="nav-item nav-parent" data-nav-toggle aria-expanded="true">{!! $icon('card') !!}<span>Pembayaran</span>{!! $icon('chevron','nav-chevron') !!}</button><div class="nav-submenu"><a href="{{ route('finance.other.index',['category'=>'daftar-ulang']) }}">{!! $icon('receipt') !!}<span>Daftar Ulang</span></a><a href="{{ route('finance.spp.index') }}">{!! $icon('wallet') !!}<span>SPP</span></a><a href="{{ route('finance.other.index',['category'=>'laundry']) }}">{!! $icon('card') !!}<span>Laundry</span></a><a href="{{ route('finance.other.index') }}">{!! $icon('receipt') !!}<span>Lain-lain</span></a></div></div>
             <a href="{{ route('finance.bills.index') }}" class="nav-item active">{!! $icon('receipt') !!}<span>Tagihan</span></a>
             <a href="{{ route('reports.index') }}" class="nav-item">{!! $icon('chart') !!}<span>Laporan</span></a>
             <a href="{{ route('settings.index') }}" class="nav-item">{!! $icon('settings') !!}<span>Pengaturan</span></a>

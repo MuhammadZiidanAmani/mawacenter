@@ -698,44 +698,44 @@ body { font-size: 14px; line-height: 1.5; }
 .student-page .student-action-bar .action-green { color: #248255; background: #dcf7e8; border-color: #d1efde; }
 .student-page .student-filter-panel {
     width: 100%;
-    padding: 0 20px 20px;
+    padding: 0 16px 14px;
     grid-template-columns: repeat(4, minmax(160px, 1fr));
     align-items: end;
-    gap: 16px;
+    gap: 11px 14px;
     background: white;
     border: 1px solid #dce5df;
-    border-radius: 16px;
-    box-shadow: 0 10px 28px #1720330a;
+    border-radius: 13px;
+    box-shadow: 0 7px 20px #17203309;
     overflow: hidden;
 }
 .student-page .student-filter-heading {
-    min-height: 76px;
-    margin: 0 -20px 2px;
-    padding: 16px 20px;
+    min-height: 58px;
+    margin: 0 -16px 0;
+    padding: 10px 16px;
     grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     background: linear-gradient(100deg, #f4faf6, #fffaf0);
     border-bottom: 1px solid #e2ebe5;
 }
 .student-page .student-filter-icon {
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
     flex: 0 0 auto;
     display: grid;
     place-items: center;
     color: #fff;
     background: linear-gradient(145deg, #147346, #9b6d14);
-    border-radius: 11px;
-    box-shadow: 0 7px 14px #0d5f3620;
+    border-radius: 9px;
+    box-shadow: 0 5px 11px #0d5f361c;
 }
-.student-page .student-filter-icon .icon { width: 18px; height: 18px; }
+.student-page .student-filter-icon .icon { width: 16px; height: 16px; }
 .student-page .student-filter-heading div { flex: 1; min-width: 0; }
 .student-page .student-filter-heading strong,
 .student-page .student-filter-heading small { display: block; }
-.student-page .student-filter-heading strong { color: #173c29; font-size: 15px; }
-.student-page .student-filter-heading small { margin-top: 2px; color: #718075; font-size: 11px; }
+.student-page .student-filter-heading strong { color: #173c29; font-size: 13px; }
+.student-page .student-filter-heading small { margin-top: 1px; color: #718075; font-size: 9px; }
 .student-page .student-filter-heading b {
     padding: 6px 10px;
     color: #8a6218;
@@ -749,7 +749,7 @@ body { font-size: 14px; line-height: 1.5; }
     display: grid;
     grid-template-columns: 1fr;
     align-items: initial;
-    gap: 8px;
+    gap: 5px;
     color: #344d3e;
     font-size: 11px;
     font-weight: 800;
@@ -758,13 +758,13 @@ body { font-size: 14px; line-height: 1.5; }
 .student-page .student-filter-panel input,
 .student-page .student-filter-panel select {
     width: 100%;
-    height: 46px;
-    padding: 0 13px;
+    height: 40px;
+    padding: 0 11px;
     color: #31463a;
     background: #fbfdfb;
     border-color: #d8e3dc;
-    border-radius: 10px;
-    font-size: 13px;
+    border-radius: 8px;
+    font-size: 12px;
     transition: .2s ease;
 }
 .student-page .student-filter-panel select:hover {
@@ -786,21 +786,21 @@ body { font-size: 14px; line-height: 1.5; }
     grid-column: 1 / -1;
     display: flex;
     justify-content: flex-end;
-    gap: 9px;
-    padding-top: 2px;
+    gap: 7px;
+    padding-top: 0;
     border-top: 1px dashed #e1e8e3;
 }
 .student-page .student-search-button {
-    min-width: 190px;
-    min-height: 44px;
+    min-width: 170px;
+    min-height: 40px;
     margin: 0;
     color: white;
     background: linear-gradient(135deg, #147346, #0d5f36);
     border-color: #0d5f36;
-    border-radius: 10px;
-    box-shadow: 0 8px 16px #0d5f3620;
+    border-radius: 8px;
+    box-shadow: 0 6px 13px #0d5f361c;
 }
-.student-page .student-filter-reset { min-width: 95px; color: #5b695f; background: #fff; border-color: #d8e3dc; }
+.student-page .student-filter-reset { min-width: 82px; min-height: 40px; color: #5b695f; background: #fff; border-color: #d8e3dc; }
 .student-page .student-data-card {
     border-color: #d6deea;
     border-radius: 9px;

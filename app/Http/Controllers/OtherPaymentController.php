@@ -24,10 +24,12 @@ class OtherPaymentController extends Controller
     {
         $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
         $search = $request->string('search')->value();
+        $section = $this->section($request);
 
         return view('finance.other', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'payments' => OtherPayment::with(['student.schoolClass.educationUnit', 'feeType'])
+                ->when($section['key'] !== 'all', fn ($query) => $this->filterPayments($query, $section['key']))
                 ->when($search, fn ($query) => $query
                     ->where('payment_method', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%")
@@ -45,12 +47,15 @@ class OtherPaymentController extends Controller
             'importSources' => [],
             'importMappings' => [],
             'importToken' => null,
-            'feeTypes' => FeeType::with(['educationUnit', 'schoolClass'])->where('is_active', true)->orderBy('name')->get(),
+            'feeTypes' => $this->feeTypes($section),
+            'paymentSection' => $section,
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $section = $this->section($request);
+
         return view('finance.other', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'students' => Student::select('students.*')->with('schoolClass.educationUnit')
@@ -61,9 +66,10 @@ class OtherPaymentController extends Controller
                 ->orderBy('education_units.name')
                 ->orderBy('students.name')
                 ->get(),
-            'feeTypes' => FeeType::with(['educationUnit', 'schoolClass'])->where('is_active', true)->orderBy('name')->get(),
+            'feeTypes' => $this->feeTypes($section),
             'defaultPaymentMethod' => AppSetting::where('key', 'default_payment_method')->value('value') ?? 'Cash',
             'showCreate' => true,
+            'paymentSection' => $section,
         ]);
     }
 
@@ -125,6 +131,7 @@ class OtherPaymentController extends Controller
                 'importMappings' => $mappings,
                 'importToken' => $token,
                 'feeTypes' => FeeType::with(['educationUnit', 'schoolClass'])->where('is_active', true)->orderBy('name')->get(),
+                'paymentSection' => $this->section($request),
             ]);
         } catch (\Throwable $exception) {
             if (! $request->string('token')->value()) {
@@ -160,5 +167,41 @@ class OtherPaymentController extends Controller
         }
 
         return redirect()->route('finance.other.index')->with('success', $message);
+    }
+
+    private function section(Request $request): array
+    {
+        return match ($request->string('category')->value()) {
+            'daftar-ulang' => [
+                'key' => 'daftar-ulang', 'title' => 'Daftar Ulang',
+                'description' => 'Kelola seluruh transaksi pembayaran daftar ulang siswa.',
+            ],
+            'laundry' => [
+                'key' => 'laundry', 'title' => 'Laundry',
+                'description' => 'Kelola seluruh transaksi pembayaran laundry siswa.',
+            ],
+            default => [
+                'key' => 'lain-lain', 'title' => 'Lain-lain',
+                'description' => 'Lihat seluruh transaksi pembayaran selain SPP, daftar ulang, dan laundry.',
+            ],
+        };
+    }
+
+    private function feeTypes(array $section)
+    {
+        return FeeType::with(['educationUnit', 'schoolClass'])
+            ->where('is_active', true)
+            ->when($section['key'] === 'daftar-ulang', fn ($query) => $query->where('name', 'like', '%Daftar Ulang%'))
+            ->when($section['key'] === 'laundry', fn ($query) => $query->where('name', 'like', '%Laundry%'))
+            ->when($section['key'] === 'lain-lain', fn ($query) => $query->where('name', 'not like', '%Daftar Ulang%')->where('name', 'not like', '%Laundry%'))
+            ->orderBy('name')->get();
+    }
+
+    private function filterPayments($query, string $section)
+    {
+        return $query->whereHas('feeType', fn ($feeType) => $feeType
+            ->when($section === 'daftar-ulang', fn ($type) => $type->where('name', 'like', '%Daftar Ulang%'))
+            ->when($section === 'laundry', fn ($type) => $type->where('name', 'like', '%Laundry%'))
+            ->when($section === 'lain-lain', fn ($type) => $type->where('name', 'not like', '%Daftar Ulang%')->where('name', 'not like', '%Laundry%')));
     }
 }

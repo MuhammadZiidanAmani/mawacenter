@@ -43,8 +43,10 @@
             <div class="nav-group nested-nav open">
                 <button type="button" class="nav-item nav-parent active" data-nav-toggle aria-expanded="true">{!! $icon('card') !!}<span>Pembayaran</span>{!! $icon('chevron', 'nav-chevron') !!}</button>
                 <div class="nav-submenu">
+                    <a href="{{ route('finance.other.index', ['category' => 'daftar-ulang']) }}" @class(['active' => $paymentSection['key'] === 'daftar-ulang'])>{!! $icon('receipt') !!}<span>Daftar Ulang</span></a>
                     <a href="{{ route('finance.spp.index') }}">{!! $icon('wallet') !!}<span>SPP</span></a>
-                    <a href="{{ route('finance.other.index') }}" class="active">{!! $icon('receipt') !!}<span>Lain-lain</span></a>
+                    <a href="{{ route('finance.other.index', ['category' => 'laundry']) }}" @class(['active' => $paymentSection['key'] === 'laundry'])>{!! $icon('card') !!}<span>Laundry</span></a>
+                    <a href="{{ route('finance.other.index') }}" @class(['active' => $paymentSection['key'] === 'lain-lain'])>{!! $icon('receipt') !!}<span>Lain-lain</span></a>
                 </div>
             </div>
             <a href="{{ route('finance.bills.index') }}" class="nav-item">{!! $icon('receipt') !!}<span>Tagihan</span>{!! $icon('chevron', 'nav-chevron') !!}</a>
@@ -64,7 +66,7 @@
             @if($errors->any())<div class="result-modal-backdrop show" data-alert><div class="result-modal error-result"><span class="result-icon">!</span><strong>Perlu Diperiksa</strong><p>{{ $errors->first() }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>@endif
             @unless($showCreate)
             <div>
-                <section class="hero master-hero"><div><p class="eyebrow">Pembayaran · Lain-lain</p><h1>Daftar Pembayaran Lain-lain</h1><p>Lihat seluruh transaksi pembayaran selain SPP.</p></div></section>
+                <section class="hero master-hero"><div><p class="eyebrow">Pembayaran · {{ $paymentSection['title'] }}</p><h1>Daftar Pembayaran {{ $paymentSection['title'] }}</h1><p>{{ $paymentSection['description'] }}</p></div></section>
                 <section class="card spp-import-card">
                     <div class="spp-import-copy">
                         <span class="spp-import-icon">{!! $icon('receipt') !!}</span>
@@ -100,9 +102,9 @@
                 <section class="card master-card spp-history other-payment-history">
                     <div class="other-payment-heading">
                         <div><strong>Data Transaksi</strong><span>{{ $payments->total() }} transaksi tersimpan</span></div>
-                        <a href="{{ route('finance.other.create') }}" class="button button-primary">{!! $icon('plus') !!} Tambah</a>
+                        <a href="{{ route('finance.other.create', ['category' => $paymentSection['key']]) }}" class="button button-primary">{!! $icon('plus') !!} Tambah</a>
                     </div>
-                    @include('partials.list-toolbar', ['action' => route('finance.other.index'), 'searchLabel' => 'Cari pembayaran lain-lain'])
+                    @include('partials.list-toolbar', ['action' => route('finance.other.index', ['category' => $paymentSection['key']]), 'searchLabel' => 'Cari pembayaran '.$paymentSection['title']])
                     <div class="table-wrap"><table class="data-table other-payment-table"><thead><tr><th>No</th><th>NIS</th><th>Nama</th><th>Pendidikan</th><th>Kelas</th><th>Kategori</th><th>Cara Bayar</th><th>Status</th><th>Nominal</th><th>Waktu</th></tr></thead><tbody>
                         @forelse($payments as $payment)
                             <tr>
@@ -123,7 +125,7 @@
             </div>
             @else
             <section class="spp-form-page payment-create-page">
-                <section class="hero master-hero"><div><p class="eyebrow">Pembayaran · Lain-lain</p><h1>Tambah Pembayaran Lain-lain</h1><p>Pilih siswa dan kategori pembayaran yang berlaku untuk kelasnya.</p></div><a href="{{ route('finance.other.index') }}" class="button button-secondary">Kembali ke Daftar</a></section>
+                <section class="hero master-hero"><div><p class="eyebrow">Pembayaran · {{ $paymentSection['title'] }}</p><h1>Tambah Pembayaran {{ $paymentSection['title'] }}</h1><p>Pilih siswa dan kategori pembayaran yang berlaku untuk kelasnya.</p></div><a href="{{ route('finance.other.index', ['category' => $paymentSection['key']]) }}" class="button button-secondary">Kembali ke Daftar</a></section>
                 <form method="POST" action="{{ route('finance.other.store') }}" class="card spp-payment-form" data-other-form data-quote-url="{{ route('finance.other.quote') }}">@csrf
                     <div class="spp-form-section"><div class="spp-form-heading"><strong>Informasi Transaksi</strong></div><div class="spp-form-grid">
                         <label>Waktu Transaksi <span class="spp-inline"><span class="date-picker-field" data-date-picker-control><input type="text" name="transaction_date" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ old('transaction_date', now()->format('d/m/Y')) }}" required data-other-date data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal" data-date-picker-button>{!! $icon('calendar') !!}</button></span><span class="wib-clock-field"><input type="text" value="{{ now()->format('H.i') }}" readonly data-wib-clock><b>WIB</b></span><input type="hidden" name="transaction_time" value="{{ old('transaction_time', now()->format('H:i:s')) }}" data-other-time></span></label>
