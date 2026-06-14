@@ -142,6 +142,27 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
 .dashboard-empty-icon .icon { width: 34px; height: 34px; }
 .dashboard-empty h1 { margin: 22px 0 8px; font-size: 25px; }
 .dashboard-empty p { max-width: 500px; margin: 0 0 24px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.dashboard-page { max-width: 1450px; }
+.dashboard-hero { margin-bottom: 16px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; position: relative; overflow: hidden; color: white; background: linear-gradient(125deg, #0a512e, #147346 58%, #9b6d14); border-radius: 14px; box-shadow: 0 10px 24px #0d5f361c; }
+.dashboard-hero::before { content: ''; width: 220px; height: 220px; position: absolute; top: -145px; right: 8%; border: 40px solid #ffffff12; border-radius: 50%; }
+.dashboard-hero::after { content: ''; position: absolute; inset: 0; opacity: .12; background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 38px 38px; mask-image: linear-gradient(90deg, transparent, #000); }
+.dashboard-hero > * { position: relative; z-index: 1; }
+.dashboard-hero .eyebrow { color: #f5d68c; }
+.dashboard-hero h1 { margin: 0; font-size: clamp(20px, 2.3vw, 26px); line-height: 1.25; letter-spacing: -.04em; }
+.dashboard-hero p:last-child { margin: 5px 0 0; color: #d8eadf; font-size: 10px; line-height: 1.45; }
+.dashboard-hero-actions { flex: 0 0 auto; display: flex; gap: 7px; flex-wrap: nowrap; }
+.dashboard-hero-actions .button { min-height: 38px; padding-inline: 13px; white-space: nowrap; }
+.dashboard-action-primary { color: #174329; background: white; box-shadow: 0 7px 16px #07351e2e; }
+.dashboard-action-secondary { color: white; background: #ffffff12; border-color: #ffffff35; backdrop-filter: blur(5px); }
+.dashboard-action-secondary:hover { background: #ffffff20; }
+.trend.down { color: var(--red); }
+.dashboard-chart-note { display: flex; align-items: center; gap: 5px; color: #8a94a4; font-size: 8px; font-weight: 600; }
+.dashboard-chart-note .icon { width: 12px; height: 12px; }
+.dashboard-lower-grid { margin-top: 14px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr); gap: 14px; }
+.dashboard-unit-item + .dashboard-unit-item { padding-top: 13px; border-top: 1px solid #eff2f6; }
+.dashboard-unit-item .class-row b { max-width: 125px; overflow: hidden; color: #a06c0f; font-size: 9px; white-space: nowrap; text-overflow: ellipsis; }
+.dashboard-list-empty { min-height: 170px; display: flex; align-items: center; flex-direction: column; justify-content: center; gap: 10px; color: #929bab; font-size: 10px; }
+.dashboard-list-empty .icon { width: 27px; height: 27px; color: #0d6b3d; }
 .hero-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .import-form { margin: 0; }
 .import-form label { cursor: pointer; }
@@ -337,7 +358,8 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
 
 @media (max-width: 1100px) {
     .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .dashboard-grid { grid-template-columns: 1fr; }
+    .dashboard-grid, .dashboard-lower-grid { grid-template-columns: 1fr; }
+    .dashboard-hero { align-items: flex-start; flex-direction: column; }
 }
 @media (max-width: 850px) {
     .sidebar { width: 264px; position: fixed; left: 0; transform: translateX(-100%); transition: transform .25s ease; }
@@ -356,6 +378,9 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
     .active-year-pill { min-width: 0; padding: 0 9px; }
     .active-year-pill small { display: none; }
     .hero { align-items: stretch; flex-direction: column; }
+    .dashboard-hero { padding: 18px; align-items: stretch; flex-direction: column; }
+    .dashboard-hero-actions { display: grid; grid-template-columns: 1fr; }
+    .dashboard-hero-actions .button { width: 100%; }
     .hero-actions { display: grid; grid-template-columns: 1fr 1fr; }
     .metric-grid { grid-template-columns: 1fr; gap: 12px; }
     .metric-card { min-height: 148px; }

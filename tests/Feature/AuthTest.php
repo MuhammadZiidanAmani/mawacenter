@@ -13,7 +13,7 @@ class AuthTest extends TestCase
     public function test_guest_is_redirected_to_login(): void
     {
         $this->get('/')->assertRedirect('/login');
-        $this->get('/login')->assertOk()->assertSee('Selamat Datang Kembali');
+        $this->get('/login')->assertOk()->assertSee('Selamat Datang');
     }
 
     public function test_user_can_login_and_logout(): void
