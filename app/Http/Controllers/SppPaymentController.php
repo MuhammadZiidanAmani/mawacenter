@@ -87,9 +87,15 @@ class SppPaymentController extends Controller
     {
         $validated = $request->validated();
         $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
-        $payments->record($student, $validated);
+        $payment = $payments->record($student, $validated);
 
-        return redirect()->route('finance.spp.index')->with('success', 'Pembayaran SPP berhasil disimpan.');
+        return redirect()->route('finance.spp.index')
+            ->with('success', 'Pembayaran SPP berhasil disimpan.')
+            ->with('payment_action', [
+                'receipt_url' => route('finance.spp.receipt', $payment),
+                'download_url' => route('finance.spp.receipt.download', $payment),
+                'back_url' => route('finance.spp.index'),
+            ]);
     }
 
     public function previewImport(PreviewSppPaymentImportRequest $request, SppPaymentImportService $importer): View
@@ -188,33 +194,40 @@ class SppPaymentController extends Controller
         ]);
     }
 
-    public function receipt(SppPayment $sppPayment): Response
+    public function receipt(SppPayment $sppPayment): View
     {
         $sppPayment->load(['student.schoolClass.educationUnit', 'items']);
 
-        $receiptNumber = 'SPP-'.$sppPayment->transaction_at->format('Ymd').'-'.str_pad((string) $sppPayment->id, 6, '0', STR_PAD_LEFT);
+        return view('finance.spp-receipt', [
+            'payment' => $sppPayment,
+            'receiptNumber' => $this->receiptNumber($sppPayment),
+            'months' => [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'],
+            'receiptSettings' => AppSetting::values(),
+        ]);
+    }
+
+    public function downloadReceipt(SppPayment $sppPayment): Response
+    {
+        $sppPayment->load(['student.schoolClass.educationUnit', 'items']);
         $logoPath = public_path('images/logo-yayasan-mambaul-hikmah.png');
-        $logo = 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath));
         $html = view('finance.spp-receipt-pdf', [
             'payment' => $sppPayment,
-            'receiptNumber' => $receiptNumber,
-            'logo' => $logo,
+            'receiptNumber' => $this->receiptNumber($sppPayment),
+            'logo' => 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)),
             'months' => [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'],
             'receiptSettings' => AppSetting::values(),
         ])->render();
 
-        $options = new Options;
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
+        $dompdf = new Dompdf(new Options(['defaultFont' => 'Arial']));
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $filename = 'kwitansi_spp_'.$sppPayment->student?->nis.'_'.$sppPayment->id.'.pdf';
+        $filename = 'kwitansi-spp-'.$sppPayment->student?->nis.'-'.$sppPayment->id.'.pdf';
 
         return response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.$filename.'"',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 
@@ -237,5 +250,10 @@ class SppPaymentController extends Controller
         $payments->delete($sppPayment);
 
         return redirect()->route('finance.spp.index')->with('success', 'Transaksi pembayaran SPP berhasil dihapus.');
+    }
+
+    private function receiptNumber(SppPayment $payment): string
+    {
+        return 'SPP-'.$payment->transaction_at->format('Ymd').'-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
     }
 }

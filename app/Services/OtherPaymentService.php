@@ -7,6 +7,7 @@ use App\Models\OtherPayment;
 use App\Models\Student;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OtherPaymentService
@@ -71,6 +72,55 @@ class OtherPaymentService
         ]);
 
         return $payment;
+    }
+
+    public function updateMetadata(OtherPayment $payment, array $data): OtherPayment
+    {
+        return DB::transaction(function () use ($payment, $data) {
+            $payment->update([
+                'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
+                'payment_method' => $data['payment_method'],
+                'status' => $data['status'],
+            ]);
+
+            $this->recalculatePayments($payment->student_id, $payment->fee_type_id);
+
+            return $payment->refresh();
+        });
+    }
+
+    public function delete(OtherPayment $payment): void
+    {
+        DB::transaction(function () use ($payment) {
+            $studentId = $payment->student_id;
+            $feeTypeId = $payment->fee_type_id;
+            $payment->delete();
+            $this->recalculatePayments($studentId, $feeTypeId);
+        });
+    }
+
+    private function recalculatePayments(int $studentId, int $feeTypeId): void
+    {
+        $acceptedAmount = 0;
+
+        OtherPayment::where('student_id', $studentId)
+            ->where('fee_type_id', $feeTypeId)
+            ->orderBy('transaction_at')
+            ->orderBy('id')
+            ->get()
+            ->each(function (OtherPayment $payment) use (&$acceptedAmount) {
+                if ($payment->status === 'Diterima') {
+                    $acceptedAmount += (int) $payment->paid_amount;
+                }
+
+                $remainingAmount = max(0, (int) $payment->total_amount - $acceptedAmount);
+                $payment->update([
+                    'remaining_amount' => $remainingAmount,
+                    'payment_status' => $payment->status === 'Diterima'
+                        ? ($remainingAmount === 0 ? 'Lunas' : 'Belum Lunas')
+                        : 'Pending',
+                ]);
+            });
     }
 
     private function paymentQuery(Student $student, FeeType $feeType, CarbonInterface $date)

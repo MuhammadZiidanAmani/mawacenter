@@ -93,10 +93,24 @@ class PaymentMenuTest extends TestCase
         ]);
         $this->actingAs(User::factory()->create());
 
+        $this->get('/keuangan/pembayaran/lain-lain/create?category=daftar-ulang')
+            ->assertOk()
+            ->assertSee('data-payment-category="daftar-ulang"', false)
+            ->assertSee('>Daftar Ulang 7A</option>', false)
+            ->assertDontSee('Daftar Ulang 7A · PONPES', false);
+
+        $studentSearch = 'PONPES - 1002 - Siswa Daftar Ulang';
+        $this->getJson('/keuangan/pembayaran/lain-lain/quote?category=daftar-ulang&student_search='.urlencode($studentSearch).'&fee_type_id='.$feeType->id)
+            ->assertOk()
+            ->assertJson([
+                'original_amount' => 1000000,
+                'remaining_amount' => 1000000,
+            ]);
+
         $this->post('/keuangan/pembayaran/lain-lain?category=daftar-ulang', [
             'transaction_date' => '2026-06-14',
             'transaction_time' => '09:00:00',
-            'student_id' => $student->id,
+            'student_search' => $studentSearch,
             'fee_type_id' => $feeType->id,
             'payment_method' => 'Cash',
             'status' => 'Pending',
@@ -133,6 +147,61 @@ class PaymentMenuTest extends TestCase
                 'paid_amount' => 600000,
                 'remaining_amount' => 400000,
             ]);
+
+        $payment = OtherPayment::latest('id')->firstOrFail();
+        $this->get('/keuangan/pembayaran/lain-lain?category=daftar-ulang')
+            ->assertOk()
+            ->assertSee(route('finance.other.receipt', $payment), false)
+            ->assertSee('title="Cetak Struk"', false)
+            ->assertSee('<span class="education-code">PONPES</span>', false)
+            ->assertSee('registration-payment-table', false)
+            ->assertSee('Unit Pendidikan')
+            ->assertSee('class="registration-payment-detail"', false)
+            ->assertSee('Jenis Pembayaran')
+            ->assertDontSee('<span>Kategori</span>', false)
+            ->assertSee('Cara Bayar')
+            ->assertSee('Petugas')
+            ->assertSee('data-other-edit-url="'.route('finance.other.show', $payment).'"', false)
+            ->assertSee('data-other-delete-url="'.route('finance.other.destroy', $payment).'"', false);
+
+        $this->get(route('finance.other.show', $payment))
+            ->assertOk()
+            ->assertJsonPath('student_name', 'Siswa Daftar Ulang')
+            ->assertJsonPath('payment_method', 'Transfer');
+
+        $this->put(route('finance.other.update', $payment), [
+            'transaction_date' => '15/06/2026',
+            'transaction_time' => '11.30',
+            'payment_method' => 'Cash',
+            'status' => 'Pending',
+        ])->assertRedirect('/keuangan/pembayaran/lain-lain?category=daftar-ulang');
+        $this->assertDatabaseHas('other_payments', [
+            'id' => $payment->id,
+            'transaction_at' => '2026-06-15 11:30:00',
+            'payment_method' => 'Cash',
+            'status' => 'Pending',
+            'payment_status' => 'Pending',
+        ]);
+        $this->getJson('/keuangan/pembayaran/lain-lain/quote?category=daftar-ulang&student_id='.$student->id.'&fee_type_id='.$feeType->id)
+            ->assertOk()
+            ->assertJson([
+                'paid_amount' => 0,
+                'remaining_amount' => 1000000,
+            ]);
+
+        $this->get(route('finance.other.receipt', $payment))
+            ->assertOk()
+            ->assertHeader('content-type', 'text/html; charset=UTF-8')
+            ->assertSee('Kwitansi Pembayaran')
+            ->assertSee('DU-20260615-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT))
+            ->assertSee('@page { size: A4 portrait; margin: 0; }', false)
+            ->assertSee('Tahun Pelajaran')
+            ->assertSee('Potongan (Rp)')
+            ->assertSee("window.addEventListener('load', () => window.print())", false);
+
+        $this->delete(route('finance.other.destroy', $payment))
+            ->assertRedirect('/keuangan/pembayaran/lain-lain?category=daftar-ulang');
+        $this->assertDatabaseMissing('other_payments', ['id' => $payment->id]);
     }
 
     public function test_registration_payment_rejects_category_for_another_class(): void

@@ -482,6 +482,27 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
 
     if (selected) search.value = selected.textContent.trim();
 
+    const syncStudentSelection = () => {
+        if (select.value) return select.selectedOptions[0] ?? null;
+
+        const query = normalizedStudentText(search.value);
+        if (!query) return null;
+
+        const exactMatch = options.find((option) => normalizedStudentText(option.textContent) === query);
+        const partialMatches = exactMatch
+            ? []
+            : options.filter((option) => normalizedStudentText(option.textContent).includes(query));
+        const match = exactMatch ?? (partialMatches.length === 1 ? partialMatches[0] : null);
+
+        if (match) {
+            select.value = match.value;
+            search.value = match.textContent.trim();
+            search.setCustomValidity('');
+        }
+
+        return match;
+    };
+
     const chooseStudent = (option) => {
         select.value = option.value;
         search.value = option.textContent.trim();
@@ -528,16 +549,20 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
         }
     });
     search.addEventListener('blur', () => window.setTimeout(() => {
-        if (!select.value) {
-            const query = normalizedStudentText(search.value);
-            const matches = options.filter((option) => normalizedStudentText(option.textContent).includes(query));
-            if (query && matches.length === 1) chooseStudent(matches[0]);
-        }
+        const match = syncStudentSelection();
+        if (match) select.dispatchEvent(new Event('change', { bubbles: true }));
         results.hidden = true;
     }, 120));
-    search.closest('form')?.addEventListener('submit', () => {
-        if (!select.value) search.setCustomValidity('Pilih siswa dari hasil pencarian.');
+    search.closest('form')?.addEventListener('submit', (event) => {
+        syncStudentSelection();
+        if (!select.value) {
+            event.preventDefault();
+            search.setCustomValidity('Pilih siswa dari hasil pencarian.');
+            search.reportValidity();
+        }
     });
+
+    picker.syncStudentSelection = syncStudentSelection;
 });
 
 const closeModal = () => modal?.classList.remove('show');
@@ -771,6 +796,10 @@ document.querySelectorAll('[data-spp-edit-url]').forEach((button) => button.addE
         form.elements.transaction_time.value = data.transaction_time.slice(0, 5).replace(':', '.');
         form.elements.payment_method.value = data.payment_method;
         form.elements.status.value = data.status;
+        form.elements.paid_amount.value = data.paid_amount;
+        formatCurrencyInput(form.elements.paid_amount);
+        const months = data.items.map((item) => `${sppMonthNames[item.month]} ${item.year}`).join(', ');
+        document.querySelector('[data-spp-edit-summary]').textContent = `${data.student.name} · ${months} · Total wajib ${sppCurrency.format(data.total_amount)}`;
         sppEditModal.classList.add('show');
     } catch (error) {
         window.alert(error.message);
@@ -797,10 +826,44 @@ document.querySelectorAll('[data-spp-correction-url]').forEach((button) => butto
     sppCorrectionModal.classList.add('show');
 }));
 
+const otherEditModal = document.querySelector('[data-other-edit-modal]');
+const otherDeleteModal = document.querySelector('[data-other-delete-modal]');
+const otherCrudModals = [otherEditModal, otherDeleteModal].filter(Boolean);
+const closeOtherCrudModals = () => otherCrudModals.forEach((modal) => modal.classList.remove('show'));
+
+document.querySelectorAll('[data-other-crud-close]').forEach((button) => button.addEventListener('click', closeOtherCrudModals));
+otherCrudModals.forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) closeOtherCrudModals(); }));
+
+document.querySelectorAll('[data-other-edit-url]').forEach((button) => button.addEventListener('click', async () => {
+    const form = document.querySelector('[data-other-edit-form]');
+    try {
+        const response = await fetch(button.dataset.otherEditUrl, { headers: { Accept: 'application/json' } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message ?? 'Data transaksi gagal dimuat.');
+        form.action = button.dataset.otherUpdateUrl;
+        form.elements.transaction_date.value = formatIndonesianDate(data.transaction_date);
+        form.elements.transaction_date.dispatchEvent(new Event('input', { bubbles: true }));
+        form.elements.transaction_time.value = data.transaction_time.slice(0, 5).replace(':', '.');
+        form.elements.payment_method.value = data.payment_method;
+        form.elements.status.value = data.status;
+        document.querySelector('[data-other-edit-summary]').textContent = `${data.student_name} · ${data.payment_name}`;
+        otherEditModal.classList.add('show');
+    } catch (error) {
+        window.alert(error.message);
+    }
+}));
+
+document.querySelectorAll('[data-other-delete-url]').forEach((button) => button.addEventListener('click', () => {
+    document.querySelector('[data-other-delete-form]').action = button.dataset.otherDeleteUrl;
+    document.querySelector('[data-other-delete-name]').textContent = button.dataset.otherDeleteName;
+    otherDeleteModal.classList.add('show');
+}));
+
 const otherForm = document.querySelector('[data-other-form]');
 if (otherForm) {
     const currency = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
     const student = otherForm.querySelector('[data-other-student]');
+    const studentSearch = otherForm.querySelector('[data-other-student-search]');
     const fee = otherForm.querySelector('[data-other-fee]');
     const message = otherForm.querySelector('[data-other-message]');
     const original = otherForm.querySelector('[data-other-original]');
@@ -812,6 +875,13 @@ if (otherForm) {
     const clockDisplay = otherForm.querySelector('[data-wib-clock]');
     const feeOptions = Array.from(fee.options).filter((option) => option.value);
     const feePlaceholder = fee.querySelector('option:not([value])');
+    const studentPicker = student.closest('[data-student-picker]');
+    const syncOtherStudent = () => {
+        const match = studentPicker?.syncStudentSelection?.();
+        if (match && !student.value) student.value = match.value;
+
+        return student.value;
+    };
     const updateClock = () => {
         const clock = currentWibClock();
         time.value = clock.value;
@@ -827,6 +897,7 @@ if (otherForm) {
         message.classList.remove('error');
     };
     const filterOtherFees = () => {
+        syncOtherStudent();
         const classId = student.selectedOptions[0]?.dataset.classId;
         const unitId = student.selectedOptions[0]?.dataset.unitId;
         const yearId = student.selectedOptions[0]?.dataset.yearId;
@@ -849,14 +920,18 @@ if (otherForm) {
         }
     };
     const updateOtherQuote = async () => {
-        if (!student.value || !fee.value) {
+        if (!syncOtherStudent() || !fee.value) {
             resetOtherQuote();
             return;
         }
-        const params = new URLSearchParams({ student_id: student.value, fee_type_id: fee.value });
+        const quoteUrl = new URL(otherForm.dataset.quoteUrl, window.location.origin);
+        quoteUrl.searchParams.set('category', otherForm.dataset.paymentCategory);
+        quoteUrl.searchParams.set('student_id', student.value);
+        quoteUrl.searchParams.set('student_search', studentSearch?.value ?? '');
+        quoteUrl.searchParams.set('fee_type_id', fee.value);
         try {
             message.textContent = 'Menghitung nominal dan keringanan...';
-            const response = await fetch(`${otherForm.dataset.quoteUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
+            const response = await fetch(quoteUrl.toString(), { headers: { Accept: 'application/json' } });
             const data = await response.json();
             if (!response.ok) throw new Error(Object.values(data.errors ?? {}).flat()[0] ?? data.message ?? 'Perhitungan gagal.');
             original.textContent = currency.format(data.original_amount);

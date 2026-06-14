@@ -32,16 +32,18 @@ class SppPaymentService
 
     public function record(Student $student, array $data): SppPayment
     {
-        $this->ensureSequentialMonths($student, (int) $data['year'], $data['months']);
-        $quote = $this->calculateSelection($student, (int) $data['year'], $data['months']);
+        return DB::transaction(function () use ($data, $student) {
+            $student = Student::query()->lockForUpdate()->findOrFail($student->id);
+            $year = (int) $data['year'];
+            $this->ensureSequentialMonths($student, $year, $data['months']);
+            $quote = $this->calculateSelection($student, $year, $data['months']);
 
-        if ($data['paid_amount'] > $quote['remaining_amount']) {
-            throw ValidationException::withMessages([
-                'paid_amount' => 'Nominal dibayar tidak boleh melebihi sisa tagihan Rp '.number_format($quote['remaining_amount'], 0, ',', '.').'.',
-            ]);
-        }
+            if ($data['paid_amount'] > $quote['remaining_amount']) {
+                throw ValidationException::withMessages([
+                    'paid_amount' => 'Nominal dibayar tidak boleh melebihi sisa tagihan Rp '.number_format($quote['remaining_amount'], 0, ',', '.').'.',
+                ]);
+            }
 
-        $payment = DB::transaction(function () use ($data, $student, $quote) {
             $remainingPayment = (int) $data['paid_amount'];
             $remainingAfter = $quote['remaining_amount'] - $remainingPayment;
             $payment = SppPayment::create([
@@ -83,19 +85,23 @@ class SppPaymentService
 
             return $payment;
         });
-
-        return $payment;
     }
 
     public function updateMetadata(SppPayment $payment, array $data): SppPayment
     {
-        $payment->update([
-            'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
-            'payment_method' => $data['payment_method'],
-            'status' => $data['status'],
-        ]);
+        return DB::transaction(function () use ($payment, $data) {
+            $payment->update([
+                'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
+                'payment_method' => $data['payment_method'],
+                'status' => $data['status'],
+            ]);
 
-        return $payment->refresh();
+            if (array_key_exists('paid_amount', $data)) {
+                $this->reallocatePaidAmount($payment->refresh(), (int) $data['paid_amount']);
+            }
+
+            return $payment->refresh();
+        });
     }
 
     public function correctPaidAmount(SppPayment $payment, array $data): SppPayment
@@ -110,25 +116,7 @@ class SppPaymentService
         }
 
         $payment = DB::transaction(function () use ($payment, $data, $newPaidAmount, $oldPaidAmount) {
-            $remainingAllocation = $newPaidAmount;
-
-            foreach ($payment->items()->orderBy('year')->orderBy('month')->get() as $item) {
-                $allocated = min($remainingAllocation, (int) $item->total_amount);
-                $remaining = (int) $item->total_amount - $allocated;
-                $item->update([
-                    'paid_amount' => $allocated,
-                    'remaining_amount' => $remaining,
-                    'payment_status' => $remaining === 0 ? 'Lunas' : ($allocated > 0 ? 'Belum Lunas' : 'Belum Dibayar'),
-                ]);
-                $remainingAllocation -= $allocated;
-            }
-
-            $remainingAmount = (int) $payment->total_amount - $newPaidAmount;
-            $payment->update([
-                'paid_amount' => $newPaidAmount,
-                'remaining_amount' => $remainingAmount,
-                'payment_status' => $remainingAmount === 0 ? 'Lunas' : 'Belum Lunas',
-            ]);
+            $this->reallocatePaidAmount($payment, $newPaidAmount);
             $payment->corrections()->create([
                 'old_paid_amount' => $oldPaidAmount,
                 'new_paid_amount' => $newPaidAmount,
@@ -140,6 +128,53 @@ class SppPaymentService
         });
 
         return $payment;
+    }
+
+    private function reallocatePaidAmount(SppPayment $payment, int $newPaidAmount): void
+    {
+        $items = $payment->items()->orderBy('year')->orderBy('month')->get();
+        $maxPayable = $items->sum(function ($item) use ($payment) {
+            $paidByOtherTransactions = (int) SppPaymentItem::where('student_id', $payment->student_id)
+                ->where('year', $item->year)
+                ->where('month', $item->month)
+                ->where('spp_payment_id', '!=', $payment->id)
+                ->sum('paid_amount');
+
+            return max(0, (int) $item->total_amount - $paidByOtherTransactions);
+        });
+
+        if ($newPaidAmount > $maxPayable) {
+            throw ValidationException::withMessages([
+                'paid_amount' => 'Nominal dibayar tidak boleh melebihi sisa ruang pembayaran transaksi ini Rp '.number_format($maxPayable, 0, ',', '.').'.',
+            ]);
+        }
+
+        $remainingAllocation = $newPaidAmount;
+        $paymentRemainingAmount = 0;
+        foreach ($items as $item) {
+            $paidByOtherTransactions = (int) SppPaymentItem::where('student_id', $payment->student_id)
+                ->where('year', $item->year)
+                ->where('month', $item->month)
+                ->where('spp_payment_id', '!=', $payment->id)
+                ->sum('paid_amount');
+            $availableForItem = max(0, (int) $item->total_amount - $paidByOtherTransactions);
+            $allocated = min($remainingAllocation, $availableForItem);
+            $remaining = max(0, (int) $item->total_amount - $paidByOtherTransactions - $allocated);
+            $paymentRemainingAmount += $remaining;
+
+            $item->update([
+                'paid_amount' => $allocated,
+                'remaining_amount' => $remaining,
+                'payment_status' => $remaining === 0 ? 'Lunas' : ($allocated > 0 ? 'Belum Lunas' : 'Belum Dibayar'),
+            ]);
+            $remainingAllocation -= $allocated;
+        }
+
+        $payment->update([
+            'paid_amount' => $newPaidAmount,
+            'remaining_amount' => $paymentRemainingAmount,
+            'payment_status' => $paymentRemainingAmount === 0 ? 'Lunas' : 'Belum Lunas',
+        ]);
     }
 
     public function delete(SppPayment $payment): void
@@ -199,6 +234,18 @@ class SppPaymentService
         $selectedMonths = array_values(array_unique(array_map('intval', $months)));
         sort($selectedMonths);
         $yearSelection = $this->calculateSelection($student, $year, range(1, 12));
+        $selectedItems = array_filter(
+            $yearSelection['items'],
+            fn (array $item) => in_array($item['month'], $selectedMonths, true),
+        );
+        $paidItem = collect($selectedItems)->firstWhere('remaining_amount', 0);
+
+        if ($paidItem) {
+            throw ValidationException::withMessages([
+                'months' => 'SPP bulan '.$paidItem['month_name'].' '.$year.' sudah lunas dan tidak dapat dibayar kembali.',
+            ]);
+        }
+
         $payableMonths = array_values(array_map(
             fn (array $item) => $item['month'],
             array_filter($yearSelection['items'], fn (array $item) => $item['remaining_amount'] > 0),

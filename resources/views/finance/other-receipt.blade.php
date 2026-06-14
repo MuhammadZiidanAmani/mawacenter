@@ -24,11 +24,11 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { height: 4.5mm; padding: .4mm 1mm; border: 1px solid #555; text-align: left; font-size: 9px; line-height: 1.05; }
         th { height: 4mm; font-weight: 700; }
-        .transaction-time { width: 30%; }
-        .month { width: 30%; }
-        .year { width: 15%; }
+        .transaction-time { width: 34%; }
+        .payment-name { width: 28%; }
+        .academic-year { width: 15%; }
         .payment-method { width: 12%; }
-        .amount { width: 13%; }
+        .amount { width: 11%; }
         .number { text-align: right; white-space: nowrap; }
         .totals td { height: 3.8mm; border-top: 0; }
         .totals-label { text-align: right; }
@@ -50,7 +50,7 @@
 </head>
 <body>
 <div class="receipt-actions">
-    <a href="{{ route('finance.spp.index') }}">Kembali</a>
+    <a href="{{ route('finance.other.index', $backParams ?? []) }}">Kembali</a>
     <button type="button" class="print" onclick="window.print()">Cetak Struk</button>
 </div>
 <main class="page">
@@ -77,12 +77,12 @@
     </section>
 
     <table>
-        <thead><tr><th class="transaction-time">Waktu Transaksi</th><th class="month">Bulan</th><th class="year">Tahun</th><th class="payment-method">Bayar</th><th class="amount number">Nominal</th></tr></thead>
+        <thead><tr><th class="transaction-time">Waktu Transaksi</th><th class="payment-name">Jenis Pembayaran</th><th class="academic-year">Tahun Pelajaran</th><th class="payment-method">Bayar</th><th class="amount number">Nominal</th></tr></thead>
         <tbody>
             <tr>
                 <td>{{ $payment->transaction_at->format('d-m-Y H:i:s') }}</td>
-                <td>{{ $payment->items->map(fn ($item) => $months[$item->month])->join(', ') }}</td>
-                <td>{{ $payment->items->pluck('year')->unique()->join(', ') }}</td>
+                <td>{{ $payment->feeType?->name ?? 'Daftar Ulang' }}</td>
+                <td>{{ $payment->feeType?->academicYear?->name ?? $payment->student?->academicYear?->name ?? '-' }}</td>
                 <td>{{ $payment->payment_method }}</td>
                 <td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td>
             </tr>
@@ -97,7 +97,7 @@
     </div>
 
     <section class="signatures">
-        <div><p><strong>Hormat Kami</strong></p><div class="signature-space"></div><p class="signature-name">{{ ($receiptSettings['finance_officer'] ?? null) ?: ($payment->operator_name ?: config('receipt.officer_name')) }}</p>@if(config('receipt.officer_phone'))<p>{{ config('receipt.officer_phone') }}</p>@endif</div>
+        <div><p><strong>Hormat Kami</strong></p><div class="signature-space"></div><p class="signature-name">{{ ($receiptSettings['finance_officer'] ?? null) ?: config('receipt.officer_name') }}</p>@if(config('receipt.officer_phone'))<p>{{ config('receipt.officer_phone') }}</p>@endif</div>
         <div><p><strong>Murid/Walinya</strong></p><div class="signature-space"></div><p class="signature-name">{{ $payment->student?->name ?? '-' }}</p></div>
     </section>
     <div class="receipt-footer"></div>

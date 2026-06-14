@@ -546,9 +546,16 @@ class MasterDataTest extends TestCase
             'transaction_date' => '2026-06-12', 'transaction_time' => '08:30', 'student_id' => $student->id,
             'months' => [1, 2], 'year' => 2026, 'payment_method' => 'Cash', 'status' => 'Diterima', 'paid_amount' => 200000,
         ];
-        $this->post('/keuangan/pembayaran/spp', $payload)->assertRedirect();
+        $this->post('/keuangan/pembayaran/spp', $payload)
+            ->assertRedirect()
+            ->assertSessionHas('payment_action');
         $this->get('/keuangan/pembayaran/spp?search=Dina&per_page=25')
-            ->assertOk()->assertSee('Dina')->assertSee('Madrasah Tsanawiyah');
+            ->assertOk()
+            ->assertSee('Dina')
+            ->assertSee('<span class="education-code">MTs</span>', false)
+            ->assertSee('class="registration-payment-detail spp-payment-detail"', false)
+            ->assertSee('title="Edit Transaksi"', false)
+            ->assertDontSee('data-spp-correction-url', false);
         $this->get('/keuangan/pembayaran/spp?search=Tidak-Ada')
             ->assertOk()->assertDontSee('Dina');
 
@@ -560,7 +567,9 @@ class MasterDataTest extends TestCase
         $this->getJson('/keuangan/pembayaran/spp/quote?student_id='.$student->id.'&year=2026&months[]=1&months[]=2')
             ->assertOk()->assertJson(['paid_amount' => 200000, 'remaining_amount' => 400000, 'payment_status' => 'Belum Lunas']);
 
-        $this->post('/keuangan/pembayaran/spp', array_merge($payload, ['paid_amount' => 400000]))->assertRedirect();
+        $this->post('/keuangan/pembayaran/spp', array_merge($payload, ['paid_amount' => 400000]))
+            ->assertRedirect()
+            ->assertSessionHas('payment_action');
         $this->assertDatabaseHas('spp_payments', ['student_id' => $student->id, 'paid_amount' => 400000, 'remaining_amount' => 0, 'payment_status' => 'Lunas']);
         $this->assertDatabaseCount('spp_payments', 2);
         $this->assertDatabaseCount('spp_payment_items', 3);
@@ -578,21 +587,32 @@ class MasterDataTest extends TestCase
             ->assertJsonPath('student.name', 'Dina')
             ->assertJsonPath('paid_amount', 400000);
         $receipt = $this->get('/keuangan/pembayaran/spp/'.$payment->id.'/receipt');
-        $receipt->assertOk()->assertHeader('content-type', 'application/pdf');
-        $this->assertStringStartsWith('%PDF-', $receipt->getContent());
+        $receipt->assertOk()
+            ->assertHeader('content-type', 'text/html; charset=UTF-8')
+            ->assertSee('Kwitansi Pembayaran')
+            ->assertSee("window.addEventListener('load', () => window.print())", false);
+        $this->get('/keuangan/pembayaran/spp/'.$payment->id.'/receipt/download')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
 
         $this->put('/keuangan/pembayaran/spp/'.$payment->id, [
             'transaction_date' => '13/06/2026',
             'transaction_time' => '18.00',
             'payment_method' => 'Transfer',
             'status' => 'Pending',
+            'paid_amount' => 300000,
         ])->assertRedirect('/keuangan/pembayaran/spp');
         $this->assertDatabaseHas('spp_payments', [
             'id' => $payment->id,
             'transaction_at' => '2026-06-13 18:00:00',
             'payment_method' => 'Transfer',
             'status' => 'Pending',
+            'paid_amount' => 300000,
+            'remaining_amount' => 100000,
+            'payment_status' => 'Belum Lunas',
         ]);
+        $this->assertDatabaseHas('spp_payment_items', ['spp_payment_id' => $payment->id, 'month' => 1, 'paid_amount' => 100000, 'remaining_amount' => 0]);
+        $this->assertDatabaseHas('spp_payment_items', ['spp_payment_id' => $payment->id, 'month' => 2, 'paid_amount' => 200000, 'remaining_amount' => 100000]);
 
         $this->delete('/keuangan/pembayaran/spp/'.$payment->id)->assertRedirect('/keuangan/pembayaran/spp');
         $this->assertDatabaseMissing('spp_payments', ['id' => $payment->id]);
@@ -642,6 +662,38 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseHas('spp_payments', ['operator_name' => 'Ziidan Amani', 'payment_method' => 'Transfer']);
         $this->assertDatabaseHas('spp_payment_items', ['student_id' => Student::where('nis', '220001')->value('id'), 'month' => 1, 'paid_amount' => 350000, 'remaining_amount' => 0]);
 
+        $student = Student::where('nis', '220001')->firstOrFail();
+        $this->get('/keuangan/pembayaran/spp?search=ABDILLAH')
+            ->assertOk()
+            ->assertSee('Januari 2026');
+        $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$student->id.'&year=2026')
+            ->assertOk()
+            ->assertJson([
+                'first_payable_month' => 2,
+                'months' => [
+                    [
+                        'year' => 2026,
+                        'month' => 1,
+                        'payment_status' => 'Lunas',
+                    ],
+                ],
+            ]);
+
+        $this->post('/keuangan/pembayaran/spp', [
+            'transaction_date' => '2026-01-09',
+            'transaction_time' => '08:30',
+            'student_id' => $student->id,
+            'months' => [1],
+            'year' => 2026,
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'paid_amount' => 600000,
+        ])->assertSessionHasErrors([
+            'months' => 'SPP bulan Januari 2026 sudah lunas dan tidak dapat dibayar kembali.',
+        ]);
+        $this->assertDatabaseCount('spp_payments', 2);
+        $this->assertDatabaseCount('spp_payment_items', 2);
+
         $duplicatePreview = $this->post('/keuangan/pembayaran/spp/import/preview', [
             'file' => UploadedFile::fake()->createWithContent('laporan-spp.xlsx', $workbook),
         ]);
@@ -650,7 +702,7 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseCount('spp_payments', 2);
     }
 
-    public function test_spp_receipt_opens_as_inline_pdf(): void
+    public function test_spp_receipt_opens_as_direct_print_html(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'PP', 'name' => 'Pondok Pesantren', 'is_active' => true]);
@@ -689,9 +741,13 @@ class MasterDataTest extends TestCase
 
         $receipt = $this->get('/keuangan/pembayaran/spp/'.$payment->id.'/receipt');
 
-        $receipt->assertOk()->assertHeader('content-type', 'application/pdf');
-        $this->assertStringContainsString('inline; filename="kwitansi_spp_230199_', $receipt->headers->get('content-disposition'));
-        $this->assertStringStartsWith('%PDF-', $receipt->getContent());
+        $receipt->assertOk()
+            ->assertHeader('content-type', 'text/html; charset=UTF-8')
+            ->assertSee('SPP-20260612-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT))
+            ->assertSee('@page { size: A4 portrait; margin: 0; }', false)
+            ->assertSee('Juni')
+            ->assertSee('Potongan (Rp)')
+            ->assertSee("window.addEventListener('load', () => window.print())", false);
     }
 
     public function test_other_payment_uses_fee_type_and_automatic_discount(): void
@@ -703,45 +759,50 @@ class MasterDataTest extends TestCase
         $feeType = FeeType::create(['education_unit_id' => $unit->id, 'school_class_id' => $class->id, 'code' => 'DAFTAR-ULANG', 'name' => 'Daftar Ulang', 'amount' => 1000000, 'period' => 'once', 'is_active' => true]);
         FeeDiscount::create([
             'student_id' => $student->id, 'source_type' => 'fee_type', 'fee_type_id' => $feeType->id,
-            'discount_type' => 'amount', 'discount_value' => 250000, 'start_date' => now()->subDay(), 'is_active' => true,
+            'discount_type' => 'amount', 'discount_value' => 250000, 'start_date' => '2026-06-01', 'is_active' => true,
         ]);
 
-        $this->get('/keuangan/pembayaran/lain-lain')
+        $this->get('/keuangan/pembayaran/lain-lain?category=daftar-ulang')
             ->assertOk()
-            ->assertSee('Daftar Pembayaran Lain-lain')
+            ->assertSee('Daftar Pembayaran Daftar Ulang')
             ->assertSee('Data Transaksi')
             ->assertSee('/keuangan/pembayaran/lain-lain/create');
-        $this->get('/keuangan/pembayaran/lain-lain/create')
+        $this->get('/keuangan/pembayaran/lain-lain/create?category=daftar-ulang')
             ->assertOk()
-            ->assertSee('Tambah Pembayaran Lain-lain')
+            ->assertSee('Tambah Pembayaran Daftar Ulang')
             ->assertSee('Nominal Dibayar Sekarang')
             ->assertSee('Rina')
             ->assertSee('Daftar Ulang');
-        $this->getJson('/keuangan/pembayaran/lain-lain/quote?student_id='.$student->id.'&fee_type_id='.$feeType->id)
+        $this->getJson('/keuangan/pembayaran/lain-lain/quote?category=daftar-ulang&student_id='.$student->id.'&fee_type_id='.$feeType->id)
             ->assertOk()->assertJson(['original_amount' => 1000000, 'discount_amount' => 250000, 'paid_amount' => 0, 'remaining_amount' => 750000]);
-        $this->post('/keuangan/pembayaran/lain-lain', [
+        $this->post('/keuangan/pembayaran/lain-lain?category=daftar-ulang', [
             'transaction_date' => '2026-06-12', 'transaction_time' => '10:15',
             'student_id' => $student->id, 'fee_type_id' => $feeType->id,
             'payment_method' => 'Transfer', 'status' => 'Diterima', 'paid_amount' => 500000,
-        ])->assertRedirect('/keuangan/pembayaran/lain-lain');
+        ])->assertRedirect('/keuangan/pembayaran/lain-lain?category=daftar-ulang')
+            ->assertSessionHas('payment_action');
         $this->assertDatabaseHas('other_payments', [
             'student_id' => $student->id, 'fee_type_id' => $feeType->id,
             'original_amount' => 1000000, 'discount_amount' => 250000, 'paid_amount' => 500000,
             'remaining_amount' => 250000, 'payment_status' => 'Belum Lunas',
         ]);
-        $this->post('/keuangan/pembayaran/lain-lain', [
+        $this->post('/keuangan/pembayaran/lain-lain?category=daftar-ulang', [
             'transaction_date' => '2026-06-12', 'transaction_time' => '11:15',
             'student_id' => $student->id, 'fee_type_id' => $feeType->id,
             'payment_method' => 'Cash', 'status' => 'Diterima', 'paid_amount' => 750001,
         ])->assertSessionHasErrors('paid_amount');
-        $this->get('/keuangan/pembayaran/lain-lain?search=Rina&per_page=25')
+        $this->get('/keuangan/pembayaran/lain-lain?category=daftar-ulang&search=Rina&per_page=25')
             ->assertOk()
             ->assertSee('Rina')
             ->assertSee('Daftar Ulang')
             ->assertSee('500.000');
-        $this->get('/keuangan/pembayaran/lain-lain?search=tidak-ada')
+        $this->get('/keuangan/pembayaran/lain-lain?category=daftar-ulang&search=tidak-ada')
             ->assertOk()
             ->assertDontSee('Rina');
+        $payment = OtherPayment::firstOrFail();
+        $this->get(route('finance.other.receipt.download', $payment))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
         $this->assertSame(500000, OtherPayment::sum('paid_amount'));
     }
 

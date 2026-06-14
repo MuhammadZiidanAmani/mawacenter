@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\PreviewOtherPaymentImportRequest;
 use App\Http\Requests\StoreOtherPaymentRequest;
+use App\Http\Requests\UpdateOtherPaymentRequest;
 use App\Models\AcademicYear;
 use App\Models\AppSetting;
 use App\Models\FeeType;
@@ -11,10 +12,13 @@ use App\Models\OtherPayment;
 use App\Models\Student;
 use App\Services\OtherPaymentImportService;
 use App\Services\OtherPaymentService;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -77,6 +81,9 @@ class OtherPaymentController extends Controller
     public function quote(Request $request, OtherPaymentService $payments): JsonResponse
     {
         $section = $this->section($request);
+        if (! $request->filled('student_id') && preg_match('/^[^-]+-\s*([^-]+?)\s*-/', $request->string('student_search')->value(), $matches)) {
+            $request->merge(['student_id' => Student::where('nis', trim($matches[1]))->value('id')]);
+        }
         $validated = $request->validate([
             'student_id' => ['required', 'exists:students,id'],
             'fee_type_id' => ['required', 'exists:fee_types,id'],
@@ -92,13 +99,95 @@ class OtherPaymentController extends Controller
     {
         $section = $this->section($request);
         $validated = $request->validated();
-        $payments->record(
+        $payment = $payments->record(
             Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']),
             $this->feeTypeForSection($validated['fee_type_id'], $section),
             $validated,
         );
 
-        return redirect()->route('finance.other.index', $this->sectionParams($section))->with('success', 'Pembayaran '.$section['title'].' berhasil disimpan.');
+        return redirect()->route('finance.other.index', $this->sectionParams($section))
+            ->with('success', 'Pembayaran '.$section['title'].' berhasil disimpan.')
+            ->with('payment_action', [
+                'receipt_url' => route('finance.other.receipt', $payment),
+                'download_url' => route('finance.other.receipt.download', $payment),
+                'back_url' => route('finance.other.index', $this->sectionParams($section)),
+            ]);
+    }
+
+    public function receipt(OtherPayment $otherPayment): View
+    {
+        $otherPayment->load([
+            'student.academicYear',
+            'student.schoolClass.educationUnit',
+            'feeType.academicYear',
+        ]);
+
+        return view('finance.other-receipt', [
+            'payment' => $otherPayment,
+            'receiptNumber' => $this->receiptNumber($otherPayment),
+            'receiptSettings' => AppSetting::values(),
+            'backParams' => $this->paymentSectionParams($otherPayment),
+        ]);
+    }
+
+    public function downloadReceipt(OtherPayment $otherPayment): Response
+    {
+        $otherPayment->load([
+            'student.academicYear',
+            'student.schoolClass.educationUnit',
+            'feeType.academicYear',
+        ]);
+        $logoPath = public_path('images/logo-yayasan-mambaul-hikmah.png');
+        $html = view('finance.other-receipt-pdf', [
+            'payment' => $otherPayment,
+            'receiptNumber' => $this->receiptNumber($otherPayment),
+            'logo' => 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)),
+            'receiptSettings' => AppSetting::values(),
+        ])->render();
+
+        $dompdf = new Dompdf(new Options(['defaultFont' => 'Arial']));
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        $filename = 'kwitansi-'.$this->receiptPrefix($otherPayment).'-'.$otherPayment->student?->nis.'-'.$otherPayment->id.'.pdf';
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.Str::lower($filename).'"',
+        ]);
+    }
+
+    public function show(OtherPayment $otherPayment): JsonResponse
+    {
+        $otherPayment->load(['student.schoolClass.educationUnit', 'feeType']);
+
+        return response()->json([
+            'id' => $otherPayment->id,
+            'student_name' => $otherPayment->student?->name,
+            'payment_name' => $otherPayment->feeType?->name,
+            'transaction_date' => $otherPayment->transaction_at->format('Y-m-d'),
+            'transaction_time' => $otherPayment->transaction_at->format('H:i:s'),
+            'payment_method' => $otherPayment->payment_method,
+            'status' => $otherPayment->status,
+        ]);
+    }
+
+    public function update(UpdateOtherPaymentRequest $request, OtherPayment $otherPayment, OtherPaymentService $payments): RedirectResponse
+    {
+        $payments->updateMetadata($otherPayment, $request->validated());
+
+        return redirect()->route('finance.other.index', $this->paymentSectionParams($otherPayment))
+            ->with('success', 'Transaksi pembayaran berhasil diperbarui.');
+    }
+
+    public function destroy(OtherPayment $otherPayment, OtherPaymentService $payments): RedirectResponse
+    {
+        $sectionParams = $this->paymentSectionParams($otherPayment);
+        $payments->delete($otherPayment);
+
+        return redirect()->route('finance.other.index', $sectionParams)
+            ->with('success', 'Transaksi pembayaran berhasil dihapus.');
     }
 
     public function previewImport(PreviewOtherPaymentImportRequest $request, OtherPaymentImportService $importer): View
@@ -226,5 +315,29 @@ class OtherPaymentController extends Controller
     private function sectionParams(array $section): array
     {
         return $section['key'] === 'lain-lain' ? [] : ['category' => $section['key']];
+    }
+
+    private function paymentSectionParams(OtherPayment $payment): array
+    {
+        $payment->loadMissing('feeType');
+        $group = $payment->feeType?->payment_group;
+
+        return in_array($group, ['daftar-ulang', 'laundry'], true) ? ['category' => $group] : [];
+    }
+
+    private function receiptNumber(OtherPayment $payment): string
+    {
+        return $this->receiptPrefix($payment).'-'.$payment->transaction_at->format('Ymd').'-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    private function receiptPrefix(OtherPayment $payment): string
+    {
+        $payment->loadMissing('feeType');
+
+        return match ($payment->feeType?->payment_group) {
+            'daftar-ulang' => 'DU',
+            'laundry' => 'LD',
+            default => 'LL',
+        };
     }
 }

@@ -482,6 +482,31 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
 .spp-expanded-actions { padding: 13px 15px; display: flex; align-items: flex-start; flex-direction: column; justify-content: center; background: white; border: 1px solid var(--line); border-radius: 9px; }
 .spp-expanded-actions > span { display: block; margin-bottom: 10px; color: var(--muted); font-size: 12px; }
 .spp-expanded-actions .spp-crud-actions { flex-wrap: wrap; justify-content: flex-start; }
+.education-code { padding: 4px 9px; display: inline-block; color: #0d6b3d; background: #edf7f1; border: 1px solid #d5ebdd; border-radius: 7px; font-size: 12px; font-weight: 800; letter-spacing: .03em; }
+.registration-payment-table th, .registration-payment-table td { padding-inline: 14px; }
+.registration-payment-table .spp-main-row td { padding-block: 10px; }
+.registration-payment-detail { width: 100%; padding: 4px 14px 6px; display: grid; grid-template-columns: minmax(300px, 1.8fr) minmax(155px, .85fr) minmax(145px, .8fr) minmax(185px, 1fr); gap: 0 16px; background: #fbfdfb; border-left: 3px solid #16a36a; }
+.registration-detail-item { min-width: 0; min-height: 42px; padding: 5px 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: center; gap: 12px; border-bottom: 1px solid #e8eeea; }
+.registration-detail-item > span { color: #758297; font-size: 10px; font-weight: 650; }
+.registration-detail-item > strong { min-width: 0; color: #283548; font-size: 12px; font-weight: 650; line-height: 1.35; }
+.registration-detail-item.payment-type > span { min-width: 112px; }
+.registration-detail-item.time > span { min-width: 112px; }
+.registration-detail-item:nth-child(4) > strong { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.registration-detail-item:nth-last-child(-n+4) { border-bottom: 0; }
+.compact-badge { width: max-content; padding: 4px 9px; display: inline-flex; color: #556070; background: #eef1f4; border-radius: 20px; font-size: 10px; font-weight: 750; text-transform: lowercase; }
+.compact-badge.method, .compact-badge.success { color: #087348; background: #dcf7e9; }
+.compact-badge.neutral { color: #9b6509; background: #fff1d7; }
+.registration-actions { display: flex; align-items: center; gap: 5px; }
+.registration-action { width: 30px; height: 30px; padding: 0; display: grid; place-items: center; background: white; border: 1px solid #dfe6e1; border-radius: 7px; cursor: pointer; transition: .2s ease; }
+.registration-action .icon { width: 14px; height: 14px; }
+.registration-action.print { color: #93650c; background: #fff8e9; border-color: #efd9a7; text-decoration: none; }
+.registration-action.view { color: #365f9d; background: #eff5ff; border-color: #d8e4f7; }
+.registration-action.correction { color: #9a5a10; background: #fff6e7; border-color: #eed8ae; }
+.registration-action.edit { color: #087348; background: #edf8f2; border-color: #d1eadc; }
+.registration-action.delete { color: #c73740; background: #fff2f3; border-color: #f2d6d9; }
+.registration-action:hover { transform: translateY(-1px); box-shadow: 0 4px 10px #17203315; }
+.spp-compact-actions { gap: 4px; }
+.spp-payment-detail .registration-detail-item.payment-type > span { min-width: 112px; }
 .is-hidden { display: none !important; }
 .spp-form-page { width: 100%; }
 .spp-form-page .spp-payment-form { width: 100%; }
@@ -494,6 +519,8 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
 @media (max-width: 1200px) {
     .spp-expanded-content { grid-template-columns: 1fr; }
     .spp-expanded-actions .spp-crud-actions { flex-wrap: nowrap; }
+    .registration-payment-detail { grid-template-columns: repeat(2, minmax(220px, 1fr)); }
+    .registration-detail-item:nth-last-child(-n+4) { border-bottom: 1px solid #e8eeea; }
 }
 @media (max-width: 1050px) {
     .spp-form-grid > label, .spp-form-field, .spp-month-field { grid-template-columns: 170px minmax(0, 1fr); }
@@ -517,6 +544,9 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
     .spp-expanded-content { padding: 14px; }
     .spp-expanded-meta { grid-template-columns: 1fr; }
     .spp-expanded-meta strong { white-space: normal; }
+    .registration-payment-detail { padding: 4px 12px 6px; grid-template-columns: 1fr; }
+    .registration-detail-item { grid-template-columns: 100px minmax(0, 1fr); }
+    .registration-detail-item.payment-type > span, .registration-detail-item.time > span { min-width: 0; }
 }
 
 .result-modal-backdrop { padding: 20px; position: fixed; inset: 0; z-index: 100; display: none; place-items: center; background: #17203375; backdrop-filter: blur(2px); }
@@ -1139,6 +1169,9 @@ body {
 .spp-import-browse { margin-top: 6px; padding: 7px 14px; color: #536159; background: #e9edeb; border-radius: 20px; font-size: 10px; font-weight: 700; }
 .spp-import-modal-actions { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
 .spp-import-modal-actions .spp-preview-button { min-height: 46px; background: #075c35; box-shadow: 0 8px 18px #0d5f3624; }
+.payment-action-result { max-width: 460px; }
+.payment-result-actions { width: 100%; margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; }
+.payment-result-actions .button { justify-content: center; text-decoration: none; }
 .spp-import-card[hidden] { display: none; }
 .spp-import-card { margin-bottom: 20px; padding: 0; display: grid; grid-template-columns: minmax(330px, .8fr) minmax(500px, 1.2fr); align-items: stretch; gap: 0; position: relative; overflow: hidden; background: #fff; border-color: #d5e5dc; border-radius: 18px; box-shadow: 0 16px 38px #0d5f3614; }
 .spp-import-card::before { content: ''; width: 230px; height: 230px; position: absolute; left: -95px; bottom: -145px; background: #ffffff0d; border: 1px solid #ffffff1c; border-radius: 50%; pointer-events: none; }

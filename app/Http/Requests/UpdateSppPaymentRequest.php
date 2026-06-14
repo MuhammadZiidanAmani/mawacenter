@@ -30,6 +30,7 @@ class UpdateSppPaymentRequest extends FormRequest
             'transaction_time' => ['required', 'date_format:H:i:s'],
             'payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
             'status' => ['required', Rule::in(['Diterima', 'Pending'])],
+            'paid_amount' => ['sometimes', 'required', 'integer', 'min:0'],
         ];
     }
 }

@@ -2,11 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Student;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreOtherPaymentRequest extends FormRequest
+class UpdateOtherPaymentRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,10 +14,6 @@ class StoreOtherPaymentRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        if (! $this->filled('student_id') && preg_match('/^[^-]+-\s*([^-]+?)\s*-/', (string) $this->input('student_search'), $matches)) {
-            $this->merge(['student_id' => Student::where('nis', trim($matches[1]))->value('id')]);
-        }
-
         if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', (string) $this->input('transaction_date'), $matches)) {
             $this->merge(['transaction_date' => "{$matches[3]}-{$matches[2]}-{$matches[1]}"]);
         }
@@ -33,11 +28,8 @@ class StoreOtherPaymentRequest extends FormRequest
         return [
             'transaction_date' => ['required', 'date'],
             'transaction_time' => ['required', 'date_format:H:i:s'],
-            'student_id' => ['required', 'exists:students,id'],
-            'fee_type_id' => ['required', 'exists:fee_types,id'],
             'payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
             'status' => ['required', Rule::in(['Diterima', 'Pending'])],
-            'paid_amount' => ['required', 'integer', 'min:1'],
         ];
     }
 }
