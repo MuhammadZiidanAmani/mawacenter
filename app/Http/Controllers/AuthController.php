@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -18,13 +19,15 @@ class AuthController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'username' => ['required', 'string', 'max:100'],
             'password' => ['required', 'string'],
         ]);
 
+        $credentials['username'] = Str::lower(trim($credentials['username']));
+
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages([
-                'email' => 'Email atau kata sandi yang Anda masukkan belum tepat.',
+                'username' => 'Username atau kata sandi yang Anda masukkan belum tepat.',
             ]);
         }
 

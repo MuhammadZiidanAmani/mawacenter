@@ -13,7 +13,7 @@ class AuthTest extends TestCase
     public function test_guest_is_redirected_to_login(): void
     {
         $this->get('/')->assertRedirect('/login');
-        $this->get('/login')->assertOk()->assertSee('Masuk ke akun Anda');
+        $this->get('/login')->assertOk()->assertSee('Selamat Datang Kembali');
     }
 
     public function test_user_can_login_and_logout(): void
@@ -21,7 +21,7 @@ class AuthTest extends TestCase
         $user = User::factory()->create(['password' => 'rahasia123']);
 
         $this->post('/login', [
-            'email' => $user->email,
+            'username' => $user->username,
             'password' => 'rahasia123',
         ])->assertRedirect('/');
 
@@ -33,9 +33,21 @@ class AuthTest extends TestCase
     public function test_invalid_credentials_are_rejected(): void
     {
         $this->post('/login', [
-            'email' => 'petugas@mawacenter.id',
+            'username' => 'petugas',
             'password' => 'keliru',
-        ])->assertSessionHasErrors('email');
+        ])->assertSessionHasErrors('username');
+
+        $this->assertGuest();
+    }
+
+    public function test_email_cannot_be_used_to_login(): void
+    {
+        $user = User::factory()->create(['password' => 'rahasia123']);
+
+        $this->post('/login', [
+            'username' => $user->email,
+            'password' => 'rahasia123',
+        ])->assertSessionHasErrors('username');
 
         $this->assertGuest();
     }
