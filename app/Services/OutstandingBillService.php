@@ -56,6 +56,7 @@ class OutstandingBillService
             }
             $paid = (int) OtherPayment::where('student_id', $student->id)
                 ->where('fee_type_id', $feeType->id)
+                ->where('status', 'Diterima')
                 ->when($feeType->period === 'Bulanan', fn ($query) => $query->whereYear('transaction_at', $year)->whereMonth('transaction_at', $untilMonth))
                 ->when($feeType->period === 'Tahunan', function ($query) use ($student, $year) {
                     $student->loadMissing('academicYear');

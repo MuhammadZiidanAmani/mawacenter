@@ -25,6 +25,7 @@
         'bell' => '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
         'logout' => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/>',
         'plus' => '<path d="M12 5v14M5 12h14"/>',
+        'upload' => '<path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>',
     ];
     $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
     $months = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
@@ -37,7 +38,7 @@
             <div class="nav-group master-nav">
                 <button type="button" class="nav-item nav-parent" data-master-nav-toggle aria-expanded="false">{!! $icon('database') !!}<span>Data Master</span>{!! $icon('chevron', 'nav-chevron') !!}</button>
                 <div class="nav-submenu">
-                    @foreach (['academic-years'=>['Tahun Pelajaran','calendar'],'education-units'=>['Unit Pendidikan','grid'],'classes'=>['Kelas','database'],'students'=>['Siswa','users'],'fee-types'=>['Kategori Pembayaran','receipt'],'spp-settings'=>['Set SPP','wallet'],'fee-discounts'=>['Keringanan Biaya','wallet']] as $key=>$item)
+                    @foreach (['academic-years'=>['Tahun Pelajaran','calendar'],'education-units'=>['Unit Pendidikan','grid'],'classes'=>['Kelas','database'],'students'=>['Siswa','users'],'spp-settings'=>['Set SPP','wallet'],'fee-types'=>['Kategori Pembayaran','receipt'],'fee-discounts'=>['Keringanan Biaya','wallet']] as $key=>$item)
                         <a href="{{ route('master.index', ['tab'=>$key]) }}">{!! $icon($item[1]) !!}<span>{{ $item[0] }}</span></a>
                     @endforeach
                 </div>
@@ -72,28 +73,42 @@
             <div>
                 <section class="hero master-hero">
                     <div><p class="eyebrow">Pembayaran · SPP</p><h1>Daftar Pembayaran SPP</h1><p>Lihat dan kelola seluruh transaksi pembayaran SPP siswa.</p></div>
-                    <div class="spp-hero-actions"><a href="{{ route('finance.spp.create') }}" class="button button-primary">{!! $icon('plus') !!} Tambah Pembayaran SPP</a></div>
-                </section>
-                <section class="card spp-import-card">
-                    <div class="spp-import-copy">
-                        <span class="spp-import-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg></span>
-                        <div>
-                            <span class="spp-import-kicker">Import Data</span>
-                            <strong>Import Pembayaran SPP Bulanan</strong>
-                            <span>Unggah laporan XLSX. Sistem akan memeriksa NIS, periode, nominal, dan duplikasi sebelum data disimpan.</span>
-                        </div>
+                    <div class="spp-hero-actions">
+                        <a href="{{ route('finance.spp.create') }}" class="button button-secondary spp-add-button">{!! $icon('plus') !!} Tambah</a>
+                        <button type="button" class="button button-secondary spp-import-toggle {{ $importPreview || $errors->any() ? 'active' : '' }}" data-spp-import-toggle aria-expanded="{{ $errors->any() ? 'true' : 'false' }}">{!! $icon('upload') !!} Import</button>
                     </div>
-                    <form method="POST" action="{{ route('finance.spp.import.preview') }}" enctype="multipart/form-data" class="spp-import-form">
-                        @csrf
-                        <label class="spp-file-picker">
-                            <input type="file" name="file" accept=".xlsx" required data-spp-import-file>
-                            <span class="spp-file-mark"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span>
-                            <span class="spp-file-text"><strong data-spp-import-filename>Pilih file laporan</strong><small>XLSX · maksimal 10 MB</small></span>
-                            <span class="spp-file-browse">Pilih File</span>
-                        </label>
-                        <button class="button button-primary spp-preview-button"><svg class="icon" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg> Preview Data</button>
-                    </form>
                 </section>
+                <div class="spp-import-modal-backdrop {{ $errors->any() ? 'show' : '' }}" data-spp-import-panel @if(! $errors->any()) hidden @endif>
+                    <section class="spp-import-modal" role="dialog" aria-modal="true" aria-labelledby="spp-import-title">
+                        <header class="spp-import-modal-head">
+                            <div><span class="spp-import-kicker">Pembayaran · SPP</span><h2 id="spp-import-title">Import Pembayaran SPP Bulanan</h2><p>Unggah laporan pembayaran untuk memproses transaksi massal.</p></div>
+                            <button type="button" class="spp-import-close" data-spp-import-close aria-label="Tutup modal import">×</button>
+                        </header>
+                        <div class="spp-import-progress">
+                            <div class="active"><b>1</b><span>Pilih file</span></div>
+                            <div><b>2</b><span>Preview data</span></div>
+                            <div><b>3</b><span>Konfirmasi</span></div>
+                        </div>
+                        <div class="spp-import-info">
+                            <span><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg></span>
+                            <div><strong>Validasi Sistem</strong><p>Sistem akan memeriksa <b>NIS, periode, nominal, dan duplikasi</b> secara otomatis sebelum data disimpan.</p></div>
+                        </div>
+                        <form method="POST" action="{{ route('finance.spp.import.preview') }}" enctype="multipart/form-data" class="spp-import-modal-form">
+                            @csrf
+                            <label class="spp-import-dropzone">
+                                <input type="file" name="file" accept=".xlsx" required data-spp-import-file>
+                                <span class="spp-import-drop-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M12 18V10m0 0-3 3m3-3 3 3M14 2v6h6"/></svg></span>
+                                <strong data-spp-import-filename>Ketuk untuk pilih berkas</strong>
+                                <small>Format XLSX · Maksimal 10 MB</small>
+                                <span class="spp-import-browse">Cari di Dokumen Saya</span>
+                            </label>
+                            <div class="spp-import-modal-actions">
+                                <button class="button button-primary spp-preview-button">{!! $icon('upload') !!} Preview Data</button>
+                                <button type="button" class="button button-secondary" data-spp-import-close>Batal</button>
+                            </div>
+                        </form>
+                    </section>
+                </div>
                 @if($importPreview)
                 <section class="card spp-import-preview">
                     <div class="spp-preview-header">

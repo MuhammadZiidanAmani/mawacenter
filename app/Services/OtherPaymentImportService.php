@@ -15,11 +15,15 @@ class OtherPaymentImportService
 {
     public function __construct(private OtherPaymentService $payments) {}
 
-    public function sources(string $path): array
+    public function sources(string $path, ?string $paymentGroup = null): array
     {
         [$headers, $rows] = $this->readRows($path);
         $sources = [];
-        $feeTypes = FeeType::with(['educationUnit', 'schoolClass'])->where('is_active', true)->orderBy('name')->get();
+        $feeTypes = FeeType::with(['educationUnit', 'schoolClass'])
+            ->where('is_active', true)
+            ->when($paymentGroup, fn ($query, $group) => $query->paymentGroup($group))
+            ->orderBy('name')
+            ->get();
 
         foreach ($rows as $row) {
             $values = $this->combine($row['values'], $headers);
@@ -44,17 +48,17 @@ class OtherPaymentImportService
         return array_values($sources);
     }
 
-    public function preview(string $path, array $mappings, ?string $sourceName = null): array
+    public function preview(string $path, array $mappings, ?string $sourceName = null, ?string $paymentGroup = null): array
     {
-        return $this->process($path, $mappings, false, $sourceName);
+        return $this->process($path, $mappings, false, $sourceName, $paymentGroup);
     }
 
-    public function import(string $path, array $mappings, ?string $sourceName = null): array
+    public function import(string $path, array $mappings, ?string $sourceName = null, ?string $paymentGroup = null): array
     {
-        return $this->process($path, $mappings, true, $sourceName);
+        return $this->process($path, $mappings, true, $sourceName, $paymentGroup);
     }
 
-    private function process(string $path, array $mappings, bool $persist, ?string $sourceName): array
+    private function process(string $path, array $mappings, bool $persist, ?string $sourceName, ?string $paymentGroup): array
     {
         [$headers, $rows] = $this->readRows($path);
         $result = ['total' => count($rows), 'valid' => 0, 'imported' => 0, 'duplicates' => 0, 'failures' => [], 'rows' => []];
@@ -70,6 +74,7 @@ class OtherPaymentImportService
                 if (isset($parsed['error'])) {
                     $result['failures'][] = $parsed;
                     $result['rows'][] = $parsed;
+
                     continue;
                 }
                 $prepared[] = $parsed;
@@ -87,27 +92,34 @@ class OtherPaymentImportService
                     $row['message'] = 'Transaksi ini sudah pernah diimpor.';
                     $result['duplicates']++;
                     $result['rows'][] = $row;
+
                     continue;
                 }
 
                 $student = Student::with('schoolClass.educationUnit')->where('nis', $row['nis'])->first();
                 if (! $student) {
                     $this->fail($result, $row, "NIS {$row['nis']} tidak ditemukan.");
+
                     continue;
                 }
                 if ($this->normalizeLookup($student->name) !== $this->normalizeLookup($row['name'])) {
                     $this->fail($result, $row, "Nama pada Excel tidak cocok dengan siswa NIS {$row['nis']}.");
+
                     continue;
                 }
                 if ($this->normalizeLookup($student->schoolClass?->educationUnit?->name ?? '') !== $this->normalizeLookup($row['unit'])) {
                     $this->fail($result, $row, 'Unit pendidikan Excel tidak cocok dengan data siswa.');
+
                     continue;
                 }
 
                 $feeTypeId = $mappings[$row['source_key']] ?? null;
-                $feeType = $feeTypeId ? FeeType::find($feeTypeId) : null;
+                $feeType = $feeTypeId
+                    ? FeeType::when($paymentGroup, fn ($query, $group) => $query->paymentGroup($group))->find($feeTypeId)
+                    : null;
                 if (! $feeType) {
                     $this->fail($result, $row, 'Kategori dan unit pendidikan belum dipetakan.');
+
                     continue;
                 }
 

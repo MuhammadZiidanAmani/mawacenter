@@ -89,7 +89,8 @@ class ReportController extends Controller
     private function transactions(array $filters): Collection
     {
         $filterQuery = function ($query) use ($filters) {
-            return $query->whereBetween('transaction_at', [$filters['start_date'].' 00:00:00', $filters['end_date'].' 23:59:59'])
+            return $query->where('status', 'Diterima')
+                ->whereBetween('transaction_at', [$filters['start_date'].' 00:00:00', $filters['end_date'].' 23:59:59'])
                 ->when($filters['payment_method'], fn ($q, $method) => $q->where('payment_method', $method))
                 ->when($filters['unit_id'], fn ($q, $unit) => $q->whereHas('student.schoolClass', fn ($class) => $class->where('education_unit_id', $unit)))
                 ->when($filters['search'], fn ($q, $search) => $q->whereHas('student', fn ($student) => $student->where('nis', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")));

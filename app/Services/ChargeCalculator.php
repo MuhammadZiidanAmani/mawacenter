@@ -21,8 +21,11 @@ class ChargeCalculator
                 ->where('is_active', true)->value('amount') ?? 0);
         }
 
+        $student->loadMissing('academicYear');
+
         if (! $feeType || ! $feeType->is_active
             || $feeType->education_unit_id !== $student->schoolClass?->education_unit_id
+            || ($feeType->academic_year_id !== null && $feeType->academic_year_id !== $student->academic_year_id)
             || ($feeType->school_class_id !== null && $feeType->school_class_id !== $student->school_class_id)) {
             return 0;
         }

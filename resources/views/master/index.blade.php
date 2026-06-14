@@ -37,6 +37,7 @@
         'education-units' => ['Unit Pendidikan', 'database', $stats['education_units']],
         'classes' => ['Kelas', 'database', $stats['classes']],
         'students' => ['Siswa', 'users', $stats['students']],
+        'spp-settings' => ['Set SPP', 'wallet', $stats['spp_settings']],
         'fee-types' => ['Kategori Pembayaran', 'receipt', $stats['fee_types']],
     ];
     $labels = [
@@ -44,7 +45,7 @@
         'education-units' => ['Unit Pendidikan', 'Daftar unit pendidikan yang tersedia.', 'Tambah Unit Pendidikan'],
         'classes' => ['Kelas', 'Daftar kelas yang tersedia.', 'Tambah Kelas'],
         'academic-years' => ['Tahun Pelajaran', 'Daftar tahun pelajaran yang tersedia.', 'Tambah Tahun Pelajaran'],
-        'fee-types' => ['Jenis Pembayaran', 'Atur jenis pembayaran untuk setiap kelas.', 'Tambah Jenis Pembayaran'],
+        'fee-types' => ['Kategori Pembayaran', 'Atur daftar ulang, laundry, dan pembayaran lainnya.', 'Tambah Kategori Pembayaran'],
         'spp-settings' => ['Set SPP', 'Atur nominal SPP untuk setiap unit pendidikan.', 'Tambah Set SPP'],
         'fee-discounts' => ['Keringanan Biaya', 'Atur potongan SPP atau pembayaran lainnya untuk siswa.', 'Tambah Keringanan'],
     ];
@@ -62,8 +63,8 @@
                         'education-units' => ['Unit Pendidikan', 'grid'],
                         'classes' => ['Kelas', 'database'],
                         'students' => ['Siswa', 'users'],
-                        'fee-types' => ['Kategori Pembayaran', 'receipt'],
                         'spp-settings' => ['Set SPP', 'wallet'],
+                        'fee-types' => ['Kategori Pembayaran', 'receipt'],
                         'fee-discounts' => ['Keringanan Biaya', 'wallet'],
                     ] as $key => $item)
                         <a href="{{ route('master.index', ['tab' => $key]) }}" class="{{ $tab === $key ? 'active' : '' }}">{!! $icon($item[1]) !!}<span>{{ $item[0] }}</span></a>
@@ -140,6 +141,7 @@
 
             @if ($tab === 'students')
                 <section class="student-workspace">
+                    @php($activeStudentFilters = collect(['unit_id', 'class_id', 'year_id', 'status'])->filter(fn ($key) => request()->filled($key))->count())
                     <div class="student-action-bar">
                         <a href="{{ route('master.create', ['tab' => 'students']) }}" class="button button-primary">{!! $icon('plus') !!} Tambah Siswa</a>
                         <form method="POST" action="{{ route('master.students.import') }}" enctype="multipart/form-data" class="import-form">
@@ -147,26 +149,41 @@
                             <label class="button action-purple">{!! $icon('upload') !!} Upload Excel<input type="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required onchange="this.form.submit()"></label>
                         </form>
                         <a href="{{ route('master.students.template') }}" class="button action-orange">{!! $icon('download') !!} Download Template</a>
-                        <a href="{{ route('master.students.export') }}" class="button action-green">{!! $icon('download') !!} Export Data</a>
+                        <button type="button" class="button action-green" data-student-export-toggle aria-expanded="false">{!! $icon('download') !!} Export Data</button>
+                        <button type="button" class="button student-filter-toggle {{ $activeStudentFilters ? 'active' : '' }}" data-student-filter-toggle aria-expanded="{{ $activeStudentFilters ? 'true' : 'false' }}">{!! $icon('search') !!} Filter Siswa @if($activeStudentFilters)<b>{{ $activeStudentFilters }}</b>@endif</button>
                     </div>
 
-                    <form method="GET" action="{{ route('master.index') }}" class="student-filter-panel">
+                    <form method="GET" action="{{ route('master.index') }}" class="student-filter-panel" data-student-filter-panel @if(! $activeStudentFilters) hidden @endif>
                         <input type="hidden" name="tab" value="students">
                         <div class="student-filter-heading">
                             <span class="student-filter-icon">{!! $icon('search') !!}</span>
                             <div><strong>Filter Data Siswa</strong><small>Pilih kriteria untuk mempersempit daftar siswa.</small></div>
-                            @php($activeStudentFilters = collect(['unit_id', 'class_id', 'year_id', 'status'])->filter(fn ($key) => request()->filled($key))->count())
                             @if ($activeStudentFilters)
                                 <b>{{ $activeStudentFilters }} filter aktif</b>
                             @endif
                         </div>
-                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">Pilih Unit Pendidikan</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit required><option value="">Pilih Unit Pendidikan</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                         <label><span>Kelas</span><select name="class_id" data-student-filter-class @disabled(! request()->filled('unit_id'))><option value="">{{ request()->filled('unit_id') ? 'Semua Kelas' : 'Pilih Unit Pendidikan Dahulu' }}</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
-                        <label><span>Tahun Pelajaran</span><select name="year_id"><option value="">Semua Tahun Pelajaran</option>@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected(request('year_id') == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
+                        <label><span>Tahun Pelajaran</span><select name="year_id">@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($studentYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
                         <label><span>Status Data</span><select name="status"><option value="">Semua Status</option><option value="active" @selected(request('status') === 'active')>Aktif</option><option value="inactive" @selected(request('status') === 'inactive')>Nonaktif</option></select></label>
                         <div class="student-filter-actions">
                             <a href="{{ route('master.index', ['tab' => 'students']) }}" class="button student-filter-reset">Reset</a>
                             <button class="button student-search-button">{!! $icon('search') !!} Tampilkan Data</button>
+                        </div>
+                    </form>
+
+                    <form method="GET" action="{{ route('master.students.export') }}" class="student-filter-panel student-export-panel" data-student-export-panel hidden>
+                        <div class="student-filter-heading">
+                            <span class="student-filter-icon">{!! $icon('download') !!}</span>
+                            <div><strong>Spesifikasi Export Data</strong><small>Pilih data siswa yang ingin dimasukkan ke file Excel.</small></div>
+                        </div>
+                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-export-unit required><option value="">Pilih Unit Pendidikan</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}">{{ $unit->code }}</option>@endforeach</select></label>
+                        <label><span>Kelas</span><select name="class_id" data-student-export-class disabled><option value="">Pilih Unit Pendidikan Dahulu</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}">{{ $class->name }}</option>@endforeach</select></label>
+                        <label><span>Tahun Pelajaran</span><select name="year_id">@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($activeAcademicYear?->id === $year->id)>{{ $year->name }}</option>@endforeach</select></label>
+                        <label><span>Status Data</span><select name="status"><option value="">Semua Status</option><option value="active">Aktif</option><option value="inactive">Nonaktif</option></select></label>
+                        <div class="student-filter-actions">
+                            <button type="button" class="button student-filter-reset" data-student-export-close>Batal</button>
+                            <button class="button student-search-button">{!! $icon('download') !!} Download Data</button>
                         </div>
                     </form>
                 </section>
@@ -216,7 +233,7 @@
                 </div>
                 @elseif ($tab === 'fee-types')
                 <div class="simple-list-header">
-                    <div><strong>Daftar Jenis Pembayaran</strong><span>{{ $data->total() }} jenis pembayaran tersedia</span></div>
+                    <div><strong>Daftar Kategori Pembayaran</strong><span>{{ $data->total() }} kategori pembayaran tersedia</span></div>
                 </div>
                 @elseif ($tab === 'spp-settings')
                 <div class="simple-list-header">
@@ -247,8 +264,8 @@
                         <thead><tr><th>No.</th><th>Tahun Pelajaran</th><th>Status</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'academic-years', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'fee-types')
-                        <thead><tr><th>No.</th><th>Jenis Pembayaran</th><th>Unit Pendidikan</th><th>Kelas</th><th>Periode</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->educationUnit?->name ?? '-' }}</strong></td><td><strong>{{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong></td><td><span class="status neutral">{{ $row->period }}</span></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                        <thead><tr><th>No.</th><th>Jenis Pembayaran</th><th>Unit Pendidikan</th><th>Kelas</th><th>Tahun Pelajaran</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->educationUnit?->code ?? '-' }}</strong></td><td><strong>{{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong></td><td><span class="status neutral">{{ $row->academicYear?->name ?? '-' }}</span></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'spp-settings')
                         <thead><tr><th>No.</th><th>Unit Pendidikan</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->educationUnit?->name ?? '-' }}</strong></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'spp-settings', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\Student;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Validation\ValidationException;
 
@@ -22,7 +23,9 @@ class OtherPaymentService
             ]);
         }
 
-        $paidAmount = (int) $this->paymentQuery($student, $feeType, $date)->sum('paid_amount');
+        $paidAmount = (int) $this->paymentQuery($student, $feeType, $date)
+            ->where('status', 'Diterima')
+            ->sum('paid_amount');
 
         return [
             'original_amount' => $charge['original_amount'],
@@ -35,7 +38,7 @@ class OtherPaymentService
 
     public function record(Student $student, FeeType $feeType, array $data): OtherPayment
     {
-        $transactionDate = \Carbon\CarbonImmutable::parse($data['transaction_date']);
+        $transactionDate = CarbonImmutable::parse($data['transaction_date']);
         $quote = $this->quote($student, $feeType, $transactionDate);
         if ($data['paid_amount'] > $quote['remaining_amount']) {
             throw ValidationException::withMessages([
@@ -43,7 +46,10 @@ class OtherPaymentService
             ]);
         }
 
-        $remainingAmount = $quote['remaining_amount'] - $data['paid_amount'];
+        $isAccepted = $data['status'] === 'Diterima';
+        $remainingAmount = $isAccepted
+            ? $quote['remaining_amount'] - $data['paid_amount']
+            : $quote['remaining_amount'];
 
         $payment = OtherPayment::create([
             'student_id' => $student->id,
@@ -59,7 +65,9 @@ class OtherPaymentService
             'total_amount' => $quote['total_amount'],
             'paid_amount' => $data['paid_amount'],
             'remaining_amount' => $remainingAmount,
-            'payment_status' => $remainingAmount === 0 ? 'Lunas' : 'Belum Lunas',
+            'payment_status' => $isAccepted
+                ? ($remainingAmount === 0 ? 'Lunas' : 'Belum Lunas')
+                : 'Pending',
         ]);
 
         return $payment;

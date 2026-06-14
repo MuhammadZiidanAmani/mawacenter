@@ -57,8 +57,8 @@
                     <a href="{{ route('master.index', ['tab' => 'education-units']) }}">{!! $icon('grid') !!}<span>Unit Pendidikan</span></a>
                     <a href="{{ route('master.index', ['tab' => 'classes']) }}">{!! $icon('database') !!}<span>Kelas</span></a>
                     <a href="{{ route('master.index', ['tab' => 'students']) }}">{!! $icon('users') !!}<span>Siswa</span></a>
-                    <a href="{{ route('master.index', ['tab' => 'fee-types']) }}">{!! $icon('receipt') !!}<span>Kategori Pembayaran</span></a>
                     <a href="{{ route('master.index', ['tab' => 'spp-settings']) }}">{!! $icon('wallet') !!}<span>Set SPP</span></a>
+                    <a href="{{ route('master.index', ['tab' => 'fee-types']) }}">{!! $icon('receipt') !!}<span>Kategori Pembayaran</span></a>
                     <a href="{{ route('master.index', ['tab' => 'fee-discounts']) }}">{!! $icon('wallet') !!}<span>Keringanan Biaya</span></a>
                 </div>
             </div>

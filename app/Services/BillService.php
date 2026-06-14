@@ -7,6 +7,7 @@ use App\Models\Bill;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\SppPayment;
+use App\Models\SppPaymentItem;
 use App\Models\Student;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -27,6 +28,7 @@ class BillService
                     $periodStart = CarbonImmutable::create($year, $month, 1);
                     if (! $this->eligible($student, $periodStart)) {
                         $result['skipped']++;
+
                         continue;
                     }
 
@@ -125,10 +127,17 @@ class BillService
         $payment->loadMissing(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']);
         $date = CarbonImmutable::parse($payment->transaction_at);
         [$bill] = $this->ensureFeeTypeBill($payment->student, $payment->student->academicYear, $payment->feeType, $date->year, $date->month);
-        $bill->allocations()->updateOrCreate(
-            ['payment_type' => 'other', 'payment_id' => $payment->id],
-            ['amount' => $payment->paid_amount],
-        );
+        if ($payment->status === 'Diterima') {
+            $bill->allocations()->updateOrCreate(
+                ['payment_type' => 'other', 'payment_id' => $payment->id],
+                ['amount' => $payment->paid_amount],
+            );
+        } else {
+            $bill->allocations()
+                ->where('payment_type', 'other')
+                ->where('payment_id', $payment->id)
+                ->delete();
+        }
         $this->refresh($bill);
     }
 
@@ -219,7 +228,7 @@ class BillService
 
     private function syncSppBillPayments(Bill $bill): void
     {
-        $items = \App\Models\SppPaymentItem::where('student_id', $bill->student_id)->where('year', $bill->year)->where('month', $bill->month)->get();
+        $items = SppPaymentItem::where('student_id', $bill->student_id)->where('year', $bill->year)->where('month', $bill->month)->get();
         foreach ($items as $item) {
             $bill->allocations()->updateOrCreate(['payment_type' => 'spp', 'payment_id' => $item->spp_payment_id], ['amount' => $item->paid_amount]);
         }
@@ -235,7 +244,11 @@ class BillService
             $query->whereBetween('transaction_at', [$bill->academicYear->start_date->startOfDay(), $bill->academicYear->end_date->endOfDay()]);
         }
         foreach ($query->get() as $payment) {
-            $bill->allocations()->updateOrCreate(['payment_type' => 'other', 'payment_id' => $payment->id], ['amount' => $payment->paid_amount]);
+            if ($payment->status === 'Diterima') {
+                $bill->allocations()->updateOrCreate(['payment_type' => 'other', 'payment_id' => $payment->id], ['amount' => $payment->paid_amount]);
+            } else {
+                $bill->allocations()->where('payment_type', 'other')->where('payment_id', $payment->id)->delete();
+            }
         }
         $this->refresh($bill);
     }

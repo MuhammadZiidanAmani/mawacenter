@@ -92,9 +92,31 @@ document.querySelectorAll('form').forEach((form) => form.addEventListener('submi
 document.querySelector('[data-spp-import-file]')?.addEventListener('change', (event) => {
     const file = event.target.files?.[0];
     const label = document.querySelector('[data-spp-import-filename]');
-    if (label) label.textContent = file?.name || 'Pilih file laporan';
-    event.target.closest('.spp-file-picker')?.classList.toggle('has-file', Boolean(file));
+    if (label) label.textContent = file?.name || 'Ketuk untuk pilih berkas';
+    event.target.closest('.spp-import-dropzone')?.classList.toggle('has-file', Boolean(file));
 });
+
+const sppImportToggle = document.querySelector('[data-spp-import-toggle]');
+const sppImportPanel = document.querySelector('[data-spp-import-panel]');
+const setSppImportModal = (open) => {
+    if (!sppImportPanel) return;
+    sppImportPanel.hidden = !open;
+    sppImportPanel.classList.toggle('show', open);
+    sppImportToggle?.classList.toggle('active', open);
+    sppImportToggle?.setAttribute('aria-expanded', String(open));
+    document.body.style.overflow = open ? 'hidden' : '';
+};
+sppImportToggle?.addEventListener('click', () => {
+    setSppImportModal(sppImportPanel?.hidden ?? true);
+});
+document.querySelectorAll('[data-spp-import-close]').forEach((button) => button.addEventListener('click', () => setSppImportModal(false)));
+sppImportPanel?.addEventListener('click', (event) => {
+    if (event.target === sppImportPanel) setSppImportModal(false);
+});
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && sppImportPanel && !sppImportPanel.hidden) setSppImportModal(false);
+});
+if (sppImportPanel && !sppImportPanel.hidden) document.body.style.overflow = 'hidden';
 
 const setSidebar = (open) => {
     sidebar?.classList.toggle('open', open);
@@ -180,9 +202,38 @@ const modalTitle = document.querySelector('[data-modal-title]');
 const studentUnit = document.querySelector('[data-student-unit]');
 const studentClass = document.querySelector('[data-student-class]');
 const studentClassOptions = studentClass ? Array.from(studentClass.options) : [];
+const registrationClassList = document.querySelector('[data-registration-class-list]');
+const registrationClassRows = registrationClassList ? Array.from(registrationClassList.querySelectorAll('label[data-unit-id]')) : [];
+const registrationClassEmpty = document.querySelector('[data-registration-class-empty]');
 const studentFilterUnit = document.querySelector('[data-student-filter-unit]');
 const studentFilterClass = document.querySelector('[data-student-filter-class]');
 const studentFilterClassOptions = studentFilterClass ? Array.from(studentFilterClass.options) : [];
+const studentFilterToggle = document.querySelector('[data-student-filter-toggle]');
+const studentFilterPanel = document.querySelector('[data-student-filter-panel]');
+const studentExportToggle = document.querySelector('[data-student-export-toggle]');
+const studentExportPanel = document.querySelector('[data-student-export-panel]');
+const studentExportUnit = document.querySelector('[data-student-export-unit]');
+const studentExportClass = document.querySelector('[data-student-export-class]');
+const studentExportClassOptions = studentExportClass ? Array.from(studentExportClass.options) : [];
+studentFilterToggle?.addEventListener('click', () => {
+    const opening = studentFilterPanel.hidden;
+    studentFilterPanel.hidden = !opening;
+    if (opening && studentExportPanel) studentExportPanel.hidden = true;
+    studentFilterToggle.classList.toggle('active', opening);
+    studentFilterToggle.setAttribute('aria-expanded', String(opening));
+    studentExportToggle?.setAttribute('aria-expanded', 'false');
+});
+studentExportToggle?.addEventListener('click', () => {
+    const opening = studentExportPanel.hidden;
+    studentExportPanel.hidden = !opening;
+    if (opening && studentFilterPanel) studentFilterPanel.hidden = true;
+    studentExportToggle.setAttribute('aria-expanded', String(opening));
+    studentFilterToggle?.setAttribute('aria-expanded', 'false');
+});
+document.querySelector('[data-student-export-close]')?.addEventListener('click', () => {
+    studentExportPanel.hidden = true;
+    studentExportToggle?.setAttribute('aria-expanded', 'false');
+});
 const studentStatus = document.querySelector('[data-student-status]');
 const inactiveFields = document.querySelector('[data-inactive-fields]');
 const discountSource = document.querySelector('[data-discount-source]');
@@ -303,19 +354,55 @@ const toggleDiscountValueFormat = () => {
 };
 
 const filterStudentClasses = (selectedClass = '') => {
-    if (!studentUnit || !studentClass) return;
+    if (!studentUnit || (!studentClass && !registrationClassList)) return;
     const unitId = studentUnit.value;
+    const selectedClasses = Array.isArray(selectedClass)
+        ? selectedClass.map(String)
+        : (selectedClass ? [String(selectedClass)] : []);
+    if (registrationClassList) {
+        let visibleCount = 0;
+        registrationClassRows.forEach((row) => {
+            const input = row.querySelector('input[type="checkbox"]');
+            const visible = Boolean(unitId) && row.dataset.unitId === unitId;
+            row.hidden = !visible;
+            if (input) {
+                input.disabled = !visible;
+                input.checked = visible && selectedClasses.includes(input.value);
+            }
+            if (visible) visibleCount += 1;
+        });
+        if (registrationClassEmpty) {
+            registrationClassEmpty.hidden = visibleCount > 0;
+            registrationClassEmpty.textContent = unitId ? 'Belum ada kelas untuk unit pendidikan ini.' : 'Pilih unit pendidikan terlebih dahulu.';
+        }
+    }
+    if (!studentClass) return;
     studentClassOptions.forEach((option) => {
         option.hidden = Boolean(option.value) && !option.hasAttribute('data-all-classes') && option.dataset.unitId !== unitId;
+        option.disabled = option.hidden;
     });
-    if (selectedClass && studentClassOptions.some((option) => option.value === String(selectedClass) && !option.hidden)) {
-        studentClass.value = String(selectedClass);
+    if (studentClass.multiple) {
+        studentClassOptions.forEach((option) => {
+            option.selected = selectedClasses.includes(option.value) && !option.hidden;
+        });
+        return;
+    }
+    if (selectedClasses[0] && studentClassOptions.some((option) => option.value === selectedClasses[0] && !option.hidden)) {
+        studentClass.value = selectedClasses[0];
     } else if (studentClass.selectedOptions[0]?.hidden) {
         studentClass.value = '';
     }
 };
 
 studentUnit?.addEventListener('change', () => filterStudentClasses());
+if (registrationClassList) {
+    filterStudentClasses(
+        registrationClassRows
+            .map((row) => row.querySelector('input[type="checkbox"]'))
+            .filter((input) => input?.checked)
+            .map((input) => input.value),
+    );
+}
 const filterStudentListClasses = (preserveSelection = false) => {
     if (!studentFilterUnit || !studentFilterClass) return;
     const unitId = studentFilterUnit.value;
@@ -336,6 +423,23 @@ const filterStudentListClasses = (preserveSelection = false) => {
 };
 studentFilterUnit?.addEventListener('change', () => filterStudentListClasses());
 filterStudentListClasses(true);
+const filterStudentExportClasses = () => {
+    if (!studentExportUnit || !studentExportClass) return;
+    const unitId = studentExportUnit.value;
+    studentExportClass.disabled = !unitId;
+    studentExportClassOptions.forEach((option) => {
+        if (!option.value) {
+            option.textContent = unitId ? 'Semua Kelas' : 'Pilih Unit Pendidikan Dahulu';
+            option.hidden = false;
+            return;
+        }
+        option.hidden = option.dataset.unitId !== unitId;
+        option.disabled = option.hidden;
+    });
+    studentExportClass.value = '';
+};
+studentExportUnit?.addEventListener('change', filterStudentExportClasses);
+filterStudentExportClasses();
 studentStatus?.addEventListener('change', toggleInactiveFields);
 discountSource?.addEventListener('change', toggleDiscountFeeType);
 discountType?.addEventListener('change', toggleDiscountValueFormat);
@@ -374,6 +478,7 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
     const results = picker.querySelector('[data-student-results]');
     const options = Array.from(select.options).filter((option) => option.value);
     const selected = options.find((option) => option.selected);
+    const normalizedStudentText = (value) => value.trim().toLocaleLowerCase('id-ID').replace(/\s+/g, ' ');
 
     if (selected) search.value = selected.textContent.trim();
 
@@ -406,8 +511,9 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
 
     search.addEventListener('focus', renderStudentResults);
     search.addEventListener('input', () => {
-        select.value = '';
-        search.setCustomValidity('Pilih siswa dari hasil pencarian.');
+        const exactMatch = options.find((option) => normalizedStudentText(option.textContent) === normalizedStudentText(search.value));
+        select.value = exactMatch?.value ?? '';
+        search.setCustomValidity(exactMatch ? '' : 'Pilih siswa dari hasil pencarian.');
         renderStudentResults();
         select.dispatchEvent(new Event('change', { bubbles: true }));
     });
@@ -421,7 +527,14 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
             }
         }
     });
-    search.addEventListener('blur', () => window.setTimeout(() => { results.hidden = true; }, 120));
+    search.addEventListener('blur', () => window.setTimeout(() => {
+        if (!select.value) {
+            const query = normalizedStudentText(search.value);
+            const matches = options.filter((option) => normalizedStudentText(option.textContent).includes(query));
+            if (query && matches.length === 1) chooseStudent(matches[0]);
+        }
+        results.hidden = true;
+    }, 120));
     search.closest('form')?.addEventListener('submit', () => {
         if (!select.value) search.setCustomValidity('Pilih siswa dari hasil pencarian.');
     });
@@ -451,9 +564,9 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
         modalTitle.textContent = 'Edit Data';
         const selectedClass = studentClassOptions.find((option) => option.value === String(record.school_class_id));
         const allClasses = studentClassOptions.find((option) => option.hasAttribute('data-all-classes'));
-        if (studentUnit && selectedClass) studentUnit.value = selectedClass.dataset.unitId;
-        if (studentUnit && !record.school_class_id && record.education_unit_id) studentUnit.value = String(record.education_unit_id);
-        filterStudentClasses(record.school_class_id ?? allClasses?.value);
+        if (studentUnit && record.education_unit_id) studentUnit.value = String(record.education_unit_id);
+        else if (studentUnit && selectedClass) studentUnit.value = selectedClass.dataset.unitId;
+        filterStudentClasses(record.school_class_id ? [record.school_class_id] : allClasses?.value);
         Object.entries(record).forEach(([key, value]) => {
             const field = masterForm.elements.namedItem(key);
             if (!field) return;
@@ -465,6 +578,7 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
             else if (field.type === 'date') field.value = value ? String(value).slice(0, 10) : '';
             else field.value = value ?? '';
         });
+        if (registrationClassList) filterStudentClasses(record.school_class_id ? [record.school_class_id] : []);
         toggleInactiveFields();
         toggleDiscountFeeType();
         toggleDiscountValueFormat();
@@ -697,6 +811,7 @@ if (otherForm) {
     const time = otherForm.querySelector('[data-other-time]');
     const clockDisplay = otherForm.querySelector('[data-wib-clock]');
     const feeOptions = Array.from(fee.options).filter((option) => option.value);
+    const feePlaceholder = fee.querySelector('option:not([value])');
     const updateClock = () => {
         const clock = currentWibClock();
         time.value = clock.value;
@@ -714,10 +829,24 @@ if (otherForm) {
     const filterOtherFees = () => {
         const classId = student.selectedOptions[0]?.dataset.classId;
         const unitId = student.selectedOptions[0]?.dataset.unitId;
+        const yearId = student.selectedOptions[0]?.dataset.yearId;
+        let availableFees = 0;
         feeOptions.forEach((option) => {
-            option.hidden = !classId || option.dataset.unitId !== unitId || (option.dataset.classId && option.dataset.classId !== classId);
+            const hidden = !classId
+                || option.dataset.unitId !== unitId
+                || (option.dataset.classId && option.dataset.classId !== classId)
+                || (option.dataset.yearId && option.dataset.yearId !== yearId);
+            option.hidden = hidden;
+            option.disabled = hidden;
+            if (!hidden) availableFees += 1;
         });
         if (fee.selectedOptions[0]?.hidden) fee.value = '';
+        fee.disabled = !student.value || availableFees === 0;
+        if (feePlaceholder) {
+            feePlaceholder.textContent = !student.value
+                ? 'Pilih siswa terlebih dahulu'
+                : (availableFees > 0 ? 'Pilih jenis pembayaran...' : 'Tidak ada pembayaran sesuai unit, kelas, dan tahun siswa');
+        }
     };
     const updateOtherQuote = async () => {
         if (!student.value || !fee.value) {

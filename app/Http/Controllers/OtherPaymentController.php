@@ -17,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class OtherPaymentController extends Controller
 {
@@ -30,7 +31,7 @@ class OtherPaymentController extends Controller
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'payments' => OtherPayment::with(['student.schoolClass.educationUnit', 'feeType'])
                 ->when($section['key'] !== 'all', fn ($query) => $this->filterPayments($query, $section['key']))
-                ->when($search, fn ($query) => $query
+                ->when($search, fn ($query) => $query->where(fn ($searchQuery) => $searchQuery
                     ->where('payment_method', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%")
                     ->orWhereHas('feeType', fn ($feeType) => $feeType->where('name', 'like', "%{$search}%"))
@@ -40,7 +41,7 @@ class OtherPaymentController extends Controller
                         ->orWhereHas('schoolClass', fn ($class) => $class
                             ->where('name', 'like', "%{$search}%")
                             ->orWhereHas('educationUnit', fn ($unit) => $unit
-                                ->where('name', 'like', "%{$search}%")))))
+                                ->where('name', 'like', "%{$search}%"))))))
                 ->latest('transaction_at')->paginate($perPage)->withQueryString(),
             'showCreate' => false,
             'importPreview' => null,
@@ -75,6 +76,7 @@ class OtherPaymentController extends Controller
 
     public function quote(Request $request, OtherPaymentService $payments): JsonResponse
     {
+        $section = $this->section($request);
         $validated = $request->validate([
             'student_id' => ['required', 'exists:students,id'],
             'fee_type_id' => ['required', 'exists:fee_types,id'],
@@ -82,24 +84,26 @@ class OtherPaymentController extends Controller
 
         return response()->json($payments->quote(
             Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']),
-            FeeType::findOrFail($validated['fee_type_id']),
+            $this->feeTypeForSection($validated['fee_type_id'], $section),
         ));
     }
 
     public function store(StoreOtherPaymentRequest $request, OtherPaymentService $payments): RedirectResponse
     {
+        $section = $this->section($request);
         $validated = $request->validated();
         $payments->record(
             Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']),
-            FeeType::findOrFail($validated['fee_type_id']),
+            $this->feeTypeForSection($validated['fee_type_id'], $section),
             $validated,
         );
 
-        return redirect()->route('finance.other.index')->with('success', 'Pembayaran lain-lain berhasil disimpan.');
+        return redirect()->route('finance.other.index', $this->sectionParams($section))->with('success', 'Pembayaran '.$section['title'].' berhasil disimpan.');
     }
 
     public function previewImport(PreviewOtherPaymentImportRequest $request, OtherPaymentImportService $importer): View
     {
+        $section = $this->section($request);
         $token = $request->string('token')->value();
         $stored = $token ? $request->session()->get("other_payment_imports.{$token}") : null;
 
@@ -111,7 +115,7 @@ class OtherPaymentController extends Controller
         }
 
         try {
-            $sources = $importer->sources(Storage::path($stored['path']));
+            $sources = $importer->sources(Storage::path($stored['path']), $section['key']);
             $mappings = $request->input('mappings', $stored['mappings'] ?? []);
             foreach ($sources as $source) {
                 if (! array_key_exists($source['key'], $mappings) && $source['suggested_fee_type_id']) {
@@ -124,14 +128,15 @@ class OtherPaymentController extends Controller
             return view('finance.other', [
                 'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
                 'payments' => OtherPayment::with(['student.schoolClass.educationUnit', 'feeType'])
+                    ->when($section['key'] !== 'all', fn ($query) => $this->filterPayments($query, $section['key']))
                     ->latest('transaction_at')->paginate(10),
                 'showCreate' => false,
-                'importPreview' => $importer->preview(Storage::path($stored['path']), $mappings, $stored['name']),
+                'importPreview' => $importer->preview(Storage::path($stored['path']), $mappings, $stored['name'], $section['key']),
                 'importSources' => $sources,
                 'importMappings' => $mappings,
                 'importToken' => $token,
-                'feeTypes' => FeeType::with(['educationUnit', 'schoolClass'])->where('is_active', true)->orderBy('name')->get(),
-                'paymentSection' => $this->section($request),
+                'feeTypes' => $this->feeTypes($section),
+                'paymentSection' => $section,
             ]);
         } catch (\Throwable $exception) {
             if (! $request->string('token')->value()) {
@@ -145,15 +150,16 @@ class OtherPaymentController extends Controller
 
     public function import(Request $request, OtherPaymentImportService $importer): RedirectResponse
     {
+        $section = $this->section($request);
         $validated = $request->validate(['token' => ['required', 'uuid']]);
         $stored = $request->session()->pull("other_payment_imports.{$validated['token']}");
 
         if (! $stored || ! Storage::exists($stored['path'])) {
-            return redirect()->route('finance.other.index')->withErrors(['file' => 'File preview sudah tidak tersedia. Silakan unggah ulang.']);
+            return redirect()->route('finance.other.index', $this->sectionParams($section))->withErrors(['file' => 'File preview sudah tidak tersedia. Silakan unggah ulang.']);
         }
 
         try {
-            $result = $importer->import(Storage::path($stored['path']), $stored['mappings'] ?? [], $stored['name']);
+            $result = $importer->import(Storage::path($stored['path']), $stored['mappings'] ?? [], $stored['name'], $section['key']);
         } finally {
             Storage::delete($stored['path']);
         }
@@ -166,7 +172,7 @@ class OtherPaymentController extends Controller
             $message .= ' '.count($result['failures']).' transaksi gagal: '.collect($result['failures'])->pluck('message')->take(3)->implode(' ');
         }
 
-        return redirect()->route('finance.other.index')->with('success', $message);
+        return redirect()->route('finance.other.index', $this->sectionParams($section))->with('success', $message);
     }
 
     private function section(Request $request): array
@@ -189,19 +195,36 @@ class OtherPaymentController extends Controller
 
     private function feeTypes(array $section)
     {
-        return FeeType::with(['educationUnit', 'schoolClass'])
+        return FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
             ->where('is_active', true)
-            ->when($section['key'] === 'daftar-ulang', fn ($query) => $query->where('name', 'like', '%Daftar Ulang%'))
-            ->when($section['key'] === 'laundry', fn ($query) => $query->where('name', 'like', '%Laundry%'))
-            ->when($section['key'] === 'lain-lain', fn ($query) => $query->where('name', 'not like', '%Daftar Ulang%')->where('name', 'not like', '%Laundry%'))
+            ->paymentGroup($section['key'])
             ->orderBy('name')->get();
     }
 
     private function filterPayments($query, string $section)
     {
         return $query->whereHas('feeType', fn ($feeType) => $feeType
-            ->when($section === 'daftar-ulang', fn ($type) => $type->where('name', 'like', '%Daftar Ulang%'))
-            ->when($section === 'laundry', fn ($type) => $type->where('name', 'like', '%Laundry%'))
-            ->when($section === 'lain-lain', fn ($type) => $type->where('name', 'not like', '%Daftar Ulang%')->where('name', 'not like', '%Laundry%')));
+            ->paymentGroup($section));
+    }
+
+    private function feeTypeForSection(int $feeTypeId, array $section): FeeType
+    {
+        $feeType = FeeType::whereKey($feeTypeId)
+            ->where('is_active', true)
+            ->paymentGroup($section['key'])
+            ->first();
+
+        if (! $feeType) {
+            throw ValidationException::withMessages([
+                'fee_type_id' => 'Jenis pembayaran tidak sesuai dengan menu '.$section['title'].'.',
+            ]);
+        }
+
+        return $feeType;
+    }
+
+    private function sectionParams(array $section): array
+    {
+        return $section['key'] === 'lain-lain' ? [] : ['category' => $section['key']];
     }
 }

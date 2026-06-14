@@ -696,6 +696,9 @@ body { font-size: 14px; line-height: 1.5; }
 .student-page .student-action-bar .action-purple { color: #0d5f36; background: #e9edf2; border-color: #d4dae4; }
 .student-page .student-action-bar .action-orange { color: #9b4b2d; background: #ffe1d4; border-color: #f8d3c3; }
 .student-page .student-action-bar .action-green { color: #248255; background: #dcf7e8; border-color: #d1efde; }
+.student-page .student-filter-toggle { color: #0d5f36; background: #edf7f0; border-color: #cfe5d7; }
+.student-page .student-filter-toggle:hover, .student-page .student-filter-toggle.active { color: #fff; background: #0d5f36; border-color: #0d5f36; }
+.student-page .student-filter-toggle b { min-width: 18px; height: 18px; padding: 0 5px; display: inline-grid; place-items: center; color: #fff; background: #b7841e; border-radius: 20px; font-size: 9px; }
 .student-page .student-filter-panel {
     width: 100%;
     padding: 0 16px 14px;
@@ -708,6 +711,7 @@ body { font-size: 14px; line-height: 1.5; }
     box-shadow: 0 7px 20px #17203309;
     overflow: hidden;
 }
+.student-page .student-filter-panel[hidden] { display: none; }
 .student-page .student-filter-heading {
     min-height: 58px;
     margin: 0 -16px 0;
@@ -1101,27 +1105,71 @@ body {
 .other-payment-summary .total { background: #f0fbf5; border-color: #b8dbc8; }
 .other-payment-summary .total strong { color: var(--green); }
 .spp-hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.spp-import-card { margin-bottom: 20px; padding: 24px; display: grid; grid-template-columns: minmax(300px, .85fr) minmax(480px, 1.15fr); align-items: center; gap: 28px; position: relative; overflow: hidden; border-color: #dce5f4; box-shadow: 0 10px 30px #0d5f360d; }
-.spp-import-card::before { content: ''; width: 260px; height: 260px; position: absolute; left: -110px; bottom: -180px; background: radial-gradient(circle, #f6e5bd 0, #f9edcf66 52%, transparent 70%); pointer-events: none; }
-.spp-import-copy { display: flex; align-items: flex-start; gap: 16px; position: relative; }
+.spp-hero-actions .button { min-height: 46px; padding: 0 20px; border-radius: 12px; }
+.spp-add-button, .spp-import-toggle { color: #42536a; background: #fff; border-color: #d7e0ec; box-shadow: 0 7px 18px #1720330a; }
+.spp-add-button:hover, .spp-import-toggle:hover { color: #0d6840; background: #f6fbf7; border-color: #b9ddc6; box-shadow: 0 9px 22px #0d5f3614; }
+.spp-import-toggle.active { color: #fff; background: linear-gradient(135deg, #0d5f36, #168652); border-color: #0d5f36; box-shadow: 0 10px 22px #0d5f3629; }
+.spp-import-modal-backdrop[hidden] { display: none; }
+.spp-import-modal-backdrop { padding: 24px; position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; background: #10231a99; backdrop-filter: blur(5px); }
+.spp-import-modal { width: min(820px, 100%); max-height: calc(100vh - 48px); padding: 26px; overflow-y: auto; background: #f8faf9; border: 1px solid #dce7e0; border-radius: 20px; box-shadow: 0 28px 70px #082a1b42; }
+.spp-import-modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.spp-import-modal-head h2 { margin: 5px 0 6px; color: #12291e; font-size: 24px; letter-spacing: -.04em; }
+.spp-import-modal-head p { margin: 0; color: #708077; font-size: 12px; }
+.spp-import-modal .spp-import-kicker { color: #0d6b3d; }
+.spp-import-progress { margin: 25px 6px 22px; display: grid; grid-template-columns: repeat(3, 1fr); position: relative; }
+.spp-import-progress::before { content: ''; height: 2px; position: absolute; top: 17px; left: 16.66%; right: 16.66%; background: #dbe3de; }
+.spp-import-progress div { display: grid; justify-items: center; gap: 7px; position: relative; color: #77847d; font-size: 10px; font-weight: 700; }
+.spp-import-progress b { width: 36px; height: 36px; display: grid; place-items: center; color: #536159; background: #e2e7e4; border: 4px solid #f8faf9; border-radius: 50%; font-size: 11px; }
+.spp-import-progress .active { color: #075c35; }
+.spp-import-progress .active b { color: #fff; background: #075c35; box-shadow: 0 6px 14px #0d5f3625; }
+.spp-import-info { margin-bottom: 18px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; color: #174d35; background: #e8f3ed; border: 1px solid #c4ded0; border-radius: 13px; }
+.spp-import-info > span { width: 38px; height: 38px; flex: 0 0 auto; display: grid; place-items: center; color: #fff; background: #087044; border-radius: 10px; }
+.spp-import-info .icon { width: 18px; height: 18px; }
+.spp-import-info strong, .spp-import-info p { display: block; margin: 0; }
+.spp-import-info strong { font-size: 12px; }
+.spp-import-info p { margin-top: 3px; color: #536a5e; font-size: 10px; line-height: 1.5; }
+.spp-import-modal-form { display: grid; gap: 14px; }
+.spp-import-dropzone { min-height: 235px; padding: 24px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: #294235; background: #fff; border: 2px dashed #cbd6cf; border-radius: 16px; text-align: center; cursor: pointer; transition: .2s ease; }
+.spp-import-dropzone:hover, .spp-import-dropzone.has-file { background: #f4faf6; border-color: #148052; box-shadow: 0 0 0 4px #0d5f3609; }
+.spp-import-dropzone input { display: none; }
+.spp-import-drop-icon { width: 64px; height: 64px; margin-bottom: 4px; display: grid; place-items: center; color: #a46d0b; background: #fff0cf; border-radius: 50%; }
+.spp-import-drop-icon .icon { width: 28px; height: 28px; }
+.spp-import-dropzone strong { font-size: 14px; }
+.spp-import-dropzone small { color: #849188; font-size: 10px; }
+.spp-import-browse { margin-top: 6px; padding: 7px 14px; color: #536159; background: #e9edeb; border-radius: 20px; font-size: 10px; font-weight: 700; }
+.spp-import-modal-actions { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+.spp-import-modal-actions .spp-preview-button { min-height: 46px; background: #075c35; box-shadow: 0 8px 18px #0d5f3624; }
+.spp-import-card[hidden] { display: none; }
+.spp-import-card { margin-bottom: 20px; padding: 0; display: grid; grid-template-columns: minmax(330px, .8fr) minmax(500px, 1.2fr); align-items: stretch; gap: 0; position: relative; overflow: hidden; background: #fff; border-color: #d5e5dc; border-radius: 18px; box-shadow: 0 16px 38px #0d5f3614; }
+.spp-import-card::before { content: ''; width: 230px; height: 230px; position: absolute; left: -95px; bottom: -145px; background: #ffffff0d; border: 1px solid #ffffff1c; border-radius: 50%; pointer-events: none; }
+.spp-import-copy { padding: 26px; display: flex; align-items: flex-start; gap: 16px; position: relative; color: #fff; background: linear-gradient(145deg, #074c2b 0%, #0d6b3d 68%, #947216 135%); }
 .spp-import-copy strong, .spp-import-copy span { display: block; }
-.spp-import-copy strong { margin: 4px 0 7px; color: var(--ink); font-size: 18px; font-weight: 650; letter-spacing: -.02em; }
-.spp-import-copy > div > span:last-child { max-width: 520px; color: var(--muted); font-size: 13px; line-height: 1.65; }
-.spp-import-kicker { color: #b7841e; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.spp-import-icon, .spp-preview-icon { width: 48px; height: 48px; flex: 0 0 auto; display: grid; place-items: center; color: #fff; background: linear-gradient(145deg, #b7841e, #0d5f36); border-radius: 14px; box-shadow: 0 10px 22px #0d5f362b; }
+.spp-import-copy strong { margin: 4px 0 7px; color: #fff; font-size: 18px; font-weight: 650; letter-spacing: -.02em; }
+.spp-import-copy > div > span:last-of-type { max-width: 520px; color: #d8ede1; font-size: 12px; line-height: 1.65; }
+.spp-import-kicker { color: #f2cb73; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.spp-import-icon, .spp-preview-icon { width: 48px; height: 48px; flex: 0 0 auto; display: grid; place-items: center; color: #fff; background: #ffffff17; border: 1px solid #ffffff24; border-radius: 14px; box-shadow: inset 0 1px #ffffff1f; }
 .spp-import-icon .icon, .spp-preview-icon .icon { width: 23px; height: 23px; }
-.spp-import-form { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: stretch; gap: 10px; }
-.spp-file-picker { min-width: 0; min-height: 72px; padding: 11px 12px; display: flex; align-items: center; gap: 12px; color: #4b586d; background: #fffdf7; border: 1.5px dashed #dcc895; border-radius: 12px; cursor: pointer; transition: .2s ease; }
-.spp-file-picker:hover, .spp-file-picker.has-file { background: #f1f6ff; border-color: #b7841e; box-shadow: 0 0 0 4px #0d5f360a; }
+.spp-import-steps { margin-top: 16px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.spp-import-steps span { padding: 5px 7px; display: inline-flex; align-items: center; gap: 5px; color: #e9f5ed; background: #ffffff12; border: 1px solid #ffffff1a; border-radius: 20px; font-size: 9px; font-weight: 650; }
+.spp-import-steps b { width: 17px; height: 17px; display: inline-grid; place-items: center; color: #0b6037; background: #f3d58f; border-radius: 50%; font-size: 8px; }
+.spp-import-form { min-width: 0; padding: 22px 24px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-content: center; align-items: stretch; gap: 10px; background: linear-gradient(145deg, #fff, #f8fbf9); }
+.spp-import-form-head { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.spp-import-form-head span, .spp-import-form-head strong { display: block; }
+.spp-import-form-head span { color: #9a6e16; font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.spp-import-form-head strong { margin-top: 3px; color: #294235; font-size: 13px; }
+.spp-import-close { width: 30px; height: 30px; display: grid; place-items: center; color: #708077; background: #edf4ef; border: 1px solid #dbe9df; border-radius: 9px; font-size: 19px; line-height: 1; cursor: pointer; }
+.spp-import-close:hover { color: #fff; background: #0d6b3d; border-color: #0d6b3d; }
+.spp-file-picker { min-width: 0; min-height: 82px; padding: 12px 13px; display: flex; align-items: center; gap: 12px; color: #4b586d; background: #fffdf8; border: 1.5px dashed #d5bc82; border-radius: 13px; cursor: pointer; transition: .2s ease; }
+.spp-file-picker:hover, .spp-file-picker.has-file { background: #f1faf4; border-color: #168652; box-shadow: 0 0 0 4px #0d5f360a; }
 .spp-file-picker input { display: none; }
-.spp-file-mark { width: 40px; height: 40px; flex: 0 0 auto; display: grid; place-items: center; color: #b7841e; background: #e8f0fd; border-radius: 10px; }
+.spp-file-mark { width: 44px; height: 44px; flex: 0 0 auto; display: grid; place-items: center; color: #0d6b3d; background: #e5f4ea; border-radius: 11px; }
 .spp-file-mark .icon { width: 20px; height: 20px; }
 .spp-file-text { min-width: 0; flex: 1; }
 .spp-file-text strong, .spp-file-text small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.spp-file-text strong { color: #344054; font-size: 13px; font-weight: 650; }
+.spp-file-text strong { color: #294235; font-size: 13px; font-weight: 650; }
 .spp-file-text small { margin-top: 4px; color: #8a96a8; font-size: 11px; }
-.spp-file-browse { padding: 7px 10px; flex: 0 0 auto; color: #b7841e; background: #fff; border: 1px solid #d6e0ef; border-radius: 8px; font-size: 11px; font-weight: 700; }
-.spp-preview-button { min-width: 142px; border-radius: 11px; }
+.spp-file-browse { padding: 8px 11px; flex: 0 0 auto; color: #9a6e16; background: #fff8e8; border: 1px solid #ead7aa; border-radius: 8px; font-size: 11px; font-weight: 700; }
+.spp-preview-button { min-width: 142px; border-radius: 11px; background: linear-gradient(135deg, #b7841e, #d19a2c); box-shadow: 0 8px 18px #b7841e2b; }
 .spp-import-preview { margin-bottom: 20px; padding: 0; overflow: hidden; border-color: #dce5f4; box-shadow: 0 12px 34px #1720330d; }
 .spp-preview-header { padding: 22px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; background: linear-gradient(110deg, #fff 50%, #f5f8fe); border-bottom: 1px solid #e3e9f2; }
 .spp-preview-title { display: flex; align-items: center; gap: 14px; }
@@ -1255,13 +1303,26 @@ body {
     .bill-metrics { grid-template-columns:repeat(2,1fr); }.bill-guide,.bill-type-tabs { grid-template-columns:1fr; }.bill-actions-grid { grid-template-columns:1fr; }.bill-form-grid { grid-template-columns:1fr 1fr; }.bill-filter-bar,.outstanding-filter { grid-template-columns:1fr 1fr; }.outstanding-search { grid-column:1/3; }.outstanding-overview,.outstanding-detail-grid { grid-template-columns:1fr; }.outstanding-actions { justify-content:flex-start; }
 }
 @media (max-width: 520px) {
-    .spp-import-card, .spp-preview-header { padding: 18px; }
+    .spp-import-card { padding: 0; }
+    .spp-preview-header { padding: 18px; }
+    .spp-import-copy, .spp-import-form { padding: 18px; }
+    .spp-hero-actions { display: grid; grid-template-columns: 1fr; }
+    .spp-hero-actions .button { width: 100%; }
     .spp-import-copy, .spp-preview-title { align-items: flex-start; }
     .spp-import-icon, .spp-preview-icon { width: 40px; height: 40px; }
     .spp-file-picker { align-items: flex-start; flex-wrap: wrap; }
     .spp-file-text { min-width: calc(100% - 54px); }
     .spp-file-browse { margin-left: 52px; }
     .spp-import-stats { padding: 14px; grid-template-columns: 1fr; }
+    .spp-import-modal-backdrop { padding: 10px; place-items: end center; }
+    .spp-import-modal { max-height: calc(100vh - 20px); padding: 18px; border-radius: 18px; }
+    .spp-import-modal-head h2 { font-size: 20px; }
+    .spp-import-progress { margin-inline: -5px; }
+    .spp-import-progress div { font-size: 9px; }
+    .spp-import-info { align-items: flex-start; }
+    .spp-import-dropzone { min-height: 210px; }
+    .spp-import-modal-actions { grid-template-columns: 1fr; }
+    .spp-import-modal-actions .button { width: 100%; }
     .bill-metrics,.bill-form-grid,.bill-filter-bar,.outstanding-filter { grid-template-columns:1fr; }.bill-action-footer,.bill-list-heading,.outstanding-list-heading { align-items:stretch;flex-direction:column; }.bill-action-footer .button { width:100%; }.outstanding-search { grid-column:auto; }.outstanding-student-head { align-items:flex-start;flex-wrap:wrap; }.outstanding-total { width:100%;padding:10px 0 0;text-align:left;border-top:1px solid #e7ebf2;border-left:0; }.outstanding-actions { display:grid;grid-template-columns:1fr 1fr; }.bill-period-note { width:100%;min-width:0; }
 }
 
@@ -1322,3 +1383,423 @@ body {
 .settings-layout { display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.55fr);align-items:start;gap:16px; }.settings-fields { padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px; }.settings-fields label.wide { grid-column:1/3; }.settings-fields textarea { padding:10px;resize:vertical; }.settings-save { padding:15px 20px;display:flex;align-items:center;justify-content:space-between;gap:15px;background:#f8fafd;border-top:1px solid #e8edf4; }.settings-save span { color:#8793a5;font-size:9px; }.settings-side { display:grid;gap:14px; }.setup-card a { padding:13px 16px;display:grid;grid-template-columns:1fr auto 16px;align-items:center;gap:8px;color:#647187;border-top:1px solid #edf0f5;font-size:10px;transition:.2s; }.setup-card a:hover { color:#0d6b3d;background:#f8fafd; }.setup-card a strong { min-width:26px;padding:4px 7px;color:#0d6b3d;background:#edf7f0;border-radius:15px;text-align:center; }.setup-card a .icon { width:13px;height:13px; }.settings-note { padding:16px;color:#725414;background:#fff8e9;border:1px solid #f0ddb0;border-radius:13px; }.settings-note strong { font-size:11px; }.settings-note p { margin:5px 0 0;font-size:9px;line-height:1.6; }
 @media (max-width:1100px) { .report-filter { grid-template-columns:repeat(3,1fr); }.report-grid,.settings-layout { grid-template-columns:1fr; }.report-metrics { grid-template-columns:1fr 1fr; } }
 @media (max-width:700px) { .report-filter,.settings-fields { grid-template-columns:1fr; }.settings-fields label.wide { grid-column:auto; }.report-metrics { grid-template-columns:1fr; }.settings-save { align-items:stretch;flex-direction:column; }.settings-save .button { width:100%; } }
+
+/* Unified typography pass */
+body {
+    font-size: 15px;
+    line-height: 1.55;
+}
+
+small,
+.brand small,
+.topbar-title small,
+.active-year-pill small,
+.active-year-pill strong,
+.hero p:last-child,
+.simple-list-header span,
+.card-header p,
+.card-header a,
+.metric-card small,
+.dashboard-chart-note,
+.dashboard-list-empty,
+.payment-name small,
+.payment-amount small,
+.class-row small,
+.school-year small,
+.school-year strong,
+.student-page .student-filter-heading small,
+.student-page .table-person small,
+.table-person small,
+.data-table td > small,
+.spp-detail-grid span,
+.spp-correction-history span,
+.spp-correction-history small,
+.other-payment-summary span,
+.spp-import-modal-head p,
+.spp-import-progress div,
+.spp-import-progress b,
+.spp-import-info p,
+.spp-import-dropzone small,
+.spp-import-browse,
+.spp-import-copy > div > span:last-of-type,
+.spp-import-kicker,
+.spp-import-steps span,
+.spp-import-steps b,
+.spp-import-form-head span,
+.spp-file-text small,
+.spp-file-browse,
+.spp-preview-title > div > span:last-child,
+.spp-confirm-button b,
+.spp-import-stats p span,
+.spp-import-stats p small,
+.spp-preview-table-head div span,
+.spp-preview-count,
+.spp-line-number,
+.spp-import-note,
+.spp-import-note span,
+.other-mapping-form label span small,
+.bill-metrics span,
+.bill-metrics small,
+.bill-guide strong,
+.bill-guide small,
+.bill-builder-header p,
+.bill-type-tabs strong,
+.bill-type-tabs small,
+.bill-action-heading small,
+.bill-form-grid label,
+.bill-month-picker legend,
+.bill-month-picker label span,
+.bill-action-footer p,
+.bill-list-heading div span,
+.bill-list-hint,
+.bill-allocation-count,
+.bill-manual-pay-form input,
+.bill-manual-pay-form select,
+.bill-period-note small,
+.bill-period-note em,
+.outstanding-filter-heading span,
+.outstanding-filter-heading a,
+.outstanding-filter label b,
+.outstanding-filter input,
+.outstanding-filter select,
+.outstanding-list-heading span,
+.outstanding-list-heading .eyebrow,
+.outstanding-student-name span,
+.outstanding-total small,
+.outstanding-overview small,
+.outstanding-overview strong,
+.outstanding-overview b,
+.outstanding-details summary,
+.outstanding-detail-grid h3,
+.outstanding-detail-grid h3 b,
+.outstanding-line span strong,
+.outstanding-line span small,
+.outstanding-line b,
+.outstanding-clear,
+.outstanding-empty p,
+.report-metrics small,
+.report-metrics b,
+.report-section-head small,
+.settings-form-head small,
+.report-section-head a,
+.report-filter label,
+.settings-fields label,
+.report-filter input,
+.report-filter select,
+.settings-fields input,
+.settings-fields select,
+.settings-fields textarea,
+.report-bars span,
+.report-bars small,
+.report-bars > p,
+.composition-total span,
+.composition-row,
+.report-table td small,
+.report-type,
+.settings-save span,
+.setup-card a,
+.settings-note strong,
+.settings-note p {
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.nav-item,
+.master-nav .nav-parent,
+.master-nav .nav-submenu a,
+.nested-nav > .nav-submenu > a,
+.nested-nav-button,
+.button,
+.student-page .student-action-bar .button,
+.list-toolbar label,
+.list-toolbar select,
+.list-toolbar input,
+.student-filter-panel label,
+.student-page .student-filter-panel label,
+.master-form label,
+.master-form input,
+.master-form select,
+.table-search input,
+.table-search select,
+.student-filter-panel input,
+.student-filter-panel select,
+.student-page .student-filter-panel input,
+.student-page .student-filter-panel select,
+.spp-form-grid > label,
+.spp-form-field,
+.spp-form-grid input,
+.spp-form-grid select,
+.student-search-results button,
+.student-search-results span,
+.spp-month-field legend,
+.spp-months label,
+.spp-month-status,
+.spp-summary span,
+.spp-summary .total small,
+.spp-quote-message,
+.payment-method,
+.spp-expanded-meta span,
+.spp-expanded-meta strong,
+.spp-expanded-actions > span,
+.spp-detail-grid strong,
+.spp-edit-readonly,
+.spp-correction-history b,
+.spp-import-dropzone strong,
+.spp-file-text strong,
+.spp-preview-table-head strong,
+.other-mapping-form label span strong,
+.other-mapping-form select {
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.data-table th,
+.student-page .data-table th,
+.status,
+.student-page .status,
+.code-badge,
+.trend,
+.period {
+    font-size: 12px;
+    line-height: 1.35;
+}
+
+.data-table td,
+.student-page .data-table td,
+.data-table td > strong,
+.table-person strong,
+.student-page .table-person strong,
+.student-table-length,
+.student-page .student-table-length,
+.pagination-wrap,
+.student-page .pagination-wrap,
+.form-modal-header h2 {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.brand strong { font-size: 19px; line-height: 1.25; }
+.topbar-title span { font-size: 16px; line-height: 1.35; }
+.eyebrow,
+.student-page .student-page-hero .eyebrow {
+    font-size: 12px;
+    line-height: 1.4;
+}
+.hero h1,
+.student-page .student-page-hero h1 {
+    font-size: clamp(28px, 2.6vw, 32px);
+    line-height: 1.2;
+    letter-spacing: -.025em;
+}
+.simple-list-header strong,
+.card-header h3,
+.spp-form-heading strong,
+.spp-preview-title strong,
+.spp-correction-history > strong,
+.other-payment-heading > div strong,
+.report-section-head strong,
+.settings-form-head strong,
+.outstanding-filter-heading strong,
+.outstanding-list-heading strong,
+.outstanding-empty strong {
+    font-size: 16px;
+    line-height: 1.35;
+}
+.spp-import-modal-head h2,
+.bill-builder-header h2 {
+    font-size: 24px;
+    line-height: 1.25;
+}
+.metric-card h2,
+.spp-import-stats p strong,
+.report-metrics strong {
+    font-size: 22px;
+    line-height: 1.2;
+}
+.result-modal strong { font-size: 28px; line-height: 1.25; }
+.result-modal p { font-size: 16px; line-height: 1.55; }
+
+@media (max-width: 600px) {
+    body { font-size: 14px; }
+    .hero h1,
+    .student-page .student-page-hero h1 { font-size: 26px; }
+    .spp-import-modal-head h2,
+    .bill-builder-header h2 { font-size: 22px; }
+}
+
+.bill-list-hint,
+.student-status-dot {
+    font-size: 13px !important;
+    line-height: 1.35;
+}
+
+/* Font weight normalization: bold is reserved for titles/headings only. */
+body,
+button,
+input,
+select,
+textarea,
+label,
+span,
+small,
+p,
+td,
+th,
+a,
+strong,
+b {
+    font-weight: 400 !important;
+}
+
+.button,
+.nav-item,
+.master-nav .nav-submenu a,
+.nested-level > .nav-submenu-deep a,
+.nested-nav-button,
+.status,
+.period,
+.trend,
+.code-badge,
+.payment-method,
+.student-status-dot,
+.spp-import-browse,
+.spp-file-browse,
+.spp-preview-count,
+.spp-line-number,
+.bill-list-hint,
+.student-search-results button,
+.spp-expand-button,
+.pagination-wrap nav a,
+.pagination-wrap nav span {
+    font-weight: 500 !important;
+}
+
+.spp-form-grid > label,
+.spp-form-field,
+.spp-form-field > span,
+.bill-form-grid label,
+.bill-month-picker legend,
+.bill-month-picker label span,
+.student-filter-panel label,
+.student-page .student-filter-panel label,
+.master-form label,
+.report-filter label,
+.settings-fields label,
+.outstanding-filter label b,
+.list-toolbar label {
+    font-weight: 400 !important;
+}
+
+.master-form select[multiple] {
+    height: auto;
+    min-height: 138px;
+    padding: 8px 10px;
+}
+
+.master-form select[multiple] option {
+    padding: 7px 8px;
+    border-radius: 6px;
+}
+
+.registration-class-field {
+    display: grid;
+    gap: 8px;
+    color: #566276;
+    font-size: 14px;
+}
+
+.registration-class-list {
+    max-height: 240px;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 8px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #dce3ed;
+    border-radius: 10px;
+}
+
+.registration-class-list label {
+    min-height: 42px;
+    padding: 9px 10px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #172033;
+    background: #f8fafc;
+    border: 1px solid #e3e9f2;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: .18s ease;
+}
+
+.registration-class-list label[hidden] {
+    display: none;
+}
+
+.registration-class-list label:hover {
+    border-color: #b8d9c4;
+    background: #f5fbf7;
+}
+
+.registration-class-list input {
+    width: 17px;
+    height: 17px;
+    accent-color: #0d6b3d;
+    flex: 0 0 auto;
+}
+
+.registration-class-list label:has(input:checked) {
+    color: #0b4f2f;
+    background: #edf8f1;
+    border-color: #85c99c;
+    box-shadow: 0 6px 14px #0d5f3610;
+}
+
+.registration-class-list p {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 18px;
+    color: #7d8a9e;
+    text-align: center;
+    background: #f8fafc;
+    border: 1px dashed #d9e1ec;
+    border-radius: 9px;
+}
+
+.master-form label > small {
+    margin-top: 2px;
+    color: #7d8a9e;
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+h1,
+h2,
+h3,
+.hero h1,
+.student-page .student-page-hero h1,
+.brand strong,
+.topbar-title span,
+.login-brand h1,
+.simple-list-header strong,
+.card-header h3,
+.spp-form-heading strong,
+.spp-import-modal-head h2,
+.spp-preview-title strong,
+.spp-correction-history > strong,
+.other-payment-heading > div strong,
+.bill-builder-header h2,
+.bill-action-heading strong,
+.bill-list-heading strong,
+.outstanding-filter-heading strong,
+.outstanding-list-heading strong,
+.outstanding-empty strong,
+.report-section-head strong,
+.settings-form-head strong,
+.master-create-heading strong,
+.form-modal-header h2,
+.result-modal strong {
+    font-weight: 650 !important;
+}
