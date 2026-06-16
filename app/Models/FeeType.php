@@ -32,6 +32,10 @@ class FeeType extends Model
 
     public function scopePaymentGroup(Builder $query, string $group): Builder
     {
+        if ($group === 'spp') {
+            return $query->where('payment_group', 'spp');
+        }
+
         if ($group === 'daftar-ulang') {
             return $query->where(fn (Builder $feeType) => $feeType
                 ->where('payment_group', 'daftar-ulang')

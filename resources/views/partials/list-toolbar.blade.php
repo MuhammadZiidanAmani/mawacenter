@@ -6,9 +6,10 @@
     @endforeach
     <label>Show
         <select name="per_page" aria-label="Jumlah data per halaman" onchange="this.form.submit()">
-            @foreach ([10, 25, 50, 100] as $size)
+            @foreach ([10, 25, 50, 100, 500] as $size)
                 <option value="{{ $size }}" @selected(request('per_page', 10) == $size)>{{ $size }}</option>
             @endforeach
+            <option value="all" @selected(request('per_page') === 'all')>All</option>
         </select>
         entries
     </label>

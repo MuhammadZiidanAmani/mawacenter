@@ -77,11 +77,11 @@
     </section>
 
     <table>
-        <thead><tr><th class="transaction-time">Waktu Transaksi</th><th class="payment-name">Jenis Pembayaran</th><th class="academic-year">Tahun Pelajaran</th><th class="payment-method">Bayar</th><th class="amount number">Nominal</th></tr></thead>
+        <thead><tr><th class="transaction-time">Waktu Transaksi</th><th class="payment-name">Kategori Pembayaran</th><th class="academic-year">Tahun Pelajaran</th><th class="payment-method">Bayar</th><th class="amount number">Nominal</th></tr></thead>
         <tbody>
             <tr>
                 <td>{{ $payment->transaction_at->format('d-m-Y H:i:s') }}</td>
-                <td>{{ $payment->feeType?->name ?? 'Daftar Ulang' }}</td>
+                <td>{{ $payment->feeType?->name ?? 'Daftar Ulang' }}@if($payment->items->isNotEmpty()) · {{ $payment->items->map(fn($item) => ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][$item->month].' '.$item->year)->join(', ') }}@endif</td>
                 <td>{{ $payment->feeType?->academicYear?->name ?? $payment->student?->academicYear?->name ?? '-' }}</td>
                 <td>{{ $payment->payment_method }}</td>
                 <td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td>

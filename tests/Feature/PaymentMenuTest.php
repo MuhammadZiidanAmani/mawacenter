@@ -67,6 +67,83 @@ class PaymentMenuTest extends TestCase
             ->assertJsonValidationErrors('fee_type_id');
     }
 
+    public function test_laundry_payment_uses_monthly_flow_like_spp(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Pondok Pesantren', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7A', 'level' => 'Kelas 7']);
+        $student = Student::create([
+            'nis' => '2001',
+            'name' => 'Siswa Laundry',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        $laundry = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'laundry',
+            'code' => 'LAUNDRY-7A',
+            'name' => 'Laundry 7A',
+            'amount' => 150000,
+            'period' => 'Bulanan',
+            'is_active' => true,
+        ]);
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/keuangan/pembayaran/lain-lain/create?category=laundry')
+            ->assertOk()
+            ->assertSee('data-laundry-form', false)
+            ->assertSee('name="months[]"', false)
+            ->assertSee('Biaya Laundry / Bulan');
+
+        $this->getJson('/keuangan/pembayaran/lain-lain/months?category=laundry&student_id='.$student->id.'&fee_type_id='.$laundry->id.'&year=2026')
+            ->assertOk()
+            ->assertJsonPath('first_payable_month', 1)
+            ->assertJsonPath('months.0.payment_status', 'Belum Dibayar');
+
+        $this->getJson('/keuangan/pembayaran/lain-lain/quote?category=laundry&student_id='.$student->id.'&fee_type_id='.$laundry->id.'&year=2026&months[]=1&months[]=2')
+            ->assertOk()
+            ->assertJson([
+                'original_amount' => 300000,
+                'remaining_amount' => 300000,
+            ]);
+
+        $this->post('/keuangan/pembayaran/lain-lain?category=laundry', [
+            'transaction_date' => '16/06/2026',
+            'transaction_time' => '10.00',
+            'student_id' => $student->id,
+            'fee_type_id' => $laundry->id,
+            'year' => 2026,
+            'months' => [1, 2],
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'paid_amount' => 200000,
+        ])->assertRedirect('/keuangan/pembayaran/lain-lain?category=laundry');
+
+        $payment = OtherPayment::firstOrFail();
+        $this->assertDatabaseHas('other_payment_items', [
+            'other_payment_id' => $payment->id,
+            'month' => 1,
+            'paid_amount' => 150000,
+            'payment_status' => 'Lunas',
+        ]);
+        $this->assertDatabaseHas('other_payment_items', [
+            'other_payment_id' => $payment->id,
+            'month' => 2,
+            'paid_amount' => 50000,
+            'remaining_amount' => 100000,
+        ]);
+
+        $this->get('/keuangan/pembayaran/lain-lain?category=laundry')
+            ->assertOk()
+            ->assertSee('Januari 2026, Februari 2026')
+            ->assertSee('data-other-edit-url="'.route('finance.other.show', $payment).'"', false)
+            ->assertSee('data-other-delete-url="'.route('finance.other.destroy', $payment).'"', false);
+    }
+
     public function test_registration_payment_pending_does_not_reduce_the_remaining_charge(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
@@ -157,7 +234,7 @@ class PaymentMenuTest extends TestCase
             ->assertSee('registration-payment-table', false)
             ->assertSee('Unit Pendidikan')
             ->assertSee('class="registration-payment-detail"', false)
-            ->assertSee('Jenis Pembayaran')
+            ->assertSee('Kategori Pembayaran')
             ->assertDontSee('<span>Kategori</span>', false)
             ->assertSee('Cara Bayar')
             ->assertSee('Petugas')

@@ -27,7 +27,7 @@ class SppPaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
+        $perPage = $this->perPage($request);
         $search = $request->string('search')->value();
         $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'unit', 'class', 'method', 'total'], true)
             ? $request->string('sort')->value()

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OtherPayment extends Model
 {
@@ -33,5 +34,10 @@ class OtherPayment extends Model
     public function feeType(): BelongsTo
     {
         return $this->belongsTo(FeeType::class);
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(OtherPaymentItem::class);
     }
 }

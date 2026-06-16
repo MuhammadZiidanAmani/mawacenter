@@ -25,7 +25,7 @@ class ReportController extends Controller
         $direction = $request->string('direction')->value() === 'asc' ? 'asc' : 'desc';
         $transactions = $transactions->sortBy($sort, SORT_NATURAL | SORT_FLAG_CASE, $direction === 'desc')->values();
         $page = LengthAwarePaginator::resolveCurrentPage();
-        $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
+        $perPage = $this->perPage($request);
 
         return view('reports.index', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),

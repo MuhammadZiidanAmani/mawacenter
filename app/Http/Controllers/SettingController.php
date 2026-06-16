@@ -7,7 +7,6 @@ use App\Models\AppSetting;
 use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\SchoolClass;
-use App\Models\SppSetting;
 use App\Models\Student;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -21,12 +20,17 @@ class SettingController extends Controller
         return view('settings.index', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'settings' => AppSetting::values($this->defaults()),
+            'roles' => [
+                'Admin',
+                'Kasir',
+                'Bendahara Perunit',
+                'Wali Murid/Siswa',
+            ],
             'setup' => [
                 'units' => EducationUnit::where('is_active', true)->count(),
                 'classes' => SchoolClass::where('is_active', true)->count(),
                 'students' => Student::where('is_active', true)->count(),
                 'fee_types' => FeeType::where('is_active', true)->count(),
-                'spp_settings' => SppSetting::where('is_active', true)->count(),
             ],
         ]);
     }

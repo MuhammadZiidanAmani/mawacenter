@@ -205,6 +205,8 @@ const studentClassOptions = studentClass ? Array.from(studentClass.options) : []
 const registrationClassList = document.querySelector('[data-registration-class-list]');
 const registrationClassRows = registrationClassList ? Array.from(registrationClassList.querySelectorAll('label[data-unit-id]')) : [];
 const registrationClassEmpty = document.querySelector('[data-registration-class-empty]');
+const registrationAllClasses = document.querySelector('[data-registration-all-classes]');
+const registrationAllClassesRow = document.querySelector('[data-registration-all-row]');
 const studentFilterUnit = document.querySelector('[data-student-filter-unit]');
 const studentFilterClass = document.querySelector('[data-student-filter-class]');
 const studentFilterClassOptions = studentFilterClass ? Array.from(studentFilterClass.options) : [];
@@ -328,6 +330,19 @@ const restoreStudentRegions = async (record = {}) => {
     await loadRegions('village', `villages/${districtId}.json`, values.village);
 };
 
+let studentRegionsReady = false;
+const ensureStudentRegions = async (record = null) => {
+    if (!studentRegions.province) return;
+    if (record) {
+        studentRegionsReady = true;
+        await restoreStudentRegions(record);
+        return;
+    }
+    if (studentRegionsReady) return;
+    studentRegionsReady = true;
+    await restoreStudentRegions();
+};
+
 const toggleInactiveFields = () => {
     if (!studentStatus || !inactiveFields) return;
     const inactive = !studentStatus.checked;
@@ -366,16 +381,23 @@ const filterStudentClasses = (selectedClass = '') => {
         : (selectedClass ? [String(selectedClass)] : []);
     if (registrationClassList) {
         let visibleCount = 0;
+        const allClassesSelected = selectedClasses.includes('all');
         registrationClassRows.forEach((row) => {
             const input = row.querySelector('input[type="checkbox"]');
             const visible = Boolean(unitId) && row.dataset.unitId === unitId;
             row.hidden = !visible;
             if (input) {
-                input.disabled = !visible;
-                input.checked = visible && selectedClasses.includes(input.value);
+                input.disabled = !visible || allClassesSelected;
+                input.checked = visible && !allClassesSelected && selectedClasses.includes(input.value);
             }
             if (visible) visibleCount += 1;
         });
+        if (registrationAllClasses && registrationAllClassesRow) {
+            const available = Boolean(unitId) && visibleCount > 0;
+            registrationAllClassesRow.hidden = !available;
+            registrationAllClasses.disabled = !available;
+            registrationAllClasses.checked = available && allClassesSelected;
+        }
         if (registrationClassEmpty) {
             registrationClassEmpty.hidden = visibleCount > 0;
             registrationClassEmpty.textContent = unitId ? 'Belum ada kelas untuk unit pendidikan ini.' : 'Pilih unit pendidikan terlebih dahulu.';
@@ -399,27 +421,39 @@ const filterStudentClasses = (selectedClass = '') => {
     }
 };
 
+registrationAllClasses?.addEventListener('change', () => {
+    registrationClassRows.forEach((row) => {
+        const input = row.querySelector('input[type="checkbox"]');
+        if (!input || row.hidden) return;
+        input.checked = false;
+        input.disabled = registrationAllClasses.checked;
+    });
+});
+registrationClassRows.forEach((row) => {
+    row.querySelector('input[type="checkbox"]')?.addEventListener('change', (event) => {
+        if (event.currentTarget.checked && registrationAllClasses) registrationAllClasses.checked = false;
+    });
+});
 studentUnit?.addEventListener('change', () => filterStudentClasses());
 if (registrationClassList) {
-    filterStudentClasses(
-        registrationClassRows
+    const selectedRegistrationClasses = registrationClassRows
             .map((row) => row.querySelector('input[type="checkbox"]'))
             .filter((input) => input?.checked)
-            .map((input) => input.value),
-    );
+            .map((input) => input.value);
+    filterStudentClasses(registrationAllClasses?.checked ? 'all' : selectedRegistrationClasses);
 }
 const filterStudentListClasses = (preserveSelection = false) => {
     if (!studentFilterUnit || !studentFilterClass) return;
     const unitId = studentFilterUnit.value;
     const currentClass = preserveSelection ? studentFilterClass.value : '';
-    studentFilterClass.disabled = !unitId;
+    studentFilterClass.disabled = false;
     studentFilterClassOptions.forEach((option) => {
         if (!option.value) {
-            option.textContent = unitId ? 'Semua Kelas' : 'Pilih Unit Pendidikan Dahulu';
+            option.textContent = 'semua';
             option.hidden = false;
             return;
         }
-        option.hidden = option.dataset.unitId !== unitId;
+        option.hidden = Boolean(unitId) && option.dataset.unitId !== unitId;
         option.disabled = option.hidden;
     });
     studentFilterClass.value = currentClass && studentFilterClassOptions.some((option) => option.value === currentClass && !option.hidden)
@@ -476,7 +510,12 @@ studentRegions.district?.addEventListener('change', async () => {
 studentRegions.province?.closest('form')?.addEventListener('submit', () => {
     Object.values(studentRegions).forEach((select) => { if (select) select.disabled = false; });
 });
-restoreStudentRegions();
+if (Object.values(studentRegions).some((select) => select?.value)) {
+    ensureStudentRegions();
+} else {
+    studentRegions.province?.addEventListener('focus', () => ensureStudentRegions(), { once: true });
+    studentRegions.province?.addEventListener('pointerdown', () => ensureStudentRegions(), { once: true });
+}
 
 document.querySelectorAll('[data-student-picker]').forEach((picker) => {
     const search = picker.querySelector('[data-student-search]');
@@ -597,10 +636,14 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
         const allClasses = studentClassOptions.find((option) => option.hasAttribute('data-all-classes'));
         if (studentUnit && record.education_unit_id) studentUnit.value = String(record.education_unit_id);
         else if (studentUnit && selectedClass) studentUnit.value = selectedClass.dataset.unitId;
-        filterStudentClasses(record.school_class_id ? [record.school_class_id] : allClasses?.value);
+        filterStudentClasses(record.school_class_id ? [record.school_class_id] : (registrationAllClasses ? 'all' : allClasses?.value));
         Object.entries(record).forEach(([key, value]) => {
             const field = masterForm.elements.namedItem(key);
             if (!field) return;
+            if (key === 'school_class_id' && value === null && registrationAllClasses) {
+                registrationAllClasses.checked = true;
+                return;
+            }
             if (key === 'school_class_id' && value === null && allClasses) {
                 field.value = allClasses.value;
                 return;
@@ -609,7 +652,7 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
             else if (field.type === 'date') field.value = value ? String(value).slice(0, 10) : '';
             else field.value = value ?? '';
         });
-        if (registrationClassList) filterStudentClasses(record.school_class_id ? [record.school_class_id] : []);
+        if (registrationClassList) filterStudentClasses(record.school_class_id ? [record.school_class_id] : 'all');
         toggleInactiveFields();
         syncDiscountPaymentControl();
         toggleDiscountValueFormat();
@@ -620,7 +663,7 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
             search.setCustomValidity('');
         });
         masterForm.querySelectorAll('[data-currency-input]').forEach(formatCurrencyInput);
-        restoreStudentRegions(record);
+        ensureStudentRegions(record);
         modal?.classList.add('show');
     });
 });
@@ -754,6 +797,160 @@ if (sppForm) {
     }));
     sppForm.addEventListener('reset', () => window.setTimeout(resetQuote, 0));
     loadMonthAvailability();
+}
+
+const laundryForm = document.querySelector('[data-laundry-form]');
+if (laundryForm) {
+    const currency = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+    const student = laundryForm.querySelector('[data-laundry-student]');
+    const fee = laundryForm.querySelector('[data-laundry-fee]');
+    const year = laundryForm.querySelector('[data-laundry-year]');
+    const monthInputs = Array.from(laundryForm.querySelectorAll('input[name="months[]"]'));
+    const message = laundryForm.querySelector('[data-laundry-message]');
+    const paidInput = laundryForm.querySelector('[data-laundry-paid-input]');
+    const paymentStatus = laundryForm.querySelector('[data-laundry-status]');
+    const feeOptions = Array.from(fee.options).filter((option) => option.value);
+    const outputs = {
+        base: laundryForm.querySelector('[data-laundry-base]'),
+        original: laundryForm.querySelector('[data-laundry-original]'),
+        discount: laundryForm.querySelector('[data-laundry-discount]'),
+        total: laundryForm.querySelector('[data-laundry-total]'),
+        paid: laundryForm.querySelector('[data-laundry-paid]'),
+        remaining: laundryForm.querySelector('[data-laundry-remaining]'),
+    };
+    const updateClock = () => {
+        const clock = currentWibClock();
+        laundryForm.querySelector('[data-laundry-time]').value = clock.value;
+        laundryForm.querySelector('[data-wib-clock]').value = clock.display;
+    };
+    const resetQuote = (text = 'Pilih siswa, set Laundry, dan bulan untuk menghitung pembayaran.') => {
+        Object.values(outputs).forEach((output) => { output.textContent = currency.format(0); });
+        paymentStatus.textContent = 'Belum Lunas';
+        paidInput.removeAttribute('max');
+        message.textContent = text;
+        message.classList.remove('error');
+    };
+    const filterFees = () => {
+        const selectedStudent = student.selectedOptions[0];
+        let available = 0;
+        feeOptions.forEach((option) => {
+            const hidden = !student.value
+                || option.dataset.unitId !== selectedStudent?.dataset.unitId
+                || (option.dataset.classId && option.dataset.classId !== selectedStudent?.dataset.classId)
+                || (option.dataset.yearId && option.dataset.yearId !== selectedStudent?.dataset.yearId);
+            option.hidden = hidden;
+            option.disabled = hidden;
+            if (!hidden) available += 1;
+        });
+        if (fee.selectedOptions[0]?.hidden) fee.value = '';
+        if (available === 1 && !fee.value) fee.value = feeOptions.find((option) => !option.hidden)?.value ?? '';
+        fee.disabled = !student.value || available === 0;
+        fee.options[0].textContent = !student.value
+            ? 'Pilih siswa terlebih dahulu'
+            : (available ? 'Pilih set Laundry...' : 'Set Laundry untuk siswa belum tersedia');
+    };
+    const applyMonthAvailability = () => {
+        monthInputs.forEach((input) => {
+            const label = input.closest('label');
+            const status = input.dataset.paymentStatus || 'Belum Dibayar';
+            label.classList.toggle('is-paid', status === 'Lunas');
+            label.classList.toggle('is-partial', status === 'Belum Lunas');
+            label.classList.toggle('is-unpaid', status === 'Belum Dibayar');
+            label.querySelector('.spp-month-status').textContent = status === 'Lunas' ? 'Sudah Dibayar' : status;
+            input.disabled = status === 'Lunas' || !input.dataset.paymentStatus;
+        });
+        const payable = monthInputs.filter((input) => input.dataset.paymentStatus && input.dataset.paymentStatus !== 'Lunas');
+        payable.forEach((input, index) => {
+            const enabled = index === 0 || payable[index - 1].checked;
+            input.disabled = !enabled;
+            if (!enabled) input.checked = false;
+        });
+    };
+    const updateQuote = async () => {
+        const months = monthInputs.filter((input) => input.checked).map((input) => input.value);
+        if (!student.value || !fee.value || !year.value || months.length === 0) {
+            resetQuote();
+            return;
+        }
+        const params = new URLSearchParams({
+            category: 'laundry',
+            student_id: student.value,
+            fee_type_id: fee.value,
+            year: year.value,
+        });
+        months.forEach((month) => params.append('months[]', month));
+        try {
+            message.textContent = 'Menghitung nominal dan keringanan...';
+            const response = await fetch(`${laundryForm.dataset.quoteUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
+            const data = await response.json();
+            if (!response.ok) throw new Error(Object.values(data.errors ?? {}).flat()[0] ?? data.message ?? 'Perhitungan gagal.');
+            outputs.base.textContent = currency.format(data.items[0]?.original_amount ?? 0);
+            outputs.original.textContent = currency.format(data.original_amount);
+            outputs.discount.textContent = currency.format(data.discount_amount);
+            outputs.total.textContent = currency.format(data.total_amount);
+            outputs.paid.textContent = currency.format(data.paid_amount);
+            outputs.remaining.textContent = currency.format(data.remaining_amount);
+            paymentStatus.textContent = data.payment_status;
+            paidInput.max = data.remaining_amount;
+            message.textContent = data.remaining_amount > 0
+                ? `${months.length} bulan dipilih. Masukkan titipan atau pelunasan maksimal ${currency.format(data.remaining_amount)}.`
+                : 'Seluruh bulan yang dipilih sudah lunas.';
+        } catch (error) {
+            resetQuote(error.message);
+            message.classList.add('error');
+        }
+    };
+    const loadMonths = async (clearSelection = false) => {
+        if (clearSelection) monthInputs.forEach((input) => { input.checked = false; });
+        monthInputs.forEach((input) => {
+            input.disabled = true;
+            delete input.dataset.paymentStatus;
+            input.closest('label').querySelector('.spp-month-status').textContent = 'Memuat...';
+        });
+        if (!student.value || !fee.value || !year.value) {
+            resetQuote('Pilih siswa dan set Laundry untuk melihat bulan yang dapat dibayar.');
+            monthInputs.forEach((input) => { input.closest('label').querySelector('.spp-month-status').textContent = 'Pilih siswa'; });
+            return;
+        }
+        const params = new URLSearchParams({
+            category: 'laundry',
+            student_id: student.value,
+            fee_type_id: fee.value,
+            year: year.value,
+        });
+        try {
+            const response = await fetch(`${laundryForm.dataset.monthsUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
+            const data = await response.json();
+            if (!response.ok) throw new Error(Object.values(data.errors ?? {}).flat()[0] ?? data.message ?? 'Status bulan gagal dimuat.');
+            data.months.forEach((month) => {
+                const input = monthInputs.find((item) => Number(item.value) === Number(month.month));
+                if (input) input.dataset.paymentStatus = month.payment_status;
+            });
+            applyMonthAvailability();
+            const first = data.months.find((month) => Number(month.month) === Number(data.first_payable_month));
+            resetQuote(first
+                ? `Pembayaran berikutnya dimulai dari bulan ${first.month_name}. Pilih bulan secara berurutan.`
+                : 'Seluruh pembayaran Laundry pada tahun ini sudah lunas.');
+        } catch (error) {
+            resetQuote(error.message);
+            message.classList.add('error');
+        }
+    };
+
+    student.addEventListener('change', () => {
+        filterFees();
+        loadMonths(true);
+    });
+    fee.addEventListener('change', () => loadMonths(true));
+    year.addEventListener('change', () => loadMonths(true));
+    monthInputs.forEach((input) => input.addEventListener('change', () => {
+        applyMonthAvailability();
+        updateQuote();
+    }));
+    updateClock();
+    window.setInterval(updateClock, 1000);
+    filterFees();
+    loadMonths();
 }
 
 const sppDetailModal = document.querySelector('[data-spp-detail-modal]');
@@ -899,7 +1096,7 @@ if (otherForm) {
         time.value = clock.value;
         clockDisplay.value = clock.display;
     };
-    const resetOtherQuote = (text = 'Pilih siswa dan jenis pembayaran untuk menghitung nominal.') => {
+    const resetOtherQuote = (text = 'Pilih siswa dan kategori pembayaran untuk menghitung nominal.') => {
         original.textContent = currency.format(0);
         discount.textContent = currency.format(0);
         paid.textContent = currency.format(0);
@@ -928,7 +1125,7 @@ if (otherForm) {
         if (feePlaceholder) {
             feePlaceholder.textContent = !student.value
                 ? 'Pilih siswa terlebih dahulu'
-                : (availableFees > 0 ? 'Pilih jenis pembayaran...' : 'Tidak ada pembayaran sesuai unit, kelas, dan tahun siswa');
+                : (availableFees > 0 ? 'Pilih kategori pembayaran...' : 'Tidak ada pembayaran sesuai unit, kelas, dan tahun siswa');
         }
     };
     const updateOtherQuote = async () => {
@@ -963,6 +1160,50 @@ if (otherForm) {
     window.setInterval(updateClock, 1000);
     filterOtherFees();
     updateOtherQuote();
+}
+
+const studentImportToolbar = document.querySelector('[data-student-import-toolbar]');
+if (studentImportToolbar) {
+    const rows = Array.from(document.querySelectorAll('[data-student-import-row]'));
+    const limit = studentImportToolbar.querySelector('[data-student-import-limit]');
+    const search = studentImportToolbar.querySelector('[data-student-import-search]');
+    const statusButtons = Array.from(studentImportToolbar.querySelectorAll('[data-student-import-status]'));
+    const summary = document.querySelector('[data-student-import-summary]');
+    const showAll = document.querySelector('[data-student-import-show-all]');
+    let activeStatus = 'all';
+
+    const normalizeImportSearch = (value) => value.trim().toLocaleLowerCase('id-ID').replace(/\s+/g, ' ');
+    const renderStudentImportRows = () => {
+        const query = normalizeImportSearch(search.value);
+        const matchingRows = rows.filter((row) => {
+            const matchesStatus = activeStatus === 'all' || row.dataset.status === activeStatus;
+            const matchesSearch = !query || normalizeImportSearch(row.dataset.search ?? '').includes(query);
+
+            return matchesStatus && matchesSearch;
+        });
+        const visibleLimit = limit.value === 'all' ? matchingRows.length : Number(limit.value);
+        const visibleRows = new Set(matchingRows.slice(0, visibleLimit));
+        rows.forEach((row) => { row.hidden = !visibleRows.has(row); });
+
+        const displayed = Math.min(visibleLimit, matchingRows.length);
+        summary.textContent = matchingRows.length
+            ? `Menampilkan ${displayed.toLocaleString('id-ID')} dari ${matchingRows.length.toLocaleString('id-ID')} hasil`
+            : 'Tidak ada data yang sesuai dengan filter.';
+        showAll.hidden = displayed >= matchingRows.length;
+    };
+
+    statusButtons.forEach((button) => button.addEventListener('click', () => {
+        activeStatus = button.dataset.studentImportStatus;
+        statusButtons.forEach((item) => item.classList.toggle('active', item === button));
+        renderStudentImportRows();
+    }));
+    limit.addEventListener('change', renderStudentImportRows);
+    search.addEventListener('input', renderStudentImportRows);
+    showAll.addEventListener('click', () => {
+        limit.value = 'all';
+        renderStudentImportRows();
+    });
+    renderStudentImportRows();
 }
 
 const billBuilder = document.querySelector('[data-bill-builder]');

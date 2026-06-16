@@ -13,7 +13,10 @@ use Throwable;
 
 class OtherPaymentImportService
 {
-    public function __construct(private OtherPaymentService $payments) {}
+    public function __construct(
+        private OtherPaymentService $payments,
+        private LaundryPaymentService $laundryPayments,
+    ) {}
 
     public function sources(string $path, ?string $paymentGroup = null): array
     {
@@ -138,7 +141,15 @@ class OtherPaymentImportService
                         'import_key' => $row['import_key'],
                     ];
 
-                    $this->payments->record($student, $feeType, $data);
+                    if ($paymentGroup === 'laundry') {
+                        $transactionDate = CarbonImmutable::parse($row['transaction_at']);
+                        $this->laundryPayments->record($student, $feeType, $data + [
+                            'year' => $transactionDate->year,
+                            'months' => [$transactionDate->month],
+                        ]);
+                    } else {
+                        $this->payments->record($student, $feeType, $data);
+                    }
                     if ($persist) {
                         $result['imported']++;
                     }

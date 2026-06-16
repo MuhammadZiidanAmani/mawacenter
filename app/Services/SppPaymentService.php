@@ -10,7 +10,10 @@ use Illuminate\Validation\ValidationException;
 
 class SppPaymentService
 {
-    public function __construct(private ChargeCalculator $calculator) {}
+    public function __construct(
+        private ChargeCalculator $calculator,
+        private BillService $bills,
+    ) {}
 
     public function quote(Student $student, int $year, array $months): array
     {
@@ -83,6 +86,8 @@ class SppPaymentService
                 $remainingPayment -= $allocated;
             }
 
+            $this->bills->syncSppPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'items']));
+
             return $payment;
         });
     }
@@ -100,7 +105,10 @@ class SppPaymentService
                 $this->reallocatePaidAmount($payment->refresh(), (int) $data['paid_amount']);
             }
 
-            return $payment->refresh();
+            $payment = $payment->refresh();
+            $this->bills->syncSppPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'items']));
+
+            return $payment;
         });
     }
 
@@ -126,6 +134,8 @@ class SppPaymentService
 
             return $payment->refresh();
         });
+
+        $this->bills->syncSppPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'items']));
 
         return $payment;
     }
@@ -185,7 +195,10 @@ class SppPaymentService
             ]);
         }
 
-        $payment->delete();
+        DB::transaction(function () use ($payment) {
+            $this->bills->removePayment('spp', $payment->id);
+            $payment->delete();
+        });
     }
 
     private function calculateSelection(Student $student, int $year, array $months): array
@@ -197,7 +210,7 @@ class SppPaymentService
         foreach ($months as $month) {
             $charge = $this->calculator->calculateSppMonth($student, $year, $month);
             if ($charge['original_amount'] < 1) {
-                throw ValidationException::withMessages(['student_id' => 'Set SPP aktif untuk unit pendidikan siswa belum tersedia.']);
+                throw ValidationException::withMessages(['student_id' => 'Kategori pembayaran SPP aktif untuk siswa belum tersedia.']);
             }
 
             $paidAmount = (int) SppPaymentItem::where('student_id', $student->id)

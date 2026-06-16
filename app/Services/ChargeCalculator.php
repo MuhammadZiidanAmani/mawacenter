@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\FeeDiscount;
 use App\Models\FeeType;
-use App\Models\SppSetting;
 use App\Models\Student;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -17,8 +16,17 @@ class ChargeCalculator
         $student->loadMissing('schoolClass.educationUnit');
 
         if ($sourceType === 'spp') {
-            return (int) (SppSetting::where('education_unit_id', $student->schoolClass?->education_unit_id)
-                ->where('is_active', true)->value('amount') ?? 0);
+            $student->loadMissing('academicYear');
+
+            return (int) (FeeType::query()
+                ->paymentGroup('spp')
+                ->where('is_active', true)
+                ->where('education_unit_id', $student->schoolClass?->education_unit_id)
+                ->where(fn ($query) => $query->whereNull('academic_year_id')->orWhere('academic_year_id', $student->academic_year_id))
+                ->where(fn ($query) => $query->whereNull('school_class_id')->orWhere('school_class_id', $student->school_class_id))
+                ->orderByRaw('CASE WHEN school_class_id IS NULL THEN 1 ELSE 0 END')
+                ->orderByRaw('CASE WHEN academic_year_id IS NULL THEN 1 ELSE 0 END')
+                ->value('amount') ?? 0);
         }
 
         $student->loadMissing('academicYear');
@@ -85,8 +93,8 @@ class ChargeCalculator
         if ($amount < 1) {
             throw ValidationException::withMessages([
                 'source_type' => $sourceType === 'spp'
-                    ? 'Set SPP aktif untuk unit pendidikan siswa belum tersedia.'
-                    : 'Jenis pembayaran tidak aktif atau tidak berlaku untuk kelas siswa.',
+                    ? 'Kategori pembayaran SPP aktif untuk siswa belum tersedia.'
+                    : 'Kategori pembayaran tidak aktif atau tidak berlaku untuk kelas siswa.',
             ]);
         }
 

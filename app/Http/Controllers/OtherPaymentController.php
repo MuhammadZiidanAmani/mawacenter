@@ -10,6 +10,7 @@ use App\Models\AppSetting;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\Student;
+use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentImportService;
 use App\Services\OtherPaymentService;
 use Dompdf\Dompdf;
@@ -27,7 +28,7 @@ class OtherPaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
+        $perPage = $this->perPage($request);
         $search = $request->string('search')->value();
         $section = $this->section($request);
         $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'unit', 'class', 'method', 'total'], true)
@@ -37,7 +38,7 @@ class OtherPaymentController extends Controller
 
         return view('finance.other', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
-            'payments' => OtherPayment::select('other_payments.*')->with(['student.schoolClass.educationUnit', 'feeType'])
+            'payments' => OtherPayment::select('other_payments.*')->with(['student.schoolClass.educationUnit', 'feeType', 'items'])
                 ->when($section['key'] !== 'all', fn ($query) => $this->filterPayments($query, $section['key']))
                 ->when($search, fn ($query) => $query->where(fn ($searchQuery) => $searchQuery
                     ->where('payment_method', 'like', "%{$search}%")
@@ -88,12 +89,13 @@ class OtherPaymentController extends Controller
                 ->get(),
             'feeTypes' => $this->feeTypes($section),
             'defaultPaymentMethod' => AppSetting::where('key', 'default_payment_method')->value('value') ?? 'Cash',
+            'years' => range(now()->year - 2, now()->year + 2),
             'showCreate' => true,
             'paymentSection' => $section,
         ]);
     }
 
-    public function quote(Request $request, OtherPaymentService $payments): JsonResponse
+    public function quote(Request $request, OtherPaymentService $payments, LaundryPaymentService $laundryPayments): JsonResponse
     {
         $section = $this->section($request);
         if (! $request->filled('student_id') && preg_match('/^([^-]+)-\s*([^-]+?)\s*-/', $request->string('student_search')->value(), $matches)) {
@@ -103,26 +105,63 @@ class OtherPaymentController extends Controller
                     ->value('id'),
             ]);
         }
-        $validated = $request->validate([
+        $rules = [
             'student_id' => ['required', 'exists:students,id'],
             'fee_type_id' => ['required', 'exists:fee_types,id'],
-        ]);
+        ];
+        if ($section['key'] === 'laundry') {
+            $rules['year'] = ['required', 'integer', 'between:2000,2100'];
+            $rules['months'] = ['required', 'array', 'min:1'];
+            $rules['months.*'] = ['integer', 'between:1,12'];
+        }
+        $validated = $request->validate($rules);
+        $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
+        $feeType = $this->feeTypeForSection($validated['fee_type_id'], $section);
+
+        if ($section['key'] === 'laundry') {
+            return response()->json($laundryPayments->quote(
+                $student,
+                $feeType,
+                (int) $validated['year'],
+                $validated['months'],
+            ));
+        }
 
         return response()->json($payments->quote(
-            Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']),
-            $this->feeTypeForSection($validated['fee_type_id'], $section),
+            $student,
+            $feeType,
         ));
     }
 
-    public function store(StoreOtherPaymentRequest $request, OtherPaymentService $payments): RedirectResponse
+    public function months(Request $request, LaundryPaymentService $payments): JsonResponse
+    {
+        $section = $this->section($request);
+        if ($section['key'] !== 'laundry') {
+            abort(404);
+        }
+        $validated = $request->validate([
+            'student_id' => ['required', 'exists:students,id'],
+            'fee_type_id' => ['required', 'exists:fee_types,id'],
+            'year' => ['required', 'integer', 'between:2000,2100'],
+        ]);
+        $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
+
+        return response()->json($payments->monthStatuses(
+            $student,
+            $this->feeTypeForSection($validated['fee_type_id'], $section),
+            (int) $validated['year'],
+        ));
+    }
+
+    public function store(StoreOtherPaymentRequest $request, OtherPaymentService $payments, LaundryPaymentService $laundryPayments): RedirectResponse
     {
         $section = $this->section($request);
         $validated = $request->validated();
-        $payment = $payments->record(
-            Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']),
-            $this->feeTypeForSection($validated['fee_type_id'], $section),
-            $validated,
-        );
+        $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
+        $feeType = $this->feeTypeForSection($validated['fee_type_id'], $section);
+        $payment = $section['key'] === 'laundry'
+            ? $laundryPayments->record($student, $feeType, $validated)
+            : $payments->record($student, $feeType, $validated);
 
         return redirect()->route('finance.other.index', $this->sectionParams($section))
             ->with('success', 'Pembayaran '.$section['title'].' berhasil disimpan.')
@@ -139,6 +178,7 @@ class OtherPaymentController extends Controller
             'student.academicYear',
             'student.schoolClass.educationUnit',
             'feeType.academicYear',
+            'items',
         ]);
 
         return view('finance.other-receipt', [
@@ -155,6 +195,7 @@ class OtherPaymentController extends Controller
             'student.academicYear',
             'student.schoolClass.educationUnit',
             'feeType.academicYear',
+            'items',
         ]);
         $logoPath = public_path('images/logo-yayasan-mambaul-hikmah.png');
         $html = view('finance.other-receipt-pdf', [
@@ -179,7 +220,7 @@ class OtherPaymentController extends Controller
 
     public function show(OtherPayment $otherPayment): JsonResponse
     {
-        $otherPayment->load(['student.schoolClass.educationUnit', 'feeType']);
+        $otherPayment->load(['student.schoolClass.educationUnit', 'feeType', 'items']);
 
         return response()->json([
             'id' => $otherPayment->id,
@@ -189,6 +230,22 @@ class OtherPaymentController extends Controller
             'transaction_time' => $otherPayment->transaction_at->format('H:i:s'),
             'payment_method' => $otherPayment->payment_method,
             'status' => $otherPayment->status,
+            'original_amount' => $otherPayment->original_amount,
+            'discount_amount' => $otherPayment->discount_amount,
+            'total_amount' => $otherPayment->total_amount,
+            'paid_amount' => $otherPayment->paid_amount,
+            'remaining_amount' => $otherPayment->remaining_amount,
+            'payment_status' => $otherPayment->payment_status,
+            'items' => $otherPayment->items->map(fn ($item) => [
+                'year' => $item->year,
+                'month' => $item->month,
+                'original_amount' => $item->original_amount,
+                'discount_amount' => $item->discount_amount,
+                'total_amount' => $item->total_amount,
+                'paid_amount' => $item->paid_amount,
+                'remaining_amount' => $item->remaining_amount,
+                'payment_status' => $item->payment_status,
+            ]),
         ]);
     }
 
@@ -200,10 +257,15 @@ class OtherPaymentController extends Controller
             ->with('success', 'Transaksi pembayaran berhasil diperbarui.');
     }
 
-    public function destroy(OtherPayment $otherPayment, OtherPaymentService $payments): RedirectResponse
+    public function destroy(OtherPayment $otherPayment, OtherPaymentService $payments, LaundryPaymentService $laundryPayments): RedirectResponse
     {
         $sectionParams = $this->paymentSectionParams($otherPayment);
-        $payments->delete($otherPayment);
+        $otherPayment->loadMissing('feeType');
+        if ($otherPayment->feeType?->payment_group === 'laundry') {
+            $laundryPayments->delete($otherPayment);
+        } else {
+            $payments->delete($otherPayment);
+        }
 
         return redirect()->route('finance.other.index', $sectionParams)
             ->with('success', 'Transaksi pembayaran berhasil dihapus.');
@@ -235,7 +297,7 @@ class OtherPaymentController extends Controller
 
             return view('finance.other', [
                 'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
-                'payments' => OtherPayment::with(['student.schoolClass.educationUnit', 'feeType'])
+                'payments' => OtherPayment::with(['student.schoolClass.educationUnit', 'feeType', 'items'])
                     ->when($section['key'] !== 'all', fn ($query) => $this->filterPayments($query, $section['key']))
                     ->latest('transaction_at')->paginate(10),
                 'showCreate' => false,
@@ -324,7 +386,7 @@ class OtherPaymentController extends Controller
 
         if (! $feeType) {
             throw ValidationException::withMessages([
-                'fee_type_id' => 'Jenis pembayaran tidak sesuai dengan menu '.$section['title'].'.',
+                'fee_type_id' => 'Kategori pembayaran tidak sesuai dengan menu '.$section['title'].'.',
             ]);
         }
 

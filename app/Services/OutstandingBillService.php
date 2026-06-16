@@ -15,7 +15,9 @@ class OutstandingBillService
 
     public function summary(int $year, int $untilMonth, array $filters = []): Collection
     {
-        $feeTypes = FeeType::where('is_active', true)->get();
+        $feeTypes = FeeType::where('is_active', true)
+            ->where('payment_group', '!=', 'spp')
+            ->get();
 
         return Student::with('schoolClass.educationUnit')
             ->where('is_active', true)

@@ -31,32 +31,7 @@
     $months = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
 @endphp
 <div class="app-shell">
-    <aside class="sidebar" data-sidebar>
-        <div class="brand"><div class="brand-mark"><img src="{{ asset('images/mawa-center-mark.png') }}" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
-        <nav class="sidebar-nav">
-            <a href="{{ route('dashboard') }}" class="nav-item">{!! $icon('grid') !!}<span>Dashboard</span></a>
-            <div class="nav-group master-nav">
-                <button type="button" class="nav-item nav-parent" data-master-nav-toggle aria-expanded="false">{!! $icon('database') !!}<span>Data Master</span>{!! $icon('chevron', 'nav-chevron') !!}</button>
-                <div class="nav-submenu">
-                    @foreach (['academic-years'=>['Tahun Pelajaran','calendar'],'education-units'=>['Unit Pendidikan','grid'],'classes'=>['Kelas','database'],'students'=>['Siswa','users'],'spp-settings'=>['Set SPP','wallet'],'fee-types'=>['Jenis Pembayaran','receipt'],'fee-discounts'=>['Keringanan Biaya','wallet']] as $key=>$item)
-                        <a href="{{ route('master.index', ['tab'=>$key]) }}">{!! $icon($item[1]) !!}<span>{{ $item[0] }}</span></a>
-                    @endforeach
-                </div>
-            </div>
-            <div class="nav-group nested-nav open">
-                <button type="button" class="nav-item nav-parent active" data-nav-toggle aria-expanded="true">{!! $icon('card') !!}<span>Pembayaran</span>{!! $icon('chevron', 'nav-chevron') !!}</button>
-                <div class="nav-submenu">
-                    <a href="{{ route('finance.other.index', ['category' => 'daftar-ulang']) }}">{!! $icon('receipt') !!}<span>Daftar Ulang</span></a>
-                    <a href="{{ route('finance.spp.index') }}" class="active">{!! $icon('wallet') !!}<span>SPP</span></a>
-                    <a href="{{ route('finance.other.index', ['category' => 'laundry']) }}">{!! $icon('card') !!}<span>Laundry</span></a>
-                    <a href="{{ route('finance.other.index') }}">{!! $icon('receipt') !!}<span>Lain-lain</span></a>
-                </div>
-            </div>
-            <a href="{{ route('finance.bills.index') }}" class="nav-item">{!! $icon('receipt') !!}<span>Tagihan</span>{!! $icon('chevron', 'nav-chevron') !!}</a>
-            <a href="{{ route('reports.index') }}" class="nav-item">{!! $icon('chart') !!}<span>Laporan</span>{!! $icon('chevron', 'nav-chevron') !!}</a>
-            <a href="{{ route('settings.index') }}" class="nav-item">{!! $icon('settings') !!}<span>Pengaturan</span>{!! $icon('chevron', 'nav-chevron') !!}</a>
-        </nav>
-    </aside>
+    @include('partials.sidebar', ['activeMenu' => 'payment', 'activePaymentMenu' => 'spp'])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar">

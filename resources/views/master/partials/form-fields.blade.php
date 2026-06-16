@@ -32,13 +32,17 @@
     <label>Tanggal Mulai <input type="date" name="start_date" value="{{ old('start_date') }}"></label><label>Tanggal Selesai <input type="date" name="end_date" value="{{ old('end_date') }}"></label>
     <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1"><span></span> Jadikan tahun pelajaran aktif</label>
 @elseif ($tab === 'fee-types')
-    <label class="span-2">Jenis Pembayaran <input name="name" required value="{{ old('name') }}" placeholder="Contoh: SPP Bulanan"></label>
-    <label>Kelompok Pembayaran <select name="payment_group" required><option value="daftar-ulang" @selected(old('payment_group') === 'daftar-ulang')>Daftar Ulang</option><option value="laundry" @selected(old('payment_group') === 'laundry')>Laundry</option><option value="lain-lain" @selected(old('payment_group', 'lain-lain') === 'lain-lain')>Lain-lain</option></select></label>
+    <label class="span-2">Kategori Pembayaran <input name="name" required value="{{ old('name') }}" placeholder="Contoh: SPP Bulanan"></label>
+    <label>Kelompok Kategori <select name="payment_group" required><option value="spp" @selected(old('payment_group') === 'spp')>SPP</option><option value="daftar-ulang" @selected(old('payment_group') === 'daftar-ulang')>Daftar Ulang</option><option value="laundry" @selected(old('payment_group') === 'laundry')>Laundry</option><option value="lain-lain" @selected(old('payment_group', 'lain-lain') === 'lain-lain')>Lain-lain</option></select></label>
     <label>Unit Pendidikan <select name="education_unit_id" required data-student-unit><option value="">Pilih Unit Pendidikan</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(old('education_unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
     <label>Tahun Pelajaran <select name="academic_year_id">@foreach($academicYears as $year)<option value="{{ $year->id }}" @selected(old('academic_year_id', $activeAcademicYear?->id) == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
     <div class="span-2 registration-class-field">
         <span>Pilih Kelas</span>
         <div class="registration-class-list" data-registration-class-list>
+            <label class="registration-all-classes" data-registration-all-row hidden>
+                <input type="checkbox" name="school_class_id" value="all" data-registration-all-classes @checked(old('school_class_id') === 'all')>
+                <span>Semua Kelas</span>
+            </label>
             @foreach($classes as $class)
                 <label data-unit-id="{{ $class->education_unit_id }}" @if(old('education_unit_id') != $class->education_unit_id) hidden @endif>
                     <input type="checkbox" name="school_class_ids[]" value="{{ $class->id }}" @checked(in_array($class->id, old('school_class_ids', [])))>
@@ -47,15 +51,11 @@
             @endforeach
             <p data-registration-class-empty>Pilih unit pendidikan terlebih dahulu.</p>
         </div>
-        <small>Ceklis kelas yang memakai jenis pembayaran ini.</small>
+        <small>Pilih beberapa kelas yang memakai kategori ini, atau centang Semua Kelas.</small>
     </div>
     <label>Nominal <input type="text" inputmode="numeric" name="amount" required value="{{ old('amount') }}" placeholder="0" data-currency-input></label>
     <label>Periode Tagihan <select name="period" required><option>Bulanan</option><option>Tahunan</option><option>Sekali Bayar</option></select></label>
-    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Jenis pembayaran aktif</label>
-@elseif ($tab === 'spp-settings')
-    <label class="span-2">Unit Pendidikan <select name="education_unit_id" required><option value="">Pilih Unit Pendidikan</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}">{{ $unit->code }} - {{ $unit->name }}</option>@endforeach</select></label>
-    <label class="span-2">Nominal SPP <input type="text" inputmode="numeric" name="amount" required value="{{ old('amount') }}" placeholder="0" data-currency-input></label>
-    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Set SPP aktif</label>
+    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Kategori pembayaran aktif</label>
 @else
     <label class="span-2">Siswa
         <div class="student-search-picker" data-student-picker>
@@ -65,7 +65,7 @@
         </div>
     </label>
     @php($selectedDiscountPayment = old('source_type', 'spp') === 'fee_type' && old('fee_type_id') ? 'fee_type:'.old('fee_type_id') : 'spp')
-    <label>Jenis Pembayaran
+    <label>Kategori Pembayaran
         <select required data-discount-payment>
             <option value="spp" @selected($selectedDiscountPayment === 'spp')>SPP</option>
             @foreach($feeTypeOptions as $feeType)<option value="fee_type:{{ $feeType->id }}" @selected($selectedDiscountPayment === 'fee_type:'.$feeType->id)>{{ $feeType->name }}</option>@endforeach

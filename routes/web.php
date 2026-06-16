@@ -20,5 +20,6 @@ Route::middleware('auth')->group(function () {
     Route::put('/pengaturan', [SettingController::class, 'update'])->name('settings.update');
 
     require __DIR__.'/master.php';
+    require __DIR__.'/student_management.php';
     require __DIR__.'/finance.php';
 });

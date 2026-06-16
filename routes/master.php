@@ -20,8 +20,6 @@ Route::prefix('master-data')->name('master.')->controller(MasterDataController::
     Route::post('/students/import', 'importStudents')->name('students.import');
     Route::post('/fee-types', 'storeFeeType')->name('fee-types.store');
     Route::put('/fee-types/{feeType}', 'updateFeeType')->name('fee-types.update');
-    Route::post('/spp-settings', 'storeSppSetting')->name('spp-settings.store');
-    Route::put('/spp-settings/{sppSetting}', 'updateSppSetting')->name('spp-settings.update');
     Route::post('/fee-discounts', 'storeFeeDiscount')->name('fee-discounts.store');
     Route::put('/fee-discounts/{feeDiscount}', 'updateFeeDiscount')->name('fee-discounts.update');
     Route::delete('/{type}/{id}', 'destroy')->name('destroy');

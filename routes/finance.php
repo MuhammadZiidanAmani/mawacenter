@@ -24,6 +24,7 @@ Route::prefix('keuangan/pembayaran/spp')->name('finance.spp.')->controller(SppPa
 Route::prefix('keuangan/pembayaran/lain-lain')->name('finance.other.')->controller(OtherPaymentController::class)->group(function () {
     Route::get('/', 'index')->name('index');
     Route::get('/create', 'create')->name('create');
+    Route::get('/months', 'months')->name('months');
     Route::get('/quote', 'quote')->name('quote');
     Route::post('/import/preview', 'previewImport')->name('import.preview');
     Route::post('/import', 'import')->name('import');
@@ -37,4 +38,5 @@ Route::prefix('keuangan/pembayaran/lain-lain')->name('finance.other.')->controll
 
 Route::prefix('keuangan/tagihan')->name('finance.bills.')->controller(BillController::class)->group(function () {
     Route::get('/', 'index')->name('index');
+    Route::post('/sync', 'sync')->name('sync');
 });

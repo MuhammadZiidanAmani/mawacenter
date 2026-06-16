@@ -125,6 +125,10 @@ class BillService
     public function syncOtherPayment(OtherPayment $payment): void
     {
         $payment->loadMissing(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']);
+        if ($payment->feeType?->payment_group === 'laundry') {
+            return;
+        }
+
         $date = CarbonImmutable::parse($payment->transaction_at);
         [$bill] = $this->ensureFeeTypeBill($payment->student, $payment->student->academicYear, $payment->feeType, $date->year, $date->month);
         if ($payment->status === 'Diterima') {
@@ -157,10 +161,15 @@ class BillService
             $this->syncSppPayment($payment);
             $result['spp']++;
         });
-        OtherPayment::with(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType'])->orderBy('id')->each(function ($payment) use (&$result) {
-            $this->syncOtherPayment($payment);
-            $result['other']++;
-        });
+        OtherPayment::with(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType'])
+            ->whereHas('feeType', function ($query) {
+                $query->whereNull('payment_group')->orWhere('payment_group', '!=', 'laundry');
+            })
+            ->orderBy('id')
+            ->each(function ($payment) use (&$result) {
+                $this->syncOtherPayment($payment);
+                $result['other']++;
+            });
 
         return $result;
     }
@@ -184,7 +193,7 @@ class BillService
 
         $charge = $this->calculator->calculateSppMonth($student, $year, $month);
         if ($charge['original_amount'] < 1) {
-            throw ValidationException::withMessages(['bill' => 'Set SPP siswa belum tersedia.']);
+            throw ValidationException::withMessages(['bill' => 'Kategori pembayaran SPP siswa belum tersedia.']);
         }
         $issueDate = CarbonImmutable::create($year, $month, 1);
         $bill = Bill::create($this->baseBill($student, $academicYear) + [

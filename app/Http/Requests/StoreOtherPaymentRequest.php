@@ -34,7 +34,7 @@ class StoreOtherPaymentRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'transaction_date' => ['required', 'date'],
             'transaction_time' => ['required', 'date_format:H:i:s'],
             'student_id' => ['required', 'exists:students,id'],
@@ -43,5 +43,13 @@ class StoreOtherPaymentRequest extends FormRequest
             'status' => ['required', Rule::in(['Diterima', 'Pending'])],
             'paid_amount' => ['required', 'integer', 'min:1'],
         ];
+
+        if ($this->string('category')->value() === 'laundry') {
+            $rules['year'] = ['required', 'integer', 'between:2000,2100'];
+            $rules['months'] = ['required', 'array', 'min:1'];
+            $rules['months.*'] = ['integer', 'between:1,12'];
+        }
+
+        return $rules;
     }
 }

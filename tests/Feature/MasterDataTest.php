@@ -13,7 +13,6 @@ use App\Models\OtherPayment;
 use App\Models\SchoolClass;
 use App\Models\SppPayment;
 use App\Models\SppPaymentItem;
-use App\Models\SppSetting;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\ChargeCalculator;
@@ -35,15 +34,38 @@ class MasterDataTest extends TestCase
 
     public function test_master_data_page_can_be_opened(): void
     {
-        $this->get('/master-data?per_page=25')
+        $this->get('/manajemen-siswa/data-siswa?per_page=25')
             ->assertOk()
             ->assertSee('Data Siswa')
             ->assertDontSee('* Wajib diisi')
             ->assertSee('Show')
+            ->assertSee('Import')
+            ->assertSee('Export')
+            ->assertSee('Download Template')
+            ->assertSee('student-flat-header', false)
+            ->assertSee('student-flat-table', false)
             ->assertSee('Search:')
             ->assertSee('data-student-filter-unit', false)
-            ->assertSee('data-student-filter-class disabled', false)
-            ->assertSee('Pilih Unit Pendidikan Dahulu');
+            ->assertSee('data-student-filter-class', false)
+            ->assertSee('<option value="">semua</option>', false);
+    }
+
+    public function test_list_toolbar_supports_500_and_all_entries(): void
+    {
+        foreach (range(1, 11) as $number) {
+            EducationUnit::create([
+                'code' => 'U'.$number,
+                'name' => 'Unit '.$number,
+                'is_active' => true,
+            ]);
+        }
+
+        $this->get('/master-data?tab=education-units&per_page=all')
+            ->assertOk()
+            ->assertSee('value="500"', false)
+            ->assertSee('<option value="all" selected>All</option>', false)
+            ->assertSee('Unit 1')
+            ->assertSee('Unit 11');
     }
 
     public function test_student_filter_unit_shows_codes_and_class_filter_depends_on_selected_unit(): void
@@ -56,12 +78,11 @@ class MasterDataTest extends TestCase
         Student::create(['nis' => '1001', 'name' => 'Siswa MI', 'gender' => 'L', 'school_class_id' => $miClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
         Student::create(['nis' => '1002', 'name' => 'Siswa MTs', 'gender' => 'L', 'school_class_id' => $mtsClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
 
-        $this->get('/master-data?tab=students&unit_id='.$mi->id)
+        $this->get('/manajemen-siswa/data-siswa?unit_id='.$mi->id)
             ->assertOk()
             ->assertSee('<option value="'.$mi->id.'" selected>MI</option>', false)
             ->assertDontSee('<option value="'.$mi->id.'" selected>MI - Madrasah Ibtidaiyah</option>', false)
             ->assertSee('data-student-filter-class', false)
-            ->assertDontSee('data-student-filter-class disabled', false)
             ->assertSee('data-unit-id="'.$mi->id.'"', false)
             ->assertSee('data-unit-id="'.$mts->id.'"', false)
             ->assertSee('Siswa MI')
@@ -78,21 +99,23 @@ class MasterDataTest extends TestCase
         Student::create(['nis' => '1001', 'name' => 'Zahra MI', 'gender' => 'P', 'school_class_id' => $miClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
         Student::create(['nis' => '1002', 'name' => 'Alya MTs', 'gender' => 'P', 'school_class_id' => $mtsClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
 
-        $this->get('/master-data?tab=students')
+        $this->get('/manajemen-siswa/data-siswa')
             ->assertOk()
-            ->assertSee('Import Data')
-            ->assertDontSee('Upload Excel')
+            ->assertSee('Import')
+            ->assertSee('Export')
             ->assertSee('student-action-column', false)
             ->assertDontSee('<th>Status</th>', false)
+            ->assertDontSee('<td>2025/2026</td>', false)
+            ->assertDontSee('sort=year', false)
             ->assertSee('sort=nis&amp;direction=asc', false)
             ->assertSee('sort=unit&amp;direction=desc', false)
             ->assertViewHas('data', fn ($data) => $data->getCollection()->pluck('name')->all() === ['Alya MTs', 'Zahra MI']);
 
-        $this->get('/master-data?tab=students&sort=unit&direction=asc')
+        $this->get('/manajemen-siswa/data-siswa?sort=unit&direction=asc')
             ->assertOk()
             ->assertViewHas('data', fn ($data) => $data->getCollection()->pluck('name')->all() === ['Zahra MI', 'Alya MTs']);
 
-        $this->get('/master-data?tab=students&sort=name&direction=desc')
+        $this->get('/manajemen-siswa/data-siswa?sort=name&direction=desc')
             ->assertOk()
             ->assertViewHas('data', fn ($data) => $data->getCollection()->pluck('name')->all() === ['Zahra MI', 'Alya MTs']);
     }
@@ -103,16 +126,14 @@ class MasterDataTest extends TestCase
             'academic-years' => 'Tambah Tahun Pelajaran',
             'education-units' => 'Tambah Unit Pendidikan',
             'classes' => 'Tambah Kelas',
-            'students' => 'Tambah Siswa',
-            'fee-types' => 'Tambah Jenis Pembayaran',
-            'spp-settings' => 'Tambah Set SPP',
+            'fee-types' => 'Tambah Kategori Pembayaran',
             'fee-discounts' => 'Tambah Keringanan',
         ] as $tab => $heading) {
-            $this->get('/master-data?tab='.$tab)
+            $listResponse = $this->get('/master-data?tab='.$tab)
                 ->assertOk()
                 ->assertSee('Show')
-                ->assertSee('Search:')
                 ->assertSee('/master-data/create?tab='.$tab, false);
+            $listResponse->assertSee('Search:');
 
             $this->get('/master-data/create?tab='.$tab)
                 ->assertOk()
@@ -121,7 +142,7 @@ class MasterDataTest extends TestCase
                 ->assertDontSee('data-modal-open', false);
         }
 
-        $this->get('/master-data/create?tab=students')
+        $this->get('/manajemen-siswa/data-siswa/create')
             ->assertOk()
             ->assertSee('data-copy-father-whatsapp', false)
             ->assertSee('data-student-region="province"', false)
@@ -131,15 +152,13 @@ class MasterDataTest extends TestCase
 
         $this->get('/master-data/create?tab=fee-types')
             ->assertOk()
-            ->assertSee('Kelompok Pembayaran')
+            ->assertSee('Kelompok Kategori')
+            ->assertSee('SPP')
             ->assertSee('Tahun Pelajaran')
             ->assertSee('Pilih Kelas')
             ->assertSee('data-registration-class-list', false)
-            ->assertSee('Ceklis kelas')
-            ->assertSee('data-currency-input', false);
-
-        $this->get('/master-data/create?tab=spp-settings')
-            ->assertOk()
+            ->assertSee('data-registration-all-classes', false)
+            ->assertSee('Pilih beberapa kelas yang memakai kategori ini, atau centang Semua Kelas.')
             ->assertSee('data-currency-input', false);
 
         EducationUnit::create(['code' => 'PAUD', 'name' => 'Pendidikan Anak Usia Dini', 'is_active' => true]);
@@ -282,7 +301,7 @@ class MasterDataTest extends TestCase
         ]);
 
         $this->delete('/master-data/students/'.$student->id)
-            ->assertRedirect('/master-data?tab=students')
+            ->assertRedirect('/manajemen-siswa/data-siswa')
             ->assertSessionHas('success', 'Data siswa beserta seluruh data contoh terkait berhasil dihapus.');
 
         $this->assertDatabaseMissing('students', ['id' => $student->id]);
@@ -336,20 +355,23 @@ class MasterDataTest extends TestCase
         $this->get('/master-data?tab=fee-types')->assertOk()->assertSee('Semua Kelas');
     }
 
-    public function test_spp_setting_is_unique_per_education_unit(): void
+    public function test_spp_category_is_unique_per_scope(): void
     {
         $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
 
-        $this->post('/master-data/spp-settings', [
-            'education_unit_id' => $unit->id, 'amount' => 250000, 'is_active' => 1,
+        $this->post('/master-data/fee-types', [
+            'name' => 'SPP', 'payment_group' => 'spp',
+            'education_unit_id' => $unit->id, 'amount' => 250000, 'period' => 'Bulanan', 'is_active' => 1,
         ])->assertRedirect();
 
-        $this->post('/master-data/spp-settings', [
-            'education_unit_id' => $unit->id, 'amount' => 300000, 'is_active' => 1,
-        ])->assertSessionHasErrors('education_unit_id');
+        $this->post('/master-data/fee-types', [
+            'name' => 'SPP', 'payment_group' => 'spp',
+            'education_unit_id' => $unit->id, 'amount' => 300000, 'period' => 'Bulanan', 'is_active' => 1,
+        ])->assertSessionHasErrors('payment_group');
 
-        $this->assertDatabaseCount('spp_settings', 1);
-        $this->assertTrue(SppSetting::first()->is_active);
+        $this->assertDatabaseCount('fee_types', 1);
+        $this->assertTrue(FeeType::first()->is_active);
+        $this->assertSame('spp', FeeType::first()->payment_group);
     }
 
     public function test_registration_category_is_managed_by_fee_types_and_available_for_payment(): void
@@ -381,7 +403,7 @@ class MasterDataTest extends TestCase
 
         $this->get('/master-data?tab=fee-types')
             ->assertOk()
-            ->assertSee('Jenis Pembayaran')
+            ->assertSee('Kategori Pembayaran')
             ->assertSee('Daftar Ulang')
             ->assertSee('MTs')
             ->assertSee('VII A')
@@ -390,7 +412,7 @@ class MasterDataTest extends TestCase
             ->assertSee('sort=amount&amp;direction=asc', false)
             ->assertDontSee('<th>Tahun Pelajaran</th>', false)
             ->assertDontSee('<th>Status</th>', false)
-            ->assertDontSee('<th>Kelompok</th>', false)
+            ->assertSee('<th>Kelompok</th>', false)
             ->assertDontSee('<th>Periode</th>', false)
             ->assertDontSee('Set Daftar Ulang');
 
@@ -429,7 +451,7 @@ class MasterDataTest extends TestCase
             'code' => 'LAUNDRY', 'name' => 'Laundry Bulanan', 'payment_group' => 'laundry',
             'amount' => 100000, 'period' => 'Bulanan', 'is_active' => true,
         ]);
-        SppSetting::create(['education_unit_id' => $unit->id, 'amount' => 600000, 'is_active' => true]);
+        $this->createSppCategory($unit, 600000);
 
         $this->post('/master-data/fee-discounts', [
             'student_id' => $student->id, 'source_type' => 'spp', 'discount_type' => 'amount',
@@ -464,7 +486,7 @@ class MasterDataTest extends TestCase
         $unit = EducationUnit::create(['code' => 'PP', 'name' => 'Pondok Pesantren', 'is_active' => true]);
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '9A', 'level' => 'Kelas 9']);
         $student = Student::create(['nis' => '1002', 'name' => 'Zidan', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]);
-        SppSetting::create(['education_unit_id' => $unit->id, 'amount' => 600000, 'is_active' => true]);
+        $this->createSppCategory($unit, 600000);
         FeeDiscount::create([
             'student_id' => $student->id, 'source_type' => 'spp', 'discount_type' => 'amount',
             'discount_value' => 350000, 'start_date' => '2026-06-12', 'is_active' => true,
@@ -506,7 +528,7 @@ class MasterDataTest extends TestCase
         $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '1 A', 'level' => 'Kelas 1']);
         $student = Student::create(['nis' => '3001', 'name' => 'Candra', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id]);
-        SppSetting::create(['education_unit_id' => $unit->id, 'amount' => 400000, 'is_active' => true]);
+        $this->createSppCategory($unit, 400000);
 
         $this->post('/master-data/fee-discounts', [
             'student_id' => $student->id, 'source_type' => 'spp', 'discount_type' => 'amount',
@@ -571,7 +593,7 @@ class MasterDataTest extends TestCase
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
         $student = Student::create(['nis' => '4001', 'name' => 'Dina', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]);
         Student::create(['nis' => '4002', 'name' => 'Siswa Nonaktif', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => false]);
-        SppSetting::create(['education_unit_id' => $unit->id, 'amount' => 600000, 'is_active' => true]);
+        $this->createSppCategory($unit, 600000);
         FeeDiscount::create([
             'student_id' => $student->id, 'source_type' => 'spp', 'discount_type' => 'amount',
             'discount_value' => 300000, 'start_date' => '2026-01-01', 'end_date' => '2026-12-31', 'is_active' => true,
@@ -684,7 +706,7 @@ class MasterDataTest extends TestCase
             'nis' => '220001', 'name' => 'SISWA NIS SAMA UNIT LAIN', 'gender' => 'L',
             'school_class_id' => $otherClass->id, 'academic_year_id' => $year->id, 'is_active' => true,
         ]);
-        SppSetting::create(['education_unit_id' => $unit->id, 'amount' => 600000, 'is_active' => true]);
+        $this->createSppCategory($unit, 600000);
 
         $path = tempnam(sys_get_temp_dir(), 'spp-import-test-');
         StudentXlsx::write($path, [
@@ -882,7 +904,7 @@ class MasterDataTest extends TestCase
         $preview = $this->post('/keuangan/pembayaran/lain-lain/import/preview', [
             'file' => UploadedFile::fake()->createWithContent('transaksi.xlsx', $workbook),
         ]);
-        $preview->assertOk()->assertSee('Pemetaan Jenis Pembayaran')->assertSee('NIS 999999 tidak ditemukan.');
+        $preview->assertOk()->assertSee('Pemetaan Kategori Pembayaran')->assertSee('NIS 999999 tidak ditemukan.');
         $this->assertSame($feeType->id, (int) collect($preview->viewData('importMappings'))->first());
         $this->assertDatabaseCount('other_payments', 0);
 
@@ -894,13 +916,13 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseHas('other_payments', ['paid_amount' => 4500000, 'remaining_amount' => 0, 'payment_status' => 'Lunas', 'operator_name' => 'Ziidan Amani']);
     }
 
-    public function test_outstanding_bills_are_shown_automatically_from_recorded_payments(): void
+    public function test_outstanding_bills_are_shown_from_synced_bills(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'start_date' => '2025-07-01', 'end_date' => '2026-06-30', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
         $student = Student::create(['nis' => '7001', 'name' => 'Tagihan Siswa', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'entry_date' => '2025-07-01', 'is_active' => true]);
-        SppSetting::create(['education_unit_id' => $unit->id, 'amount' => 600000, 'is_active' => true]);
+        $this->createSppCategory($unit, 600000);
 
         FeeType::create([
             'education_unit_id' => $unit->id, 'code' => 'DAFTAR-ULANG', 'name' => 'Daftar Ulang',
@@ -912,11 +934,17 @@ class MasterDataTest extends TestCase
             'months' => [1], 'year' => 2026, 'payment_method' => 'Cash', 'status' => 'Diterima', 'paid_amount' => 600000,
         ])->assertRedirect();
 
+        $this->post('/keuangan/tagihan/sync', [
+            'year' => 2026,
+            'until_month' => 6,
+        ])->assertRedirect('/keuangan/tagihan?year=2026&until_month=6');
+
         $this->get('/keuangan/tagihan?year=2026&until_month=6&per_page=25&sort=total&direction=desc')
             ->assertOk()
-            ->assertSee('Pantau seluruh kewajiban siswa secara otomatis')
+            ->assertSee('Pantau kewajiban siswa dari data tagihan')
             ->assertSee('Show')
             ->assertSee('Search:')
+            ->assertSee('Sinkronkan')
             ->assertSee('Tagihan Siswa')
             ->assertDontSee('Januari 2026')
             ->assertSee('Februari 2026')
@@ -924,7 +952,21 @@ class MasterDataTest extends TestCase
             ->assertSee('Daftar Ulang')
             ->assertSee('Rp 3.500.000');
 
-        $this->assertDatabaseCount('bills', 0);
+        $this->assertDatabaseHas('bills', [
+            'student_id' => $student->id,
+            'source_type' => 'spp',
+            'year' => 2026,
+            'month' => 1,
+            'remaining_amount' => 0,
+            'status' => 'Lunas',
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'student_id' => $student->id,
+            'source_type' => 'spp',
+            'year' => 2026,
+            'month' => 2,
+            'remaining_amount' => 600000,
+        ]);
     }
 
     public function test_reports_combine_filter_and_export_payments(): void
@@ -955,7 +997,15 @@ class MasterDataTest extends TestCase
 
     public function test_application_settings_can_be_saved(): void
     {
-        $this->get('/pengaturan')->assertOk()->assertSee('Pengaturan Aplikasi');
+        $this->get('/pengaturan')
+            ->assertOk()
+            ->assertSee('Pengaturan Aplikasi')
+            ->assertSee('Role')
+            ->assertSee('Admin')
+            ->assertSee('Kasir')
+            ->assertSee('Bendahara Perunit')
+            ->assertSee('Wali Murid/Siswa');
+
         $this->put('/pengaturan', [
             'school_name' => 'Pondok Mambaul Hikmah',
             'school_address' => 'Jalan Pendidikan',
@@ -976,7 +1026,7 @@ class MasterDataTest extends TestCase
         $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
         $student = Student::create(['nis' => '6001', 'name' => 'Nadia', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]);
-        SppSetting::create(['education_unit_id' => $unit->id, 'amount' => 300000, 'is_active' => true]);
+        $this->createSppCategory($unit, 300000);
 
         $this->post('/keuangan/pembayaran/spp', [
             'transaction_date' => '2026-06-12', 'transaction_time' => '08:30', 'student_id' => $student->id,
@@ -1039,7 +1089,6 @@ class MasterDataTest extends TestCase
             'academic_year_id' => $year->id, 'is_active' => true,
         ]);
         $filterParameters = [
-            'tab' => 'students',
             'unit_id' => $unit->id,
             'class_id' => $class->id,
             'year_id' => $year->id,
@@ -1052,7 +1101,7 @@ class MasterDataTest extends TestCase
         ];
         $filters = http_build_query($filterParameters);
 
-        $this->get('/master-data?'.$filters)
+        $this->get('/manajemen-siswa/data-siswa?'.$filters)
             ->assertOk()
             ->assertSee('/master-data/students/'.$student->id.'?'.str_replace('&', '&amp;', $filters), false)
             ->assertSee('/master-data/students/'.$student->id.'?'.str_replace('&', '&amp;', $filters), false);
@@ -1063,10 +1112,10 @@ class MasterDataTest extends TestCase
             'nis' => '1001', 'name' => 'Nama Baru', 'gender' => 'L',
             'education_unit_id' => $unit->id, 'school_class_id' => $class->id,
             'academic_year_id' => $year->id, 'entry_date' => '2026-06-11', 'is_active' => 1,
-        ])->assertRedirect('/master-data?'.$filteredPageTwo);
+        ])->assertRedirect('/manajemen-siswa/data-siswa?'.$filteredPageTwo);
 
         $this->delete('/master-data/students/'.$student->id.'?'.$filteredPageTwo)
-            ->assertRedirect('/master-data?'.$filteredPageTwo);
+            ->assertRedirect('/manajemen-siswa/data-siswa?'.$filteredPageTwo);
     }
 
     public function test_education_unit_page_is_empty_without_seeded_data(): void
@@ -1088,6 +1137,7 @@ class MasterDataTest extends TestCase
             ['No', 'NIS', 'NISN', 'Nama', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Kelamin', 'Nama Ayah', 'Nama Ibu', 'No. WA Ayah', 'No. WA Ibu', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Desa', 'Alamat', 'Unit Pendidikan', 'Kelas'],
             [1, '1001', '2001', 'Alya Maharani', 'Jakarta', '37209', 'Perempuan', 'Budi', 'Siti', '0811', '0822', 'Jawa Barat', 'Bandung', 'Coblong', 'Dago', 'Jalan Mawar', 'PONPES', '9A'],
             [2, '1001', '2002', 'Alya MI', 'Bandung', '', 'Perempuan', '', '', '', '', '', '', '', '', '', 'MI', 'I A'],
+            [3, '', '', 'Data Tidak Valid', '', '', 'Perempuan', '', '', '', '', '', '', '', '', '', 'PONPES', '9A'],
         ]);
         $workbook = file_get_contents($path);
 
@@ -1101,15 +1151,23 @@ class MasterDataTest extends TestCase
         $preview = $this->get($location)
             ->assertOk()
             ->assertSee('Preview Import Data Siswa')
+            ->assertSee('data-student-import-limit', false)
+            ->assertSee('value="all"', false)
+            ->assertSee('data-student-import-status="gagal"', false)
+            ->assertSee('data-student-import-search', false)
+            ->assertSee('Tampilkan Semua')
             ->assertSee('PONPES')
             ->assertSee('MI')
             ->assertSee('Alya Maharani')
-            ->assertSee('Alya MI');
+            ->assertSee('Alya MI')
+            ->assertSee('Data Tidak Valid')
+            ->assertSee('NIS kosong.');
         $this->assertSame(2, $preview->viewData('studentImportPreview')['valid']);
+        $this->assertCount(1, $preview->viewData('studentImportPreview')['failures']);
         $this->assertDatabaseCount('students', 0);
 
         $this->post('/master-data/students/import', ['token' => $query['import_token']])
-            ->assertRedirect('/master-data?tab=students')
+            ->assertRedirect('/manajemen-siswa/data-siswa')
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('students', [
@@ -1139,7 +1197,7 @@ class MasterDataTest extends TestCase
             ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
 
-    public function test_student_list_and_export_require_unit_with_active_year_as_default(): void
+    public function test_student_list_and_export_use_active_year_as_default(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
@@ -1149,13 +1207,14 @@ class MasterDataTest extends TestCase
         Student::create(['nis' => '1001', 'name' => 'Siswa MI', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id]);
         Student::create(['nis' => '1002', 'name' => 'Siswa MTs', 'gender' => 'L', 'school_class_id' => $otherClass->id, 'academic_year_id' => $year->id]);
 
-        $this->get('/master-data?tab=students')
+        $this->get('/manajemen-siswa/data-siswa')
             ->assertOk()
             ->assertViewHas('data', fn ($data) => $data->total() === 2)
             ->assertSee('<option value="'.$year->id.'" selected>'.$year->name.'</option>', false);
 
         $this->get('/master-data/students/export')
-            ->assertSessionHasErrors('unit_id');
+            ->assertOk()
+            ->assertDownload('data-siswa-semua-'.now()->format('Y-m-d').'.xlsx');
 
         $this->get('/master-data/students/export?unit_id='.$unit->id)
             ->assertOk()
@@ -1210,6 +1269,19 @@ class MasterDataTest extends TestCase
 
         $this->assertDatabaseHas('students', [
             'nis' => '1002', 'is_active' => false, 'exit_date' => '2026-06-01 00:00:00', 'inactive_reason' => 'Lulus',
+        ]);
+    }
+
+    private function createSppCategory(EducationUnit $unit, int $amount): FeeType
+    {
+        return FeeType::create([
+            'education_unit_id' => $unit->id,
+            'payment_group' => 'spp',
+            'code' => 'SPP-'.$unit->id,
+            'name' => 'SPP',
+            'amount' => $amount,
+            'period' => 'Bulanan',
+            'is_active' => true,
         ]);
     }
 }

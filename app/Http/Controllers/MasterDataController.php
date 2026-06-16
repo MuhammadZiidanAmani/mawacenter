@@ -15,7 +15,6 @@ use App\Models\SchoolClass;
 use App\Models\SppPayment;
 use App\Models\SppPaymentCorrection;
 use App\Models\SppPaymentItem;
-use App\Models\SppSetting;
 use App\Models\Student;
 use App\Services\ChargeCalculator;
 use App\Services\StudentImportService;
@@ -35,11 +34,21 @@ class MasterDataController extends Controller
 {
     public function index(Request $request)
     {
-        $tab = $request->string('tab')->value() ?: 'students';
+        $tab = $request->string('tab')->value() ?: 'academic-years';
+        if ($tab === 'spp-settings') {
+            $tab = 'fee-types';
+        }
+        if ($tab === 'students' && $request->routeIs('master.index')) {
+            return redirect()->route('student-management.students.index', $request->except('tab'));
+        }
+        if ($tab === 'students' && $request->routeIs('master.create')) {
+            return redirect()->route('student-management.students.create');
+        }
         $search = $request->string('search')->value();
-        $perPage = in_array($request->integer('per_page'), [10, 25, 50, 100]) ? $request->integer('per_page') : 10;
+        $perPage = $this->perPage($request);
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
         $studentYearId = $request->integer('year_id') ?: $activeAcademicYear?->id;
+        $studentStatus = $request->query('status', 'active');
         $studentSort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'class'], true)
             ? $request->string('sort')->value()
             : 'name';
@@ -58,7 +67,7 @@ class MasterDataController extends Controller
                     in_array($listSort, ['code', 'name', 'school_classes_count', 'is_active'], true),
                     fn ($query) => $query->orderBy($listSort, $listDirection),
                     fn ($query) => $query
-                        ->orderByRaw("CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+                        ->orderByRaw($this->educationUnitOrderExpression())
                         ->orderBy('name')
                 )->paginate($perPage)->withQueryString(),
             'classes' => SchoolClass::select('school_classes.*')->with(['educationUnit'])->withCount('students')
@@ -74,7 +83,7 @@ class MasterDataController extends Controller
                         default => 'school_classes.name',
                     }, $listDirection),
                     fn ($query) => $query
-                        ->orderByRaw("CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+                        ->orderByRaw(str_replace('code', 'education_units.code', $this->educationUnitOrderExpression()))
                         ->orderBy('education_units.name')->orderBy('school_classes.name')
                 )->paginate($perPage)->withQueryString(),
             'fee-types' => FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
@@ -85,11 +94,6 @@ class MasterDataController extends Controller
                     default => 'education_unit_id',
                 }, $listSort ? $listDirection : 'asc')
                 ->orderBy('name')->paginate($perPage)->withQueryString(),
-            'spp-settings' => SppSetting::with('educationUnit')
-                ->when($search, fn ($query) => $query->whereHas('educationUnit', fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
-                ->orderBy(match ($listSort) {
-                    'amount' => 'amount', 'is_active' => 'is_active', default => 'education_unit_id',
-                }, $listSort ? $listDirection : 'asc')->paginate($perPage)->withQueryString(),
             'fee-discounts' => FeeDiscount::with(['student.schoolClass.educationUnit', 'feeType'])
                 ->when($search, fn ($query) => $query->whereHas('student', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")))
                 ->orderBy(match ($listSort) {
@@ -97,17 +101,17 @@ class MasterDataController extends Controller
                     'discount' => 'discount_value', 'is_active' => 'is_active',
                     default => 'created_at',
                 }, $listSort ? $listDirection : 'desc')->paginate($perPage)->withQueryString(),
-            default => Student::select('students.*')->with(['schoolClass.educationUnit', 'academicYear'])
+            default => Student::select('students.*')->with(['schoolClass.educationUnit'])
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('students.name', 'like', "%{$search}%")->orWhere('students.nis', 'like', "%{$search}%")->orWhere('students.nisn', 'like', "%{$search}%")))
                 ->when($request->integer('class_id'), fn ($query, $classId) => $query->where('students.school_class_id', $classId))
                 ->when($request->integer('year_id'), fn ($query, $yearId) => $query->where('students.academic_year_id', $yearId))
-                ->when($request->filled('status'), fn ($query) => $query->where('students.is_active', $request->string('status')->value() === 'active'))
+                ->when($studentStatus !== null && $studentStatus !== '', fn ($query) => $query->where('students.is_active', $studentStatus === 'active'))
                 ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->whereHas('schoolClass', fn ($q) => $q->where('education_unit_id', $unitId)))
                 ->when(in_array($studentSort, ['unit', 'class'], true), fn ($query) => $query
                     ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id'))
                 ->when($studentSort === 'unit', fn ($query) => $query
                     ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
-                    ->orderByRaw("CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END {$studentSortDirection}")
+                    ->orderByRaw(str_replace('code', 'education_units.code', $this->educationUnitOrderExpression())." {$studentSortDirection}")
                     ->orderBy('education_units.name', $studentSortDirection)
                     ->orderBy('students.name'))
                 ->when($studentSort === 'class', fn ($query) => $query
@@ -128,27 +132,23 @@ class MasterDataController extends Controller
             });
         }
 
+        $showCreate = $request->routeIs('master.create') || $request->routeIs('student-management.students.create');
+        $studentImportPreview = $this->studentImportPreview($request);
+
         return view('master.index', [
             'tab' => $tab,
             'data' => $data,
-            'classes' => SchoolClass::with('educationUnit')->orderBy('education_unit_id')->orderBy('name')->get(),
-            'educationUnits' => EducationUnit::orderByRaw("CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
-                ->orderBy('name')->get(),
-            'academicYears' => AcademicYear::orderByDesc('is_active')->latest()->get(),
+            'classes' => $this->classOptions(),
+            'educationUnits' => $this->educationUnitOptions(),
+            'academicYears' => $this->academicYearOptions(),
             'activeAcademicYear' => $activeAcademicYear,
             'studentYearId' => $studentYearId,
-            'studentOptions' => Student::with('schoolClass.educationUnit')->where('is_active', true)->orderBy('name')->get(),
-            'feeTypeOptions' => FeeType::with(['educationUnit', 'schoolClass'])->where('is_active', true)->orderBy('name')->get(),
-            'stats' => [
-                'students' => Student::count(),
-                'active_students' => Student::where('is_active', true)->count(),
-                'classes' => SchoolClass::count(),
-                'education_units' => EducationUnit::where('is_active', true)->count(),
-                'fee_types' => FeeType::where('is_active', true)->count(),
-                'spp_settings' => SppSetting::where('is_active', true)->count(),
-            ],
-            'showCreate' => $request->routeIs('master.create'),
-            'studentImportPreview' => $this->studentImportPreview($request),
+            'studentStatus' => $studentStatus,
+            'studentOptions' => $this->studentOptions($tab, $showCreate),
+            'feeTypeOptions' => $this->feeTypeOptions($tab, $showCreate),
+            'stats' => $this->masterStats(),
+            'showCreate' => $showCreate,
+            'studentImportPreview' => $studentImportPreview,
             'studentImportToken' => $request->string('import_token')->value() ?: null,
         ]);
     }
@@ -156,6 +156,35 @@ class MasterDataController extends Controller
     public function create(Request $request)
     {
         return $this->index($request);
+    }
+
+    public function studentIndex(Request $request)
+    {
+        $request->merge(['tab' => 'students']);
+
+        return $this->index($request);
+    }
+
+    public function studentCreate(Request $request)
+    {
+        $request->merge(['tab' => 'students']);
+
+        return $this->index($request);
+    }
+
+    public function studentTransfer(Request $request)
+    {
+        return $this->studentManagementPlaceholder('Pindah Kelas', 'Kelola pemindahan siswa antar kelas dalam tahun pelajaran berjalan.', 'pindah-kelas');
+    }
+
+    public function studentPromotion(Request $request)
+    {
+        return $this->studentManagementPlaceholder('Naik Kelas', 'Proses kenaikan kelas siswa untuk tahun pelajaran berikutnya.', 'naik-kelas');
+    }
+
+    public function studentAlumni(Request $request)
+    {
+        return $this->studentManagementPlaceholder('Data Alumni', 'Kelola data siswa yang sudah lulus atau menjadi alumni.', 'alumni');
     }
 
     public function storeAcademicYear(Request $request): RedirectResponse
@@ -261,18 +290,25 @@ class MasterDataController extends Controller
     public function exportStudents(Request $request): StreamedResponse
     {
         $validated = $request->validate([
-            'unit_id' => ['required', 'exists:education_units,id'],
-            'class_id' => ['nullable', Rule::exists('school_classes', 'id')->where('education_unit_id', $request->integer('unit_id'))],
+            'unit_id' => ['nullable', 'exists:education_units,id'],
+            'class_id' => [
+                'nullable',
+                $request->integer('unit_id')
+                    ? Rule::exists('school_classes', 'id')->where('education_unit_id', $request->integer('unit_id'))
+                    : Rule::exists('school_classes', 'id'),
+            ],
             'year_id' => ['nullable', 'exists:academic_years,id'],
             'status' => ['nullable', Rule::in(['active', 'inactive'])],
+            'search' => ['nullable', 'string', 'max:120'],
         ]);
         $yearId = $validated['year_id'] ?? AcademicYear::where('is_active', true)->value('id');
-        $unit = EducationUnit::findOrFail($validated['unit_id']);
+        $unit = isset($validated['unit_id']) ? EducationUnit::findOrFail($validated['unit_id']) : null;
         $students = Student::with('schoolClass.educationUnit')
-            ->whereHas('schoolClass', fn ($query) => $query->where('education_unit_id', $unit->id))
+            ->when($unit, fn ($query) => $query->whereHas('schoolClass', fn ($q) => $q->where('education_unit_id', $unit->id)))
             ->when($validated['class_id'] ?? null, fn ($query, $classId) => $query->where('school_class_id', $classId))
             ->when($yearId, fn ($query, $id) => $query->where('academic_year_id', $id))
             ->when($validated['status'] ?? null, fn ($query, $status) => $query->where('is_active', $status === 'active'))
+            ->when($validated['search'] ?? null, fn ($query, $search) => $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")->orWhere('nisn', 'like', "%{$search}%")))
             ->orderBy('name')->get();
 
         $headers = $this->studentImportHeaders();
@@ -304,12 +340,14 @@ class MasterDataController extends Controller
             ];
         }
 
+        $filenameScope = $unit ? Str::slug($unit->code) : 'semua';
+
         return response()->streamDownload(function () use ($rows) {
             $path = tempnam(sys_get_temp_dir(), 'students-xlsx-');
             StudentXlsx::write($path, $rows);
             readfile($path);
             unlink($path);
-        }, 'data-siswa-'.Str::slug($unit->code).'-'.now()->format('Y-m-d').'.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+        }, 'data-siswa-'.$filenameScope.'-'.now()->format('Y-m-d').'.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
 
     public function studentTemplate(): StreamedResponse
@@ -326,7 +364,7 @@ class MasterDataController extends Controller
     {
         $activeYear = AcademicYear::where('is_active', true)->first();
         if (! $activeYear) {
-            return redirect()->route('master.index', ['tab' => 'students'])
+            return redirect()->route('student-management.students.index')
                 ->withErrors(['file' => 'Atur tahun pelajaran aktif terlebih dahulu.']);
         }
 
@@ -347,8 +385,7 @@ class MasterDataController extends Controller
             throw $exception;
         }
 
-        return redirect()->route('master.index', [
-            'tab' => 'students',
+        return redirect()->route('student-management.students.index', [
             'import_token' => $token,
         ]);
     }
@@ -358,7 +395,7 @@ class MasterDataController extends Controller
         $validated = $request->validate(['token' => ['required', 'uuid']]);
         $stored = $request->session()->pull("student_imports.{$validated['token']}");
         if (! $stored || ! Storage::exists($stored['path'])) {
-            return redirect()->route('master.index', ['tab' => 'students'])
+            return redirect()->route('student-management.students.index')
                 ->withErrors(['file' => 'File preview sudah tidak tersedia. Silakan unggah ulang.']);
         }
 
@@ -366,7 +403,7 @@ class MasterDataController extends Controller
         if (! $activeYear) {
             Storage::delete($stored['path']);
 
-            return redirect()->route('master.index', ['tab' => 'students'])
+            return redirect()->route('student-management.students.index')
                 ->withErrors(['file' => 'Tahun pelajaran untuk file ini sudah tidak tersedia.']);
         }
 
@@ -381,7 +418,7 @@ class MasterDataController extends Controller
         $failures = $result['failures'];
 
         if ($imported === 0) {
-            return redirect()->route('master.index', ['tab' => 'students'])
+            return redirect()->route('student-management.students.index')
                 ->with('error', 'Tidak ada data yang berhasil diimpor. '.collect($failures)->pluck('message')->take(5)->implode(' '));
         }
 
@@ -420,20 +457,6 @@ class MasterDataController extends Controller
         return $this->done('fee-types', 'Kategori pembayaran berhasil diperbarui.');
     }
 
-    public function storeSppSetting(Request $request): RedirectResponse
-    {
-        SppSetting::create($this->validateSppSetting($request));
-
-        return $this->done('spp-settings', 'Set SPP berhasil ditambahkan.');
-    }
-
-    public function updateSppSetting(Request $request, SppSetting $sppSetting): RedirectResponse
-    {
-        $sppSetting->update($this->validateSppSetting($request, $sppSetting));
-
-        return $this->done('spp-settings', 'Set SPP berhasil diperbarui.');
-    }
-
     public function storeFeeDiscount(Request $request): RedirectResponse
     {
         FeeDiscount::create($this->validateFeeDiscount($request));
@@ -455,7 +478,6 @@ class MasterDataController extends Controller
             'education-units' => EducationUnit::findOrFail($id),
             'classes' => SchoolClass::findOrFail($id),
             'fee-types' => FeeType::findOrFail($id),
-            'spp-settings' => SppSetting::findOrFail($id),
             'fee-discounts' => FeeDiscount::findOrFail($id),
             default => Student::findOrFail($id),
         };
@@ -594,6 +616,74 @@ class MasterDataController extends Controller
         return $request->session()->get("student_imports.{$token}.preview");
     }
 
+    private function educationUnitOptions()
+    {
+        return EducationUnit::select(['id', 'code', 'name'])
+            ->orderByRaw($this->educationUnitOrderExpression())
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function classOptions()
+    {
+        return SchoolClass::select(['id', 'education_unit_id', 'name'])
+            ->with('educationUnit:id,code')
+            ->orderBy('education_unit_id')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function academicYearOptions()
+    {
+        return AcademicYear::select(['id', 'name', 'is_active', 'created_at'])
+            ->orderByDesc('is_active')
+            ->latest()
+            ->get();
+    }
+
+    private function studentOptions(string $tab, bool $showCreate)
+    {
+        if (! $showCreate || $tab !== 'fee-discounts') {
+            return collect();
+        }
+
+        return Student::select(['id', 'nis', 'name', 'school_class_id'])
+            ->with('schoolClass.educationUnit:id,code')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function feeTypeOptions(string $tab, bool $showCreate)
+    {
+        if (! $showCreate || $tab !== 'fee-discounts') {
+            return collect();
+        }
+
+        return FeeType::select(['id', 'education_unit_id', 'school_class_id', 'name'])
+            ->with(['educationUnit:id,code', 'schoolClass:id,name'])
+            ->where('is_active', true)
+            ->where('payment_group', '!=', 'spp')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function masterStats(): array
+    {
+        return [
+            'students' => Student::count(),
+            'active_students' => Student::where('is_active', true)->count(),
+            'classes' => SchoolClass::count(),
+            'education_units' => EducationUnit::where('is_active', true)->count(),
+            'fee_types' => FeeType::where('is_active', true)->count(),
+        ];
+    }
+
+    private function educationUnitOrderExpression(): string
+    {
+        return "CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END";
+    }
+
     private function validateFeeType(Request $request, ?FeeType $feeType = null): array
     {
         $allClasses = $request->input('school_class_id') === 'all';
@@ -604,7 +694,7 @@ class MasterDataController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'max:120'],
-            'payment_group' => ['nullable', Rule::in(['daftar-ulang', 'laundry', 'lain-lain'])],
+            'payment_group' => ['nullable', Rule::in(['spp', 'daftar-ulang', 'laundry', 'lain-lain'])],
             'education_unit_id' => ['required', 'exists:education_units,id'],
             'academic_year_id' => ['nullable', 'exists:academic_years,id'],
             'school_class_id' => ['nullable'],
@@ -614,7 +704,11 @@ class MasterDataController extends Controller
             'period' => ['nullable', Rule::in(['Bulanan', 'Tahunan', 'Sekali Bayar'])],
             'is_active' => ['nullable', 'boolean'],
         ]);
+        $validated['payment_group'] ??= $feeType?->payment_group ?? 'lain-lain';
 
+        if ($validated['payment_group'] === 'spp' && $classIds->isEmpty()) {
+            $allClasses = true;
+        }
         if (! $allClasses && $classIds->isEmpty()) {
             throw ValidationException::withMessages(['school_class_ids' => 'Pilih minimal satu kelas.']);
         }
@@ -629,6 +723,26 @@ class MasterDataController extends Controller
         }
 
         $classIds = $allClasses ? collect([null]) : $classIds;
+        if ($validated['payment_group'] === 'spp') {
+            foreach ($classIds as $classId) {
+                $duplicate = FeeType::query()
+                    ->paymentGroup('spp')
+                    ->where('education_unit_id', $validated['education_unit_id'])
+                    ->where('school_class_id', $classId)
+                    ->when(
+                        $validated['academic_year_id'] ?? null,
+                        fn ($query, $yearId) => $query->where('academic_year_id', $yearId),
+                        fn ($query) => $query->whereNull('academic_year_id'),
+                    )
+                    ->when($feeType, fn ($query) => $query->whereKeyNot($feeType->id))
+                    ->exists();
+                if ($duplicate) {
+                    throw ValidationException::withMessages([
+                        'payment_group' => 'Kategori SPP untuk unit, kelas, dan tahun pelajaran tersebut sudah tersedia.',
+                    ]);
+                }
+            }
+        }
         $baseCode = Str::upper(Str::slug($validated['name'], '-'));
         $baseCode = substr($baseCode ?: 'PEMBAYARAN', 0, 20);
 
@@ -650,28 +764,18 @@ class MasterDataController extends Controller
 
             return [
                 'name' => $validated['name'],
-                'payment_group' => $validated['payment_group'] ?? $feeType?->payment_group ?? 'lain-lain',
+                'payment_group' => $validated['payment_group'],
                 'education_unit_id' => $validated['education_unit_id'],
                 'school_class_id' => $classId,
                 'academic_year_id' => $validated['academic_year_id'] ?? $feeType?->academic_year_id,
                 'amount' => $validated['amount'],
-                'period' => $validated['period'] ?? $feeType?->period ?? 'Bulanan',
+                'period' => $validated['payment_group'] === 'spp'
+                    ? 'Bulanan'
+                    : ($validated['period'] ?? $feeType?->period ?? 'Bulanan'),
                 'code' => $code,
                 'is_active' => $request->boolean('is_active'),
             ];
         })->all();
-    }
-
-    private function validateSppSetting(Request $request, ?SppSetting $sppSetting = null): array
-    {
-        $validated = $request->validate([
-            'education_unit_id' => ['required', 'exists:education_units,id', Rule::unique('spp_settings')->ignore($sppSetting)],
-            'amount' => ['required', 'integer', 'min:0'],
-            'is_active' => ['nullable', 'boolean'],
-        ]);
-        $validated['is_active'] = $request->boolean('is_active');
-
-        return $validated;
     }
 
     private function validateFeeDiscount(Request $request, ?FeeDiscount $feeDiscount = null): array
@@ -727,7 +831,7 @@ class MasterDataController extends Controller
         $parameters = ['tab' => $tab];
 
         if ($tab === 'students') {
-            $parameters = array_merge($parameters, request()->only([
+            $parameters = request()->only([
                 'unit_id',
                 'class_id',
                 'year_id',
@@ -737,9 +841,26 @@ class MasterDataController extends Controller
                 'sort',
                 'direction',
                 'page',
-            ]));
+            ]);
+
+            return redirect()->route('student-management.students.index', $parameters)->with('success', $message);
         }
 
         return redirect()->route('master.index', $parameters)->with('success', $message);
+    }
+
+    private function studentManagementPlaceholder(string $title, string $description, string $section)
+    {
+        return view('student-management.placeholder', [
+            'title' => $title,
+            'description' => $description,
+            'section' => $section,
+            'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
+            'stats' => [
+                'students' => Student::where('is_active', true)->count(),
+                'classes' => SchoolClass::count(),
+                'alumni' => Student::where('is_active', false)->count(),
+            ],
+        ]);
     }
 }

@@ -86,12 +86,12 @@
 
     <table class="payment-table">
         <thead>
-            <tr><th class="transaction-column">Waktu Transaksi</th><th class="name-column">Jenis Pembayaran</th><th class="year-column">Tahun Pelajaran</th><th class="method-column">Bayar</th><th class="amount-column">Nominal</th></tr>
+            <tr><th class="transaction-column">Waktu Transaksi</th><th class="name-column">Kategori Pembayaran</th><th class="year-column">Tahun Pelajaran</th><th class="method-column">Bayar</th><th class="amount-column">Nominal</th></tr>
         </thead>
         <tbody>
             <tr>
                 <td>{{ $payment->transaction_at->format('d-m-Y H.i') }} WIB</td>
-                <td>{{ $payment->feeType?->name ?? 'Pembayaran Lainnya' }}</td>
+                <td>{{ $payment->feeType?->name ?? 'Pembayaran Lainnya' }}@if($payment->items->isNotEmpty()) · {{ $payment->items->map(fn($item) => ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][$item->month].' '.$item->year)->join(', ') }}@endif</td>
                 <td>{{ $payment->feeType?->academicYear?->name ?? $payment->student?->academicYear?->name ?? '-' }}</td>
                 <td>{{ $payment->payment_method }}</td>
                 <td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td>

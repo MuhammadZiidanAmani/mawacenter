@@ -33,35 +33,40 @@
     $rupiah = fn ($amount) => 'Rp '.number_format($amount, 0, ',', '.');
 @endphp
 <div class="app-shell">
-    <aside class="sidebar" data-sidebar>
-        <div class="brand"><div class="brand-mark"><img src="{{ asset('images/mawa-center-mark.png') }}" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
-        <nav class="sidebar-nav">
-            <a href="{{ route('dashboard') }}" class="nav-item">{!! $icon('grid') !!}<span>Dashboard</span></a>
-            <a href="{{ route('master.index') }}" class="nav-item">{!! $icon('database') !!}<span>Data Master</span></a>
-            <div class="nav-group nested-nav open"><button type="button" class="nav-item nav-parent" data-nav-toggle aria-expanded="true">{!! $icon('card') !!}<span>Pembayaran</span>{!! $icon('chevron','nav-chevron') !!}</button><div class="nav-submenu"><a href="{{ route('finance.other.index',['category'=>'daftar-ulang']) }}">{!! $icon('receipt') !!}<span>Daftar Ulang</span></a><a href="{{ route('finance.spp.index') }}">{!! $icon('wallet') !!}<span>SPP</span></a><a href="{{ route('finance.other.index',['category'=>'laundry']) }}">{!! $icon('card') !!}<span>Laundry</span></a><a href="{{ route('finance.other.index') }}">{!! $icon('receipt') !!}<span>Lain-lain</span></a></div></div>
-            <a href="{{ route('finance.bills.index') }}" class="nav-item active">{!! $icon('receipt') !!}<span>Tagihan</span></a>
-            <a href="{{ route('reports.index') }}" class="nav-item">{!! $icon('chart') !!}<span>Laporan</span></a>
-            <a href="{{ route('settings.index') }}" class="nav-item">{!! $icon('settings') !!}<span>Pengaturan</span></a>
-        </nav>
-    </aside>
+    @include('partials.sidebar', ['activeMenu' => 'bills'])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar"><button class="icon-button menu-toggle always-visible" data-sidebar-toggle>{!! $icon('menu') !!}</button><div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div><div class="topbar-spacer"></div><button class="icon-button notification-button">{!! $icon('bell') !!}</button><button class="icon-button logout-button">{!! $icon('logout') !!}</button></header>
         <main class="finance-page bill-page">
+            @if(session('success'))
+                <div class="result-modal-backdrop show" data-alert><div class="result-modal success-result"><span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>
+            @endif
             <section class="bill-summary-hero">
-                <div class="bill-hero-copy"><span class="bill-hero-icon">{!! $icon('receipt') !!}</span><div><p class="eyebrow">Keuangan · Tagihan</p><h1>Tagihan Siswa</h1><p>Pantau seluruh kewajiban siswa secara otomatis berdasarkan pembayaran yang sudah tercatat.</p></div></div>
-                <div class="bill-period-note"><span>{!! $icon('calendar') !!}</span><div><small>Periode tagihan aktif</small><strong>Sampai {{ $months[$untilMonth] }} {{ $year }}</strong><em>Dihitung otomatis</em></div></div>
+                <div class="bill-hero-copy"><span class="bill-hero-icon">{!! $icon('receipt') !!}</span><div><p class="eyebrow">Keuangan · Tagihan</p><h1>Tagihan Siswa</h1><p>Pantau kewajiban siswa dari data tagihan yang sudah tersinkron dengan transaksi pembayaran.</p></div></div>
+                <div class="bill-period-note"><span>{!! $icon('calendar') !!}</span><div><small>Periode tagihan aktif</small><strong>Sampai {{ $months[$untilMonth] }} {{ $year }}</strong><em>Data tersinkron</em></div></div>
             </section>
 
             <section class="bill-metrics">
                 <div class="students"><span class="bill-metric-icon">{!! $icon('users') !!}</span><p><span>Siswa Belum Lunas</span><strong>{{ number_format($stats['students'], 0, ',', '.') }}</strong><small>perlu ditindaklanjuti</small></p></div>
                 <div class="remaining"><span class="bill-metric-icon">{!! $icon('wallet') !!}</span><p><span>Sisa Tagihan SPP</span><strong>{{ $rupiah($stats['spp']) }}</strong><small>hingga periode terpilih</small></p></div>
-                <div class="other"><span class="bill-metric-icon">{!! $icon('receipt') !!}</span><p><span>Sisa Lain-lain</span><strong>{{ $rupiah($stats['other']) }}</strong><small>jenis pembayaran aktif</small></p></div>
+                <div class="other"><span class="bill-metric-icon">{!! $icon('receipt') !!}</span><p><span>Sisa Lain-lain</span><strong>{{ $rupiah($stats['other']) }}</strong><small>kategori pembayaran aktif</small></p></div>
                 <div class="overdue"><span class="bill-metric-icon">{!! $icon('alert') !!}</span><p><span>Total Seluruh Tagihan</span><strong>{{ $rupiah($stats['remaining']) }}</strong><small>akumulasi kewajiban siswa</small></p></div>
             </section>
 
             <section class="card outstanding-filter-card">
-                <div class="outstanding-filter-heading"><span>{!! $icon('filter') !!}</span><div><strong>Filter Daftar Tagihan</strong><span>Cari siswa atau sesuaikan periode, unit, dan kelas.</span></div><a href="{{ route('finance.bills.index') }}">Reset filter</a></div>
+                <div class="outstanding-filter-heading">
+                    <span>{!! $icon('filter') !!}</span>
+                    <div><strong>Filter Daftar Tagihan</strong><span>Cari siswa atau sesuaikan periode, unit, dan kelas.</span></div>
+                    <form method="POST" action="{{ route('finance.bills.sync') }}" class="bill-sync-form">
+                        @csrf
+                        <input type="hidden" name="year" value="{{ $year }}">
+                        <input type="hidden" name="until_month" value="{{ $untilMonth }}">
+                        <input type="hidden" name="unit_id" value="{{ request('unit_id') }}">
+                        <input type="hidden" name="class_id" value="{{ request('class_id') }}">
+                        <button class="button button-secondary">{!! $icon('database') !!} Sinkronkan</button>
+                    </form>
+                    <a href="{{ route('finance.bills.index') }}">Reset filter</a>
+                </div>
                 <form method="GET" class="outstanding-filter">
                     <label><b>Tahun</b><select name="year">@for($optionYear = now()->year - 2; $optionYear <= now()->year + 1; $optionYear++)<option value="{{ $optionYear }}" @selected($year === $optionYear)>{{ $optionYear }}</option>@endfor</select></label>
                     <label><b>Periode SPP</b><select name="until_month">@foreach($months as $number => $name)<option value="{{ $number }}" @selected($untilMonth === $number)>Sampai {{ $name }}</option>@endforeach</select></label>
@@ -106,14 +111,26 @@
                                     @forelse($summary['other'] as $item)
                                         <div class="outstanding-line"><span><strong>{{ $item['name'] }}</strong><small>Terbayar {{ $rupiah($item['paid']) }} dari {{ $rupiah($item['total']) }}</small></span><b>{{ $rupiah($item['remaining']) }}</b></div>
                                     @empty
-                                        <p class="outstanding-clear">{!! $icon('check') !!} Semua jenis pembayaran sudah lunas.</p>
+                                        <p class="outstanding-clear">{!! $icon('check') !!} Semua kategori pembayaran sudah lunas.</p>
                                     @endforelse
                                 </div>
                             </div>
                         </details>
                     </article>
                 @empty
-                    <div class="outstanding-empty"><span>{!! $icon('check') !!}</span><strong>Tidak ada tagihan yang tersisa</strong><p>Semua siswa pada filter dan periode ini sudah lunas.</p></div>
+                    <div class="outstanding-empty">
+                        <span>{!! $icon('check') !!}</span>
+                        <strong>Belum ada tagihan pada filter ini</strong>
+                        <p>Jika data belum dibuat, jalankan sinkron tagihan untuk membentuk SPP dan kategori wajib non-laundry.</p>
+                        <form method="POST" action="{{ route('finance.bills.sync') }}" class="bill-empty-sync">
+                            @csrf
+                            <input type="hidden" name="year" value="{{ $year }}">
+                            <input type="hidden" name="until_month" value="{{ $untilMonth }}">
+                            <input type="hidden" name="unit_id" value="{{ request('unit_id') }}">
+                            <input type="hidden" name="class_id" value="{{ request('class_id') }}">
+                            <button class="button button-primary">{!! $icon('database') !!} Sinkronkan Tagihan</button>
+                        </form>
+                    </div>
                 @endforelse
                 <div class="pagination-wrap">{{ $studentsWithBills->links() }}</div>
             </section>

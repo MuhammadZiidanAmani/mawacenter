@@ -12,7 +12,10 @@ use Illuminate\Validation\ValidationException;
 
 class OtherPaymentService
 {
-    public function __construct(private ChargeCalculator $calculator) {}
+    public function __construct(
+        private ChargeCalculator $calculator,
+        private BillService $bills,
+    ) {}
 
     public function quote(Student $student, FeeType $feeType, ?CarbonInterface $date = null): array
     {
@@ -20,7 +23,7 @@ class OtherPaymentService
         $charge = $this->calculator->calculate($student, 'fee_type', $feeType, $date);
         if ($charge['original_amount'] < 1) {
             throw ValidationException::withMessages([
-                'fee_type_id' => 'Jenis pembayaran tidak aktif atau tidak berlaku untuk kelas siswa.',
+                'fee_type_id' => 'Kategori pembayaran tidak aktif atau tidak berlaku untuk kelas siswa.',
             ]);
         }
 
@@ -71,6 +74,8 @@ class OtherPaymentService
                 : 'Pending',
         ]);
 
+        $this->bills->syncOtherPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']));
+
         return $payment;
     }
 
@@ -85,7 +90,10 @@ class OtherPaymentService
 
             $this->recalculatePayments($payment->student_id, $payment->fee_type_id);
 
-            return $payment->refresh();
+            $payment = $payment->refresh();
+            $this->bills->syncOtherPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']));
+
+            return $payment;
         });
     }
 
@@ -94,6 +102,7 @@ class OtherPaymentService
         DB::transaction(function () use ($payment) {
             $studentId = $payment->student_id;
             $feeTypeId = $payment->fee_type_id;
+            $this->bills->removePayment('other', $payment->id);
             $payment->delete();
             $this->recalculatePayments($studentId, $feeTypeId);
         });

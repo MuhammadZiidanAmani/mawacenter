@@ -41,42 +41,7 @@
 @endphp
 
 <div class="app-shell" data-app>
-    <aside class="sidebar" data-sidebar>
-        <div class="brand">
-            <div class="brand-mark"><img src="{{ asset('images/mawa-center-mark.png') }}" alt="Logo Ma'wa Center"></div>
-            <div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div>
-            <button class="icon-button sidebar-close" type="button" data-sidebar-close aria-label="Tutup menu">×</button>
-        </div>
-
-        <nav class="sidebar-nav">
-            <a href="{{ route('dashboard') }}" class="nav-item active">{!! $icon('grid') !!}<span>Dashboard</span></a>
-            <div class="nav-group master-nav">
-                <button type="button" class="nav-item nav-parent" data-master-nav-toggle aria-expanded="false">{!! $icon('database') !!}<span>Data Master</span>{!! $icon('chevron', 'nav-chevron') !!}</button>
-                <div class="nav-submenu">
-                    <a href="{{ route('master.index', ['tab' => 'academic-years']) }}">{!! $icon('calendar') !!}<span>Tahun Pelajaran</span></a>
-                    <a href="{{ route('master.index', ['tab' => 'education-units']) }}">{!! $icon('grid') !!}<span>Unit Pendidikan</span></a>
-                    <a href="{{ route('master.index', ['tab' => 'classes']) }}">{!! $icon('database') !!}<span>Kelas</span></a>
-                    <a href="{{ route('master.index', ['tab' => 'students']) }}">{!! $icon('users') !!}<span>Siswa</span></a>
-                    <a href="{{ route('master.index', ['tab' => 'spp-settings']) }}">{!! $icon('wallet') !!}<span>Set SPP</span></a>
-                    <a href="{{ route('master.index', ['tab' => 'fee-types']) }}">{!! $icon('receipt') !!}<span>Jenis Pembayaran</span></a>
-                    <a href="{{ route('master.index', ['tab' => 'fee-discounts']) }}">{!! $icon('wallet') !!}<span>Keringanan Biaya</span></a>
-                </div>
-            </div>
-            <div class="nav-group nested-nav">
-                <button type="button" class="nav-item nav-parent" data-nav-toggle aria-expanded="false">{!! $icon('card') !!}<span>Pembayaran</span>{!! $icon('chevron', 'nav-chevron') !!}</button>
-                <div class="nav-submenu">
-                    <a href="{{ route('finance.other.index', ['category' => 'daftar-ulang']) }}">{!! $icon('receipt') !!}<span>Daftar Ulang</span></a>
-                    <a href="{{ route('finance.spp.index') }}">{!! $icon('wallet') !!}<span>SPP</span></a>
-                    <a href="{{ route('finance.other.index', ['category' => 'laundry']) }}">{!! $icon('card') !!}<span>Laundry</span></a>
-                    <a href="{{ route('finance.other.index') }}">{!! $icon('receipt') !!}<span>Lain-lain</span></a>
-                </div>
-            </div>
-            <a href="{{ route('finance.bills.index') }}" class="nav-item">{!! $icon('receipt') !!}<span>Tagihan</span>{!! $icon('chevron', 'nav-chevron') !!}</a>
-            <a href="{{ route('reports.index') }}" class="nav-item">{!! $icon('chart') !!}<span>Laporan</span>{!! $icon('chevron', 'nav-chevron') !!}</a>
-            <a href="{{ route('settings.index') }}" class="nav-item">{!! $icon('settings') !!}<span>Pengaturan</span>{!! $icon('chevron', 'nav-chevron') !!}</a>
-        </nav>
-
-    </aside>
+    @include('partials.sidebar', ['activeMenu' => 'dashboard'])
 
     <div class="sidebar-overlay" data-sidebar-overlay></div>
 
