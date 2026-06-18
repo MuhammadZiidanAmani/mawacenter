@@ -24,10 +24,16 @@
         'bell' => '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
         'logout' => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/>',
         'plus' => '<path d="M12 5v14M5 12h14"/>',
+        'search' => '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
         'upload' => '<path d="M12 16V4m0 0L7 9m5-5 5 5M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>',
     ];
     $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
     $months = [1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',9=>'September',10=>'Oktober',11=>'November',12=>'Desember'];
+    $paymentQuery = fn (array $except = []) => collect(request()->except(array_merge($except, ['page'])))
+        ->filter(fn ($value) => is_scalar($value))
+        ->all();
+    $filterDateFrom = request('date_from', now()->format('d/m/Y'));
+    $filterDateTo = request('date_to', now()->format('d/m/Y'));
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'payment', 'activePaymentMenu' => $paymentSection['key']])
@@ -38,18 +44,50 @@
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div><button class="icon-button notification-button">{!! $icon('bell') !!}</button><button class="icon-button logout-button">{!! $icon('logout') !!}</button>
         </header>
-        <main class="finance-page">
+        <main @class(['finance-page' => $showCreate, 'student-page payment-flat-page' => ! $showCreate])>
             @php($paymentAction = session('payment_action'))
             @if($paymentAction)<div class="result-modal-backdrop show" data-alert><div class="result-modal success-result payment-action-result"><span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><div class="payment-result-actions"><a href="{{ $paymentAction['receipt_url'] }}" target="_blank" class="button button-primary">Cetak</a><a href="{{ $paymentAction['download_url'] }}" class="button button-secondary">Unduh PDF</a><a href="{{ $paymentAction['back_url'] }}" class="button button-secondary">Kembali</a></div></div></div>@elseif(session('success'))<div class="result-modal-backdrop show" data-alert><div class="result-modal success-result"><span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>@endif
             @if($errors->any())<div class="result-modal-backdrop show" data-alert><div class="result-modal error-result"><span class="result-icon">!</span><strong>Perlu Diperiksa</strong><p>{{ $errors->first() }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>@endif
             @unless($showCreate)
             <div>
-                <section class="hero master-hero">
-                    <div><p class="eyebrow">Pembayaran · {{ $paymentSection['title'] }}</p><h1>Daftar Pembayaran {{ $paymentSection['title'] }}</h1><p>{{ $paymentSection['description'] }}</p></div>
-                    <div class="spp-hero-actions">
-                        <a href="{{ route('finance.other.create', ['category' => $paymentSection['key']]) }}" class="button button-secondary spp-add-button">{!! $icon('plus') !!} Tambah</a>
-                        <button type="button" class="button button-secondary spp-import-toggle {{ $importPreview || $errors->any() ? 'active' : '' }}" data-spp-import-toggle aria-expanded="{{ $errors->any() ? 'true' : 'false' }}">{!! $icon('upload') !!} Import</button>
+                <section class="student-workspace payment-workspace">
+                    <div class="student-flat-header">
+                        <h1>Pembayaran {{ $paymentSection['title'] }}</h1>
                     </div>
+                    <div class="student-action-bar">
+                        <a href="{{ route('finance.other.create', ['category' => $paymentSection['key']]) }}" class="button student-add-button">{!! $icon('plus') !!} Tambah</a>
+                        <button type="button" class="button action-purple spp-import-toggle {{ $importPreview || $errors->any() ? 'active' : '' }}" data-spp-import-toggle aria-expanded="{{ $errors->any() ? 'true' : 'false' }}">{!! $icon('upload') !!} Import</button>
+                    </div>
+                    <form method="GET" action="{{ route('finance.other.index', ['category' => $paymentSection['key']]) }}" class="student-filter-panel payment-filter-panel">
+                        <input type="hidden" name="category" value="{{ $paymentSection['key'] }}">
+                        <label class="payment-date-filter"><span>Waktu</span><span class="payment-date-range"><span class="date-picker-field" data-date-picker-control><input type="text" name="date_from" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ $filterDateFrom }}" data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal awal" data-date-picker-button>{!! $icon('calendar') !!}</button></span><b>-</b><span class="date-picker-field" data-date-picker-control><input type="text" name="date_to" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ $filterDateTo }}" data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal akhir" data-date-picker-button>{!! $icon('calendar') !!}</button></span></span></label>
+                        <label><span>Kategori Pembayaran</span><select name="fee_type_id"><option value="">-- semua --</option>@foreach($feeTypes as $feeType)<option value="{{ $feeType->id }}" @selected(request('fee_type_id') == $feeType->id)>{{ $feeType->name }}</option>@endforeach</select></label>
+                        <label><span>Cara Bayar</span><select name="payment_method"><option value="">-- semua --</option><option value="Cash" @selected(request('payment_method') === 'Cash')>Cash</option><option value="Transfer" @selected(request('payment_method') === 'Transfer')>Transfer</option></select></label>
+                        <label><span>Status</span><select name="status"><option value="">-- semua --</option><option value="Diterima" @selected(request('status') === 'Diterima')>Diterima</option><option value="Pending" @selected(request('status') === 'Pending')>Pending</option></select></label>
+                        <label><span>Petugas</span><select name="operator_name"><option value="">-- semua --</option>@foreach($operators as $operator)<option value="{{ $operator }}" @selected(request('operator_name') === $operator)>{{ $operator }}</option>@endforeach</select></label>
+                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                        <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">-- semua --</option>@foreach($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
+                        <span class="payment-filter-label">Siswa</span>
+                        <div class="payment-student-filter">
+                            <div class="student-search-picker" data-student-picker data-student-optional>
+                                <input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" data-student-search>
+                                <select name="student_id" data-student-source>
+                                    <option value="">Semua siswa</option>
+                                    @foreach($studentOptions as $student)
+                                        <option value="{{ $student->id }}" @selected(request('student_id') == $student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="student-search-results" data-student-results hidden></div>
+                            </div>
+                        </div>
+                        @foreach($paymentQuery(['category', 'date_from', 'date_to', 'fee_type_id', 'payment_method', 'status', 'operator_name', 'unit_id', 'class_id', 'nis', 'student_id', 'student_search']) as $key => $value)
+                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @endforeach
+                        <div class="student-filter-actions payment-filter-actions">
+                            <button class="button student-search-button" aria-label="Tampilkan data">{!! $icon('search') !!}</button>
+                            <a href="{{ route('finance.other.index', ['category' => $paymentSection['key']]) }}" class="button student-filter-reset">Reset</a>
+                        </div>
+                    </form>
                 </section>
                 <div class="spp-import-modal-backdrop {{ $errors->any() ? 'show' : '' }}" data-spp-import-panel @if(! $errors->any()) hidden @endif>
                     <section class="spp-import-modal" role="dialog" aria-modal="true" aria-labelledby="other-import-title">
@@ -103,14 +141,14 @@
                     <div class="table-wrap spp-import-table-wrap"><table class="data-table spp-import-table other-import-preview-table"><thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>Kategori Excel</th><th>Nominal</th><th>Status</th><th>Keterangan</th></tr></thead><tbody>@foreach(array_slice($importPreview['rows'],0,100) as $row)<tr class="spp-import-row {{ strtolower($row['status']) }}"><td><span class="spp-line-number">{{ $row['line'] }}</span></td><td><strong class="spp-import-nis">{{ $row['nis'] }}</strong></td><td><strong>{{ $row['name'] }}</strong></td><td><span class="other-import-category">{{ $row['category'] }}</span><small>{{ $row['unit'] }}</small></td><td><strong class="spp-import-amount">Rp {{ number_format($row['nominal'],0,',','.') }}</strong></td><td><span class="status {{ $row['status']==='Valid'?'success':($row['status']==='Duplikat'?'warning':'danger') }}">{{ $row['status'] }}</span></td><td><span class="spp-import-message">{{ $row['message'] }}</span></td></tr>@endforeach</tbody></table></div>
                 </section>
                 @endif
-                <section class="card master-card spp-history other-payment-history">
+                <section class="card student-data-card payment-data-card spp-history other-payment-history">
                     @include('partials.list-toolbar', ['action' => route('finance.other.index', ['category' => $paymentSection['key']]), 'searchLabel' => 'Cari pembayaran '.$paymentSection['title']])
-                    <div class="table-wrap"><table @class(['data-table', 'spp-list-table', 'registration-payment-table' => in_array($paymentSection['key'], ['daftar-ulang', 'laundry'], true)])><thead><tr><th>No</th><th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th><th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'method', 'label' => 'Cara Bayar'])</th><th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th><th></th></tr></thead><tbody>
+                    <div class="table-wrap"><table @class(['data-table', 'student-flat-table', 'payment-flat-table', 'spp-list-table', 'registration-payment-table' => in_array($paymentSection['key'], ['daftar-ulang', 'laundry'], true)])><thead><tr><th>No</th><th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'method', 'label' => 'Cara Bayar'])</th><th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th><th>Rincian</th></tr></thead><tbody>
                         @forelse($payments as $payment)
                             <tr class="spp-main-row">
-                                <td>{{ $payments->firstItem()+$loop->index }}</td><td>{{ $payment->student?->nis ?? '-' }}</td><td><strong>{{ $payment->student?->name ?? '-' }}</strong></td><td>@if(in_array($paymentSection['key'], ['daftar-ulang', 'laundry'], true))<span class="education-code">{{ $payment->student?->schoolClass?->educationUnit?->code ?? '-' }}</span>@else{{ $payment->student?->schoolClass?->educationUnit?->name ?? '-' }}@endif</td><td>{{ $payment->student?->schoolClass?->name ?? '-' }}</td><td><span class="payment-method">{{ strtolower($payment->payment_method) }}</span></td><td><strong>Rp {{ number_format($payment->paid_amount,0,',','.') }}</strong></td><td><button type="button" class="spp-expand-button" data-spp-row-toggle="other-{{ $payment->id }}" aria-expanded="false">+</button></td>
+                                <td>{{ $payments->firstItem()+$loop->index }}</td><td>{{ $payment->student?->nis ?? '-' }}</td><td><span class="payment-student-name">{{ $payment->student?->name ?? '-' }}</span><small class="payment-student-unit">Unit Pendidikan: {{ $payment->student?->schoolClass?->educationUnit?->code ?? '-' }}</small></td><td>{{ $payment->student?->schoolClass?->name ?? '-' }}</td><td><span class="payment-method">{{ strtolower($payment->payment_method) }}</span></td><td><span>Rp {{ number_format($payment->paid_amount,0,',','.') }}</span></td><td><button type="button" class="spp-expand-button" data-spp-row-toggle="other-{{ $payment->id }}" aria-expanded="false">Lihat</button></td>
                             </tr>
-                            <tr class="spp-expanded-row" data-spp-row-detail="other-{{ $payment->id }}" hidden><td colspan="8">
+                            <tr class="spp-expanded-row" data-spp-row-detail="other-{{ $payment->id }}" hidden><td colspan="7">
                                 @if(in_array($paymentSection['key'], ['daftar-ulang', 'laundry'], true))
                                     <div @class(['registration-payment-detail', 'spp-payment-detail' => $paymentSection['key'] === 'laundry'])>
                                         <div class="registration-detail-item payment-type"><span>{{ $paymentSection['key'] === 'laundry' ? 'Bulan' : 'Kategori Pembayaran' }}</span><strong>{{ $paymentSection['key'] === 'laundry' ? $payment->items->map(fn($item) => $months[$item->month].' '.$item->year)->join(', ') : ($payment->feeType?->name ?? '-') }}</strong></div>
@@ -128,7 +166,7 @@
                                     </div>
                                 @endif
                             </td></tr>
-                        @empty @include('master.partials.empty') @endforelse
+                        @empty <tr><td colspan="7" class="empty-state">Belum ada pembayaran {{ $paymentSection['title'] }}.</td></tr> @endforelse
                     </tbody></table></div><div class="pagination-wrap">{{ $payments->links() }}</div>
                 </section>
             </div>

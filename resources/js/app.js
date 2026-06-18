@@ -521,6 +521,7 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
     const search = picker.querySelector('[data-student-search]');
     const select = picker.querySelector('[data-student-source]');
     const results = picker.querySelector('[data-student-results]');
+    const optional = picker.hasAttribute('data-student-optional');
     const options = Array.from(select.options).filter((option) => option.value);
     const selected = options.find((option) => option.selected);
     const normalizedStudentText = (value) => value.trim().toLocaleLowerCase('id-ID').replace(/\s+/g, ' ');
@@ -579,7 +580,7 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
     search.addEventListener('input', () => {
         const exactMatch = options.find((option) => normalizedStudentText(option.textContent) === normalizedStudentText(search.value));
         select.value = exactMatch?.value ?? '';
-        search.setCustomValidity(exactMatch ? '' : 'Pilih siswa dari hasil pencarian.');
+        search.setCustomValidity(exactMatch || optional ? '' : 'Pilih siswa dari hasil pencarian.');
         renderStudentResults();
         select.dispatchEvent(new Event('change', { bubbles: true }));
     });
@@ -600,6 +601,17 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
     }, 120));
     search.closest('form')?.addEventListener('submit', (event) => {
         syncStudentSelection();
+        if (optional && ! search.value.trim()) {
+            select.value = '';
+            search.setCustomValidity('');
+
+            return;
+        }
+        if (optional) {
+            search.setCustomValidity('');
+
+            return;
+        }
         if (!select.value) {
             event.preventDefault();
             search.setCustomValidity('Pilih siswa dari hasil pencarian.');
@@ -637,7 +649,12 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
         if (studentUnit && record.education_unit_id) studentUnit.value = String(record.education_unit_id);
         else if (studentUnit && selectedClass) studentUnit.value = selectedClass.dataset.unitId;
         filterStudentClasses(record.school_class_id ? [record.school_class_id] : (registrationAllClasses ? 'all' : allClasses?.value));
+        const permissionValues = Array.isArray(record.permissions) ? record.permissions.map(String) : [];
+        masterForm.querySelectorAll('input[name="permissions[]"]').forEach((input) => {
+            input.checked = permissionValues.includes(input.value);
+        });
         Object.entries(record).forEach(([key, value]) => {
+            if (key === 'permissions') return;
             const field = masterForm.elements.namedItem(key);
             if (!field) return;
             if (key === 'school_class_id' && value === null && registrationAllClasses) {
@@ -967,7 +984,7 @@ document.querySelectorAll('[data-spp-row-toggle]').forEach((button) => button.ad
     const detail = document.querySelector(`[data-spp-row-detail="${button.dataset.sppRowToggle}"]`);
     const isOpen = button.getAttribute('aria-expanded') === 'true';
     button.setAttribute('aria-expanded', String(!isOpen));
-    button.textContent = isOpen ? '+' : '−';
+    button.textContent = isOpen ? 'Lihat' : 'Tutup';
     button.classList.toggle('open', !isOpen);
     detail.hidden = isOpen;
 }));

@@ -1,21 +1,95 @@
 <!DOCTYPE html>
 <html lang="id">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Pengaturan - MA'WA CENTER</title>@vite(['resources/css/app.css','resources/js/app.js'])</head>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pengaturan Akun - MA'WA CENTER</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
 <body>
 @php
-    $icons=['grid'=>'<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>','database'=>'<ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v12c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/>','receipt'=>'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/>','wallet'=>'<path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/>','card'=>'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/>','chart'=>'<path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/>','settings'=>'<circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/>','menu'=>'<path d="M4 6h16M4 12h16M4 18h16"/>','bell'=>'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>','logout'=>'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/>','chevron'=>'<path d="m9 18 6-6-6-6"/>','check'=>'<path d="m5 12 4 4L19 6"/>','school'=>'<path d="m3 10 9-6 9 6-9 6-9-6Z"/><path d="M7 13v5h10v-5M3 10v7"/>','role'=>'<path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/>','arrow'=>'<path d="M5 12h14m-6-6 6 6-6 6"/>'];
-    $icon=fn($name,$class='')=>'<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$icons[$name].'</svg>';
+    $svg = fn ($path, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$path.'</svg>';
+    $icons = [
+        'menu' => '<path d="M4 6h16M4 12h16M4 18h16"/>',
+        'bell' => '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+        'logout' => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/>',
+        'user' => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+        'lock' => '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+        'role' => '<path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/>',
+    ];
+    $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
 @endphp
 <div class="app-shell">
-@include('partials.sidebar', ['activeMenu' => 'settings'])
-<div class="sidebar-overlay" data-sidebar-overlay></div><div class="main-panel"><header class="topbar"><button class="icon-button menu-toggle always-visible" data-sidebar-toggle>{!! $icon('menu') !!}</button><div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div><div class="topbar-spacer"></div><button class="icon-button notification-button">{!! $icon('bell') !!}</button><button class="icon-button logout-button">{!! $icon('logout') !!}</button></header>
-<main class="finance-page settings-page">
-@if(session('success'))<div class="result-modal-backdrop show" data-alert><div class="result-modal success-result"><span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><button class="button button-primary" data-alert-close>OK</button></div></div>@endif
-<section class="hero master-hero"><div><p class="eyebrow">Sistem · Pengaturan</p><h1>Pengaturan Aplikasi</h1><p>Kelola identitas sekolah dan preferensi dasar sistem keuangan.</p></div></section>
-<div class="settings-layout"><form method="POST" action="{{ route('settings.update') }}" class="card settings-form">@csrf @method('PUT')
-<div class="settings-form-head"><span>{!! $icon('school') !!}</span><div><strong>Identitas dan Preferensi</strong><small>Informasi ini digunakan sebagai identitas administrasi keuangan.</small></div></div>
-<div class="settings-fields"><label class="wide">Nama sekolah / lembaga<input name="school_name" value="{{ old('school_name',$settings['school_name']) }}" required></label><label>Nomor telepon<input name="school_phone" value="{{ old('school_phone',$settings['school_phone']) }}"></label><label>Email<input type="email" name="school_email" value="{{ old('school_email',$settings['school_email']) }}"></label><label class="wide">Alamat<textarea name="school_address" rows="3">{{ old('school_address',$settings['school_address']) }}</textarea></label><label>Penanggung jawab keuangan<input name="finance_officer" value="{{ old('finance_officer',$settings['finance_officer']) }}"></label><label>Metode pembayaran utama<select name="default_payment_method"><option @selected($settings['default_payment_method']==='Cash')>Cash</option><option @selected($settings['default_payment_method']==='Transfer')>Transfer</option></select></label><label class="wide">Pesan footer struk<textarea name="receipt_footer" rows="2">{{ old('receipt_footer',$settings['receipt_footer']) }}</textarea></label></div>
-<div class="settings-save"><span>Pastikan informasi sudah benar sebelum menyimpan.</span><button class="button button-primary">Simpan Pengaturan</button></div></form>
-<aside class="settings-side"><section class="card setup-card"><div class="settings-form-head"><span>{!! $icon('check') !!}</span><div><strong>Kelengkapan Sistem</strong><small>Ringkasan data aktif saat ini.</small></div></div>@foreach(['units'=>['Unit Pendidikan','education-units'],'classes'=>['Kelas','classes'],'fee_types'=>['Kategori Pembayaran','fee-types']] as $key=>$item)<a href="{{ route('master.index',['tab'=>$item[1]]) }}"><span>{{ $item[0] }}</span><strong>{{ $setup[$key] }}</strong>{!! $icon('arrow') !!}</a>@endforeach<a href="{{ route('student-management.students.index') }}"><span>Siswa</span><strong>{{ $setup['students'] }}</strong>{!! $icon('arrow') !!}</a></section><section class="card setup-card role-card"><div class="settings-form-head"><span>{!! $icon('role') !!}</span><div><strong>Role</strong><small>Menu hak akses pengguna sistem.</small></div></div>@foreach($roles as $role)<a href="#" aria-disabled="true"><span>{{ $role }}</span><strong>Role</strong>{!! $icon('arrow') !!}</a>@endforeach</section><section class="settings-note"><strong>Catatan</strong><p>Pengaturan nominal SPP dan kategori pembayaran dikelola melalui Data Master. Data siswa dikelola melalui Manajemen Siswa.</p></section></aside></div>
-</main></div></div>
-</body></html>
+    @include('partials.sidebar', ['activeMenu' => 'settings'])
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+    <div class="main-panel">
+        <header class="topbar">
+            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
+            <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
+            <div class="topbar-spacer"></div>
+            <button class="icon-button notification-button" aria-label="Notifikasi">{!! $icon('bell') !!}<span></span></button>
+            <button class="icon-button logout-button" type="button" aria-label="Keluar" title="Keluar">{!! $icon('logout') !!}</button>
+        </header>
+
+        <main class="finance-page settings-page">
+            @if(session('success'))
+                <div class="result-modal-backdrop show" data-alert><div class="result-modal success-result"><span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>
+            @endif
+            @if($errors->any())
+                <div class="result-modal-backdrop show" data-alert><div class="result-modal error-result"><span class="result-icon">!</span><strong>Perlu Diperiksa</strong><p>{{ $errors->first() }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>
+            @endif
+
+            <section class="hero master-hero">
+                <div>
+                    <p class="eyebrow">Sistem - Pengaturan</p>
+                    <h1>Pengaturan Akun</h1>
+                    <p>Kelola nama, username, email, dan password akun yang sedang digunakan.</p>
+                </div>
+            </section>
+
+            <div class="settings-layout">
+                <form method="POST" action="{{ route('settings.update') }}" class="card settings-form">
+                    @csrf
+                    @method('PUT')
+                    <div class="settings-form-head"><span>{!! $icon('user') !!}</span><div><strong>Profil Akun</strong><small>Perubahan hanya berlaku untuk akun login saat ini.</small></div></div>
+                    <div class="settings-fields">
+                        <label>Nama
+                            <input name="name" value="{{ old('name', $user->name) }}" required>
+                        </label>
+                        <label>Username
+                            <input name="username" value="{{ old('username', $user->username) }}" required>
+                        </label>
+                        <label class="wide">Email
+                            <input type="email" name="email" value="{{ old('email', $user->email) }}" required>
+                        </label>
+                        <label>Password Saat Ini
+                            <input type="password" name="current_password" autocomplete="current-password" placeholder="Wajib jika ganti password">
+                        </label>
+                        <label>Password Baru
+                            <input type="password" name="password" autocomplete="new-password" placeholder="Kosongkan jika tidak diganti">
+                        </label>
+                        <label class="wide">Konfirmasi Password Baru
+                            <input type="password" name="password_confirmation" autocomplete="new-password" placeholder="Ulangi password baru">
+                        </label>
+                    </div>
+                    <div class="settings-save"><span>Username otomatis disimpan dalam huruf kecil tanpa spasi.</span><button class="button button-primary">Simpan Akun</button></div>
+                </form>
+
+                <aside class="settings-side">
+                    <section class="card setup-card account-summary-card">
+                        <div class="settings-form-head"><span>{!! $icon('role') !!}</span><div><strong>Ringkasan Akun</strong><small>Informasi akun aktif saat ini.</small></div></div>
+                        <div class="account-summary">
+                            <span><small>Nama</small><strong>{{ $user->name }}</strong></span>
+                            <span><small>Username</small><strong>{{ $user->username }}</strong></span>
+                            <span><small>Email</small><strong>{{ $user->email }}</strong></span>
+                            <span><small>Role</small><strong>{{ $user->roleLabel() }}</strong></span>
+                        </div>
+                    </section>
+                    <section class="settings-note"><strong>Catatan</strong><p>Data User dan Data Role kini dikelola melalui submenu Data Master.</p></section>
+                </aside>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

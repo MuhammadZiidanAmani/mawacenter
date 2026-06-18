@@ -11,11 +11,13 @@ use App\Models\EducationUnit;
 use App\Models\FeeDiscount;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
+use App\Models\Role;
 use App\Models\SchoolClass;
 use App\Models\SppPayment;
 use App\Models\SppPaymentCorrection;
 use App\Models\SppPaymentItem;
 use App\Models\Student;
+use App\Models\User;
 use App\Services\ChargeCalculator;
 use App\Services\StudentImportService;
 use App\Support\StudentXlsx;
@@ -101,6 +103,27 @@ class MasterDataController extends Controller
                     'discount' => 'discount_value', 'is_active' => 'is_active',
                     default => 'created_at',
                 }, $listSort ? $listDirection : 'desc')->paginate($perPage)->withQueryString(),
+            'data-roles' => Role::withCount('users')
+                ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('key', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")->orWhere('description', 'like', "%{$search}%")))
+                ->orderBy(match ($listSort) {
+                    'name' => 'name',
+                    'key' => 'key',
+                    'users_count' => 'users_count',
+                    'is_active' => 'is_active',
+                    default => 'name',
+                }, $listSort ? $listDirection : 'asc')
+                ->paginate($perPage)->withQueryString(),
+            'data-users' => User::query()
+                ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('username', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")->orWhere('role', 'like', "%{$search}%")))
+                ->when($request->filled('role'), fn ($query) => $query->where('role', $request->query('role')))
+                ->orderBy(match ($listSort) {
+                    'name' => 'name',
+                    'username' => 'username',
+                    'email' => 'email',
+                    'role' => 'role',
+                    default => 'name',
+                }, $listSort ? $listDirection : 'asc')
+                ->paginate($perPage)->withQueryString(),
             default => Student::select('students.*')->with(['schoolClass.educationUnit'])
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('students.name', 'like', "%{$search}%")->orWhere('students.nis', 'like', "%{$search}%")->orWhere('students.nisn', 'like', "%{$search}%")))
                 ->when($request->integer('class_id'), fn ($query, $classId) => $query->where('students.school_class_id', $classId))
@@ -146,6 +169,8 @@ class MasterDataController extends Controller
             'studentStatus' => $studentStatus,
             'studentOptions' => $this->studentOptions($tab, $showCreate),
             'feeTypeOptions' => $this->feeTypeOptions($tab, $showCreate),
+            'roleOptions' => Role::options(),
+            'permissionOptions' => Role::PERMISSIONS,
             'stats' => $this->masterStats(),
             'showCreate' => $showCreate,
             'studentImportPreview' => $studentImportPreview,
@@ -471,6 +496,43 @@ class MasterDataController extends Controller
         return $this->done('fee-discounts', 'Keringanan biaya berhasil diperbarui.');
     }
 
+    public function storeRole(Request $request): RedirectResponse
+    {
+        Role::create($this->validateRole($request));
+
+        return $this->done('data-roles', 'Role berhasil ditambahkan.');
+    }
+
+    public function updateRole(Request $request, Role $role): RedirectResponse
+    {
+        $role->update($this->validateRole($request, $role));
+
+        return $this->done('data-roles', 'Role berhasil diperbarui.');
+    }
+
+    public function storeUser(Request $request): RedirectResponse
+    {
+        $this->normalizeUserRequest($request);
+
+        User::create($this->validateUser($request));
+
+        return $this->done('data-users', 'User berhasil ditambahkan.');
+    }
+
+    public function updateUser(Request $request, User $user): RedirectResponse
+    {
+        $this->normalizeUserRequest($request);
+        $validated = $this->validateUser($request, $user);
+
+        if (blank($validated['password'] ?? null)) {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return $this->done('data-users', 'User berhasil diperbarui.');
+    }
+
     public function destroy(string $type, int $id): RedirectResponse
     {
         $model = match ($type) {
@@ -479,6 +541,8 @@ class MasterDataController extends Controller
             'classes' => SchoolClass::findOrFail($id),
             'fee-types' => FeeType::findOrFail($id),
             'fee-discounts' => FeeDiscount::findOrFail($id),
+            'data-roles' => Role::findOrFail($id),
+            'data-users' => User::findOrFail($id),
             default => Student::findOrFail($id),
         };
 
@@ -486,6 +550,16 @@ class MasterDataController extends Controller
             DB::transaction(fn () => $this->deleteStudentWithRelatedData($model));
 
             return $this->done($type, 'Data siswa beserta seluruh data contoh terkait berhasil dihapus.');
+        }
+
+        if ($model instanceof User && auth()->id() === $model->id) {
+            return redirect()->route('master.index', ['tab' => $type])
+                ->with('error', 'Akun yang sedang digunakan tidak dapat dihapus.');
+        }
+
+        if ($model instanceof Role && User::where('role', $model->key)->exists()) {
+            return redirect()->route('master.index', ['tab' => $type])
+                ->with('error', 'Role masih digunakan oleh user dan tidak dapat dihapus.');
         }
 
         try {
@@ -552,6 +626,51 @@ class MasterDataController extends Controller
         $validated['is_active'] = $request->boolean('is_active');
 
         return $validated;
+    }
+
+    private function validateRole(Request $request, ?Role $role = null): array
+    {
+        $request->merge([
+            'key' => str($request->input('key', ''))
+                ->lower()
+                ->replaceMatches('/[^a-z0-9_]+/', '_')
+                ->trim('_')
+                ->value(),
+        ]);
+
+        $validated = $request->validate([
+            'key' => ['required', 'max:60', Rule::unique('roles', 'key')->ignore($role)],
+            'name' => ['required', 'max:120'],
+            'description' => ['nullable', 'max:255'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => [Rule::in(array_keys(Role::PERMISSIONS))],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+        $validated['permissions'] = array_values(array_unique($validated['permissions'] ?? []));
+        $validated['is_active'] = $request->boolean('is_active');
+
+        return $validated;
+    }
+
+    private function normalizeUserRequest(Request $request): void
+    {
+        $request->merge([
+            'username' => str($request->input('username', ''))
+                ->lower()
+                ->replaceMatches('/\s+/', '')
+                ->value(),
+        ]);
+    }
+
+    private function validateUser(Request $request, ?User $user = null): array
+    {
+        return $request->validate([
+            'name' => ['required', 'max:150'],
+            'username' => ['required', 'max:100', Rule::unique('users', 'username')->ignore($user)],
+            'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user)],
+            'role' => ['required', Rule::exists('roles', 'key')->where('is_active', true)],
+            'password' => [$user ? 'nullable' : 'required', 'string', 'min:8', 'max:100'],
+        ]);
     }
 
     private function validateStudent(Request $request, ?Student $student = null): array
@@ -676,6 +795,8 @@ class MasterDataController extends Controller
             'classes' => SchoolClass::count(),
             'education_units' => EducationUnit::where('is_active', true)->count(),
             'fee_types' => FeeType::where('is_active', true)->count(),
+            'roles' => Role::where('is_active', true)->count(),
+            'users' => User::count(),
         ];
     }
 

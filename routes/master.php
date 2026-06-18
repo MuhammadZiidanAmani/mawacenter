@@ -22,5 +22,9 @@ Route::prefix('master-data')->name('master.')->controller(MasterDataController::
     Route::put('/fee-types/{feeType}', 'updateFeeType')->name('fee-types.update');
     Route::post('/fee-discounts', 'storeFeeDiscount')->name('fee-discounts.store');
     Route::put('/fee-discounts/{feeDiscount}', 'updateFeeDiscount')->name('fee-discounts.update');
+    Route::post('/data-roles', 'storeRole')->name('data-roles.store');
+    Route::put('/data-roles/{role}', 'updateRole')->name('data-roles.update');
+    Route::post('/data-users', 'storeUser')->name('data-users.store');
+    Route::put('/data-users/{user}', 'updateUser')->name('data-users.update');
     Route::delete('/{type}/{id}', 'destroy')->name('destroy');
 });

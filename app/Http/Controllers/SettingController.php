@@ -3,11 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
-use App\Models\AppSetting;
-use App\Models\EducationUnit;
-use App\Models\FeeType;
-use App\Models\SchoolClass;
-use App\Models\Student;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,51 +14,55 @@ class SettingController extends Controller
     {
         return view('settings.index', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
-            'settings' => AppSetting::values($this->defaults()),
-            'roles' => [
-                'Admin',
-                'Kasir',
-                'Bendahara Perunit',
-                'Wali Murid/Siswa',
-            ],
-            'setup' => [
-                'units' => EducationUnit::where('is_active', true)->count(),
-                'classes' => SchoolClass::where('is_active', true)->count(),
-                'students' => Student::where('is_active', true)->count(),
-                'fee_types' => FeeType::where('is_active', true)->count(),
-            ],
+            'user' => auth()->user(),
         ]);
     }
 
     public function update(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'school_name' => ['required', 'string', 'max:150'],
-            'school_address' => ['nullable', 'string', 'max:500'],
-            'school_phone' => ['nullable', 'string', 'max:30'],
-            'school_email' => ['nullable', 'email', 'max:150'],
-            'finance_officer' => ['nullable', 'string', 'max:150'],
-            'receipt_footer' => ['nullable', 'string', 'max:300'],
-            'default_payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
+        $user = $request->user();
+        $request->merge([
+            'username' => $this->normalizeUsername((string) $request->input('username')),
         ]);
 
-        foreach ($validated as $key => $value) {
-            AppSetting::updateOrCreate(['key' => $key], ['value' => $value]);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'username' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('users', 'username')->ignore($user->id),
+            ],
+            'email' => [
+                'required',
+                'email',
+                'max:150',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'current_password' => ['nullable', 'required_with:password', 'current_password'],
+            'password' => ['nullable', 'string', 'min:8', 'max:100', 'confirmed'],
+        ]);
+
+        $user->fill([
+            'name' => $validated['name'],
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+        ]);
+
+        if (filled($validated['password'] ?? null)) {
+            $user->password = $validated['password'];
         }
 
-        return redirect()->route('settings.index')->with('success', 'Pengaturan aplikasi berhasil disimpan.');
+        $user->save();
+
+        return redirect()->route('settings.index')->with('success', 'Pengaturan akun berhasil disimpan.');
     }
 
-    private function defaults(): array
+    private function normalizeUsername(string $username): string
     {
-        return [
-            'school_name' => "MA'WA CENTER",
-            'school_address' => '',
-            'school_phone' => '',
-            'school_email' => '',
-            'finance_officer' => '',
-            'receipt_footer' => 'Terima kasih atas pembayaran Anda.',
-            'default_payment_method' => 'Cash',
-        ];
+        return str($username)
+            ->lower()
+            ->replaceMatches('/\s+/', '')
+            ->value();
     }
 }

@@ -109,6 +109,21 @@ class BillQueryService
         return $query
             ->when($filters['unit_id'] ?? null, fn ($query, $id) => $query->where('school_classes.education_unit_id', $id))
             ->when($filters['class_id'] ?? null, fn ($query, $id) => $query->where('students.school_class_id', $id))
+            ->when($filters['student_id'] ?? null, fn ($query, $id) => $query->where('students.id', $id))
+            ->when(($filters['student_search'] ?? null) && ! ($filters['student_id'] ?? null), function ($query) use ($filters) {
+                $search = trim((string) $filters['student_search']);
+                $query->where(function ($query) use ($search) {
+                    $query->where('students.name', 'like', "%{$search}%")
+                        ->orWhere('students.nis', 'like', "%{$search}%")
+                        ->orWhere('education_units.code', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['student_name'] ?? null, function ($query, string $name) {
+                $query->where('students.name', 'like', '%'.trim($name).'%');
+            })
+            ->when($filters['nis'] ?? null, function ($query, string $nis) {
+                $query->where('students.nis', 'like', '%'.trim($nis).'%');
+            })
             ->when($filters['search'] ?? null, function ($query, string $search) {
                 $search = trim($search);
                 $query->where(function ($query) use ($search) {
@@ -137,6 +152,7 @@ class BillQueryService
             ->map(function (Collection $bills) {
                 return [
                     'spp' => $bills->where('source_type', 'spp')->map(fn (Bill $bill) => [
+                        'year' => $bill->year,
                         'month' => $bill->month,
                         'month_name' => self::MONTHS[$bill->month] ?? '-',
                         'total' => (int) $bill->total_amount,
@@ -161,8 +177,13 @@ class BillQueryService
             ->where(function ($query) use ($table, $year, $untilMonth) {
                 $query->where(function ($query) use ($table, $year, $untilMonth) {
                     $query->where($table.'.source_type', 'spp')
-                        ->where($table.'.year', $year)
-                        ->where($table.'.month', '<=', $untilMonth);
+                        ->where(function ($query) use ($table, $year, $untilMonth) {
+                            $query->where($table.'.year', '<', $year)
+                                ->orWhere(function ($query) use ($table, $year, $untilMonth) {
+                                    $query->where($table.'.year', $year)
+                                        ->where($table.'.month', '<=', $untilMonth);
+                                });
+                        });
                 })->orWhere(function ($query) use ($table, $year, $untilMonth) {
                     $query->where($table.'.source_type', '!=', 'spp')
                         ->where(function ($query) use ($table, $year) {
@@ -192,7 +213,7 @@ class BillQueryService
     {
         match ($sort) {
             'nis' => $query->orderBy('students.nis', $direction),
-            'unit' => $query->orderBy('education_units.name', $direction)->orderBy('students.name'),
+            'unit' => $query->orderBy('education_units.code', $direction)->orderBy('students.name'),
             'class' => $query->orderBy('school_classes.name', $direction)->orderBy('students.name'),
             'total' => $query->orderBy('total_remaining', $direction)->orderBy('students.name'),
             default => $query->orderBy('students.name', $direction),

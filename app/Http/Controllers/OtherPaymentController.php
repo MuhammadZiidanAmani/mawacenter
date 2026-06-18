@@ -7,12 +7,15 @@ use App\Http\Requests\StoreOtherPaymentRequest;
 use App\Http\Requests\UpdateOtherPaymentRequest;
 use App\Models\AcademicYear;
 use App\Models\AppSetting;
+use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
+use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentImportService;
 use App\Services\OtherPaymentService;
+use Carbon\CarbonImmutable;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Contracts\View\View;
@@ -31,6 +34,8 @@ class OtherPaymentController extends Controller
         $perPage = $this->perPage($request);
         $search = $request->string('search')->value();
         $section = $this->section($request);
+        $dateFrom = $this->filterDate($request, 'date_from') ?? now()->startOfDay();
+        $dateTo = $this->filterDate($request, 'date_to', true) ?? now()->endOfDay();
         $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'unit', 'class', 'method', 'total'], true)
             ? $request->string('sort')->value()
             : 'date';
@@ -40,6 +45,18 @@ class OtherPaymentController extends Controller
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'payments' => OtherPayment::select('other_payments.*')->with(['student.schoolClass.educationUnit', 'feeType', 'items'])
                 ->when($section['key'] !== 'all', fn ($query) => $this->filterPayments($query, $section['key']))
+                ->whereBetween('other_payments.transaction_at', [$dateFrom, $dateTo])
+                ->when($request->filled('fee_type_id'), fn ($query) => $query->where('other_payments.fee_type_id', $request->integer('fee_type_id')))
+                ->when($request->filled('payment_method'), fn ($query) => $query->where('other_payments.payment_method', $request->string('payment_method')->value()))
+                ->when($request->filled('status'), fn ($query) => $query->where('other_payments.status', $request->string('status')->value()))
+                ->when($request->filled('operator_name'), fn ($query) => $query->where('other_payments.operator_name', $request->string('operator_name')->value()))
+                ->when($request->filled('student_id'), fn ($query) => $query->where('other_payments.student_id', $request->integer('student_id')))
+                ->when($request->filled('nis'), fn ($query) => $query->whereHas('student', fn ($student) => $student->where('nis', 'like', '%'.$request->string('nis')->value().'%')))
+                ->when(! $request->filled('student_id') && $request->filled('student_search'), fn ($query) => $query->whereHas('student', fn ($student) => $student
+                    ->where('nis', 'like', '%'.$request->string('student_search')->value().'%')
+                    ->orWhere('name', 'like', '%'.$request->string('student_search')->value().'%')))
+                ->when($request->filled('unit_id'), fn ($query) => $query->whereHas('student.schoolClass', fn ($class) => $class->where('education_unit_id', $request->integer('unit_id'))))
+                ->when($request->filled('class_id'), fn ($query) => $query->whereHas('student', fn ($student) => $student->where('school_class_id', $request->integer('class_id'))))
                 ->when($search, fn ($query) => $query->where(fn ($searchQuery) => $searchQuery
                     ->where('payment_method', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%")
@@ -70,6 +87,7 @@ class OtherPaymentController extends Controller
             'importToken' => null,
             'feeTypes' => $this->feeTypes($section),
             'paymentSection' => $section,
+            ...$this->filterOptions($section),
         ]);
     }
 
@@ -307,6 +325,7 @@ class OtherPaymentController extends Controller
                 'importToken' => $token,
                 'feeTypes' => $this->feeTypes($section),
                 'paymentSection' => $section,
+                ...$this->filterOptions($section),
             ]);
         } catch (\Throwable $exception) {
             if (! $request->string('token')->value()) {
@@ -371,6 +390,33 @@ class OtherPaymentController extends Controller
             ->orderBy('name')->get();
     }
 
+    private function filterOptions(array $section): array
+    {
+        $operatorQuery = OtherPayment::query()
+            ->whereNotNull('operator_name')
+            ->where('operator_name', '!=', '');
+        if ($section['key'] !== 'all') {
+            $this->filterPayments($operatorQuery, $section['key']);
+        }
+
+        return [
+            'educationUnits' => EducationUnit::orderByRaw($this->educationUnitOrderExpression())->orderBy('name')->get(),
+            'classes' => SchoolClass::with('educationUnit')
+                ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                ->select('school_classes.*')
+                ->orderByRaw($this->educationUnitOrderExpression())
+                ->orderBy('school_classes.name')
+                ->get(),
+            'studentOptions' => Student::select('students.*')->with('schoolClass.educationUnit')
+                ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
+                ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                ->orderByRaw($this->educationUnitOrderExpression())
+                ->orderBy('students.name')
+                ->get(),
+            'operators' => $operatorQuery->distinct()->orderBy('operator_name')->pluck('operator_name'),
+        ];
+    }
+
     private function filterPayments($query, string $section)
     {
         return $query->whereHas('feeType', fn ($feeType) => $feeType
@@ -420,5 +466,31 @@ class OtherPaymentController extends Controller
             'laundry' => 'LD',
             default => 'LL',
         };
+    }
+
+    private function filterDate(Request $request, string $key, bool $endOfDay = false): ?CarbonImmutable
+    {
+        $value = trim($request->string($key)->value());
+        if ($value === '') {
+            return null;
+        }
+
+        foreach (['d/m/Y', 'Y-m-d'] as $format) {
+            try {
+                $date = CarbonImmutable::createFromFormat($format, $value);
+                if ($date !== false) {
+                    return $endOfDay ? $date->endOfDay() : $date->startOfDay();
+                }
+            } catch (\Throwable) {
+                //
+            }
+        }
+
+        return null;
+    }
+
+    private function educationUnitOrderExpression(): string
+    {
+        return "CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END";
     }
 }

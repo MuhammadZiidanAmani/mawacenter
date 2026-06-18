@@ -14,11 +14,13 @@
         'card' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h2"/>',
         'chart' => '<path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/>',
         'settings' => '<circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/>',
+        'role' => '<path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/>',
         'chevron' => '<path d="m9 18 6-6-6-6"/>',
         'arrow-up' => '<path d="M12 19V5m0 0-5 5m5-5 5 5"/>',
         'switch' => '<path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4-4m-4 4 4 4"/>',
     ];
     $sidebarIcon = fn ($name, $class = '') => $sidebarSvg($sidebarIcons[$name], $class);
+    $canAccess = fn (string $permission) => auth()->user()?->hasPermission($permission) ?? false;
     $studentOpen = $activeMenu === 'students';
     $paymentOpen = $activeMenu === 'payment';
     $masterOpen = $activeMenu === 'master';
@@ -26,7 +28,10 @@
 <aside class="sidebar" data-sidebar>
     <div class="brand"><div class="brand-mark"><img src="{{ asset('images/mawa-center-mark.png') }}" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
     <nav class="sidebar-nav">
+        @if($canAccess('dashboard'))
         <a href="{{ route('dashboard') }}" class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}">{!! $sidebarIcon('grid') !!}<span>Dashboard</span></a>
+        @endif
+        @if($canAccess('students'))
         <div class="nav-group nested-nav {{ $studentOpen ? 'open' : '' }}">
             <button type="button" class="nav-item nav-parent {{ $studentOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $studentOpen ? 'true' : 'false' }}">{!! $sidebarIcon('users') !!}<span>Manajemen Siswa</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
@@ -36,6 +41,8 @@
                 <a href="{{ route('student-management.alumni.index') }}" class="{{ $activeStudentMenu === 'alumni' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>Data Alumni</span></a>
             </div>
         </div>
+        @endif
+        @if($canAccess('payments'))
         <div class="nav-group nested-nav {{ $paymentOpen ? 'open' : '' }}">
             <button type="button" class="nav-item nav-parent {{ $paymentOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $paymentOpen ? 'true' : 'false' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
@@ -45,8 +52,14 @@
                 <a href="{{ route('finance.other.index') }}" class="{{ $activePaymentMenu === 'lain-lain' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Lain-lain</span></a>
             </div>
         </div>
+        @endif
+        @if($canAccess('bills'))
         <a href="{{ route('finance.bills.index') }}" class="nav-item {{ $activeMenu === 'bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</a>
+        @endif
+        @if($canAccess('reports'))
         <a href="{{ route('reports.index') }}" class="nav-item {{ $activeMenu === 'reports' ? 'active' : '' }}">{!! $sidebarIcon('chart') !!}<span>Laporan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</a>
+        @endif
+        @if($canAccess('master'))
         <div class="nav-group master-nav {{ $masterOpen ? 'open' : '' }}">
             <button type="button" class="nav-item nav-parent {{ $masterOpen ? 'active' : '' }}" data-master-nav-toggle aria-expanded="{{ $masterOpen ? 'true' : 'false' }}">{!! $sidebarIcon('database') !!}<span>Data Master</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
@@ -56,11 +69,16 @@
                     'classes' => ['Kelas', 'database'],
                     'fee-types' => ['Kategori Pembayaran', 'receipt'],
                     'fee-discounts' => ['Keringanan Biaya', 'wallet'],
+                    'data-roles' => ['Data Role', 'role'],
+                    'data-users' => ['Data User', 'users'],
                 ] as $key => $item)
                     <a href="{{ route('master.index', ['tab' => $key]) }}" class="{{ $activeMasterMenu === $key ? 'active' : '' }}">{!! $sidebarIcon($item[1]) !!}<span>{{ $item[0] }}</span></a>
                 @endforeach
             </div>
         </div>
+        @endif
+        @if($canAccess('settings'))
         <a href="{{ route('settings.index') }}" class="nav-item {{ $activeMenu === 'settings' ? 'active' : '' }}">{!! $sidebarIcon('settings') !!}<span>Pengaturan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</a>
+        @endif
     </nav>
 </aside>

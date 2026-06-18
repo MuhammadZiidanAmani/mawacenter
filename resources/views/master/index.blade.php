@@ -27,6 +27,7 @@
         'print' => '<path d="M7 8V3h10v5M7 17H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M7 14h10v7H7zM17 12h.01"/>',
         'chart' => '<path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/>',
         'settings' => '<circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/>',
+        'role' => '<path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/>',
         'logout' => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/>',
         'wallet' => '<path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/>',
         'finance' => '<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M7 5V3h10v2M3 10h18M7 15h3"/>',
@@ -38,6 +39,8 @@
         'education-units' => ['Unit Pendidikan', 'database', $stats['education_units']],
         'classes' => ['Kelas', 'database', $stats['classes']],
         'fee-types' => ['Kategori Pembayaran', 'receipt', $stats['fee_types']],
+        'data-roles' => ['Data Role', 'role', $stats['roles'] ?? 0],
+        'data-users' => ['Data User', 'users', $stats['users'] ?? 0],
     ];
     $labels = [
         'students' => ['Data Siswa', 'Kelola identitas, kelas, wali, dan status siswa.', 'Tambah Siswa'],
@@ -46,6 +49,8 @@
         'academic-years' => ['Tahun Pelajaran', 'Daftar tahun pelajaran yang tersedia.', 'Tambah Tahun Pelajaran'],
         'fee-types' => ['Kategori Pembayaran', 'Atur SPP, daftar ulang, laundry, dan pembayaran lainnya.', 'Tambah Kategori Pembayaran'],
         'fee-discounts' => ['Keringanan Biaya', 'Atur potongan SPP atau pembayaran lainnya untuk siswa.', 'Tambah Keringanan'],
+        'data-roles' => ['Data Role', 'Kelola role pengguna sistem.', 'Tambah Role'],
+        'data-users' => ['Data User', 'Kelola akun pengguna dan role aksesnya.', 'Tambah User'],
     ];
 @endphp
 <div class="app-shell">
@@ -223,7 +228,7 @@
                     <div class="student-import-footer"><span data-student-import-summary></span><button type="button" data-student-import-show-all>Tampilkan Semua</button></div>
                 </section>
                 @endif
-            @elseif (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts']))
+            @elseif (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users']))
             <section class="master-stats">
                 <div><span class="metric-icon blue">{!! $icon('users') !!}</span><p>Total Siswa<strong>{{ number_format($stats['students'], 0, ',', '.') }}</strong><small>{{ $stats['active_students'] }} aktif</small></p></div>
                 <div><span class="metric-icon green">{!! $icon('database') !!}</span><p>Unit Pendidikan<strong>{{ $stats['education_units'] }}</strong><small>Unit aktif</small></p></div>
@@ -233,14 +238,14 @@
             @endif
 
             <section class="card master-card {{ $tab === 'students' ? 'student-data-card' : '' }}">
-                @if (! in_array($tab, ['students', 'academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts']))
+                @if (! in_array($tab, ['students', 'academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users']))
                 <div class="master-tabs">
                     @foreach ($tabs as $key => $item)
                         <a href="{{ route('master.index', ['tab' => $key]) }}" class="{{ $tab === $key ? 'active' : '' }}">{!! $icon($item[1]) !!}<span>{{ $item[0] }}</span><b>{{ $item[2] }}</b></a>
                     @endforeach
                 </div>
                 @endif
-                @if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts']))
+                @if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users']))
                 @if ($tab !== 'students')
                 <div class="table-toolbar">
                     <form method="GET" action="{{ route('master.index') }}" class="table-search">
@@ -324,6 +329,12 @@
                     @elseif ($tab === 'fee-types')
                         <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Kategori Pembayaran'])</th><th>Kelompok</th><th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'amount', 'label' => 'Nominal'])</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><span class="status neutral">{{ ['spp' => 'SPP', 'daftar-ulang' => 'Daftar Ulang', 'laundry' => 'Laundry', 'lain-lain' => 'Lain-lain'][$row->payment_group] ?? ucfirst($row->payment_group) }}</span></td><td><strong>{{ $row->educationUnit?->code ?? '-' }}</strong></td><td><strong>{{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                    @elseif ($tab === 'data-roles')
+                        <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama Role'])</th><th>@include('partials.sortable-heading', ['column' => 'key', 'label' => 'Kode'])</th><th>Hak Akses</th><th>@include('partials.sortable-heading', ['column' => 'users_count', 'label' => 'Jumlah User'])</th><th>@include('partials.sortable-heading', ['column' => 'is_active', 'label' => 'Status'])</th><th>Aksi</th></tr></thead>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong><small>{{ $row->description ?: '-' }}</small></td><td><span class="code-badge">{{ $row->key }}</span></td><td><span class="role-permission-summary">{{ count($row->permissions ?? []) }} akses</span><small>{{ implode(', ', array_slice($row->permissionLabels(), 0, 3)) }}{{ count($row->permissionLabels()) > 3 ? ', ...' : '' }}</small></td><td><strong>{{ $row->users_count }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'data-roles', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                    @elseif ($tab === 'data-users')
+                        <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama User'])</th><th>@include('partials.sortable-heading', ['column' => 'username', 'label' => 'Username'])</th><th>@include('partials.sortable-heading', ['column' => 'email', 'label' => 'Email'])</th><th>@include('partials.sortable-heading', ['column' => 'role', 'label' => 'Role'])</th><th>Aksi</th></tr></thead>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td>{{ $row->username }}</td><td>{{ $row->email }}</td><td><span class="status success">{{ $row->roleLabel() }}</span></td><td>@include('master.partials.actions', ['type' => 'data-users', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @else
                         <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'student', 'label' => 'Nama'])</th><th>Unit Pendidikan</th><th>Kelas</th><th>@include('partials.sortable-heading', ['column' => 'payment', 'label' => 'Pembayaran'])</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)

@@ -11,7 +11,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'store'])->name('login.store');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'role.access'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
     Route::get('/logout', [AuthController::class, 'destroy'])->name('logout');
     Route::get('/laporan', [ReportController::class, 'index'])->name('reports.index');

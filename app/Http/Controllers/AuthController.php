@@ -42,6 +42,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->with('status', 'Anda telah keluar dengan aman.');
+        return redirect()->route('login');
     }
 }

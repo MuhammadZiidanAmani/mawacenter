@@ -56,6 +56,33 @@
     <label>Nominal <input type="text" inputmode="numeric" name="amount" required value="{{ old('amount') }}" placeholder="0" data-currency-input></label>
     <label>Periode Tagihan <select name="period" required><option>Bulanan</option><option>Tahunan</option><option>Sekali Bayar</option></select></label>
     <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Kategori pembayaran aktif</label>
+@elseif ($tab === 'data-roles')
+    <label>Kode Role <input name="key" required value="{{ old('key') }}" placeholder="contoh: admin_unit"></label>
+    <label>Nama Role <input name="name" required value="{{ old('name') }}" placeholder="Contoh: Admin Unit"></label>
+    <label class="span-2">Deskripsi <input name="description" value="{{ old('description') }}" placeholder="Keterangan singkat role"></label>
+    <div class="role-permission-field span-2">
+        <span>Hak Akses</span>
+        <div class="role-permission-grid">
+            @foreach($permissionOptions as $key => $label)
+                <label>
+                    <input type="checkbox" name="permissions[]" value="{{ $key }}" @checked(in_array($key, old('permissions', []), true))>
+                    <span>{{ $label }}</span>
+                </label>
+            @endforeach
+        </div>
+    </div>
+    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Role aktif</label>
+@elseif ($tab === 'data-users')
+    <label>Nama User <input name="name" required value="{{ old('name') }}" placeholder="Nama lengkap user"></label>
+    <label>Username <input name="username" required value="{{ old('username') }}" placeholder="username"></label>
+    <label>Email <input type="email" name="email" required value="{{ old('email') }}" placeholder="email@domain.com"></label>
+    <label>Role
+        <select name="role" required>
+            <option value="">Pilih Role</option>
+            @foreach($roleOptions as $key => $label)<option value="{{ $key }}" @selected(old('role') === $key)>{{ $label }}</option>@endforeach
+        </select>
+    </label>
+    <label class="span-2">Password <input type="password" name="password" autocomplete="new-password" placeholder="Wajib saat tambah, kosongkan saat edit jika tidak diganti"></label>
 @else
     <label class="span-2">Siswa
         <div class="student-search-picker" data-student-picker>

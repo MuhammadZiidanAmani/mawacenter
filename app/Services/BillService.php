@@ -32,9 +32,53 @@ class BillService
                         continue;
                     }
 
-                    [$bill, $created] = $this->ensureSppBill($student, $academicYear, $year, $month);
-                    $result[$created ? 'created' : 'existing']++;
-                    $this->syncSppBillPayments($bill);
+                    try {
+                        [$bill, $created] = $this->ensureSppBill($student, $academicYear, $year, $month);
+                        $result[$created ? 'created' : 'existing']++;
+                        $this->syncSppBillPayments($bill);
+                    } catch (ValidationException) {
+                        $result['skipped']++;
+                    }
+                }
+            }
+        });
+
+        return $result;
+    }
+
+    public function generateSppFromEntryUntil(AcademicYear $academicYear, int $endYear, int $endMonth, array $filters = []): array
+    {
+        $result = ['created' => 0, 'existing' => 0, 'skipped' => 0];
+        $students = $this->students($academicYear, $filters)->get();
+        $endPeriod = CarbonImmutable::create($endYear, $endMonth, 1)->startOfMonth();
+
+        DB::transaction(function () use ($academicYear, $endPeriod, $students, &$result) {
+            foreach ($students as $student) {
+                $period = $this->studentBillingStart($student, $academicYear);
+
+                if ($period->gt($endPeriod)) {
+                    $result['skipped']++;
+
+                    continue;
+                }
+
+                while ($period->lte($endPeriod)) {
+                    if (! $this->eligible($student, $period)) {
+                        $result['skipped']++;
+                        $period = $period->addMonth();
+
+                        continue;
+                    }
+
+                    try {
+                        [$bill, $created] = $this->ensureSppBill($student, $academicYear, $period->year, $period->month);
+                        $result[$created ? 'created' : 'existing']++;
+                        $this->syncSppBillPayments($bill);
+                    } catch (ValidationException) {
+                        $result['skipped']++;
+                    }
+
+                    $period = $period->addMonth();
                 }
             }
         });
@@ -290,7 +334,27 @@ class BillService
         return Student::with(['academicYear', 'schoolClass.educationUnit'])
             ->where('academic_year_id', $academicYear->id)
             ->when($filters['unit_id'] ?? null, fn ($query, $id) => $query->whereHas('schoolClass', fn ($class) => $class->where('education_unit_id', $id)))
-            ->when($filters['class_id'] ?? null, fn ($query, $id) => $query->where('school_class_id', $id));
+            ->when($filters['class_id'] ?? null, fn ($query, $id) => $query->where('school_class_id', $id))
+            ->when($filters['student_id'] ?? null, fn ($query, $id) => $query->where('id', $id))
+            ->when(($filters['student_search'] ?? null) && ! ($filters['student_id'] ?? null), function ($query) use ($filters) {
+                $search = trim((string) $filters['student_search']);
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('nis', 'like', "%{$search}%")
+                        ->orWhereHas('schoolClass.educationUnit', fn ($unit) => $unit->where('code', 'like', "%{$search}%"));
+                });
+            })
+            ->when($filters['student_name'] ?? null, fn ($query, $name) => $query->where('name', 'like', '%'.trim($name).'%'))
+            ->when($filters['nis'] ?? null, fn ($query, $nis) => $query->where('nis', 'like', '%'.trim($nis).'%'));
+    }
+
+    private function studentBillingStart(Student $student, AcademicYear $academicYear): CarbonImmutable
+    {
+        $date = $student->entry_date
+            ?? $academicYear->start_date
+            ?? now();
+
+        return CarbonImmutable::parse($date)->startOfMonth();
     }
 
     private function eligible(Student $student, CarbonImmutable $month): bool

@@ -9,10 +9,13 @@ use App\Http\Requests\StoreSppPaymentRequest;
 use App\Http\Requests\UpdateSppPaymentRequest;
 use App\Models\AcademicYear;
 use App\Models\AppSetting;
+use App\Models\EducationUnit;
+use App\Models\SchoolClass;
 use App\Models\SppPayment;
 use App\Models\Student;
 use App\Services\SppPaymentImportService;
 use App\Services\SppPaymentService;
+use Carbon\CarbonImmutable;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Contracts\View\View;
@@ -29,6 +32,8 @@ class SppPaymentController extends Controller
     {
         $perPage = $this->perPage($request);
         $search = $request->string('search')->value();
+        $dateFrom = $this->filterDate($request, 'date_from') ?? now()->startOfDay();
+        $dateTo = $this->filterDate($request, 'date_to', true) ?? now()->endOfDay();
         $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'unit', 'class', 'method', 'total'], true)
             ? $request->string('sort')->value()
             : 'date';
@@ -37,6 +42,17 @@ class SppPaymentController extends Controller
         return view('finance.spp', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'payments' => SppPayment::select('spp_payments.*')->with(['student.schoolClass.educationUnit', 'items', 'corrections'])
+                ->whereBetween('spp_payments.transaction_at', [$dateFrom, $dateTo])
+                ->when($request->filled('payment_method'), fn ($query) => $query->where('spp_payments.payment_method', $request->string('payment_method')->value()))
+                ->when($request->filled('status'), fn ($query) => $query->where('spp_payments.status', $request->string('status')->value()))
+                ->when($request->filled('operator_name'), fn ($query) => $query->where('spp_payments.operator_name', $request->string('operator_name')->value()))
+                ->when($request->filled('student_id'), fn ($query) => $query->where('spp_payments.student_id', $request->integer('student_id')))
+                ->when($request->filled('nis'), fn ($query) => $query->whereHas('student', fn ($student) => $student->where('nis', 'like', '%'.$request->string('nis')->value().'%')))
+                ->when(! $request->filled('student_id') && $request->filled('student_search'), fn ($query) => $query->whereHas('student', fn ($student) => $student
+                    ->where('nis', 'like', '%'.$request->string('student_search')->value().'%')
+                    ->orWhere('name', 'like', '%'.$request->string('student_search')->value().'%')))
+                ->when($request->filled('unit_id'), fn ($query) => $query->whereHas('student.schoolClass', fn ($class) => $class->where('education_unit_id', $request->integer('unit_id'))))
+                ->when($request->filled('class_id'), fn ($query) => $query->whereHas('student', fn ($student) => $student->where('school_class_id', $request->integer('class_id'))))
                 ->when($search, fn ($query) => $query->whereHas('student', fn ($student) => $student
                     ->where('nis', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%")
@@ -58,6 +74,7 @@ class SppPaymentController extends Controller
             'showCreate' => false,
             'importPreview' => null,
             'importToken' => null,
+            ...$this->filterOptions(),
         ]);
     }
 
@@ -131,6 +148,7 @@ class SppPaymentController extends Controller
                 'showCreate' => false,
                 'importPreview' => $importer->preview(Storage::path($path), $file->getClientOriginalName()),
                 'importToken' => $token,
+                ...$this->filterOptions(),
             ]);
         } catch (\Throwable $exception) {
             $request->session()->forget("spp_imports.{$token}");
@@ -270,5 +288,56 @@ class SppPaymentController extends Controller
     private function receiptNumber(SppPayment $payment): string
     {
         return 'SPP-'.$payment->transaction_at->format('Ymd').'-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    private function filterOptions(): array
+    {
+        return [
+            'educationUnits' => EducationUnit::orderByRaw($this->educationUnitOrderExpression())->orderBy('name')->get(),
+            'classes' => SchoolClass::with('educationUnit')
+                ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                ->select('school_classes.*')
+                ->orderByRaw($this->educationUnitOrderExpression())
+                ->orderBy('school_classes.name')
+                ->get(),
+            'studentOptions' => Student::select('students.*')->with('schoolClass.educationUnit')
+                ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
+                ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                ->orderByRaw($this->educationUnitOrderExpression())
+                ->orderBy('students.name')
+                ->get(),
+            'operators' => SppPayment::query()
+                ->whereNotNull('operator_name')
+                ->where('operator_name', '!=', '')
+                ->distinct()
+                ->orderBy('operator_name')
+                ->pluck('operator_name'),
+        ];
+    }
+
+    private function filterDate(Request $request, string $key, bool $endOfDay = false): ?CarbonImmutable
+    {
+        $value = trim($request->string($key)->value());
+        if ($value === '') {
+            return null;
+        }
+
+        foreach (['d/m/Y', 'Y-m-d'] as $format) {
+            try {
+                $date = CarbonImmutable::createFromFormat($format, $value);
+                if ($date !== false) {
+                    return $endOfDay ? $date->endOfDay() : $date->startOfDay();
+                }
+            } catch (\Throwable) {
+                //
+            }
+        }
+
+        return null;
+    }
+
+    private function educationUnitOrderExpression(): string
+    {
+        return "CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END";
     }
 }
