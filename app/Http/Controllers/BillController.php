@@ -72,6 +72,7 @@ class BillController extends Controller
         $this->mergeResult($result, $bills->generateSppFromEntryUntil($academicYear, $year, $untilMonth, $filters));
 
         FeeType::where('is_active', true)
+            ->where('creates_bill', true)
             ->where(function ($query) {
                 $query->whereNull('payment_group')->orWhereNotIn('payment_group', ['spp', 'laundry']);
             })

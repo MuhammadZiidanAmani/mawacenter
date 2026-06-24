@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Bill;
 use App\Models\Student;
+use App\Support\PerformanceCache;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -82,19 +83,26 @@ class BillQueryService
 
     public function stats(int $year, int $untilMonth, array $filters): array
     {
-        $row = $this->baseQuery($year, $untilMonth, $filters)
-            ->selectRaw('COUNT(DISTINCT bills.student_id) as students')
-            ->selectRaw("SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END) as spp")
-            ->selectRaw("SUM(CASE WHEN bills.source_type <> 'spp' THEN bills.remaining_amount ELSE 0 END) as other")
-            ->selectRaw('SUM(bills.remaining_amount) as remaining')
-            ->first();
+        return PerformanceCache::remember(
+            'bill-stats',
+            ['year' => $year, 'until_month' => $untilMonth, 'filters' => $filters],
+            config('performance.query_cache.bill_stats_ttl', 120),
+            function () use ($year, $untilMonth, $filters) {
+                $row = $this->baseQuery($year, $untilMonth, $filters)
+                    ->selectRaw('COUNT(DISTINCT bills.student_id) as students')
+                    ->selectRaw("SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END) as spp")
+                    ->selectRaw("SUM(CASE WHEN bills.source_type <> 'spp' THEN bills.remaining_amount ELSE 0 END) as other")
+                    ->selectRaw('SUM(bills.remaining_amount) as remaining')
+                    ->first();
 
-        return [
-            'students' => (int) ($row->students ?? 0),
-            'spp' => (int) ($row->spp ?? 0),
-            'other' => (int) ($row->other ?? 0),
-            'remaining' => (int) ($row->remaining ?? 0),
-        ];
+                return [
+                    'students' => (int) ($row->students ?? 0),
+                    'spp' => (int) ($row->spp ?? 0),
+                    'other' => (int) ($row->other ?? 0),
+                    'remaining' => (int) ($row->remaining ?? 0),
+                ];
+            },
+        );
     }
 
     private function baseQuery(int $year, int $untilMonth, array $filters)

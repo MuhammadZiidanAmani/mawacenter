@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0d5f36">
+    <meta name="theme-color" content="#2e5119">
     <title>Masuk - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>

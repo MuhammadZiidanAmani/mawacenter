@@ -6,36 +6,39 @@
     <title>Kwitansi {{ $receiptNumber }}</title>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; color: #111; background: #eef1f5; font-family: Arial, sans-serif; font-size: 10px; line-height: 1.15; }
+        body { margin: 0; color: #111; background: #eef1f5; font-family: Arial, sans-serif; font-size: 12.5px; line-height: 1.25; }
         .receipt-actions { width: min(210mm, calc(100% - 24px)); margin: 18px auto 10px; display: flex; justify-content: flex-end; gap: 8px; }
         .receipt-actions button, .receipt-actions a { min-height: 40px; padding: 0 16px; display: inline-flex; align-items: center; color: #0d5f36; background: white; border: 1px solid #cfd7e3; border-radius: 7px; cursor: pointer; font: inherit; font-weight: 700; text-decoration: none; }
         .receipt-actions .print { color: white; background: #0d5f36; border-color: #0d5f36; }
-        .page { width: 210mm; min-height: 297mm; margin: 0 auto 12mm; padding: 7mm 6mm; background: white; border: 1px solid #d5d9df; box-shadow: 0 8px 30px #17203314; }
-        .receipt-header { padding: 0 1mm 1mm; display: grid; grid-template-columns: 13mm 1fr 34mm; align-items: center; gap: 2mm; border-bottom: .6mm solid #999; }
+        .page { width: 210mm; min-height: 297mm; margin: 0 auto 12mm; padding: 5mm 10mm 10mm; background: white; border: 1px solid #d5d9df; box-shadow: 0 8px 30px #17203314; }
+        .receipt-header { padding: 0 1mm 1.3mm; display: grid; grid-template-columns: 14mm 1fr 36mm; align-items: center; gap: 2.5mm; border-bottom: .6mm solid #999; }
         .receipt-logo { width: 12mm; height: 12mm; display: block; object-fit: contain; }
-        .institution h1 { margin: 0 0 .4mm; font-size: 14px; line-height: 1; }
-        .institution p { margin: 0; font-size: 9px; line-height: 1.15; }
-        .keep-note { padding: .6mm 3mm; border: 1px solid #333; font-size: 9px; text-align: center; white-space: nowrap; }
-        .receipt-title { margin: .7mm 0 1.2mm; text-align: center; }
-        .receipt-title h2 { width: max-content; margin: 0 auto; border-bottom: 1px solid #333; font-size: 11px; line-height: 1.05; }
-        .receipt-title p { margin: .3mm 0 0; font-size: 9px; }
-        .student-info { margin: 0 0 1.6mm; display: grid; grid-template-columns: .85fr 1.15fr; gap: .5mm 8mm; }
-        .info-line { display: grid; grid-template-columns: 14mm 3mm 1fr; font-size: 10px; line-height: 1.25; }
+        .institution h1 { margin: 0 0 .5mm; font-size: 18px; line-height: 1.05; }
+        .institution p { margin: 0; font-size: 11.5px; line-height: 1.18; }
+        .keep-note { padding: .9mm 3mm; border: 1px solid #333; font-size: 11.5px; line-height: 1.1; text-align: center; white-space: nowrap; }
+        .receipt-title { margin: 1mm 0 1.5mm; text-align: center; }
+        .receipt-title h2 { width: max-content; margin: 0 auto; border-bottom: 1px solid #333; font-size: 14px; line-height: 1.1; }
+        .receipt-title p { margin: .4mm 0 0; font-size: 11.5px; line-height: 1.15; }
+        .student-info { margin: 0 0 2mm; display: grid; grid-template-columns: .88fr 1.12fr; gap: .7mm 7mm; }
+        .info-line { display: grid; grid-template-columns: 30mm 3mm 1fr; align-items: start; font-size: 12.5px; line-height: 1.25; }
+        .student-info .info-line:nth-child(odd) { grid-template-columns: 15mm 3mm 1fr; }
+        .info-line strong { white-space: nowrap; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { height: 4.5mm; padding: .4mm 1mm; border: 1px solid #555; text-align: left; font-size: 9px; line-height: 1.05; }
-        th { height: 4mm; font-weight: 700; }
-        .transaction-time { width: 30%; }
-        .month { width: 30%; }
-        .year { width: 15%; }
-        .payment-method { width: 12%; }
-        .amount { width: 13%; }
+        th, td { height: 6.2mm; padding: .9mm 1.4mm; border: 1px solid #555; text-align: left; font-size: 12.5px; line-height: 1.22; vertical-align: middle; }
+        th { height: 5.2mm; font-size: 12.5px; font-weight: 700; text-align: center; }
+        th.number { text-align: center; }
+        .transaction-time { width: 18%; }
+        .month { width: 50%; }
+        .year { width: 8%; text-align: center; }
+        .payment-method { width: 9%; text-align: center; }
+        .amount { width: 15%; }
         .number { text-align: right; white-space: nowrap; }
-        .totals td { height: 3.8mm; border-top: 0; }
+        .totals td { height: 4.8mm; border-top: 0; }
         .totals-label { text-align: right; }
         .grand-total { font-weight: 700; }
-        .receipt-notes { margin: 1.5mm 2mm 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; font-size: 9px; line-height: 1.15; }
+        .receipt-notes { margin: 2mm 2mm 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; font-size: 12.5px; line-height: 1.22; }
         .receipt-notes div:last-child { text-align: right; }
-        .signatures { margin: 1.8mm 2mm 0; display: grid; grid-template-columns: 1fr 1fr; gap: 18mm; text-align: center; font-size: 9px; }
+        .signatures { margin: 2.2mm 2mm 0; display: grid; grid-template-columns: 1fr 1fr; gap: 18mm; text-align: center; font-size: 12.5px; line-height: 1.22; }
         .signatures p { margin: 0; }
         .signature-space { height: 9mm; }
         .signature-name { font-weight: 700; }
@@ -44,7 +47,7 @@
             @page { size: A4 portrait; margin: 0; }
             body { background: white; }
             .receipt-actions { display: none; }
-            .page { width: 210mm; min-height: 297mm; margin: 0; padding: 7mm 6mm; border: 0; box-shadow: none; }
+            .page { width: 210mm; min-height: 297mm; margin: 0; padding: 5mm 10mm 10mm; border: 0; box-shadow: none; }
         }
     </style>
 </head>
@@ -71,7 +74,7 @@
 
     <section class="student-info">
         <div class="info-line"><strong>NIS</strong><span>:</span><span>{{ $payment->student?->nis ?? '-' }}</span></div>
-        <div class="info-line"><strong>Jenis Pendidikan</strong><span>:</span><span>{{ $payment->student?->schoolClass?->educationUnit?->name ?? '-' }}</span></div>
+        <div class="info-line"><strong>Unit Pendidikan</strong><span>:</span><span>{{ $payment->student?->schoolClass?->educationUnit?->name ?? '-' }}</span></div>
         <div class="info-line"><strong>Nama</strong><span>:</span><span>{{ $payment->student?->name ?? '-' }}</span></div>
         <div class="info-line"><strong>Kelas</strong><span>:</span><span>{{ $payment->student?->schoolClass?->name ?? '-' }}</span></div>
     </section>
@@ -86,14 +89,14 @@
                 <td>{{ $payment->payment_method }}</td>
                 <td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td>
             </tr>
-            <tr class="totals"><td colspan="4" class="totals-label">Potongan (Rp)</td><td class="number">{{ number_format($payment->discount_amount, 0, ',', '.') }}</td></tr>
+            <tr class="totals"><td colspan="4" class="totals-label">Keringanan (Rp)</td><td class="number">{{ number_format($payment->discount_amount, 0, ',', '.') }}</td></tr>
             <tr class="totals grand-total"><td colspan="4" class="totals-label">Total Bayar (Rp)</td><td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td></tr>
         </tbody>
     </table>
 
     <div class="receipt-notes">
-        <div>{{ $receiptSettings['receipt_footer'] ?? config('receipt.footer_note') }}</div>
-        <div>{{ config('receipt.city') }}, {{ now()->format('d-m-Y H:i:s') }}<br>Pembayaran yang sudah terbayar mohon diikhlaskan</div>
+        <div>Pendidikan Anak Tanggungjawab Orang Tua</div>
+        <div>{{ config('receipt.city') }}, {{ now()->format('d-m-Y H:i:s') }}<br>Infaq yang sudah terbayar mohon diikhlaskan</div>
     </div>
 
     <section class="signatures">

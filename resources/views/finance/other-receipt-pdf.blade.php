@@ -70,7 +70,7 @@
             <td class="label">NIS</td>
             <td class="separator">:</td>
             <td class="value-left">{{ $payment->student?->nis ?? '-' }}</td>
-            <td class="label-right">Jenis Pendidikan</td>
+            <td class="label-right">Unit Pendidikan</td>
             <td class="separator">:</td>
             <td class="value-right">{{ $payment->student?->schoolClass?->educationUnit?->name ?? '-' }}</td>
         </tr>

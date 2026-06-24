@@ -174,7 +174,7 @@ class SppPaymentImportService
         $error = match (true) {
             $nis === '' => 'NIS kosong.',
             $name === '' => 'Nama siswa kosong.',
-            $unit === '' => 'Jenis pendidikan kosong.',
+            $unit === '' => 'Unit pendidikan kosong.',
             ! isset(self::MONTHS[$monthName]) => 'Nama bulan tidak valid.',
             ! $year || $year < 2000 || $year > 2100 => 'Tahun tidak valid.',
             $nominal < 1 => 'Nominal harus lebih dari nol.',
@@ -207,7 +207,9 @@ class SppPaymentImportService
         $header = strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', $header)));
         $header = str_replace(['.', '/', ' '], ['', '_', '_'], $header);
 
-        return preg_replace('/_+/', '_', $header);
+        $header = preg_replace('/_+/', '_', $header);
+
+        return $header === 'unit_pendidikan' ? 'jenis_pendidikan' : $header;
     }
 
     private function normalizeNominal(mixed $value): int

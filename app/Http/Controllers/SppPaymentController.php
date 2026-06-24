@@ -91,7 +91,7 @@ class SppPaymentController extends Controller
                 ->orderBy('students.name')
                 ->get(),
             'years' => range(now()->year - 2, now()->year + 2),
-            'defaultPaymentMethod' => AppSetting::where('key', 'default_payment_method')->value('value') ?? 'Cash',
+            'defaultPaymentMethod' => AppSetting::valueFor('default_payment_method', 'Cash'),
             'showCreate' => true,
         ]);
     }

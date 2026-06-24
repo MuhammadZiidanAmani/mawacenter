@@ -15,6 +15,9 @@ use Illuminate\Validation\ValidationException;
 
 class BillService
 {
+    private const DEFAULT_BILLING_START_DATE = '2025-01-01';
+    private const JULY_INCLUDED_IN_REGISTRATION_UNITS = ['MTS', 'MA'];
+
     public function __construct(private ChargeCalculator $calculator) {}
 
     public function generateSpp(AcademicYear $academicYear, int $year, array $months, array $filters = []): array
@@ -27,6 +30,11 @@ class BillService
                 foreach (array_unique(array_map('intval', $months)) as $month) {
                     $periodStart = CarbonImmutable::create($year, $month, 1);
                     if (! $this->eligible($student, $periodStart)) {
+                        $result['skipped']++;
+
+                        continue;
+                    }
+                    if ($this->sppIsIncludedInRegistration($student, $year, $month)) {
                         $result['skipped']++;
 
                         continue;
@@ -69,6 +77,12 @@ class BillService
 
                         continue;
                     }
+                    if ($this->sppIsIncludedInRegistration($student, $period->year, $period->month)) {
+                        $result['skipped']++;
+                        $period = $period->addMonth();
+
+                        continue;
+                    }
 
                     try {
                         [$bill, $created] = $this->ensureSppBill($student, $academicYear, $period->year, $period->month);
@@ -89,6 +103,10 @@ class BillService
     public function generateFeeType(AcademicYear $academicYear, FeeType $feeType, ?int $year, ?int $month, array $filters = []): array
     {
         $result = ['created' => 0, 'existing' => 0, 'skipped' => 0];
+
+        if (! $feeType->creates_bill || $feeType->payment_group === 'laundry') {
+            return $result;
+        }
 
         DB::transaction(function () use ($academicYear, $feeType, $year, $month, $filters, &$result) {
             foreach ($this->students($academicYear, $filters)->get() as $student) {
@@ -156,6 +174,10 @@ class BillService
 
         DB::transaction(function () use ($payment) {
             foreach ($payment->items as $item) {
+                if ($this->sppIsIncludedInRegistration($payment->student, $item->year, $item->month)) {
+                    continue;
+                }
+
                 [$bill] = $this->ensureSppBill($payment->student, $payment->student->academicYear, $item->year, $item->month);
                 $bill->allocations()->updateOrCreate(
                     ['payment_type' => 'spp', 'payment_id' => $payment->id],
@@ -169,7 +191,7 @@ class BillService
     public function syncOtherPayment(OtherPayment $payment): void
     {
         $payment->loadMissing(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']);
-        if ($payment->feeType?->payment_group === 'laundry') {
+        if (! $payment->feeType?->creates_bill || $payment->feeType?->payment_group === 'laundry') {
             return;
         }
 
@@ -207,7 +229,10 @@ class BillService
         });
         OtherPayment::with(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType'])
             ->whereHas('feeType', function ($query) {
-                $query->whereNull('payment_group')->orWhere('payment_group', '!=', 'laundry');
+                $query->where('creates_bill', true)
+                    ->where(function ($query) {
+                        $query->whereNull('payment_group')->orWhere('payment_group', '!=', 'laundry');
+                    });
             })
             ->orderBy('id')
             ->each(function ($payment) use (&$result) {
@@ -230,6 +255,10 @@ class BillService
 
     private function ensureSppBill(Student $student, AcademicYear $academicYear, int $year, int $month): array
     {
+        if ($this->sppIsIncludedInRegistration($student, $year, $month)) {
+            throw ValidationException::withMessages(['bill' => 'SPP bulan Juli untuk unit MTs/MA sudah termasuk Daftar Ulang.']);
+        }
+
         $key = hash('sha256', "spp|{$student->id}|{$year}|{$month}");
         if ($bill = Bill::where('generation_key', $key)->first()) {
             return [$bill, false];
@@ -350,17 +379,42 @@ class BillService
 
     private function studentBillingStart(Student $student, AcademicYear $academicYear): CarbonImmutable
     {
+        if ($student->billing_start_date) {
+            return CarbonImmutable::parse($student->billing_start_date)->startOfMonth();
+        }
+
         $date = $student->entry_date
             ?? $academicYear->start_date
-            ?? now();
+            ?? self::DEFAULT_BILLING_START_DATE;
 
-        return CarbonImmutable::parse($date)->startOfMonth();
+        $start = CarbonImmutable::parse($date)->startOfMonth();
+        $defaultStart = CarbonImmutable::parse(self::DEFAULT_BILLING_START_DATE)->startOfMonth();
+
+        return $start->greaterThan($defaultStart) ? $start : $defaultStart;
     }
 
     private function eligible(Student $student, CarbonImmutable $month): bool
     {
-        return (! $student->entry_date || $student->entry_date->lte($month->endOfMonth()))
+        $startDate = $this->studentBillingStart($student, $student->academicYear ?? new AcademicYear);
+
+        return $startDate->lte($month->endOfMonth())
             && (! $student->exit_date || $student->exit_date->gte($month->startOfMonth()));
+    }
+
+    private function sppIsIncludedInRegistration(Student $student, int $year, int $month): bool
+    {
+        if ($month !== 7) {
+            return false;
+        }
+
+        $student->loadMissing('schoolClass.educationUnit');
+        $unit = $student->schoolClass?->educationUnit;
+        $unitCode = strtoupper(trim((string) $unit?->code));
+        $unitName = strtoupper(trim((string) $unit?->name));
+
+        return in_array($unitCode, self::JULY_INCLUDED_IN_REGISTRATION_UNITS, true)
+            || str_contains($unitName, 'TSANAWIYAH')
+            || str_contains($unitName, 'ALIYAH');
     }
 
     private function feePeriod(FeeType $feeType): string

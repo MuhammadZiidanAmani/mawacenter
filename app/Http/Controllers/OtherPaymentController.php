@@ -106,7 +106,7 @@ class OtherPaymentController extends Controller
                 ->orderBy('students.name')
                 ->get(),
             'feeTypes' => $this->feeTypes($section),
-            'defaultPaymentMethod' => AppSetting::where('key', 'default_payment_method')->value('value') ?? 'Cash',
+            'defaultPaymentMethod' => AppSetting::valueFor('default_payment_method', 'Cash'),
             'years' => range(now()->year - 2, now()->year + 2),
             'showCreate' => true,
             'paymentSection' => $section,

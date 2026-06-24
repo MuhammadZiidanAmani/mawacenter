@@ -3,45 +3,45 @@
 <head>
     <meta charset="utf-8">
     <style>
-        @page { size: A4 portrait; margin: 0.7cm; }
+        @page { size: A4 portrait; margin: 0.5cm 1cm 1cm; }
         * { box-sizing: border-box; }
-        body { margin: 0; color: #202020; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.2; }
+        body { margin: 0; color: #202020; font-family: Arial, sans-serif; font-size: 12.5px; line-height: 1.25; }
         .receipt { width: 100%; border-bottom: 1px dashed #333; padding-bottom: 8px; }
         .header { width: 100%; border-collapse: collapse; border-bottom: 1.5px solid #555; }
         .header td { border: 0; padding: 0 0 4px; vertical-align: middle; }
         .logo-cell { width: 55px; }
         .logo { width: 48px; height: 48px; object-fit: contain; }
-        .institution h1 { margin: 0 0 1px; font-size: 18px; line-height: 1; }
-        .institution p { margin: 0; font-size: 12px; line-height: 1.15; }
+        .institution h1 { margin: 0 0 1px; font-size: 18px; line-height: 1.05; }
+        .institution p { margin: 0; font-size: 11.5px; line-height: 1.18; }
         .keep-cell { width: 135px; text-align: right; }
-        .keep-note { display: inline-block; padding: 3px 13px; border: 1px solid #333; font-size: 13px; }
+        .keep-note { display: inline-block; padding: 4px 14px; border: 1px solid #333; font-size: 11.5px; line-height: 1.1; }
         .title { margin: 2px 0 4px; text-align: center; }
-        .title h2 { display: inline-block; margin: 0; border-bottom: 1px solid #333; font-size: 16px; line-height: 1.05; }
-        .title p { margin: 0; font-size: 12px; }
+        .title h2 { display: inline-block; margin: 0; border-bottom: 1px solid #333; font-size: 14px; line-height: 1.1; }
+        .title p { margin: 0; font-size: 11.5px; line-height: 1.15; }
         .student-info { width: 100%; margin-bottom: 4px; border-collapse: collapse; }
-        .student-info td { padding: 1px 2px; border: 0; font-size: 12.5px; vertical-align: top; }
-        .student-info .label { width: 9%; font-weight: bold; white-space: nowrap; }
+        .student-info td { padding: 1px 2px; border: 0; font-size: 12.5px; line-height: 1.25; vertical-align: top; }
+        .student-info .label { width: 7%; font-weight: bold; white-space: nowrap; }
         .student-info .separator { width: 1.5%; padding-right: 5px; text-align: center; }
-        .student-info .value-left { width: 39.5%; }
-        .student-info .label-right { width: 14%; font-weight: bold; white-space: nowrap; }
-        .student-info .value-right { width: 34.5%; }
+        .student-info .value-left { width: 38.5%; }
+        .student-info .label-right { width: 17%; font-weight: bold; white-space: nowrap; }
+        .student-info .value-right { width: 35.5%; white-space: nowrap; }
         .payment-table { width: 100%; border-collapse: collapse; }
-        .payment-table th, .payment-table td { padding: 3px 4px 4px; border: 1px solid #555; font-size: 12.5px; line-height: 1.15; }
+        .payment-table th, .payment-table td { padding: 4px 5px; border: 1px solid #555; font-size: 12.5px; line-height: 1.22; vertical-align: middle; }
         .payment-table th { background: #f5f5f5; font-weight: bold; text-align: center; }
-        .payment-table .transaction-column { width: 19%; }
-        .payment-table .month-column { width: 43%; }
-        .payment-table .year-column { width: 11%; }
-        .payment-table .method-column { width: 12%; }
+        .payment-table .transaction-column { width: 18%; }
+        .payment-table .month-column { width: 50%; }
+        .payment-table .year-column { width: 8%; }
+        .payment-table .method-column { width: 9%; }
         .payment-table .amount-column { width: 15%; }
         .payment-table .center { text-align: center; }
         .payment-table .number { text-align: right; white-space: nowrap; }
         .payment-table .totals-label { text-align: right; }
         .payment-table .grand-total { font-weight: bold; }
         .notes { width: 100%; margin-top: 4px; border-collapse: collapse; }
-        .notes td { width: 50%; padding: 0 4px; border: 0; font-size: 12px; line-height: 1.15; vertical-align: top; }
+        .notes td { width: 50%; padding: 0 4px; border: 0; font-size: 12.5px; line-height: 1.22; vertical-align: top; }
         .notes .right { text-align: right; }
         .signatures { width: 100%; margin-top: 5px; border-collapse: collapse; }
-        .signatures td { width: 50%; padding: 0 8px; border: 0; text-align: center; font-size: 12.5px; vertical-align: top; }
+        .signatures td { width: 50%; padding: 0 8px; border: 0; text-align: center; font-size: 12.5px; line-height: 1.22; vertical-align: top; }
         .signature-label { font-weight: bold; }
         .signature-space { height: 48px; }
         .signature-name { font-weight: bold; }
@@ -71,7 +71,7 @@
             <td class="label">NIS</td>
             <td class="separator">:</td>
             <td class="value-left">{{ $payment->student?->nis ?? '-' }}</td>
-            <td class="label-right">Jenis Pendidikan</td>
+            <td class="label-right">Unit Pendidikan</td>
             <td class="separator">:</td>
             <td class="value-right">{{ $payment->student?->schoolClass?->educationUnit?->name ?? '-' }}</td>
         </tr>
@@ -111,7 +111,7 @@
             <td class="right">{{ config('receipt.city') }}, {{ now()->format('d-m-Y H.i') }} WIB</td>
         </tr>
         <tr>
-            <td>{{ $receiptSettings['receipt_footer'] ?? 'Pendidikan Anak Tanggungjawab Orang Tua' }}</td>
+            <td>Pendidikan Anak Tanggungjawab Orang Tua</td>
             <td class="right">Infaq yang sudah terbayar mohon diikhlaskan</td>
         </tr>
     </table>

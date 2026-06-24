@@ -49,6 +49,21 @@
             "@php artisan config:clear --ansi @no_additional_args",
             "@php artisan test"
         ],
+        "deploy:optimize": [
+            "@php artisan optimize:clear --ansi",
+            "@php artisan migrate --force --ansi",
+            "npm install --ignore-scripts",
+            "npm run build",
+            "@php artisan optimize --ansi",
+            "@php artisan view:cache --ansi"
+        ],
+        "deploy:cache": [
+            "@php artisan optimize --ansi",
+            "@php artisan view:cache --ansi"
+        ],
+        "deploy:clear": [
+            "@php artisan optimize:clear --ansi"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

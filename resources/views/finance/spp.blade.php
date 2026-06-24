@@ -37,7 +37,7 @@
     $filterDateTo = request('date_to', now()->format('d/m/Y'));
 @endphp
 <div class="app-shell">
-    @include('partials.sidebar', ['activeMenu' => 'payment', 'activePaymentMenu' => 'spp'])
+    @include('partials.sidebar', ['activeMenu' => 'payment'])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar">
@@ -61,34 +61,29 @@
                         <a href="{{ route('finance.spp.create') }}" class="button student-add-button">{!! $icon('plus') !!} Tambah</a>
                         <button type="button" class="button action-purple spp-import-toggle {{ $importPreview || $errors->any() ? 'active' : '' }}" data-spp-import-toggle aria-expanded="{{ $errors->any() ? 'true' : 'false' }}">{!! $icon('upload') !!} Import</button>
                     </div>
-                    <form method="GET" action="{{ route('finance.spp.index') }}" class="student-filter-panel payment-filter-panel">
-                        <label class="payment-date-filter"><span>Waktu</span><span class="payment-date-range"><span class="date-picker-field" data-date-picker-control><input type="text" name="date_from" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ $filterDateFrom }}" data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal awal" data-date-picker-button>{!! $icon('calendar') !!}</button></span><b>-</b><span class="date-picker-field" data-date-picker-control><input type="text" name="date_to" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ $filterDateTo }}" data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal akhir" data-date-picker-button>{!! $icon('calendar') !!}</button></span></span></label>
-                        <label><span>Kategori Pembayaran</span><select disabled><option>SPP</option></select></label>
-                        <label><span>Cara Bayar</span><select name="payment_method"><option value="">-- semua --</option><option value="Cash" @selected(request('payment_method') === 'Cash')>Cash</option><option value="Transfer" @selected(request('payment_method') === 'Transfer')>Transfer</option></select></label>
-                        <label><span>Status</span><select name="status"><option value="">-- semua --</option><option value="Diterima" @selected(request('status') === 'Diterima')>Diterima</option><option value="Pending" @selected(request('status') === 'Pending')>Pending</option></select></label>
-                        <label><span>Petugas</span><select name="operator_name"><option value="">-- semua --</option>@foreach($operators as $operator)<option value="{{ $operator }}" @selected(request('operator_name') === $operator)>{{ $operator }}</option>@endforeach</select></label>
-                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
-                        <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">-- semua --</option>@foreach($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
-                        <span class="payment-filter-label">Siswa</span>
-                        <div class="payment-student-filter">
-                            <div class="student-search-picker" data-student-picker data-student-optional>
-                                <input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" data-student-search>
-                                <select name="student_id" data-student-source>
-                                    <option value="">Semua siswa</option>
-                                    @foreach($studentOptions as $student)
-                                        <option value="{{ $student->id }}" @selected(request('student_id') == $student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
-                                    @endforeach
-                                </select>
-                                <div class="student-search-results" data-student-results hidden></div>
+                    <form method="GET" action="{{ route('finance.spp.index') }}" class="student-filter-panel payment-filter-panel payment-filter-compact">
+                        <div class="payment-filter-primary">
+                            <label class="payment-date-filter"><span>Waktu</span><span class="payment-date-range"><span class="date-picker-field" data-date-picker-control><input type="text" name="date_from" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ $filterDateFrom }}" data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal awal" data-date-picker-button>{!! $icon('calendar') !!}</button></span><b>-</b><span class="date-picker-field" data-date-picker-control><input type="text" name="date_to" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ $filterDateTo }}" data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal akhir" data-date-picker-button>{!! $icon('calendar') !!}</button></span></span></label>
+                            <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                            <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
+                            <label class="payment-student-field"><span>Siswa</span><span class="payment-student-filter"><span class="student-search-picker" data-student-picker data-student-optional><input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" data-student-search><select name="student_id" data-student-source><option value="">Semua siswa</option>@foreach($studentOptions as $student)<option value="{{ $student->id }}" @selected(request('student_id') == $student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>@endforeach</select><span class="student-search-results" data-student-results hidden></span></span></span></label>
+                            <div class="student-filter-actions payment-filter-actions">
+                                <button class="button student-search-button" aria-label="Cari">{!! $icon('search') !!}</button>
+                                <a href="{{ route('finance.spp.index') }}" class="button student-filter-reset">Reset</a>
                             </div>
                         </div>
+                        <details class="payment-advanced-filters" @if(request()->filled('payment_method') || request()->filled('status') || request()->filled('operator_name')) open @endif>
+                            <summary>Filter Lainnya</summary>
+                            <div class="payment-filter-secondary">
+                                <label><span>Kategori Pembayaran</span><select disabled><option>SPP</option></select></label>
+                                <label><span>Cara Bayar</span><select name="payment_method"><option value="">semua</option><option value="Cash" @selected(request('payment_method') === 'Cash')>Cash</option><option value="Transfer" @selected(request('payment_method') === 'Transfer')>Transfer</option></select></label>
+                                <label><span>Status</span><select name="status"><option value="">semua</option><option value="Diterima" @selected(request('status') === 'Diterima')>Diterima</option><option value="Pending" @selected(request('status') === 'Pending')>Pending</option></select></label>
+                                <label><span>Petugas</span><select name="operator_name"><option value="">semua</option>@foreach($operators as $operator)<option value="{{ $operator }}" @selected(request('operator_name') === $operator)>{{ $operator }}</option>@endforeach</select></label>
+                            </div>
+                        </details>
                         @foreach($paymentQuery(['date_from', 'date_to', 'payment_method', 'status', 'operator_name', 'unit_id', 'class_id', 'nis', 'student_id', 'student_search']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
-                        <div class="student-filter-actions payment-filter-actions">
-                            <button class="button student-search-button" aria-label="Tampilkan data">{!! $icon('search') !!}</button>
-                            <a href="{{ route('finance.spp.index') }}" class="button student-filter-reset">Reset</a>
-                        </div>
                     </form>
                 </section>
                 <div class="spp-import-modal-backdrop {{ $errors->any() ? 'show' : '' }}" data-spp-import-panel @if(! $errors->any()) hidden @endif>
@@ -151,12 +146,17 @@
                     @include('partials.list-toolbar', ['action' => route('finance.spp.index'), 'searchLabel' => 'Cari pembayaran SPP'])
                     <div class="table-wrap"><table class="data-table student-flat-table payment-flat-table spp-list-table registration-payment-table"><thead><tr><th>No</th><th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'method', 'label' => 'Cara Bayar'])</th><th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th><th>Rincian</th></tr></thead><tbody>
                         @forelse($payments as $payment)
+                            @php($sppPeriodText = $payment->items
+                                ->sortBy(fn($item) => ((int) $item->year * 100) + (int) $item->month)
+                                ->groupBy('year')
+                                ->map(fn($items, $year) => $items->map(fn($item) => $months[$item->month])->join(', ').' '.$year)
+                                ->join('; '))
                             <tr class="spp-main-row">
                                 <td>{{ $payments->firstItem()+$loop->index }}</td><td>{{ $payment->student?->nis }}</td><td><span class="payment-student-name">{{ $payment->student?->name }}</span><small class="payment-student-unit">Unit Pendidikan: {{ $payment->student?->schoolClass?->educationUnit?->code ?? '-' }}</small></td><td class="spp-class-cell">{{ $payment->student?->schoolClass?->name ?? '-' }}</td><td><span class="payment-method">{{ strtolower($payment->payment_method) }}</span></td><td class="spp-total-cell"><span>Rp {{ number_format($payment->paid_amount,0,',','.') }}</span></td><td><button type="button" class="spp-expand-button" data-spp-row-toggle="{{ $payment->id }}" aria-expanded="false">Lihat</button></td>
                             </tr>
                             <tr class="spp-expanded-row" data-spp-row-detail="{{ $payment->id }}" hidden><td colspan="7">
                                 <div class="registration-payment-detail spp-payment-detail">
-                                    <div class="registration-detail-item payment-type"><span>Bulan</span><strong>{{ $payment->items->map(fn($item) => $months[$item->month].' '.$item->year)->join(', ') }}</strong></div>
+                                    <div class="registration-detail-item payment-type"><span>Bulan</span><strong>{{ $sppPeriodText }}</strong></div>
                                     <div class="registration-detail-item"><span>Cara Bayar</span><strong><span class="compact-badge method">{{ strtolower($payment->payment_method) }}</span></strong></div>
                                     <div class="registration-detail-item"><span>Status</span><strong><span class="compact-badge {{ $payment->status === 'Diterima' ? 'success' : 'neutral' }}">{{ strtolower($payment->status) }}</span></strong></div>
                                     <div class="registration-detail-item"><span>Nominal</span><strong>Rp {{ number_format($payment->paid_amount,0,',','.') }}</strong></div>
@@ -172,31 +172,30 @@
             </div>
             @else
             <section class="spp-form-page payment-create-page">
-                <section class="hero master-hero">
-                    <div><p class="eyebrow">Pembayaran · SPP</p><h1>Tambah Pembayaran SPP</h1><p>Catat pembayaran bulanan siswa dengan nominal dan keringanan otomatis.</p></div>
-                    <a href="{{ route('finance.spp.index') }}" class="button button-secondary">Kembali ke Daftar</a>
-                </section>
                 <form method="POST" action="{{ route('finance.spp.store') }}" class="card spp-payment-form" data-spp-form data-quote-url="{{ route('finance.spp.quote') }}" data-months-url="{{ route('finance.spp.months') }}">
                 @csrf
+                <div class="spp-form-topbar">
+                    <strong>Informasi Transaksi</strong>
+                    <a href="{{ route('finance.spp.index') }}" class="button button-secondary">Kembali ke Daftar</a>
+                </div>
                 <div class="spp-form-section">
-                    <div class="spp-form-heading"><strong>Informasi Transaksi</strong></div>
                     <div class="spp-form-grid">
                         <label>Waktu Transaksi <span class="spp-inline"><span class="date-picker-field" data-date-picker-control><input type="text" name="transaction_date" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ old('transaction_date', now()->format('d/m/Y')) }}" required data-spp-date data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal" data-date-picker-button>{!! $icon('calendar') !!}</button></span><span class="wib-clock-field"><input type="text" value="{{ now()->format('H.i') }}" readonly data-wib-clock><b>WIB</b></span><input type="hidden" name="transaction_time" value="{{ old('transaction_time', now()->format('H:i:s')) }}" data-spp-time></span></label>
-                        <div class="spp-form-field"><span>Siswa</span><div class="student-search-picker" data-student-picker><input type="search" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" required data-student-search><select name="student_id" data-spp-student data-student-source><option value="">Pilih siswa...</option>@foreach($students as $student)<option value="{{ $student->id }}" @selected(old('student_id')==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>@endforeach</select><div class="student-search-results" data-student-results hidden></div></div></div>
+                        <div class="spp-form-field"><span>Siswa</span><div class="student-search-picker" data-student-picker><input type="search" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" required data-student-search><select name="student_id" data-spp-student data-student-source><option value="">Pilih siswa...</option>@foreach($students as $student)<option value="{{ $student->id }}" @selected(old('student_id', request('student_id'))==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>@endforeach</select><div class="student-search-results" data-student-results hidden></div></div></div>
                         <fieldset class="spp-month-field"><legend>Bulan</legend><div class="spp-months">@foreach($months as $number=>$name)<label><input type="checkbox" name="months[]" value="{{ $number }}" @checked(in_array($number, old('months', [])))><span class="spp-month-name">{{ $name }}</span><small class="spp-month-status">Belum Dibayar</small></label>@endforeach</div></fieldset>
-                        <label>Tahun <select name="year" required data-spp-year>@foreach($years as $year)<option value="{{ $year }}" @selected(old('year', now()->year)==$year)>{{ $year }}</option>@endforeach</select></label>
+                        <label>Tahun <span class="spp-year-control"><select name="year" required data-spp-year>@foreach($years as $year)<option value="{{ $year }}" @selected(old('year', now()->year)==$year)>{{ $year }}</option>@endforeach</select><small class="spp-arrears-notice" data-spp-arrears-notice hidden></small></span></label>
                         <label>Cara Bayar <select name="payment_method" required><option @selected(($defaultPaymentMethod ?? 'Cash')==='Cash')>Cash</option><option @selected(($defaultPaymentMethod ?? 'Cash')==='Transfer')>Transfer</option></select></label>
                         <label>Status <select name="status" required><option>Diterima</option><option>Pending</option></select></label>
-                        <label>Nominal Dibayar Sekarang <input type="text" inputmode="numeric" name="paid_amount" required value="{{ old('paid_amount') }}" placeholder="Masukkan nominal titipan atau pelunasan" data-spp-paid-input data-currency-input></label>
                     </div>
                 </div>
                 <div class="spp-summary">
-                    <div><span>Besar SPP / Bulan</span><strong data-spp-base>Rp 0</strong></div>
-                    <div><span>Total SPP</span><strong data-spp-original>Rp 0</strong></div>
-                    <div class="discount"><span>Keringanan Otomatis</span><strong data-spp-discount>Rp 0</strong></div>
-                    <div><span>Total Wajib Dibayar</span><strong data-spp-total>Rp 0</strong></div>
-                    <div><span>Sudah Dibayar</span><strong data-spp-paid>Rp 0</strong></div>
-                    <div class="total"><span>Sisa Tagihan</span><strong data-spp-remaining>Rp 0</strong><small data-spp-status>Belum Lunas</small></div>
+                    <div><span>Besar SPP / Bulan</span><strong class="spp-summary-readonly" data-spp-base>Rp 0</strong></div>
+                    <div><span>Total SPP</span><strong class="spp-summary-readonly" data-spp-original>Rp 0</strong></div>
+                    <div class="discount"><span>Keringanan</span><strong class="spp-summary-readonly" data-spp-discount>Rp 0</strong></div>
+                    <div class="total spp-summary-payment-row"><span>Total Bayar</span><input type="text" inputmode="numeric" name="paid_amount" required value="{{ old('paid_amount') }}" placeholder="Otomatis sesuai sisa tagihan, bisa diedit" data-spp-paid-input data-currency-input></div>
+                    <div class="spp-summary-hidden" aria-hidden="true"><span>Total Wajib</span><strong data-spp-total>Rp 0</strong></div>
+                    <div class="spp-summary-hidden" aria-hidden="true"><span>Sudah Dibayar</span><strong data-spp-paid>Rp 0</strong></div>
+                    <div class="spp-summary-hidden" aria-hidden="true"><span>Sisa Tagihan</span><strong data-spp-remaining>Rp 0</strong><small data-spp-status>Belum Lunas</small></div>
                 </div>
                 <p class="spp-quote-message" data-spp-message>Pilih siswa dan bulan untuk menghitung pembayaran.</p>
                 <div class="form-actions"><a href="{{ route('finance.spp.index') }}" class="button button-secondary">Batal</a><button class="button button-primary">Simpan Pembayaran</button></div>
@@ -219,7 +218,7 @@
                         <label>Jam Transaksi (WIB)<input type="text" name="transaction_time" inputmode="numeric" placeholder="Contoh: 18.00" pattern="(?:[01]\d|2[0-3])[.:][0-5]\d" required></label>
                         <label>Cara Bayar<select name="payment_method" required><option>Cash</option><option>Transfer</option></select></label>
                         <label>Status Penerimaan<select name="status" required><option>Diterima</option><option>Pending</option></select></label>
-                        <label class="span-2">Nominal Dibayar Sekarang<input type="text" inputmode="numeric" name="paid_amount" required data-spp-edit-paid data-currency-input></label>
+                        <label class="span-2">Total Bayar<input type="text" inputmode="numeric" name="paid_amount" required data-spp-edit-paid data-currency-input></label>
                         <div class="form-actions span-2"><button type="button" class="button button-secondary" data-spp-crud-close>Batal</button><button class="button button-primary">Simpan Perubahan</button></div>
                     </form>
                 </div>

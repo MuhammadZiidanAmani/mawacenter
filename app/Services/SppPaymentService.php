@@ -5,11 +5,15 @@ namespace App\Services;
 use App\Models\SppPayment;
 use App\Models\SppPaymentItem;
 use App\Models\Student;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class SppPaymentService
 {
+    private const DEFAULT_BILLING_START_DATE = '2025-01-01';
+    private const JULY_INCLUDED_IN_REGISTRATION_UNITS = ['MTS', 'MA'];
+
     public function __construct(
         private ChargeCalculator $calculator,
         private BillService $bills,
@@ -25,12 +29,69 @@ class SppPaymentService
     public function monthStatuses(Student $student, int $year): array
     {
         $selection = $this->calculateSelection($student, $year, range(1, 12));
-        $firstPayable = collect($selection['items'])->firstWhere('remaining_amount', '>', 0);
+        $items = collect($selection['items'])->map(function (array $item) use ($student) {
+            $periodIsApplicable = $this->periodIsApplicable($student, $item['year'], $item['month']);
+            $includedInRegistration = $this->sppIsIncludedInRegistration($student, $item['year'], $item['month']);
+            $item['applicable'] = $periodIsApplicable && ! $includedInRegistration;
+            $item['included_in_registration'] = $includedInRegistration;
+            $item['status_label'] = null;
+            if ($includedInRegistration) {
+                $item['original_amount'] = 0;
+                $item['discount_amount'] = 0;
+                $item['total_amount'] = 0;
+                $item['paid_amount'] = 0;
+                $item['remaining_amount'] = 0;
+                $item['payment_status'] = 'Termasuk Daftar Ulang';
+                $item['status_label'] = 'Termasuk Daftar Ulang';
+            } elseif (! $periodIsApplicable) {
+                $item['remaining_amount'] = 0;
+                $item['payment_status'] = 'Tidak Berlaku';
+                $item['status_label'] = 'Belum Aktif';
+            }
+
+            return $item;
+        });
+        $firstPayable = $items->first(fn (array $item) => $item['applicable'] && $item['remaining_amount'] > 0);
 
         return [
             'first_payable_month' => $firstPayable['month'] ?? null,
-            'months' => $selection['items'],
+            'oldest_outstanding' => $this->oldestOutstandingPeriod($student),
+            'months' => $items->values()->all(),
         ];
+    }
+
+    public function oldestOutstandingPeriod(Student $student): ?array
+    {
+        $start = $this->billingStart($student);
+        $end = now()->startOfMonth();
+        if ($student->exit_date && $student->exit_date->lt($end)) {
+            $end = $student->exit_date->startOfMonth();
+        }
+
+        for ($period = $start; $period->lte($end); $period = $period->addMonth()) {
+            if (! $this->periodIsPayable($student, $period->year, $period->month)) {
+                continue;
+            }
+
+            $charge = $this->calculator->calculateSppMonth($student, $period->year, $period->month);
+            if ($charge['final_amount'] < 1) {
+                continue;
+            }
+            $paid = (int) SppPaymentItem::where('student_id', $student->id)
+                ->where('year', $period->year)
+                ->where('month', $period->month)
+                ->sum('paid_amount');
+            if ($paid < $charge['final_amount']) {
+                return [
+                    'year' => $period->year,
+                    'month' => $period->month,
+                    'month_name' => $this->monthName($period->month),
+                    'payment_status' => $paid > 0 ? 'Belum Lunas' : 'Belum Dibayar',
+                ];
+            }
+        }
+
+        return null;
     }
 
     public function record(Student $student, array $data): SppPayment
@@ -247,6 +308,16 @@ class SppPaymentService
         $selectedMonths = array_values(array_unique(array_map('intval', $months)));
         sort($selectedMonths);
         $yearSelection = $this->calculateSelection($student, $year, range(1, 12));
+        $inapplicableMonth = collect($selectedMonths)->first(fn (int $month) => ! $this->periodIsPayable($student, $year, $month));
+        if ($inapplicableMonth) {
+            $message = $this->sppIsIncludedInRegistration($student, $year, $inapplicableMonth)
+                ? 'SPP bulan Juli '.$year.' untuk unit MTs/MA sudah termasuk Daftar Ulang.'
+                : 'SPP bulan '.$this->monthName($inapplicableMonth).' '.$year.' belum termasuk periode tagihan siswa.';
+
+            throw ValidationException::withMessages([
+                'months' => $message,
+            ]);
+        }
         $selectedItems = array_filter(
             $yearSelection['items'],
             fn (array $item) => in_array($item['month'], $selectedMonths, true),
@@ -259,9 +330,23 @@ class SppPaymentService
             ]);
         }
 
+        $oldestOutstanding = $this->oldestOutstandingPeriod($student);
+        $firstSelectedMonth = $selectedMonths[0] ?? null;
+        if ($oldestOutstanding && $firstSelectedMonth) {
+            $firstSelectedPeriod = CarbonImmutable::create($year, $firstSelectedMonth, 1);
+            $oldestPeriod = CarbonImmutable::create($oldestOutstanding['year'], $oldestOutstanding['month'], 1);
+
+            if (! $firstSelectedPeriod->equalTo($oldestPeriod)) {
+                throw ValidationException::withMessages([
+                    'months' => 'Pembayaran harus dimulai dari bulan '.$oldestOutstanding['month_name'].' '.$oldestOutstanding['year'].' dan dipilih secara berurutan.',
+                ]);
+            }
+        }
+
         $payableMonths = array_values(array_map(
             fn (array $item) => $item['month'],
-            array_filter($yearSelection['items'], fn (array $item) => $item['remaining_amount'] > 0),
+            array_filter($yearSelection['items'], fn (array $item) => $item['remaining_amount'] > 0
+                && $this->periodIsPayable($student, $item['year'], $item['month'])),
         ));
         $expectedMonths = array_slice($payableMonths, 0, count($selectedMonths));
 
@@ -272,6 +357,49 @@ class SppPaymentService
                 : 'Seluruh pembayaran SPP pada tahun ini sudah lunas.';
             throw ValidationException::withMessages(['months' => $message]);
         }
+    }
+
+    private function billingStart(Student $student): CarbonImmutable
+    {
+        if ($student->billing_start_date) {
+            return CarbonImmutable::parse($student->billing_start_date)->startOfMonth();
+        }
+
+        $date = $student->entry_date ?? self::DEFAULT_BILLING_START_DATE;
+        $start = CarbonImmutable::parse($date)->startOfMonth();
+        $defaultStart = CarbonImmutable::parse(self::DEFAULT_BILLING_START_DATE)->startOfMonth();
+
+        return $start->greaterThan($defaultStart) ? $start : $defaultStart;
+    }
+
+    private function periodIsApplicable(Student $student, int $year, int $month): bool
+    {
+        $period = CarbonImmutable::create($year, $month, 1);
+
+        return $this->billingStart($student)->lte($period)
+            && (! $student->exit_date || $student->exit_date->gte($period->startOfMonth()));
+    }
+
+    private function periodIsPayable(Student $student, int $year, int $month): bool
+    {
+        return $this->periodIsApplicable($student, $year, $month)
+            && ! $this->sppIsIncludedInRegistration($student, $year, $month);
+    }
+
+    private function sppIsIncludedInRegistration(Student $student, int $year, int $month): bool
+    {
+        if ($month !== 7) {
+            return false;
+        }
+
+        $student->loadMissing('schoolClass.educationUnit');
+        $unit = $student->schoolClass?->educationUnit;
+        $unitCode = strtoupper(trim((string) $unit?->code));
+        $unitName = strtoupper(trim((string) $unit?->name));
+
+        return in_array($unitCode, self::JULY_INCLUDED_IN_REGISTRATION_UNITS, true)
+            || str_contains($unitName, 'TSANAWIYAH')
+            || str_contains($unitName, 'ALIYAH');
     }
 
     private function monthName(int $month): string

@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
+use App\Models\Role;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
@@ -16,11 +17,82 @@ class PaymentMenuTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_payment_menu_uses_requested_order(): void
+    protected function setUp(): void
     {
-        $this->actingAs(User::factory()->create())->get('/')
+        parent::setUp();
+
+        Role::updateOrCreate(['key' => 'admin'], [
+            'name' => 'Admin',
+            'permissions' => Role::defaultPermissions(),
+            'is_active' => true,
+        ]);
+    }
+
+    public function test_payment_menu_is_single_direct_sidebar_item(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']))->get('/')
             ->assertOk()
-            ->assertSeeInOrder(['Daftar Ulang', 'SPP', 'Laundry', 'Lain-lain']);
+            ->assertSee('Pembayaran')
+            ->assertDontSee('Transaksi Baru')
+            ->assertDontSee('Import Pembayaran');
+    }
+
+    public function test_transaction_hub_groups_one_student_across_education_units(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $mts = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $ponpes = EducationUnit::create(['code' => 'PONPES', 'name' => 'Pondok Pesantren', 'is_active' => true]);
+        $mtsClass = SchoolClass::create(['education_unit_id' => $mts->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        $ponpesClass = SchoolClass::create(['education_unit_id' => $ponpes->id, 'name' => 'Asrama A', 'level' => 'Asrama']);
+        $identity = Student::create([
+            'nis' => 'MTS-001', 'nisn' => '1234567890', 'name' => 'Ahmad Fauzan', 'gender' => 'L',
+            'school_class_id' => $mtsClass->id, 'academic_year_id' => $year->id, 'is_active' => true,
+        ]);
+        $boarding = Student::create([
+            'identity_student_id' => $identity->id, 'nis' => 'PP-099', 'nisn' => '1234567890',
+            'name' => 'Ahmad Fauzan', 'gender' => 'L', 'school_class_id' => $ponpesClass->id,
+            'academic_year_id' => $year->id, 'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $mts->id, 'school_class_id' => $mtsClass->id,
+            'academic_year_id' => $year->id, 'payment_group' => 'spp', 'code' => 'SPP-MTS',
+            'name' => 'SPP MTs', 'amount' => 300000, 'period' => 'Bulanan', 'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $ponpes->id, 'school_class_id' => $ponpesClass->id,
+            'academic_year_id' => $year->id, 'payment_group' => 'laundry', 'code' => 'LAUNDRY-PP',
+            'name' => 'Laundry Ponpes', 'amount' => 100000, 'period' => 'Bulanan', 'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get('/keuangan/pembayaran?search=Ahmad')
+            ->assertOk()
+            ->assertSee('Ahmad Fauzan')
+            ->assertDontSee('2 unit')
+            ->assertSee('MTS-001')
+            ->assertSee('PP-099')
+            ->assertSee(route('finance.spp.create', ['student_id' => $identity->id]), false)
+            ->assertSee(route('finance.other.create', ['category' => 'laundry', 'student_id' => $boarding->id]));
+
+        $this->get(route('finance.spp.create', ['student_id' => $identity->id]))
+            ->assertOk()
+            ->assertSee('value="'.$identity->id.'" selected', false);
+        $this->get(route('finance.other.create', ['category' => 'laundry', 'student_id' => $boarding->id]))
+            ->assertOk()
+            ->assertSee('value="'.$boarding->id.'"', false)
+            ->assertSee('selected', false);
+    }
+
+    public function test_central_payment_import_page_uses_existing_importers(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get('/keuangan/pembayaran/import')
+            ->assertOk()
+            ->assertSee('Import Pembayaran')
+            ->assertSee(route('finance.spp.import.preview'), false)
+            ->assertSee(route('finance.other.import.preview', ['category' => 'daftar-ulang']), false)
+            ->assertSee(route('finance.other.import.preview', ['category' => 'laundry']), false)
+            ->assertSee('Upload dan Preview');
     }
 
     public function test_registration_and_laundry_payment_sections_are_accessible(): void

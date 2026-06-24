@@ -206,7 +206,16 @@ const registrationClassList = document.querySelector('[data-registration-class-l
 const registrationClassRows = registrationClassList ? Array.from(registrationClassList.querySelectorAll('label[data-unit-id]')) : [];
 const registrationClassEmpty = document.querySelector('[data-registration-class-empty]');
 const registrationAllClasses = document.querySelector('[data-registration-all-classes]');
+const registrationSelectedClasses = document.querySelector('[data-registration-selected-classes]');
+const registrationScopeValue = document.querySelector('[data-registration-scope-value]');
 const registrationAllClassesRow = document.querySelector('[data-registration-all-row]');
+const feeScopeHelp = document.querySelector('[data-fee-scope-help]');
+const feeCategories = Array.from(document.querySelectorAll('[data-fee-category]'));
+const feeBillingChoice = document.querySelector('[data-fee-billing-choice]');
+const feePeriodField = document.querySelector('[data-fee-period-field]');
+const feePeriod = document.querySelector('[data-fee-period]');
+const feeBehaviorTitle = document.querySelector('[data-fee-behavior-title]');
+const feeBehaviorDescription = document.querySelector('[data-fee-behavior-description]');
 const studentFilterUnit = document.querySelector('[data-student-filter-unit]');
 const studentFilterClass = document.querySelector('[data-student-filter-class]');
 const studentFilterClassOptions = studentFilterClass ? Array.from(studentFilterClass.options) : [];
@@ -245,6 +254,8 @@ const discountType = document.querySelector('[data-discount-type]');
 const discountValue = document.querySelector('[data-discount-value]');
 const fatherWhatsapp = document.querySelector('[data-father-whatsapp]');
 const motherWhatsapp = document.querySelector('[data-mother-whatsapp]');
+const existingStudent = document.querySelector('[data-existing-student]');
+const newStudentFields = Array.from(document.querySelectorAll('[data-new-student-fields]'));
 const studentRegions = {
     province: document.querySelector('[data-student-region="province"]'),
     city: document.querySelector('[data-student-region="city"]'),
@@ -350,6 +361,26 @@ const toggleInactiveFields = () => {
     inactiveFields.querySelectorAll('input').forEach((input) => { input.required = inactive; });
 };
 
+const toggleExistingStudentFields = () => {
+    if (!existingStudent || !newStudentFields.length) return;
+    const usingExistingStudent = Boolean(existingStudent.value);
+    newStudentFields.forEach((section) => {
+        section.hidden = usingExistingStudent;
+        section.querySelectorAll('input, select, textarea').forEach((field) => {
+            field.disabled = usingExistingStudent;
+        });
+    });
+};
+
+const setExistingStudentEditMode = (editing) => {
+    if (!existingStudent) return;
+    const field = existingStudent.closest('[data-existing-student-field]');
+    if (editing) existingStudent.value = '';
+    existingStudent.disabled = editing;
+    if (field) field.hidden = editing;
+    toggleExistingStudentFields();
+};
+
 const syncDiscountPaymentFields = () => {
     if (!discountPayment || !discountSource || !discountFeeType) return;
     const [sourceType, feeTypeId = ''] = discountPayment.value.split(':');
@@ -378,7 +409,7 @@ const filterStudentClasses = (selectedClass = '') => {
     const unitId = studentUnit.value;
     const selectedClasses = Array.isArray(selectedClass)
         ? selectedClass.map(String)
-        : (selectedClass ? [String(selectedClass)] : []);
+        : (selectedClass ? [String(selectedClass)] : (registrationAllClasses?.checked ? ['all'] : []));
     if (registrationClassList) {
         let visibleCount = 0;
         const allClassesSelected = selectedClasses.includes('all');
@@ -397,6 +428,10 @@ const filterStudentClasses = (selectedClass = '') => {
             registrationAllClassesRow.hidden = !available;
             registrationAllClasses.disabled = !available;
             registrationAllClasses.checked = available && allClassesSelected;
+        }
+        if (registrationAllClasses && !registrationAllClassesRow) {
+            registrationAllClasses.checked = allClassesSelected;
+            if (registrationSelectedClasses) registrationSelectedClasses.checked = !allClassesSelected;
         }
         if (registrationClassEmpty) {
             registrationClassEmpty.hidden = visibleCount > 0;
@@ -421,6 +456,50 @@ const filterStudentClasses = (selectedClass = '') => {
     }
 };
 
+const syncRegistrationScope = () => {
+    if (!registrationAllClasses || !registrationClassList) return;
+    const allClasses = registrationAllClasses.checked;
+    registrationClassList.hidden = allClasses;
+    if (registrationScopeValue) registrationScopeValue.value = allClasses ? 'all' : '';
+    if (feeScopeHelp) {
+        feeScopeHelp.textContent = allClasses
+            ? 'Kategori akan berlaku untuk seluruh kelas pada unit yang dipilih.'
+            : 'Pilih satu atau beberapa kelas pada unit pendidikan ini.';
+    }
+    registrationClassRows.forEach((row) => {
+        const input = row.querySelector('input[type="checkbox"]');
+        if (input) input.disabled = allClasses || row.hidden;
+    });
+};
+
+const syncFeeCategory = () => {
+    if (!feeCategories.length || !feePeriod) return;
+    const group = feeCategories.find((input) => input.checked)?.value ?? 'spp';
+    const createsBill = masterForm?.querySelector('input[name="creates_bill"]:checked')?.value ?? '1';
+    const settings = {
+        spp: ['Bulanan', 'Tagihan bulanan', 'SPP akan masuk ke tagihan siswa setiap bulan.'],
+        'daftar-ulang': ['Sekali Bayar', 'Tagihan satu kali', 'Daftar ulang akan muncul satu kali sebagai kewajiban siswa.'],
+        laundry: ['Bulanan', 'Transaksi sesuai keikutsertaan', 'Laundry tidak membuat tagihan otomatis; pembayaran dicatat hanya pada bulan yang diikuti.'],
+    };
+
+    feeBillingChoice.hidden = group !== 'lain-lain';
+    if (group === 'lain-lain') {
+        feePeriodField.hidden = createsBill !== '1';
+        feeBehaviorTitle.textContent = createsBill === '1' ? 'Tagihan sesuai periode' : 'Transaksi langsung';
+        feeBehaviorDescription.textContent = createsBill === '1'
+            ? 'Pembayaran akan muncul sebagai kewajiban siswa sesuai periode yang dipilih.'
+            : 'Pembayaran dicatat saat diterima dan tidak membuat tagihan otomatis.';
+        if (createsBill !== '1') feePeriod.value = 'Sekali Bayar';
+        return;
+    }
+
+    const [period, title, description] = settings[group];
+    feePeriod.value = period;
+    feePeriodField.hidden = true;
+    feeBehaviorTitle.textContent = title;
+    feeBehaviorDescription.textContent = description;
+};
+
 registrationAllClasses?.addEventListener('change', () => {
     registrationClassRows.forEach((row) => {
         const input = row.querySelector('input[type="checkbox"]');
@@ -428,7 +507,9 @@ registrationAllClasses?.addEventListener('change', () => {
         input.checked = false;
         input.disabled = registrationAllClasses.checked;
     });
+    syncRegistrationScope();
 });
+registrationSelectedClasses?.addEventListener('change', syncRegistrationScope);
 registrationClassRows.forEach((row) => {
     row.querySelector('input[type="checkbox"]')?.addEventListener('change', (event) => {
         if (event.currentTarget.checked && registrationAllClasses) registrationAllClasses.checked = false;
@@ -441,7 +522,11 @@ if (registrationClassList) {
             .filter((input) => input?.checked)
             .map((input) => input.value);
     filterStudentClasses(registrationAllClasses?.checked ? 'all' : selectedRegistrationClasses);
+    syncRegistrationScope();
 }
+feeCategories.forEach((input) => input.addEventListener('change', syncFeeCategory));
+masterForm?.querySelectorAll('input[name="creates_bill"]').forEach((input) => input.addEventListener('change', syncFeeCategory));
+syncFeeCategory();
 const filterStudentListClasses = (preserveSelection = false) => {
     if (!studentFilterUnit || !studentFilterClass) return;
     const unitId = studentFilterUnit.value;
@@ -480,6 +565,8 @@ const filterStudentExportClasses = () => {
 studentExportUnit?.addEventListener('change', filterStudentExportClasses);
 filterStudentExportClasses();
 studentStatus?.addEventListener('change', toggleInactiveFields);
+existingStudent?.addEventListener('change', toggleExistingStudentFields);
+toggleExistingStudentFields();
 discountPayment?.addEventListener('change', syncDiscountPaymentFields);
 syncDiscountPaymentFields();
 discountType?.addEventListener('change', toggleDiscountValueFormat);
@@ -626,10 +713,13 @@ const closeModal = () => modal?.classList.remove('show');
 document.querySelectorAll('[data-modal-close]').forEach((button) => button.addEventListener('click', closeModal));
 document.querySelector('[data-modal-open]')?.addEventListener('click', () => {
     masterForm?.reset();
+    setExistingStudentEditMode(false);
     masterForm.action = masterForm.dataset.storeAction;
     formMethod.value = 'POST';
     modalTitle.textContent = document.querySelector('[data-modal-open]').textContent.trim();
     filterStudentClasses();
+    syncRegistrationScope();
+    syncFeeCategory();
     toggleInactiveFields();
     syncDiscountPaymentFields();
     toggleDiscountValueFormat();
@@ -643,6 +733,7 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
         const record = JSON.parse(button.dataset.editRecord);
         masterForm.action = button.dataset.updateAction;
         formMethod.value = 'PUT';
+        setExistingStudentEditMode(true);
         modalTitle.textContent = 'Edit Data';
         const selectedClass = studentClassOptions.find((option) => option.value === String(record.school_class_id));
         const allClasses = studentClassOptions.find((option) => option.hasAttribute('data-all-classes'));
@@ -670,6 +761,8 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
             else field.value = value ?? '';
         });
         if (registrationClassList) filterStudentClasses(record.school_class_id ? [record.school_class_id] : 'all');
+        syncRegistrationScope();
+        syncFeeCategory();
         toggleInactiveFields();
         syncDiscountPaymentControl();
         toggleDiscountValueFormat();
@@ -692,6 +785,7 @@ if (sppForm) {
     const year = sppForm.querySelector('[data-spp-year]');
     const monthInputs = Array.from(sppForm.querySelectorAll('input[name="months[]"]'));
     const message = sppForm.querySelector('[data-spp-message]');
+    const arrearsNotice = sppForm.querySelector('[data-spp-arrears-notice]');
     const outputs = {
         base: sppForm.querySelector('[data-spp-base]'),
         original: sppForm.querySelector('[data-spp-original]'),
@@ -702,6 +796,7 @@ if (sppForm) {
     };
     const paymentStatus = sppForm.querySelector('[data-spp-status]');
     const paidInput = sppForm.querySelector('[data-spp-paid-input]');
+    let paidInputEditedManually = Boolean(digitsOnly(paidInput.value));
     const transactionTime = sppForm.querySelector('[data-spp-time]');
     const transactionClock = sppForm.querySelector('[data-wib-clock]');
     const updateTransactionClock = () => {
@@ -716,8 +811,14 @@ if (sppForm) {
         Object.values(outputs).forEach((output) => { output.textContent = currency.format(0); });
         paymentStatus.textContent = 'Belum Lunas';
         paidInput.removeAttribute('max');
+        if (!paidInputEditedManually) paidInput.value = '';
         message.textContent = text;
         message.classList.remove('error');
+    };
+
+    const fillPaidInputFromQuote = (amount) => {
+        if (paidInputEditedManually) return;
+        paidInput.value = Number(amount) > 0 ? formatThousands(amount) : '';
     };
 
     const updateQuote = async () => {
@@ -742,8 +843,9 @@ if (sppForm) {
             outputs.remaining.textContent = currency.format(data.remaining_amount);
             paymentStatus.textContent = data.payment_status;
             paidInput.max = data.remaining_amount;
+            fillPaidInputFromQuote(data.remaining_amount);
             message.textContent = data.remaining_amount > 0
-                ? `${months.length} bulan dipilih. Masukkan titipan atau pelunasan maksimal ${currency.format(data.remaining_amount)}.`
+                ? `${months.length} bulan dipilih. Total Bayar otomatis terisi ${currency.format(data.remaining_amount)} dan tetap bisa diedit untuk pembayaran sebagian.`
                 : 'Seluruh bulan yang dipilih sudah lunas.';
         } catch (error) {
             resetQuote(error.message);
@@ -755,14 +857,19 @@ if (sppForm) {
         monthInputs.forEach((input) => {
             const label = input.closest('label');
             const status = input.dataset.paymentStatus || 'Belum Dibayar';
+            const displayStatus = input.dataset.statusLabel || status;
             const statusLabel = label.querySelector('.spp-month-status');
+            const applicable = input.dataset.applicable !== 'false';
+            const includedInRegistration = input.dataset.includedInRegistration === 'true' || displayStatus === 'Termasuk Daftar Ulang';
             label.classList.toggle('is-paid', status === 'Lunas');
             label.classList.toggle('is-partial', status === 'Belum Lunas');
-            label.classList.toggle('is-unpaid', status === 'Belum Dibayar');
-            statusLabel.textContent = status === 'Lunas' ? 'Sudah Dibayar' : status;
-            input.disabled = input.dataset.paymentStatus === 'Lunas' || !input.dataset.paymentStatus;
+            label.classList.toggle('is-unpaid', applicable && status === 'Belum Dibayar');
+            label.classList.toggle('is-unavailable', !applicable);
+            label.classList.toggle('is-included-registration', includedInRegistration);
+            statusLabel.textContent = includedInRegistration ? 'Termasuk Daftar Ulang' : (!applicable ? displayStatus : (displayStatus === 'Lunas' ? 'Sudah Dibayar' : displayStatus));
+            input.disabled = !applicable || input.dataset.paymentStatus === 'Lunas' || !input.dataset.paymentStatus;
         });
-        const payableInputs = monthInputs.filter((input) => input.dataset.paymentStatus && input.dataset.paymentStatus !== 'Lunas');
+        const payableInputs = monthInputs.filter((input) => input.dataset.applicable !== 'false' && input.dataset.paymentStatus && input.dataset.paymentStatus !== 'Lunas');
         payableInputs.forEach((input, index) => {
             const previousSelected = index === 0 || payableInputs[index - 1].checked;
             input.disabled = !previousSelected;
@@ -770,13 +877,16 @@ if (sppForm) {
         });
     };
 
-    const loadMonthAvailability = async (clearSelection = false) => {
+    const loadMonthAvailability = async (clearSelection = false, findOldest = false) => {
         if (clearSelection) monthInputs.forEach((input) => { input.checked = false; });
         monthInputs.forEach((input) => {
             input.disabled = true;
             delete input.dataset.paymentStatus;
+            delete input.dataset.statusLabel;
+            delete input.dataset.applicable;
+            delete input.dataset.includedInRegistration;
             const label = input.closest('label');
-            label.classList.remove('is-paid', 'is-partial', 'is-unpaid');
+            label.classList.remove('is-paid', 'is-partial', 'is-unpaid', 'is-unavailable', 'is-included-registration');
             label.querySelector('.spp-month-status').textContent = 'Memuat...';
         });
         resetQuote(student.value ? 'Memuat status pembayaran bulan...' : 'Pilih siswa untuk melihat bulan yang dapat dibayar.');
@@ -790,9 +900,30 @@ if (sppForm) {
             const response = await fetch(`${sppForm.dataset.monthsUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
             const data = await response.json();
             if (!response.ok) throw new Error(Object.values(data.errors ?? {}).flat()[0] ?? data.message ?? 'Status bulan gagal dimuat.');
+            const oldest = data.oldest_outstanding;
+            if (arrearsNotice) {
+                arrearsNotice.hidden = !oldest;
+                arrearsNotice.textContent = oldest
+                    ? `SPP yang belum dibayar dimulai dari ${oldest.month_name} ${oldest.year}.`
+                    : '';
+            }
+            if (findOldest && oldest && Number(year.value) !== Number(oldest.year)) {
+                if (!Array.from(year.options).some((option) => Number(option.value) === Number(oldest.year))) {
+                    year.add(new Option(String(oldest.year), String(oldest.year)));
+                    Array.from(year.options).sort((a, b) => Number(a.value) - Number(b.value)).forEach((option) => year.add(option));
+                }
+                year.value = String(oldest.year);
+                await loadMonthAvailability(true, false);
+                return;
+            }
             data.months.forEach((month) => {
                 const input = monthInputs.find((item) => Number(item.value) === Number(month.month));
-                if (input) input.dataset.paymentStatus = month.payment_status;
+                if (input) {
+                    input.dataset.paymentStatus = month.payment_status;
+                    input.dataset.statusLabel = month.status_label || '';
+                    input.dataset.applicable = String(month.applicable !== false);
+                    input.dataset.includedInRegistration = String(month.included_in_registration === true || month.status_label === 'Termasuk Daftar Ulang');
+                }
             });
             applyMonthAvailability();
             const firstPayable = data.months.find((month) => Number(month.month) === Number(data.first_payable_month));
@@ -806,14 +937,27 @@ if (sppForm) {
         }
     };
 
-    student.addEventListener('change', () => loadMonthAvailability(true));
-    year.addEventListener('change', () => loadMonthAvailability(true));
+    paidInput.addEventListener('input', () => {
+        paidInputEditedManually = true;
+    });
+    student.addEventListener('change', () => {
+        paidInputEditedManually = false;
+        loadMonthAvailability(true, true);
+    });
+    year.addEventListener('change', () => {
+        paidInputEditedManually = false;
+        loadMonthAvailability(true);
+    });
     monthInputs.forEach((input) => input.addEventListener('change', () => {
+        paidInputEditedManually = false;
         applyMonthAvailability();
         updateQuote();
     }));
-    sppForm.addEventListener('reset', () => window.setTimeout(resetQuote, 0));
-    loadMonthAvailability();
+    sppForm.addEventListener('reset', () => window.setTimeout(() => {
+        paidInputEditedManually = false;
+        resetQuote();
+    }, 0));
+    loadMonthAvailability(false, Boolean(student.value));
 }
 
 const laundryForm = document.querySelector('[data-laundry-form]');
@@ -977,6 +1121,18 @@ const sppDeleteModal = document.querySelector('[data-spp-delete-modal]');
 const sppCrudModals = [sppDetailModal, sppEditModal, sppCorrectionModal, sppDeleteModal].filter(Boolean);
 const sppCurrency = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
 const sppMonthNames = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const formatSppPeriods = (items) => {
+    const grouped = new Map();
+    [...items]
+        .sort((a, b) => (Number(a.year) * 100 + Number(a.month)) - (Number(b.year) * 100 + Number(b.month)))
+        .forEach((item) => {
+            const year = String(item.year);
+            if (!grouped.has(year)) grouped.set(year, []);
+            grouped.get(year).push(sppMonthNames[item.month]);
+        });
+
+    return Array.from(grouped.entries()).map(([year, months]) => `${months.join(', ')} ${year}`).join('; ');
+};
 const escapeHtml = (value) => String(value ?? '-').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
 const closeSppCrudModals = () => sppCrudModals.forEach((modal) => modal.classList.remove('show'));
 
@@ -1024,7 +1180,7 @@ document.querySelectorAll('[data-spp-edit-url]').forEach((button) => button.addE
         form.elements.status.value = data.status;
         form.elements.paid_amount.value = data.paid_amount;
         formatCurrencyInput(form.elements.paid_amount);
-        const months = data.items.map((item) => `${sppMonthNames[item.month]} ${item.year}`).join(', ');
+        const months = formatSppPeriods(data.items);
         document.querySelector('[data-spp-edit-summary]').textContent = `${data.student.name} · ${months} · Total wajib ${sppCurrency.format(data.total_amount)}`;
         sppEditModal.classList.add('show');
     } catch (error) {

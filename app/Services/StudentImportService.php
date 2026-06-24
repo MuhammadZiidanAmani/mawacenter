@@ -102,6 +102,7 @@ class StudentImportService
                         'school_class_id' => $class->id,
                         'academic_year_id' => $activeYear->id,
                         'entry_date' => $row['entry_date'] ?? now()->toDateString(),
+                        'billing_start_date' => $row['billing_start_date'],
                         'exit_date' => $row['is_active'] ? null : $row['exit_date'],
                         'inactive_reason' => $row['is_active'] ? null : $row['inactive_reason'],
                         'is_active' => $row['is_active'],
@@ -170,6 +171,12 @@ class StudentImportService
         $status = strtolower(trim((string) ($source['status'] ?? 'aktif')));
         $isActive = ! in_array($status, ['nonaktif', 'tidak aktif', 'keluar'], true);
         $entryDate = $this->normalizeDate($source['tanggal_masuk'] ?? null);
+        $billingStartDate = $this->normalizeDate(
+            $source['mulai_tagihan_khusus']
+                ?? $source['tanggal_mulai_tagihan']
+                ?? $source['mulai_tagihan']
+                ?? null
+        );
         $exitDate = $this->normalizeDate($source['tanggal_keluar'] ?? null);
         $inactiveReason = $this->nullable($source['alasan_nonaktif'] ?? null);
 
@@ -193,6 +200,7 @@ class StudentImportService
             'village' => $this->nullable($source['desa'] ?? null),
             'address' => $this->nullable($source['alamat'] ?? null),
             'entry_date' => $entryDate,
+            'billing_start_date' => $billingStartDate,
             'exit_date' => $exitDate,
             'inactive_reason' => $inactiveReason,
             'is_active' => $isActive,

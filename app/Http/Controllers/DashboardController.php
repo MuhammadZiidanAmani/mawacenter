@@ -8,6 +8,7 @@ use App\Models\EducationUnit;
 use App\Models\OtherPayment;
 use App\Models\SppPayment;
 use App\Models\Student;
+use App\Support\PerformanceCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,6 +20,28 @@ class DashboardController extends Controller
     {
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
         $now = CarbonImmutable::now();
+
+        $payload = PerformanceCache::remember(
+            'dashboard',
+            ['active_academic_year_id' => $activeAcademicYear?->id, 'date' => $now->toDateString()],
+            config('performance.query_cache.dashboard_ttl', 120),
+            fn () => $this->dashboardPayload($activeAcademicYear, $now),
+        );
+
+        return view('welcome', [
+            'activeAcademicYear' => $activeAcademicYear,
+            'stats' => $payload['stats'],
+            'monthlyTrend' => collect($payload['monthlyTrend']),
+            'recentPayments' => collect($payload['recentPayments'])->map(fn (array $payment) => [
+                ...$payment,
+                'date' => CarbonImmutable::parse($payment['date']),
+            ]),
+            'unitSummaries' => collect($payload['unitSummaries']),
+        ]);
+    }
+
+    private function dashboardPayload(?AcademicYear $activeAcademicYear, CarbonImmutable $now): array
+    {
         $monthStart = $now->startOfMonth();
         $previousMonthStart = $monthStart->subMonth();
         $previousMonthEnd = $monthStart->subSecond();
@@ -37,8 +60,7 @@ class DashboardController extends Controller
         $overdueAmount = (int) (clone $overdueBills)->sum('remaining_amount');
         $overdueCount = (clone $overdueBills)->count();
 
-        return view('welcome', [
-            'activeAcademicYear' => $activeAcademicYear,
+        return [
             'stats' => [
                 'income_month' => $incomeThisMonth,
                 'income_today' => $incomeToday,
@@ -53,10 +75,13 @@ class DashboardController extends Controller
                 'total_billed' => $totalBilled,
                 'total_paid' => $totalPaid,
             ],
-            'monthlyTrend' => $this->monthlyTrend($now),
-            'recentPayments' => $this->recentPayments(),
-            'unitSummaries' => $this->unitSummaries($bills, $activeAcademicYear),
-        ]);
+            'monthlyTrend' => $this->monthlyTrend($now)->all(),
+            'recentPayments' => $this->recentPayments()->map(fn (array $payment) => [
+                ...$payment,
+                'date' => $payment['date']->toIso8601String(),
+            ])->all(),
+            'unitSummaries' => $this->unitSummaries($bills, $activeAcademicYear)->all(),
+        ];
     }
 
     private function incomeBetween(CarbonImmutable $start, CarbonImmutable $end): int

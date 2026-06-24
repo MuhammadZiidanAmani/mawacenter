@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FeeType extends Model
 {
-    protected $fillable = ['education_unit_id', 'school_class_id', 'academic_year_id', 'payment_group', 'code', 'name', 'amount', 'period', 'is_active'];
+    protected $fillable = ['education_unit_id', 'school_class_id', 'academic_year_id', 'payment_group', 'code', 'name', 'amount', 'period', 'creates_bill', 'is_active'];
 
     protected function casts(): array
     {
-        return ['amount' => 'integer', 'is_active' => 'boolean'];
+        return ['amount' => 'integer', 'creates_bill' => 'boolean', 'is_active' => 'boolean'];
     }
 
     public function educationUnit(): BelongsTo

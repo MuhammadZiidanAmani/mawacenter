@@ -4,14 +4,17 @@
 @source '../../storage/framework/views/*.php';
 
 :root {
-    --blue: #0d5f36;
-    --blue-dark: #084526;
-    --blue-soft: #eaf5ee;
-    --ink: #172033;
-    --muted: #697386;
-    --line: #e5e9f1;
-    --canvas: #f5f7fb;
-    --green: #12955a;
+    --blue: #2e5119;
+    --blue-dark: #17380f;
+    --blue-soft: #edf6e2;
+    --ink: #17210f;
+    --muted: #66725e;
+    --line: #dfe8d6;
+    --canvas: #f5f8ef;
+    --green: #6f913d;
+    --leaf: #9dbb59;
+    --sage: #a7b49d;
+    --cream: #f8fbf2;
     --red: #c92b31;
 }
 
@@ -410,11 +413,36 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
 /* Pembayaran SPP */
 .finance-page { max-width: 1450px; }
 .spp-payment-form { padding: 0; overflow: hidden; }
+.spp-form-topbar {
+    min-height: 70px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid #dfe5ec;
+}
+.spp-form-topbar strong {
+    color: #111827;
+    font-size: 16px;
+    font-weight: 700;
+}
+.spp-form-topbar .button {
+    min-height: 38px;
+    padding: 0 15px;
+    color: #536176;
+    background: #fff;
+    border-color: #dfe5ef;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px #17203308;
+    font-size: 13px;
+    font-weight: 500;
+}
 .spp-form-section { padding: 24px; }
 .spp-form-heading { margin-bottom: 22px; padding-bottom: 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
 .spp-form-heading strong { font-size: 18px; }
 .spp-form-heading span { color: var(--muted); font-size: 13px; }.spp-form-heading b { color: #d22f38; }
-.spp-form-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.spp-form-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .spp-form-grid > label, .spp-form-field { display: grid; grid-template-columns: 220px minmax(0, 1fr); align-items: center; gap: 18px; color: var(--ink); font-size: 14px; font-weight: 700; }
 .spp-form-grid input, .spp-form-grid select { width: 100%; height: 46px; padding: 0 13px; color: var(--ink); background: white; border: 1px solid #d8dee8; border-radius: 8px; outline: none; font-size: 14px; }
 .spp-form-grid input:focus, .spp-form-grid select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #0d5f3612; }
@@ -445,12 +473,45 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
 .spp-months label.is-paid .spp-month-status { color: var(--green); }
 .spp-months label.is-partial .spp-month-status { color: #b46a12; }
 .spp-months label.is-unpaid .spp-month-status { color: #778397; }
-.spp-summary { padding: 18px 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #f7f9fc; border-block: 1px solid var(--line); }
-.spp-summary > div { padding: 15px; background: white; border: 1px solid var(--line); border-radius: 9px; }
-.spp-summary span, .spp-summary strong { display: block; }.spp-summary span { color: var(--muted); font-size: 12px; }.spp-summary strong { margin-top: 5px; font-size: 18px; }
-.spp-summary .discount strong { color: #b46a12; }.spp-summary .total { border-color: #b8dbc8; background: #f0fbf5; }.spp-summary .total strong { color: var(--green); }
-.spp-summary .total small { display: block; margin-top: 4px; color: var(--green); font-size: 12px; font-weight: 700; }
-.spp-quote-message { margin: 0; padding: 13px 24px; color: var(--muted); font-size: 13px; }.spp-quote-message.error { color: var(--red); }
+.spp-summary { padding: 0 24px 10px; display: grid; gap: 0; background: white; border: 0; }
+.spp-summary > div { min-height: 28px; padding: 4px 0; display: grid; grid-template-columns: 220px minmax(0, 1fr); align-items: center; gap: 18px; background: transparent; border: 0; border-radius: 0; }
+.spp-summary span, .spp-summary strong { display: block; }.spp-summary span { color: var(--muted); font-size: 12px; font-weight: 600; }.spp-summary strong { color: var(--ink); font-size: 13px; font-weight: 700; }
+.spp-summary .discount strong { color: #b46a12; }.spp-summary .total strong { color: var(--green); }
+.spp-summary .total small { display: block; margin-top: 1px; color: var(--green); font-size: 11px; font-weight: 700; }
+.spp-summary-readonly {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 14px;
+    display: flex !important;
+    align-items: center;
+    color: var(--ink) !important;
+    background: #fff;
+    border: 1px solid #d5dde8;
+    border-radius: 8px;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+.spp-summary .discount .spp-summary-readonly {
+    color: #b46a12 !important;
+}
+.spp-summary-payment-row input {
+    width: 100%;
+    height: 46px;
+    padding: 0 14px;
+    color: var(--ink);
+    background: #fff;
+    border: 1px solid #d5dde8;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+    font-weight: 600;
+}
+.spp-summary-payment-row input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px #2e511914;
+}
+.spp-summary > .spp-summary-hidden { display: none !important; }
+.spp-quote-message { margin: 0; padding: 8px 24px 10px; color: var(--muted); font-size: 12px; }.spp-quote-message.error { color: var(--red); }
 .spp-payment-form > .form-actions { padding: 0 24px 22px; }
 .spp-history { margin-top: 20px; }
 .list-toolbar { padding: 18px; display: flex; align-items: center; justify-content: space-between; gap: 18px; background: white; border-bottom: 1px solid var(--line); }
@@ -522,10 +583,11 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
 .is-hidden { display: none !important; }
 .spp-form-page { width: 100%; }
 .spp-form-page .spp-payment-form { width: 100%; }
-.spp-form-page .spp-form-section { padding: 28px 32px; }
-.spp-form-page .spp-payment-form > .form-actions { padding: 0 32px 28px; }
-.payment-create-page .spp-payment-form { min-height: calc(100vh - 245px); display: flex; flex-direction: column; border-radius: 10px; box-shadow: none; }
-.payment-create-page .spp-payment-form > .form-actions { margin-top: auto; }
+.spp-form-page .spp-form-section { padding: 20px 24px; }
+.spp-form-page .spp-payment-form .spp-form-section { padding-bottom: 6px; }
+.spp-form-page .spp-payment-form > .form-actions { padding: 0 24px 20px; }
+.payment-create-page .spp-payment-form { min-height: 0; display: flex; flex-direction: column; border-radius: 10px; box-shadow: none; }
+.payment-create-page .spp-payment-form > .form-actions { margin-top: 0; }
 .finance-page .master-hero .button { flex: 0 0 auto; }
 
 @media (max-width: 1200px) {
@@ -537,7 +599,7 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
 @media (max-width: 1050px) {
     .spp-form-grid > label, .spp-form-field, .spp-month-field { grid-template-columns: 170px minmax(0, 1fr); }
     .spp-months { gap-inline: 10px; }
-    .spp-summary { grid-template-columns: repeat(2, 1fr); }
+    .spp-summary > div { grid-template-columns: 170px minmax(0, 1fr); }
 }
 @media (max-width: 700px) {
     .other-payment-heading { align-items: stretch; flex-direction: column; }
@@ -545,7 +607,7 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
     .spp-form-section { padding: 18px; }
     .spp-form-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
     .spp-form-grid > label, .spp-form-field, .spp-month-field { grid-template-columns: 1fr; gap: 7px; }
-    .spp-inline, .spp-summary { grid-template-columns: 1fr; }
+    .spp-inline, .spp-summary, .spp-summary > div { grid-template-columns: 1fr; }
     .spp-months { width: 100%; grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; gap: 4px; }
     .spp-months label { grid-template-columns: 19px minmax(105px, 1fr) 105px; }
     .spp-summary { padding: 15px 18px; }
@@ -560,6 +622,210 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
     .registration-payment-detail { padding: 4px 12px 6px; grid-template-columns: 1fr; }
     .registration-detail-item { grid-template-columns: 100px minmax(0, 1fr); }
     .registration-detail-item.payment-type > span, .registration-detail-item.time > span { min-width: 0; }
+}
+
+.fee-category-field,
+.fee-billing-choice,
+.registration-class-field {
+    display: grid;
+    gap: 10px;
+}
+
+.fee-category-field > span,
+.fee-billing-choice > span,
+.registration-class-field > span {
+    color: #34483b;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.fee-category-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.fee-category-options label,
+.fee-scope-options label {
+    cursor: pointer;
+}
+
+.fee-category-options input,
+.fee-scope-options input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.fee-category-options label > span {
+    display: grid;
+    min-height: 72px;
+    align-content: center;
+    gap: 3px;
+    padding: 12px 14px;
+    border: 1px solid #d9e1db;
+    border-radius: 12px;
+    background: #fff;
+    transition: .18s ease;
+}
+
+.fee-category-options label > span small {
+    color: #78857c;
+    line-height: 1.35;
+}
+
+.fee-category-options input:checked + span,
+.fee-scope-options input:checked + span {
+    border-color: #4f7d2a;
+    background: #f0f7e9;
+    box-shadow: inset 0 0 0 1px #4f7d2a;
+}
+
+.fee-scope-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.fee-scope-options label > span {
+    display: block;
+    padding: 9px 14px;
+    border: 1px solid #d9e1db;
+    border-radius: 999px;
+    background: #fff;
+    color: #526158;
+    font-weight: 700;
+}
+
+.fee-selected-classes {
+    margin-top: 2px;
+}
+
+.fee-behavior-summary {
+    display: grid;
+    align-content: center;
+    gap: 3px;
+    padding: 12px 14px;
+    border: 1px solid #dfe7d9;
+    border-radius: 12px;
+    background: #f6f9f3;
+}
+
+.fee-behavior-summary strong { color: #315d1d; }
+.fee-behavior-summary small { color: #6d796f; line-height: 1.4; }
+.fee-selected-classes[hidden],
+.fee-billing-choice[hidden],
+[data-fee-period-field][hidden] { display: none !important; }
+
+.spp-arrears-notice {
+    color: #768072;
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.spp-arrears-notice[hidden] { display: none !important; }
+.spp-year-control { min-width: 0; display: grid; gap: 4px; }
+.spp-months label.is-unavailable { opacity: .52; background: #f2f4f1; }
+.spp-months label.is-unavailable .spp-month-status { white-space: nowrap; }
+.spp-months label.is-included-registration .spp-month-status { color: #6b5411; line-height: 1.15; white-space: normal; }
+
+@media (max-width: 700px) {
+    .fee-category-options { grid-template-columns: 1fr; }
+}
+
+/* Payment hub: student-first transaction and centralized import */
+.payment-hub-page { width: 100%; padding: 28px 30px 40px; }
+.payment-hub-heading { margin-bottom: 22px; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.payment-hub-heading h1 { margin: 3px 0 6px; color: var(--blue-dark); font-size: 30px; }
+.payment-hub-heading p { margin: 0; color: var(--muted); }
+.payment-hub-heading-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.payment-student-search-card { padding: 24px; }
+.payment-student-search-form { max-width: 760px; display: grid; gap: 8px; }
+.payment-student-search-form > label { color: var(--blue-dark); font-weight: 800; }
+.payment-student-search-form > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+.payment-student-search-form input { height: 46px; padding: 0 14px; border: 1px solid var(--line); border-radius: 8px; outline: 0; }
+.payment-student-search-form input:focus { border-color: var(--blue); box-shadow: 0 0 0 4px #2e511914; }
+.payment-student-search-form small { color: var(--muted); }
+.payment-person-results { margin-top: 20px; display: grid; gap: 16px; }
+.payment-person-card { padding: 0; overflow: hidden; }
+.payment-person-card > header { padding: 18px 20px; display: flex; align-items: center; gap: 12px; background: #f7faF3; border-bottom: 1px solid var(--line); }
+.payment-person-avatar { width: 42px; height: 42px; display: grid; place-items: center; color: #fff; background: var(--blue); border-radius: 50%; font-weight: 800; }
+.payment-person-card header div { flex: 1; }
+.payment-person-card h2, .payment-person-card header p { margin: 0; }
+.payment-person-card h2 { color: var(--blue-dark); font-size: 18px; }
+.payment-person-card header p { margin-top: 3px; color: var(--muted); font-size: 12px; }
+.payment-unit-count { padding: 5px 10px; color: var(--blue); background: var(--blue-soft); border-radius: 20px; font-size: 11px; font-weight: 800; }
+.payment-registration-grid { padding: 18px 20px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+.payment-registration-card { padding: 16px; border: 1px solid var(--line); border-radius: 10px; }
+.payment-registration-identity { margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.payment-registration-identity > span { min-width: 66px; padding: 8px 10px; color: #fff; background: var(--blue); border-radius: 7px; text-align: center; font-weight: 800; }
+.payment-registration-identity strong, .payment-registration-identity small { display: block; }
+.payment-registration-identity small { margin-top: 2px; color: var(--muted); }
+.payment-option-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.payment-option-buttons a { padding: 9px 12px; color: var(--blue-dark); background: var(--blue-soft); border: 1px solid #ceddbf; border-radius: 7px; font-size: 12px; font-weight: 800; }
+.payment-option-buttons a:hover { color: #fff; background: var(--blue); border-color: var(--blue); }
+.payment-option-buttons small { color: var(--muted); }
+.payment-hub-page.student-page { padding: 22px 30px 40px; }
+.payment-transaction-workspace { margin-bottom: 14px; }
+.payment-transaction-search {
+    margin-bottom: 14px;
+    grid-template-columns: minmax(260px, 1fr) auto;
+    align-items: end;
+}
+.payment-transaction-card { padding: 0; overflow: hidden; }
+.payment-transaction-table { min-width: 900px; }
+.payment-transaction-table th:first-child,
+.payment-transaction-table td:first-child { width: 58px; }
+.payment-transaction-table th:nth-child(3),
+.payment-transaction-table td:nth-child(3) { width: 90px; }
+.payment-transaction-table th:nth-child(4),
+.payment-transaction-table td:nth-child(4) { width: 120px; }
+.payment-transaction-table th:nth-child(5),
+.payment-transaction-table td:nth-child(5) { width: 150px; }
+.payment-option-buttons-flat { gap: 5px; }
+.payment-option-buttons-flat a {
+    min-height: 30px;
+    padding: 6px 9px;
+    display: inline-flex;
+    align-items: center;
+    color: #27312c;
+    background: #fff;
+    border-color: #d8e2dc;
+    border-radius: 8px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.payment-option-buttons-flat a:first-child {
+    color: #fff;
+    background: var(--blue);
+    border-color: var(--blue);
+}
+.payment-hub-guide { margin-top: 18px; padding: 20px 24px; display: grid; grid-template-columns: auto 1fr auto 1fr auto 1fr; align-items: center; gap: 12px; color: var(--muted); background: #fff; border: 1px dashed var(--line); border-radius: 10px; }
+.payment-hub-guide > span { width: 30px; height: 30px; display: grid; place-items: center; color: #fff; background: var(--blue); border-radius: 50%; font-weight: 800; }
+.payment-hub-guide p, .payment-hub-guide strong, .payment-hub-guide small { margin: 0; display: block; }
+.payment-hub-guide small { margin-top: 2px; }
+.payment-hub-empty { margin-top: 18px; padding: 28px; text-align: center; }
+.payment-hub-empty p { margin-bottom: 0; color: var(--muted); }
+.payment-import-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.payment-import-card { padding: 20px; display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; }
+.payment-import-icon { width: 44px; height: 44px; display: grid; place-items: center; color: #fff; background: var(--blue); border-radius: 10px; font-weight: 800; }
+.payment-import-card h2, .payment-import-card p { margin: 0; }
+.payment-import-card p { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.payment-import-card form { grid-column: 1 / -1; display: grid; gap: 10px; }
+.payment-import-card form label { padding: 12px; display: grid; gap: 7px; background: #f8faf5; border: 1px dashed #bdcdb0; border-radius: 8px; }
+.payment-import-card form label span { color: var(--blue-dark); font-size: 12px; font-weight: 800; }
+.payment-import-card input[type=file] { width: 100%; }
+.payment-import-card button { justify-self: start; }
+.payment-import-note { margin-top: 16px; padding: 14px 18px; display: flex; gap: 9px; color: #725719; background: #fff8e7; border: 1px solid #ead9a8; border-radius: 9px; }
+
+@media (max-width: 800px) {
+    .payment-hub-page { padding: 20px 16px 32px; }
+    .payment-hub-heading { align-items: flex-start; flex-direction: column; }
+    .payment-hub-heading-actions { justify-content: flex-start; }
+    .payment-hub-guide { grid-template-columns: auto 1fr; }
+    .payment-import-grid { grid-template-columns: 1fr; }
+    .payment-import-note { flex-direction: column; }
 }
 
 .result-modal-backdrop { padding: 20px; position: fixed; inset: 0; z-index: 100; display: none; place-items: center; background: #17203375; backdrop-filter: blur(2px); }
@@ -2511,6 +2777,658 @@ h3,
     }
 }
 
+/* Final compact correction for student import preview */
+.student-page .student-import-preview {
+    border-radius: 4px;
+}
+
+.student-page .student-import-preview .spp-preview-header {
+    min-height: 96px;
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: minmax(260px, 1fr) max-content;
+    align-items: center;
+    gap: 18px;
+}
+
+.student-page .student-import-preview .student-import-hero-actions {
+    width: max-content;
+    display: grid;
+    grid-template-columns: max-content 218px;
+    align-items: center;
+    gap: 10px;
+}
+
+.student-page .student-import-preview .student-import-inline-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 104px);
+    gap: 8px;
+}
+
+.student-page .student-import-preview .student-import-inline-stats span {
+    width: 104px;
+    min-height: 42px;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.student-page .student-import-preview .spp-confirm-button {
+    width: 218px;
+    min-width: 218px;
+    min-height: 42px;
+    height: 42px;
+    padding: 0 14px;
+    align-items: center;
+    border-radius: 8px;
+}
+
+.student-page .student-import-preview .student-import-table-heading {
+    margin-inline: 20px;
+}
+
+.student-page .student-import-preview .student-import-toolbar {
+    margin-inline: 20px;
+    padding: 8px 12px;
+}
+
+.student-page .student-import-preview .student-import-search {
+    width: 280px;
+}
+
+.student-page .student-import-preview .spp-import-table-wrap {
+    margin-inline: 20px;
+    border-radius: 4px;
+}
+
+.student-page .student-import-preview-table {
+    width: 100%;
+    min-width: 620px;
+    table-layout: fixed;
+}
+
+.student-page .student-import-preview-table th,
+.student-page .student-import-preview-table td {
+    padding: 9px 8px;
+}
+
+.student-page .student-import-preview-table th:nth-child(1),
+.student-page .student-import-preview-table td:nth-child(1) {
+    width: 46px;
+}
+
+.student-page .student-import-preview-table th:nth-child(2),
+.student-page .student-import-preview-table td:nth-child(2) {
+    width: 88px;
+}
+
+.student-page .student-import-preview-table th:nth-child(3),
+.student-page .student-import-preview-table td:nth-child(3) {
+    width: 28%;
+}
+
+.student-page .student-import-preview-table th:nth-child(4),
+.student-page .student-import-preview-table td:nth-child(4) {
+    width: 118px;
+}
+
+.student-page .student-import-preview-table th:nth-child(5),
+.student-page .student-import-preview-table td:nth-child(5) {
+    width: 150px;
+}
+
+.student-page .student-import-preview-table th:nth-child(6),
+.student-page .student-import-preview-table td:nth-child(6) {
+    width: 86px;
+}
+
+.student-page .student-import-preview-table td:nth-child(3) strong,
+.student-page .student-import-preview-table td:nth-child(5) {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 1180px) {
+    .student-page .student-import-preview .spp-preview-header {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .student-page .student-import-preview .student-import-hero-actions {
+        width: 100%;
+        grid-template-columns: 1fr 218px;
+    }
+
+    .student-page .student-import-preview .student-import-inline-stats {
+        grid-template-columns: repeat(4, minmax(82px, 1fr));
+    }
+
+    .student-page .student-import-preview .student-import-inline-stats span {
+        width: auto;
+    }
+}
+
+/* Datatable-style import preview, matching Data Siswa list */
+.student-page .student-import-datatable-preview {
+    margin: 0 0 18px;
+    padding: 24px 30px 52px;
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px #17203308;
+}
+
+.student-page .student-import-datatable-preview::before,
+.student-page .student-import-datatable-preview .spp-preview-header,
+.student-page .student-import-datatable-preview .spp-validation-bar,
+.student-page .student-import-datatable-preview .spp-import-stats,
+.student-page .student-import-datatable-preview .student-import-table-heading,
+.student-page .student-import-datatable-preview .student-import-status-filter {
+    display: none !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-toolbar {
+    margin: 0 0 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.student-page .student-import-datatable-preview .student-import-show {
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #3b4b63;
+    font-size: 14px;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.student-page .student-import-datatable-preview .student-import-show select {
+    width: 86px;
+    height: 50px;
+    padding: 0 12px;
+    color: #001328;
+    background: #fff;
+    border: 1px solid #d8e0eb;
+    border-radius: 0;
+    font-size: 14px;
+}
+
+.student-page .student-import-datatable-preview .student-import-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.student-page .student-import-datatable-preview .student-import-confirm {
+    min-height: 42px;
+    padding: 0 16px;
+    color: #fff;
+    background: var(--blue);
+    border: 1px solid var(--blue);
+    border-radius: 4px;
+    box-shadow: none;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.student-page .student-import-datatable-preview .student-import-search {
+    width: auto;
+    height: auto;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #3b4b63;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-size: 14px;
+}
+
+.student-page .student-import-datatable-preview .student-import-search input {
+    width: 276px;
+    height: 54px;
+    padding: 0 12px;
+    color: #001328;
+    background: #fff;
+    border: 1px solid #d8e0eb;
+    border-radius: 0;
+    font-size: 14px;
+}
+
+.student-page .student-import-datatable-preview .spp-import-table-wrap {
+    margin: 0;
+    max-height: 520px;
+    overflow: auto;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table {
+    width: auto;
+    min-width: 1170px;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th,
+.student-page .student-import-datatable-preview .student-import-preview-table td {
+    height: 52px;
+    padding: 11px 13px;
+    background: #fff;
+    border: 1px solid #e3e9f1;
+    font-size: 13px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th {
+    color: #001328;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(1),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(1) {
+    width: 66px;
+    text-align: center;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(2),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(2) {
+    width: 114px;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(3),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(3) {
+    width: 210px;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(4),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(4) {
+    width: 184px;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(5),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(5) {
+    width: 190px;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(6),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(6) {
+    width: 100px;
+    text-align: center;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(3) strong,
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(5) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table .spp-import-nis,
+.student-page .student-import-datatable-preview .student-import-preview-table .education-code,
+.student-page .student-import-datatable-preview .student-import-preview-table .student-import-class {
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table .status {
+    padding: 4px 9px;
+    font-size: 10px;
+}
+
+.student-page .student-import-datatable-preview .list-sort-arrows {
+    float: right;
+    color: #aab3c2;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.student-page .student-import-datatable-preview .student-import-footer {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .student-page .student-import-datatable-preview {
+        padding: 18px 16px 36px;
+    }
+
+    .student-page .student-import-datatable-preview .student-import-toolbar,
+    .student-page .student-import-datatable-preview .student-import-toolbar-right {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .student-page .student-import-datatable-preview .student-import-search input {
+        width: min(276px, calc(100vw - 90px));
+    }
+}
+
+/* Requested compact table preview */
+.student-page .student-import-preview .spp-preview-header {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) auto;
+    gap: 16px;
+}
+
+.student-page .student-import-preview .student-import-hero-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.student-page .student-import-preview .student-import-inline-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.student-page .student-import-preview .student-import-inline-stats span {
+    min-height: 34px;
+    padding: 0 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #59645f;
+    background: #f2f4f3;
+    border-radius: 9px;
+    font-size: 9px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.student-page .student-import-preview .student-import-inline-stats span.valid {
+    background: #e2f2e8;
+}
+
+.student-page .student-import-preview .student-import-inline-stats span.duplicate {
+    background: #fff6d9;
+}
+
+.student-page .student-import-preview .student-import-inline-stats span.failed {
+    background: #fbe4e4;
+}
+
+.student-page .student-import-preview .student-import-inline-stats b {
+    color: #1f2933;
+    font-size: 15px;
+    font-weight: 750;
+    letter-spacing: 0;
+}
+
+.student-page .student-import-preview .spp-import-stats {
+    display: none;
+}
+
+.student-page .student-import-preview .spp-confirm-button {
+    min-width: 170px;
+    min-height: 42px;
+}
+
+.student-page .student-import-preview .student-import-table-heading {
+    margin-top: 0;
+    padding-top: 14px;
+    border-top: 1px solid #e6ebe8;
+}
+
+.student-page .student-import-preview .spp-import-table-wrap {
+    border: 1px solid #e0e5e2;
+    border-radius: 0;
+}
+
+.student-page .student-import-preview-table {
+    min-width: 760px;
+}
+
+.student-page .student-import-preview-table th:nth-child(1),
+.student-page .student-import-preview-table td:nth-child(1) {
+    width: 54px;
+    text-align: center;
+}
+
+.student-page .student-import-preview-table th:nth-child(2),
+.student-page .student-import-preview-table td:nth-child(2) {
+    width: 110px;
+    max-width: 110px;
+    white-space: nowrap;
+}
+
+.student-page .student-import-preview-table th:nth-child(3),
+.student-page .student-import-preview-table td:nth-child(3) {
+    width: auto;
+    max-width: none;
+}
+
+.student-page .student-import-preview-table th:nth-child(4),
+.student-page .student-import-preview-table td:nth-child(4) {
+    width: 145px;
+}
+
+.student-page .student-import-preview-table th:nth-child(5),
+.student-page .student-import-preview-table td:nth-child(5) {
+    width: 150px;
+}
+
+.student-page .student-import-preview-table th:nth-child(6),
+.student-page .student-import-preview-table td:nth-child(6) {
+    width: 100px;
+    text-align: center;
+}
+
+.student-page .student-import-preview-table .education-code {
+    color: var(--blue);
+}
+
+@media (max-width: 1100px) {
+    .student-page .student-import-preview .spp-preview-header {
+        grid-template-columns: 1fr;
+    }
+
+    .student-page .student-import-preview .student-import-hero-actions {
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 760px) {
+    .student-page .student-import-preview .student-import-hero-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .student-page .student-import-preview .student-import-inline-stats {
+        align-items: stretch;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .student-page .student-import-preview .student-import-inline-stats span,
+    .student-page .student-import-preview .spp-confirm-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Extra simple import preview: table-first, less decoration */
+.student-page .student-import-preview .spp-preview-header {
+    padding: 16px 20px 12px;
+}
+
+.student-page .student-import-preview .spp-preview-title > div > span:last-child {
+    display: none;
+}
+
+.student-page .student-import-preview .spp-confirm-button {
+    min-width: 150px;
+    grid-template-columns: auto 1fr;
+}
+
+.student-page .student-import-preview .spp-confirm-button b {
+    display: none;
+}
+
+.student-page .student-import-preview .spp-import-stats {
+    padding: 8px 20px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    border-top: 1px solid #eef2ef;
+    border-bottom: 1px solid #eef2ef;
+}
+
+.student-page .student-import-preview .spp-import-stats > div,
+.student-page .student-import-preview .spp-import-stats .valid,
+.student-page .student-import-preview .spp-import-stats .duplicate,
+.student-page .student-import-preview .spp-import-stats .failed {
+    min-height: 0;
+    padding: 0;
+    display: block;
+    background: transparent;
+}
+
+.student-page .student-import-preview .spp-import-stats p {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.student-page .student-import-preview .spp-import-stats p span {
+    color: #7a857f;
+    font-size: 9px;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.student-page .student-import-preview .spp-import-stats p strong {
+    margin: 0;
+    color: #202a39;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.student-page .student-import-preview .spp-import-stats > div:not(:last-child)::before {
+    content: '';
+}
+
+.student-page .student-import-preview .spp-import-stats > div:not(:last-child)::after {
+    content: '·';
+    display: inline !important;
+    margin: 0 2px 0 6px;
+    color: #a0aaa4;
+    background: transparent;
+}
+
+.student-page .student-import-preview .student-import-table-heading {
+    padding-top: 10px;
+    border-top: 0;
+}
+
+.student-page .student-import-preview .student-import-table-heading > div:first-child span,
+.student-page .student-import-preview .student-import-heading-badges,
+.student-page .student-import-preview .student-import-status-filter {
+    display: none;
+}
+
+.student-page .student-import-preview .student-import-toolbar {
+    grid-template-columns: auto minmax(220px, 320px);
+    justify-content: space-between;
+    background: #fff;
+    border-color: #e6ebe8;
+}
+
+.student-page .student-import-preview .student-import-search {
+    width: 320px;
+    max-width: 100%;
+}
+
+.student-page .student-import-preview-table {
+    min-width: 820px;
+}
+
+.student-page .student-import-preview-table th,
+.student-page .student-import-preview-table td {
+    padding: 10px 10px;
+}
+
+.student-page .student-import-preview-table th:nth-child(1),
+.student-page .student-import-preview-table td:nth-child(1) {
+    width: 64px;
+}
+
+.student-page .student-import-preview-table th:nth-child(2),
+.student-page .student-import-preview-table td:nth-child(2) {
+    width: 82px;
+}
+
+.student-page .student-import-preview-table th:nth-child(3),
+.student-page .student-import-preview-table td:nth-child(3) {
+    width: 105px;
+    max-width: 105px;
+    white-space: nowrap;
+}
+
+.student-page .student-import-preview-table th:nth-child(5),
+.student-page .student-import-preview-table td:nth-child(5) {
+    width: 115px;
+}
+
+.student-page .student-import-preview-table th:nth-child(6),
+.student-page .student-import-preview-table td:nth-child(6) {
+    width: 92px;
+}
+
+.student-page .student-import-preview-table .spp-line-number,
+.student-page .student-import-preview-table .education-code,
+.student-import-class {
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+}
+
+.student-page .student-import-preview-table .spp-import-message {
+    display: block;
+}
+
+.student-page .student-import-preview-table .spp-import-message b {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .student-page .student-import-preview .student-import-toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .student-page .student-import-preview .student-import-search {
+        width: 100%;
+    }
+}
+
 @media print {
     .sidebar,
     .sidebar-overlay,
@@ -2532,6 +3450,140 @@ h3,
     .student-page .student-data-card {
         border: 0;
         box-shadow: none;
+    }
+}
+
+/* Filter pembayaran ringkas */
+.payment-flat-page .payment-filter-panel.payment-filter-compact {
+    width: 100%;
+    padding: 20px 0 2px;
+    display: block;
+}
+
+.payment-flat-page .payment-filter-primary {
+    display: grid;
+    grid-template-columns: minmax(420px, 1.5fr) minmax(210px, .75fr) minmax(180px, .65fr);
+    align-items: end;
+    gap: 14px 18px;
+}
+
+.payment-flat-page .payment-filter-compact .payment-filter-primary > label,
+.payment-flat-page .payment-filter-compact .payment-filter-secondary > label {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 7px;
+}
+
+.payment-flat-page .payment-filter-compact label > span:first-child {
+    color: #334155;
+    font-size: 12px;
+    font-weight: 600 !important;
+}
+
+.payment-flat-page .payment-filter-compact .payment-date-range,
+.payment-flat-page .payment-filter-compact .payment-student-filter {
+    width: 100%;
+}
+
+.payment-flat-page .payment-filter-compact .payment-student-field {
+    grid-column: 1 / 3;
+}
+
+.payment-flat-page .payment-filter-compact .payment-filter-actions {
+    grid-column: 3;
+    min-height: 38px;
+    padding: 0;
+    align-items: center;
+    align-self: end;
+}
+
+.payment-flat-page .payment-filter-compact .payment-filter-actions .student-search-button {
+    width: auto;
+    min-width: 112px;
+    gap: 8px;
+}
+
+.payment-flat-page .payment-advanced-filters {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #edf0f4;
+}
+
+.payment-flat-page .payment-advanced-filters summary {
+    width: max-content;
+    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #35611f;
+    background: #f4f8ee;
+    border: 1px solid #d7e4ca;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.payment-flat-page .payment-advanced-filters summary::-webkit-details-marker {
+    display: none;
+}
+
+.payment-flat-page .payment-advanced-filters summary::before {
+    content: '+';
+    font-size: 16px;
+    line-height: 1;
+}
+
+.payment-flat-page .payment-advanced-filters[open] summary::before {
+    content: '−';
+}
+
+.payment-flat-page .payment-filter-secondary {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+    gap: 14px 18px;
+}
+
+@media (max-width: 1050px) {
+    .payment-flat-page .payment-filter-primary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .payment-flat-page .payment-filter-compact .payment-student-field {
+        grid-column: 1;
+    }
+
+    .payment-flat-page .payment-filter-compact .payment-filter-actions {
+        grid-column: 2;
+    }
+
+    .payment-flat-page .payment-filter-secondary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .payment-flat-page .payment-filter-primary,
+    .payment-flat-page .payment-filter-secondary {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-flat-page .payment-filter-compact .payment-student-field,
+    .payment-flat-page .payment-filter-compact .payment-filter-actions {
+        grid-column: 1;
+    }
+
+    .payment-flat-page .payment-filter-compact .payment-filter-actions {
+        align-items: stretch;
+        flex-direction: row;
+    }
+
+    .payment-flat-page .payment-filter-compact .payment-filter-actions .button {
+        width: auto;
     }
 }
 
@@ -2778,6 +3830,7 @@ h3,
 
 /* Student table compact fit */
 .student-page .table-wrap:has(.student-flat-table) {
+    padding-inline: 10px;
     overflow-x: hidden;
 }
 
@@ -2807,17 +3860,17 @@ h3,
 
 .student-page .student-flat-table th:nth-child(4),
 .student-page .student-flat-table td:nth-child(4) {
-    width: 126px;
+    width: 104px;
 }
 
 .student-page .student-flat-table th:nth-child(5),
 .student-page .student-flat-table td:nth-child(5) {
-    width: 178px;
+    width: 92px;
 }
 
 .student-page .student-flat-table th:nth-child(6),
 .student-page .student-flat-table td:nth-child(6) {
-    width: 118px;
+    width: 108px;
     text-align: left;
 }
 
@@ -2829,7 +3882,16 @@ h3,
 
 .student-page .student-flat-table .list-sort-heading {
     min-width: 0;
+    align-items: flex-start;
     gap: 4px;
+    white-space: normal;
+}
+
+.student-page .student-flat-table .list-sort-label {
+    min-width: 0;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: normal;
 }
 
 .student-page .student-flat-table .list-sort-arrows {
@@ -2842,19 +3904,19 @@ h3,
 }
 
 .student-page .student-flat-table col.student-col-nis {
-    width: 76px;
+    width: 82px;
 }
 
 .student-page .student-flat-table col.student-col-gender {
-    width: 122px;
+    width: 104px;
 }
 
 .student-page .student-flat-table col.student-col-unit {
-    width: 220px;
+    width: 92px;
 }
 
 .student-page .student-flat-table col.student-col-class {
-    width: 126px;
+    width: 108px;
 }
 
 .student-page .student-flat-table col.student-col-actions {
@@ -2868,7 +3930,7 @@ h3,
 
 .student-page .student-flat-table th:nth-child(2),
 .student-page .student-flat-table td:nth-child(2) {
-    width: 76px;
+    width: 82px;
 }
 
 .student-page .student-flat-table .student-action-column,
@@ -2889,6 +3951,16 @@ h3,
 .student-page .student-flat-table .table-actions .icon {
     width: 13px;
     height: 13px;
+}
+
+@media (min-width: 761px) {
+    .student-page {
+        padding-inline: 30px;
+    }
+
+    .student-page .student-data-card {
+        padding-inline: 24px;
+    }
 }
 
 /* Modern student filter search button */
@@ -3896,5 +4968,2146 @@ h3,
 
     .report-flat-page .table-wrap {
         overflow-x: auto;
+    }
+}
+
+/* Fit Garden palette refresh */
+:root {
+    --blue: #2e5119;
+    --blue-dark: #17380f;
+    --blue-soft: #edf6e2;
+    --ink: #17210f;
+    --muted: #66725e;
+    --line: #dfe8d6;
+    --canvas: #f5f8ef;
+    --green: #6f913d;
+    --leaf: #9dbb59;
+    --sage: #a7b49d;
+    --cream: #f8fbf2;
+}
+
+body,
+.student-page,
+.payment-flat-page,
+.report-flat-page {
+    background: var(--canvas);
+}
+
+.sidebar,
+.topbar,
+.card,
+.metric-card,
+.student-workspace,
+.student-data-card,
+.student-page .student-workspace,
+.student-page .student-data-card,
+.payment-flat-page .payment-workspace,
+.payment-flat-page .payment-data-card,
+.report-flat-page .report-workspace,
+.report-flat-page .report-data-card {
+    border-color: var(--line);
+}
+
+.brand strong,
+.login-brand h1,
+.login-help strong {
+    color: var(--blue-dark);
+}
+
+.brand strong span,
+.login-brand h1 span,
+.dashboard-hero .eyebrow,
+.student-page .student-page-hero .eyebrow,
+.nova-student-list-head .eyebrow,
+.student-page .student-import-preview .spp-import-kicker {
+    color: var(--leaf);
+}
+
+.nav-item:hover,
+.master-nav .nav-parent:hover,
+.master-nav .nav-submenu a:hover,
+.nested-nav-button:hover,
+.icon-button:hover {
+    color: var(--blue);
+    background: #f0f7e8;
+}
+
+.nav-item.active,
+.master-nav .nav-parent.active,
+.nested-nav > .nav-parent.active,
+.button-primary,
+.student-page .student-search-button {
+    color: #fff;
+    background: linear-gradient(135deg, var(--blue), #6f913d);
+    border-color: var(--blue);
+    box-shadow: 0 8px 18px #2e511926;
+}
+
+.student-page .student-search-button:hover {
+    background: linear-gradient(135deg, #244714, var(--blue));
+    box-shadow: 0 12px 24px #2e511936;
+}
+
+.dashboard-hero,
+.bill-summary-hero {
+    background: linear-gradient(125deg, #183b10 0%, var(--blue) 58%, #6f913d 100%);
+    border-color: #274717;
+    box-shadow: 0 18px 40px #2e511926;
+}
+
+.dashboard-hero p:last-child {
+    color: #e2eccd;
+}
+
+.dashboard-action-primary {
+    color: var(--blue-dark);
+}
+
+.avatar,
+.topbar-avatar,
+.student-avatar,
+.outstanding-student-card .student-avatar,
+.student-page .student-import-preview .spp-preview-icon {
+    background: linear-gradient(145deg, #9dbb59, var(--blue));
+}
+
+.active-year-pill > span,
+.whatsapp-fab {
+    background: var(--leaf);
+}
+
+.action-purple,
+.action-orange,
+.action-green,
+.student-print-button,
+.student-download-button,
+.student-add-button,
+.student-page .student-action-bar .button:focus-visible,
+.student-page .student-action-bar .button:active,
+.student-page .student-action-bar .button.active {
+    color: #fff;
+    background: var(--blue);
+    border-color: var(--blue);
+}
+
+.student-page .student-action-bar .action-purple,
+.student-page .student-action-bar .action-orange,
+.student-page .student-action-bar .action-green,
+.student-add-button {
+    color: var(--blue);
+    background: #fff;
+    border-color: #cbd9bd;
+}
+
+.student-page .student-action-bar .button:hover,
+.settings-role-strip a:hover,
+.settings-role-strip a.active {
+    color: var(--blue);
+    background: #f4faef;
+    border-color: #adc68a;
+}
+
+.student-filter-panel input:focus,
+.student-filter-panel select:focus,
+.student-page .student-filter-panel select:focus,
+.spp-form-grid input:focus,
+.spp-form-grid select:focus,
+.list-toolbar select:focus,
+.list-toolbar input:focus,
+.master-form input:focus,
+.master-form select:focus,
+.bill-student-picker input[type="search"]:focus,
+.payment-flat-page .payment-filter-panel input:focus,
+.payment-flat-page .payment-filter-panel select:focus,
+.report-flat-page .report-filter-panel input:focus,
+.report-flat-page .report-filter-panel select:focus,
+.report-filter input:focus,
+.report-filter select:focus,
+.settings-fields input:focus,
+.settings-fields select:focus,
+.settings-fields textarea:focus,
+.settings-user-toolbar input:focus {
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 3px #9dbb5926;
+}
+
+.metric-icon.blue,
+.student-avatar,
+.student-management-placeholder-icon,
+.student-page .nova-student-table .code-badge,
+.education-code,
+.role-permission-summary,
+.settings-role-strip strong,
+.bill-row-detail summary,
+.payment-flat-page .spp-expand-button,
+.report-row-detail summary {
+    color: var(--blue);
+    background: var(--blue-soft);
+    border-color: #c9ddb4;
+}
+
+.metric-icon.indigo,
+.class-badge.amber,
+.compact-badge.neutral,
+.report-metrics .spp > span,
+.report-type.spp {
+    color: #5f7826;
+    background: #eef5dc;
+}
+
+.metric-icon.green,
+.status.success,
+.check-circle,
+.school-year span,
+.compact-badge.method,
+.compact-badge.success {
+    color: var(--green);
+    background: #edf7e3;
+}
+
+.bar-track,
+.progress,
+.report-bars {
+    background-color: #edf3e6;
+}
+
+.bar-track span,
+.report-bars b {
+    background: linear-gradient(180deg, var(--leaf), var(--blue));
+    box-shadow: 0 5px 12px #2e51191f;
+}
+
+.donut {
+    background: conic-gradient(var(--blue) calc(var(--progress) * 1%), #e4ecd9 0);
+}
+
+.blue-dot,
+.progress .blue,
+.progress .amber,
+.composition-row i.spp {
+    background: var(--leaf);
+}
+
+.class-badge.blue {
+    color: var(--blue);
+    background: var(--blue-soft);
+}
+
+.dashboard-unit-item .class-row b,
+.student-management-summary b,
+.payment-amount strong,
+.report-amount {
+    color: var(--green) !important;
+}
+
+.student-page .student-flat-table tbody tr:hover,
+.payment-flat-page .payment-flat-table tbody tr:nth-child(odd),
+.report-flat-table tbody tr:nth-child(odd),
+.bill-filter-total,
+.report-summary-strip,
+.payment-flat-page .payment-filter-panel select:disabled {
+    background: #f2f6ec;
+}
+
+.student-page .student-flat-table .list-sort-arrows a.active,
+.student-page .student-flat-table .list-sort-arrows a:hover,
+.student-page .student-flat-table .table-actions .icon-button {
+    color: var(--blue);
+}
+
+.login-body,
+.login-input,
+.search-box,
+.school-year,
+.segmented {
+    background: #f4f8ed;
+}
+
+.login-card {
+    border-color: #dce8cf;
+    box-shadow: 0 14px 32px #2e51190f;
+}
+
+.login-input:focus-within,
+.password-toggle:hover,
+.password-toggle.active {
+    color: var(--blue);
+    border-color: var(--leaf);
+    background: #f7fbf1;
+    box-shadow: 0 0 0 3px #9dbb5926;
+}
+
+.login-remember input,
+.role-permission-grid input {
+    accent-color: var(--blue);
+}
+
+.login-submit {
+    background: var(--blue);
+    box-shadow: 0 8px 18px #2e511929;
+}
+
+.login-submit:hover {
+    background: var(--blue-dark);
+    box-shadow: 0 13px 24px #2e511938;
+}
+
+.pagination-wrap nav [aria-current="page"] > span {
+    color: var(--blue) !important;
+    border-color: var(--leaf) !important;
+    box-shadow: inset 0 -2px var(--leaf);
+}
+
+.student-page .student-filter-toggle b,
+.student-status-dot {
+    color: var(--blue) !important;
+    background: #eef5dc;
+}
+
+.spp-preview-button,
+.bill-month-picker label input:checked + span {
+    color: #fff;
+    background: linear-gradient(135deg, var(--blue), var(--green));
+    border-color: var(--blue);
+    box-shadow: 0 8px 18px #2e511929;
+}
+
+.spp-preview-icon,
+.bill-type-tabs button > span,
+.bill-action-heading > span {
+    color: var(--blue);
+    background: var(--blue-soft);
+    border-color: #c9ddb4;
+}
+
+.other-mapping-form select:focus,
+.bill-form-grid input:focus,
+.bill-form-grid select:focus,
+.bill-filter-bar input:focus,
+.bill-filter-bar select:focus,
+.outstanding-filter input:focus,
+.outstanding-filter select:focus {
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 3px #9dbb5926;
+}
+
+.bill-guide {
+    background: #f3f8e9;
+    border-color: #d9e8c6;
+}
+
+.bill-guide > div > span,
+.bill-type-tabs button.active > span,
+.bill-period-note > span {
+    color: #fff;
+    background: var(--blue);
+}
+
+.bill-type-tabs button:hover,
+.bill-type-tabs button.active {
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 3px #9dbb591f;
+}
+
+.bill-type-tabs button.active {
+    background: #f4faef;
+}
+
+.bill-metrics .other::after,
+.outstanding-student-card::before {
+    background: linear-gradient(var(--blue), var(--leaf));
+}
+
+.bill-metrics .other strong {
+    color: var(--green);
+}
+
+.outstanding-student-card:hover {
+    border-color: #bfd69a;
+    box-shadow: 0 11px 28px #2e511914;
+}
+
+/* Modern student import preview */
+.student-page .student-import-preview {
+    margin: 0 0 22px;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+        radial-gradient(circle at 8% 0%, #ffffff 0 20%, transparent 42%),
+        linear-gradient(145deg, #f9fcf4 0%, #ffffff 48%, #f3f8ea 100%);
+    border: 1px solid #d8e7ca;
+    border-radius: 28px;
+    box-shadow: 0 24px 54px #2e511914, inset 0 1px #ffffff;
+}
+
+.student-page .student-import-preview::before {
+    width: 100%;
+    height: 5px;
+    inset: 0 0 auto;
+    background: linear-gradient(90deg, var(--blue), var(--leaf), #f0c55a);
+    border-radius: 0;
+}
+
+.student-page .student-import-preview .spp-preview-header {
+    padding: 24px 26px 18px;
+    align-items: center;
+    background:
+        radial-gradient(circle at 88% 16%, #dceec0 0, transparent 28%),
+        linear-gradient(135deg, #16380f 0%, #2e5119 52%, #6f913d 100%);
+    border: 0;
+}
+
+.student-page .student-import-preview .spp-preview-icon {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    color: #17380f;
+    background: #ffffff;
+    border: 1px solid #dbeabf;
+    border-radius: 18px;
+    box-shadow: 0 14px 28px #142b0b30;
+}
+
+.student-page .student-import-preview .spp-preview-icon .icon {
+    width: 24px;
+    height: 24px;
+}
+
+.student-page .student-import-preview .spp-import-kicker,
+.student-page .student-import-preview .spp-preview-title strong,
+.student-page .student-import-preview .spp-preview-title > div > span:last-child {
+    color: #fff;
+}
+
+.student-page .student-import-preview .spp-import-kicker {
+    margin-bottom: 5px;
+    color: #d9edc0;
+    font-size: 10px;
+    letter-spacing: .16em;
+}
+
+.student-page .student-import-preview .spp-preview-title strong {
+    margin: 0 0 5px;
+    font-size: 24px;
+    line-height: 1.08;
+}
+
+.student-page .student-import-preview .spp-preview-title > div > span:last-child {
+    max-width: 560px;
+    color: #e8f4dc;
+    font-size: 12px;
+}
+
+.student-import-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.student-import-health {
+    width: 82px;
+    height: 82px;
+    display: grid;
+    place-items: center;
+    position: relative;
+    color: #fff;
+    border-radius: 50%;
+    background: conic-gradient(#d7ef8f var(--student-import-progress), #ffffff26 0);
+    box-shadow: inset 0 0 0 1px #ffffff26;
+}
+
+.student-import-health::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    background: #244714;
+    border-radius: inherit;
+    box-shadow: inset 0 1px #ffffff1f;
+}
+
+.student-import-health span,
+.student-import-health small {
+    position: relative;
+    z-index: 1;
+    display: block;
+    line-height: 1;
+}
+
+.student-import-health span {
+    font-size: 18px;
+    font-weight: 850;
+}
+
+.student-import-health small {
+    margin-top: 4px;
+    color: #dcebc8;
+    font-size: 8px;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.student-page .student-import-preview .spp-confirm-button {
+    min-width: 210px;
+    min-height: 52px;
+    padding: 10px 16px;
+    color: #17380f;
+    background: #fff;
+    border: 1px solid #dcebc8;
+    border-radius: 16px;
+    box-shadow: 0 16px 30px #142b0b2d;
+}
+
+.student-page .student-import-preview .spp-confirm-button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 34px #142b0b38;
+}
+
+.student-page .student-import-preview .spp-confirm-button .icon {
+    color: var(--blue);
+}
+
+.student-page .student-import-preview .spp-confirm-button b {
+    color: #6f913d;
+    font-weight: 800;
+}
+
+.student-page .student-import-preview .spp-confirm-button:disabled {
+    color: #9aa59b;
+    background: #eef3e9;
+    border-color: #d8e2d0;
+    box-shadow: none;
+}
+
+.student-page .student-import-preview .spp-import-stats {
+    padding: 18px 24px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    background: transparent;
+}
+
+.student-page .student-import-preview .spp-import-stats > div {
+    min-height: 92px;
+    padding: 16px;
+    justify-content: flex-start;
+    text-align: left;
+    background: #ffffffd9;
+    border: 1px solid #e0ead5;
+    border-radius: 18px;
+    box-shadow: 0 12px 28px #2e51190d;
+    backdrop-filter: blur(8px);
+}
+
+.student-page .student-import-preview .spp-import-stats > div::after {
+    display: block !important;
+    width: 100%;
+    height: 4px;
+    inset: auto 0 0;
+    border-radius: 0 0 18px 18px;
+}
+
+.student-page .student-import-preview .spp-stat-icon {
+    width: 42px;
+    height: 42px;
+    display: grid !important;
+    border-radius: 14px;
+    font-size: 16px !important;
+}
+
+.student-page .student-import-preview .spp-import-stats p small {
+    display: block !important;
+}
+
+.student-page .student-import-preview .spp-import-stats p span {
+    color: #6b7767;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.student-page .student-import-preview .spp-import-stats p strong {
+    margin: 5px 0 3px;
+    color: #17380f;
+    font-size: 28px;
+}
+
+.student-page .student-import-preview .spp-import-stats p small {
+    color: #87937e;
+    font-size: 10px;
+}
+
+.student-page .student-import-preview .spp-validation-bar {
+    height: 8px;
+    display: block;
+    margin: 0 24px 18px;
+    overflow: hidden;
+    background: #edf3e8;
+    border-radius: 999px;
+}
+
+.student-page .student-import-preview .spp-validation-bar span {
+    width: var(--student-import-progress);
+    background: linear-gradient(90deg, var(--leaf), var(--green), var(--blue));
+    border-radius: inherit;
+}
+
+.student-page .student-import-preview .student-import-table-heading {
+    margin-inline: 24px;
+    padding: 16px 0 12px;
+    border-top: 1px solid #e4ecdb;
+}
+
+.student-page .student-import-preview .student-import-table-heading strong {
+    color: #17380f;
+    font-size: 15px;
+}
+
+.student-page .student-import-preview .student-import-table-heading div > span {
+    color: #71806a;
+    font-size: 11px;
+}
+
+.student-page .student-import-preview .student-import-failed-count,
+.student-page .student-import-preview .spp-preview-count {
+    padding: 7px 11px;
+    border-radius: 999px;
+    font-size: 10px !important;
+}
+
+.student-page .student-import-preview .student-import-failed-count {
+    color: #9e2229;
+    background: #fff0f1;
+    border: 1px solid #ffd6d9;
+}
+
+.student-page .student-import-preview .spp-preview-count {
+    color: #2e5119;
+    background: #eef7df;
+    border: 1px solid #d4e6bd;
+}
+
+.student-page .student-import-preview .student-import-toolbar {
+    margin: 0 24px 16px;
+    padding: 10px;
+    grid-template-columns: auto minmax(300px, 1fr) minmax(280px, .75fr);
+    gap: 10px;
+    background: #ffffffcc;
+    border: 1px solid #dfe9d4;
+    border-radius: 18px;
+    box-shadow: 0 10px 24px #2e51190b;
+}
+
+.student-page .student-import-preview .student-import-show {
+    padding: 0 4px;
+    color: #5d6b56;
+    font-size: 11px;
+}
+
+.student-page .student-import-preview .student-import-show select,
+.student-page .student-import-preview .student-import-search {
+    height: 42px;
+    background: #f9fcf5;
+    border-color: #d8e6ca;
+    border-radius: 13px;
+}
+
+.student-page .student-import-preview .student-import-show select:focus,
+.student-page .student-import-preview .student-import-search:focus-within {
+    border-color: var(--leaf);
+    box-shadow: 0 0 0 4px #9dbb5924;
+}
+
+.student-page .student-import-preview .student-import-status-filter {
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.student-page .student-import-preview .student-import-status-filter button {
+    min-height: 38px;
+    padding: 0 12px;
+    color: #516148;
+    background: #f7fbf1;
+    border-color: #d8e6ca;
+    border-radius: 999px;
+    font-size: 10px;
+}
+
+.student-page .student-import-preview .student-import-status-filter button b {
+    min-width: 24px;
+    color: #2e5119;
+    background: #e7f2d5;
+}
+
+.student-page .student-import-preview .student-import-status-filter button:hover,
+.student-page .student-import-preview .student-import-status-filter button.active {
+    color: #fff;
+    background: linear-gradient(135deg, var(--blue), var(--green));
+    border-color: var(--blue);
+    box-shadow: 0 10px 20px #2e511926;
+}
+
+.student-page .student-import-preview .student-import-status-filter button.active b {
+    color: var(--blue);
+    background: #fff;
+}
+
+.student-page .student-import-preview .student-import-search {
+    padding-inline: 13px;
+}
+
+.student-page .student-import-preview .student-import-search .icon {
+    color: var(--green);
+}
+
+.student-page .student-import-preview .student-import-search input {
+    color: #24361f;
+    font-size: 12px;
+}
+
+.student-page .student-import-preview .spp-import-table-wrap {
+    margin: 0 24px;
+    overflow: auto;
+    border: 1px solid #dfe8d6;
+    border-radius: 18px;
+    box-shadow: 0 12px 24px #2e51190a;
+}
+
+.student-page .student-import-preview-table {
+    min-width: 1120px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.student-page .student-import-preview-table th {
+    padding: 14px 14px;
+    color: #52624c;
+    background: #f2f7eb;
+    border-color: #dfe8d6;
+    font-size: 10px;
+    letter-spacing: .08em;
+}
+
+.student-page .student-import-preview-table td {
+    padding: 15px 14px;
+    color: #34402f;
+    background: #fff;
+    border-color: #edf2e9;
+    font-size: 12px;
+}
+
+.student-page .student-import-preview-table tbody tr:hover td {
+    background: #fbfdf8;
+}
+
+.student-page .student-import-preview-table .spp-line-number,
+.student-page .student-import-preview-table .education-code,
+.student-import-class {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-weight: 800;
+}
+
+.student-page .student-import-preview-table .spp-line-number {
+    color: #6b775f;
+    background: #f1f5ed;
+}
+
+.student-page .student-import-preview-table .education-code {
+    color: #1e6a37;
+    background: #e4f4e8;
+}
+
+.student-import-class {
+    color: #7a5513;
+    background: #fff5dc;
+}
+
+.student-page .student-import-preview-table .spp-import-nis {
+    color: var(--blue);
+    font-variant-numeric: tabular-nums;
+}
+
+.student-page .student-import-preview-table .spp-import-message {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #5c6856;
+}
+
+.student-page .student-import-preview-table .spp-import-message b {
+    padding: 4px 7px;
+    color: #355121;
+    background: #edf6e2;
+    border-radius: 999px;
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+.student-page .student-import-preview-table .spp-import-row.gagal .spp-import-message b {
+    color: #9e2229;
+    background: #fff0f1;
+}
+
+.student-page .student-import-preview-table .spp-import-row.duplikat .spp-import-message b {
+    color: #8a5a05;
+    background: #fff4d7;
+}
+
+.student-page .student-import-preview .student-import-footer {
+    margin: 0 24px 24px;
+    min-height: 46px;
+    padding: 10px 14px;
+    color: #66735f;
+    background: #f8fbf3;
+    border: 1px solid #dfe8d6;
+    border-top: 0;
+    border-radius: 0 0 18px 18px;
+    font-size: 11px;
+}
+
+.student-page .student-import-preview .student-import-footer button {
+    padding: 8px 12px;
+    color: #fff;
+    background: var(--blue);
+    border-radius: 999px;
+}
+
+@media (max-width: 1100px) {
+    .student-page .student-import-preview .spp-preview-header,
+    .student-import-hero-actions {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .student-page .student-import-preview .student-import-toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .student-page .student-import-preview .student-import-status-filter {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 720px) {
+    .student-page .student-import-preview {
+        border-radius: 22px;
+    }
+
+    .student-page .student-import-preview .spp-preview-header {
+        padding: 22px 18px 16px;
+    }
+
+    .student-page .student-import-preview .spp-preview-title {
+        align-items: flex-start;
+    }
+
+    .student-page .student-import-preview .spp-preview-title strong {
+        font-size: 20px;
+    }
+
+    .student-import-hero-actions,
+    .student-page .student-import-preview .spp-confirm-button {
+        width: 100%;
+    }
+
+    .student-import-health {
+        width: 74px;
+        height: 74px;
+    }
+
+    .student-page .student-import-preview .spp-import-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding: 14px;
+    }
+
+    .student-page .student-import-preview .student-import-table-heading,
+    .student-page .student-import-preview .student-import-toolbar,
+    .student-page .student-import-preview .spp-import-table-wrap,
+    .student-page .student-import-preview .student-import-footer,
+    .student-page .student-import-preview .spp-validation-bar {
+        margin-inline: 14px;
+    }
+}
+
+/* Simple student import preview, aligned with the Data Siswa table */
+.student-page .student-import-preview {
+    margin-bottom: 18px;
+    overflow: hidden;
+    isolation: auto;
+    background: #fff;
+    border: 0;
+    border-radius: 24px;
+    box-shadow: 0 8px 28px #1720330a;
+}
+
+.student-page .student-import-preview::before,
+.student-page .student-import-preview .student-import-health,
+.student-page .student-import-preview .spp-validation-bar {
+    display: none !important;
+}
+
+.student-page .student-import-preview .spp-preview-header {
+    padding: 17px 20px 14px;
+    align-items: center;
+    background: #fff;
+    border-bottom: 1px solid #e6ebe8;
+}
+
+.student-page .student-import-preview .spp-preview-icon {
+    display: none;
+}
+
+.student-page .student-import-preview .spp-import-kicker {
+    margin: 0 0 3px;
+    color: var(--leaf);
+    font-size: 8px;
+    letter-spacing: .12em;
+}
+
+.student-page .student-import-preview .spp-preview-title strong {
+    margin: 0;
+    color: #191c1e;
+    font-size: 17px;
+    line-height: 1.2;
+}
+
+.student-page .student-import-preview .spp-preview-title > div > span:last-child {
+    margin-top: 3px;
+    max-width: none;
+    color: #748079;
+    font-size: 9px;
+}
+
+.student-page .student-import-preview .student-import-hero-actions {
+    display: block;
+}
+
+.student-page .student-import-preview .spp-confirm-button {
+    min-width: 172px;
+    min-height: 38px;
+    padding: 7px 12px;
+    color: #fff;
+    background: var(--blue);
+    border: 0;
+    border-radius: 10px;
+    box-shadow: none;
+}
+
+.student-page .student-import-preview .spp-confirm-button .icon {
+    width: 16px;
+    height: 16px;
+    color: #fff;
+}
+
+.student-page .student-import-preview .spp-confirm-button b {
+    color: #eaf4d8;
+}
+
+.student-page .student-import-preview .spp-import-stats {
+    padding: 12px 20px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    background: #fff;
+}
+
+.student-page .student-import-preview .spp-import-stats > div {
+    min-height: 58px;
+    padding: 9px 12px;
+    justify-content: center;
+    text-align: center;
+    background: #f2f4f3;
+    border: 0;
+    border-radius: 10px;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+.student-page .student-import-preview .spp-import-stats > div::after,
+.student-page .student-import-preview .spp-stat-icon,
+.student-page .student-import-preview .spp-import-stats p small {
+    display: none !important;
+}
+
+.student-page .student-import-preview .spp-import-stats .valid {
+    background: #e2f2e8;
+}
+
+.student-page .student-import-preview .spp-import-stats .duplicate {
+    background: #fff6d9;
+}
+
+.student-page .student-import-preview .spp-import-stats .failed {
+    background: #fbe4e4;
+}
+
+.student-page .student-import-preview .spp-import-stats p span {
+    color: #53605a;
+    font-size: 8px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.student-page .student-import-preview .spp-import-stats p strong {
+    margin: 3px 0 0;
+    color: #191c1e;
+    font-size: 16px;
+}
+
+.student-page .student-import-preview .student-import-table-heading {
+    margin: 0 20px;
+    padding: 12px 4px 10px;
+    border-top: 1px solid #e6ebe8;
+}
+
+.student-page .student-import-preview .student-import-table-heading strong {
+    color: #191c1e;
+    font-size: 13px;
+}
+
+.student-page .student-import-preview .student-import-table-heading div > span {
+    color: #748079;
+    font-size: 9px;
+}
+
+.student-page .student-import-preview .student-import-failed-count,
+.student-page .student-import-preview .spp-preview-count {
+    padding: 5px 8px;
+    border: 0;
+    border-radius: 20px;
+    font-size: 8px !important;
+}
+
+.student-page .student-import-preview .student-import-toolbar {
+    margin: 0 20px 10px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: auto 1fr minmax(240px, .7fr);
+    align-items: center;
+    gap: 8px;
+    background: #f7f9fc;
+    border: 1px solid #e3e9f1;
+    border-radius: 10px;
+    box-shadow: none;
+}
+
+.student-page .student-import-preview .student-import-show {
+    padding: 0;
+    color: #687588;
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.student-page .student-import-preview .student-import-show select {
+    width: 66px;
+    height: 32px;
+    padding: 0 8px;
+    color: #344054;
+    background: #fff;
+    border: 1px solid #dce3ed;
+    border-radius: 7px;
+}
+
+.student-page .student-import-preview .student-import-status-filter {
+    justify-content: flex-start;
+    gap: 5px;
+}
+
+.student-page .student-import-preview .student-import-status-filter button {
+    min-height: 32px;
+    padding: 0 8px;
+    color: #66758a;
+    background: #fff;
+    border: 1px solid #dfe5ed;
+    border-radius: 7px;
+    font-size: 8px;
+    box-shadow: none;
+}
+
+.student-page .student-import-preview .student-import-status-filter button b {
+    min-width: 19px;
+    padding: 2px 5px;
+    color: #7a8799;
+    background: #eef2f6;
+    border-radius: 12px;
+}
+
+.student-page .student-import-preview .student-import-status-filter button:hover,
+.student-page .student-import-preview .student-import-status-filter button.active {
+    color: #fff;
+    background: var(--blue);
+    border-color: var(--blue);
+    box-shadow: none;
+}
+
+.student-page .student-import-preview .student-import-status-filter button.active b {
+    color: var(--blue);
+    background: #fff;
+}
+
+.student-page .student-import-preview .student-import-search {
+    height: 34px;
+    padding: 0 10px;
+    background: #fff;
+    border: 1px solid #dce3ed;
+    border-radius: 8px;
+}
+
+.student-page .student-import-preview .student-import-search input {
+    color: #344054;
+    font-size: 10px;
+}
+
+.student-page .student-import-preview .student-import-search .icon {
+    width: 15px;
+    height: 15px;
+    color: #8592a5;
+}
+
+.student-page .student-import-preview .spp-import-table-wrap {
+    margin: 0 20px;
+    max-height: 610px;
+    overflow: auto;
+    border: 1px solid #e3e8e5;
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+.student-page .student-import-preview-table th {
+    padding: 11px 12px;
+    color: #5d6862;
+    background: #f2f4f3;
+    border-color: #e2e7e4;
+    font-size: 9px;
+}
+
+.student-page .student-import-preview-table td {
+    padding: 12px;
+    color: #4d596c;
+    background: #fff;
+    border-color: #e0e5e2;
+    font-size: 11px;
+}
+
+.student-page .student-import-preview-table tbody tr:hover td {
+    background: #f7faf8;
+}
+
+.student-page .student-import-preview-table .spp-line-number,
+.student-page .student-import-preview-table .education-code,
+.student-import-class {
+    min-height: 0;
+    padding: 4px 7px;
+    border-radius: 6px;
+    font-size: 10px;
+}
+
+.student-page .student-import-preview .student-import-footer {
+    margin: 0 20px 8px;
+    min-height: 38px;
+    padding: 7px 10px;
+    color: #728096;
+    background: #f8fafc;
+    border: 0;
+    border-radius: 0 0 12px 12px;
+    font-size: 9px;
+}
+
+.student-page .student-import-preview .student-import-footer button {
+    padding: 5px 9px;
+    color: var(--blue);
+    background: #e8f5ed;
+    border-radius: 7px;
+}
+
+@media (max-width: 900px) {
+    .student-page .student-import-preview .spp-preview-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .student-page .student-import-preview .student-import-toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .student-page .student-import-preview .spp-import-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* FINAL: import preview canvas must be square like Data Siswa table */
+.student-page .student-import-datatable-preview,
+.student-page .card.student-import-datatable-preview,
+.student-page .student-import-datatable-preview.card {
+    border-radius: 0 !important;
+}
+
+.student-page .student-import-datatable-preview *,
+.student-page .student-import-datatable-preview .student-import-toolbar,
+.student-page .student-import-datatable-preview .student-import-show select,
+.student-page .student-import-datatable-preview .student-import-search,
+.student-page .student-import-datatable-preview .student-import-search input,
+.student-page .student-import-datatable-preview .student-import-confirm,
+.student-page .student-import-datatable-preview .spp-import-table-wrap,
+.student-page .student-import-datatable-preview .student-import-preview-table,
+.student-page .student-import-datatable-preview .student-import-preview-table th,
+.student-page .student-import-datatable-preview .student-import-preview-table td {
+    border-radius: 0 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-action-bar {
+    margin: 0 0 24px;
+    padding: 0 0 24px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    border-bottom: 1px solid #d8dee8;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button,
+.student-page .student-import-datatable-preview .student-import-confirm {
+    min-width: 128px;
+    min-height: 56px;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 0 !important;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button {
+    color: #3b4b63;
+    background: #fff;
+    border: 1px solid #d8e0eb;
+    cursor: default;
+    user-select: none;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button.valid {
+    color: #245e36;
+    border-color: #b9d6bf;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button.duplicate {
+    color: #7a5513;
+    border-color: #ead8a6;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button.failed {
+    color: #9e2229;
+    border-color: #efc2c6;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button b {
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.student-page .student-import-datatable-preview .student-import-action-bar form {
+    margin: 0;
+}
+
+.student-page .student-import-datatable-preview .student-import-confirm {
+    color: #fff;
+    background: var(--blue);
+    border: 1px solid var(--blue);
+    box-shadow: none;
+    cursor: pointer;
+}
+
+.student-page .student-import-datatable-preview .student-import-confirm:disabled {
+    color: #8b96a7;
+    background: #eef1f5;
+    border-color: #d8e0eb;
+    cursor: not-allowed;
+}
+
+/* FINAL: preview import header/action bar should match Data Siswa */
+.student-page .student-import-datatable-preview {
+    padding: 30px 26px 34px !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-head {
+    padding: 0 0 36px;
+    border-bottom: 1px solid #d8dee8;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-head h2 {
+    margin: 0;
+    color: #001328;
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.student-page .student-import-datatable-preview .student-import-action-bar {
+    margin: 30px 0 26px;
+    padding: 0;
+    border-bottom: 0;
+    gap: 14px;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button,
+.student-page .student-import-datatable-preview .student-import-confirm {
+    min-width: 150px;
+    min-height: 56px;
+    padding: 0 18px;
+    border-radius: 9px !important;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button {
+    color: #35415a;
+    background: #fff;
+    border: 1px solid #dbe4f0;
+    box-shadow: 0 1px 2px #17203308;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button.valid,
+.student-page .student-import-datatable-preview .student-import-count-button.duplicate,
+.student-page .student-import-datatable-preview .student-import-count-button.failed {
+    background: #fff;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button.valid {
+    color: #1f5a34;
+    border-color: #bfd9bd;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button.duplicate {
+    color: #73520f;
+    border-color: #eadcae;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button.failed {
+    color: #9b2930;
+    border-color: #efc8cc;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button b {
+    font-size: 17px;
+    line-height: 1;
+}
+
+.student-page .student-import-datatable-preview .student-import-confirm {
+    color: #fff;
+    background: #2e5119;
+    border-color: #2e5119;
+    box-shadow: 0 10px 18px #2e51191f;
+}
+
+.student-page .student-import-datatable-preview .student-import-confirm:hover:not(:disabled) {
+    background: #244714;
+    border-color: #244714;
+}
+
+/* FINAL: make preview import Show/Search toolbar match Data Siswa table */
+.student-page .student-import-datatable-preview .student-import-toolbar {
+    margin: 0 0 24px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 18px !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-show {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    color: #42526a !important;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    line-height: 1 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-show select {
+    width: 86px !important;
+    height: 48px !important;
+    padding: 0 14px !important;
+    color: #001328 !important;
+    background: #fff !important;
+    border: 1px solid #cfd8e6 !important;
+    border-radius: 0 !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    outline: none !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-toolbar-right {
+    margin-left: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-search {
+    width: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    color: #42526a !important;
+    background: transparent !important;
+    border: 0 !important;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-search input {
+    width: 276px !important;
+    height: 54px !important;
+    padding: 0 12px !important;
+    color: #001328 !important;
+    background: #fff !important;
+    border: 1px solid #cfd8e6 !important;
+    border-radius: 0 !important;
+    font-size: 15px !important;
+    outline: none !important;
+}
+
+/* FINAL: table preview must visually match Data Siswa table */
+.student-page .student-import-datatable-preview .spp-import-row::before,
+.student-page .student-import-datatable-preview .spp-import-row::after,
+.student-page .student-import-datatable-preview .student-import-preview-table tbody tr::before,
+.student-page .student-import-datatable-preview .student-import-preview-table tbody tr::after {
+    display: none !important;
+    content: none !important;
+}
+
+.student-page .student-import-datatable-preview .spp-import-table-wrap {
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th,
+.student-page .student-import-datatable-preview .student-import-preview-table td {
+    height: auto !important;
+    padding: 14px 12px !important;
+    color: #001328 !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+    white-space: normal !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th {
+    background: #fff !important;
+    font-weight: 700 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table tbody td {
+    background: #f4f6f8 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(1),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(1) {
+    width: 66px !important;
+    text-align: left !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(2),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(2) {
+    width: 115px !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(3),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(3) {
+    width: 30% !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(4),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(4) {
+    width: 24% !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(5),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(5) {
+    width: 190px !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th:nth-child(6),
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(6) {
+    width: 95px !important;
+    text-align: left !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(3) strong,
+.student-page .student-import-datatable-preview .student-import-preview-table td:nth-child(5) {
+    display: block !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table .spp-import-nis {
+    color: #001328 !important;
+    font-weight: 400 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table .status {
+    padding: 0 !important;
+    color: #001328 !important;
+    background: transparent !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+/* FINAL: match Data Siswa action buttons and remove import row status stripe */
+.student-page .student-import-datatable-preview .spp-import-row,
+.student-page .student-import-datatable-preview .spp-import-row.valid,
+.student-page .student-import-datatable-preview .spp-import-row.gagal,
+.student-page .student-import-datatable-preview .spp-import-row.duplikat {
+    border-left: 0 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button,
+.student-page .student-import-datatable-preview .student-import-confirm {
+    min-width: 150px !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    padding: 0 16px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 5px 14px #1720330c !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button b {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-count-button {
+    color: #35415a !important;
+    background: #fff !important;
+    border: 1px solid #dbe4f0 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-confirm {
+    color: #fff !important;
+    background: #2e5119 !important;
+    border: 1px solid #2e5119 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-action-bar {
+    gap: 10px !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th {
+    color: #001328 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table td {
+    color: #001328 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table td strong {
+    color: #001328 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+/* FINAL: typography and spacing aligned to Data Siswa table */
+.student-page .student-import-datatable-preview {
+    padding: 30px !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-toolbar {
+    margin: 0 0 26px !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-show,
+.student-page .student-import-datatable-preview .student-import-search {
+    color: #42526a !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-show select {
+    width: 86px !important;
+    height: 48px !important;
+    font-size: 14px !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-search input {
+    width: 276px !important;
+    height: 54px !important;
+    font-size: 14px !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table th {
+    padding: 13px 10px !important;
+    color: #001328 !important;
+    background: #fff !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table td {
+    padding: 13px 10px !important;
+    color: #4d596c !important;
+    background: #f4f6f8 !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table td strong,
+.student-page .student-import-datatable-preview .student-import-preview-table .spp-import-nis,
+.student-page .student-import-datatable-preview .student-import-preview-table .education-code,
+.student-page .student-import-datatable-preview .student-import-preview-table .student-import-class,
+.student-page .student-import-datatable-preview .student-import-preview-table .status {
+    color: inherit !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+}
+
+.student-page .student-import-datatable-preview .student-import-preview-table .list-sort-arrows {
+    color: #a5adb9 !important;
+    font-size: 11px !important;
+}
+
+/* FINAL: use exact Data Siswa toolbar sizing for import preview */
+.student-page .student-import-datatable-preview .student-table-toolbar.student-import-toolbar {
+    min-height: 68px !important;
+    margin: 0 0 26px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.student-page .student-import-datatable-preview .student-table-length,
+.student-page .student-import-datatable-preview .student-table-search label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    color: #5f6f89 !important;
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+    font-weight: 400 !important;
+}
+
+.student-page .student-import-datatable-preview .student-table-length select {
+    width: 86px !important;
+    height: 42px !important;
+    padding: 0 12px !important;
+    color: #111827 !important;
+    background: #fff !important;
+    border: 1px solid #d9e0ea !important;
+    border-radius: 0 !important;
+    font-size: 15px !important;
+}
+
+.student-page .student-import-datatable-preview .student-table-search input {
+    width: 184px !important;
+    height: 36px !important;
+    padding: 0 7px !important;
+    color: #111827 !important;
+    background: #fff !important;
+    border: 1px solid #d9e0ea !important;
+    border-radius: 0 !important;
+    outline: 0 !important;
+    font-size: 14px !important;
+}
+
+/* Simple student import modal */
+.student-import-modal-simple {
+    width: min(620px, calc(100vw - 28px)) !important;
+    min-height: 0 !important;
+    max-height: calc(100vh - 40px) !important;
+    padding: 24px !important;
+    gap: 18px !important;
+    border-radius: 14px !important;
+}
+
+.student-import-modal-simple .spp-import-modal-head {
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e3e9e5;
+}
+
+.student-import-modal-simple .spp-import-modal-head h2 {
+    margin: 0 0 5px !important;
+    color: #123324 !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    letter-spacing: -.02em !important;
+}
+
+.student-import-modal-simple .spp-import-modal-head p {
+    color: #6f7f74 !important;
+    font-size: 13px !important;
+}
+
+.student-import-modal-simple .spp-import-close {
+    width: 38px;
+    height: 38px;
+    color: #6b7b70;
+    background: #f4f7f5;
+    border: 1px solid #dfe8e2;
+    border-radius: 10px;
+    font-size: 24px;
+}
+
+.student-import-modal-simple .spp-import-modal-form {
+    display: grid !important;
+    grid-template-rows: auto auto !important;
+    gap: 16px !important;
+}
+
+.student-import-modal-simple .spp-import-dropzone {
+    min-height: 250px !important;
+    padding: 28px !important;
+    gap: 8px !important;
+    border: 2px dashed #cfdad3 !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+}
+
+.student-import-modal-simple .spp-import-drop-icon {
+    width: 58px;
+    height: 58px;
+    margin-bottom: 4px;
+    color: #b57914;
+    background: #fff1cf;
+    border-radius: 50%;
+}
+
+.student-import-modal-simple .spp-import-dropzone strong {
+    color: #33443a;
+    font-size: 15px !important;
+    font-weight: 600;
+}
+
+.student-import-modal-simple .spp-import-dropzone small {
+    color: #87948b;
+    font-size: 12px !important;
+}
+
+.student-import-modal-simple .spp-import-browse {
+    margin-top: 6px;
+    padding: 7px 14px;
+    color: #586760;
+    background: #edf2ef;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.student-import-modal-simple .spp-import-modal-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 98px !important;
+    gap: 12px !important;
+}
+
+.student-import-modal-simple .spp-import-modal-actions .button {
+    min-height: 48px !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+.student-import-modal-simple .spp-import-modal-actions .spp-preview-button {
+    background: #0b683a !important;
+    box-shadow: none !important;
+}
+.student-personal-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.student-personal-fields[hidden] {
+    display: none;
+}
+
+[data-existing-student-field][hidden] {
+    display: none !important;
+}
+
+/* FINAL: Data Siswa action buttons sit beside the title, aligned right */
+.student-page .student-flat-header .student-title-actions {
+    margin-left: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    flex-wrap: wrap !important;
+}
+
+.student-page .student-flat-header .student-title-actions .button {
+    min-width: 128px !important;
+    min-height: 42px !important;
+    height: 42px !important;
+    padding: 0 16px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #536176 !important;
+    background: #fff !important;
+    border: 1px solid #dfe5ef !important;
+    box-shadow: 0 2px 6px #17203308 !important;
+}
+
+.student-page .student-flat-header .student-title-actions .action-purple,
+.student-page .student-flat-header .student-title-actions .action-orange,
+.student-page .student-flat-header .student-title-actions .action-green {
+    color: var(--blue) !important;
+    background: #fff !important;
+    border-color: #cbd9bd !important;
+}
+
+.student-page .student-flat-header .student-title-actions .button:hover {
+    color: var(--blue) !important;
+    background: #f4faef !important;
+    border-color: #b8d5c5 !important;
+    transform: none !important;
+}
+
+.student-page .student-flat-header + .spp-import-modal-backdrop + .student-filter-panel {
+    margin-top: 24px !important;
+}
+
+/* FINAL: Data Master sub pages follow the simpler Data Siswa layout */
+.master-flat-page {
+    padding: 24px 30px 40px !important;
+}
+
+.master-flat-page .master-flat-workspace {
+    margin-bottom: 14px !important;
+    padding: 30px 42px 26px !important;
+}
+
+.master-flat-page .master-flat-workspace .student-flat-header {
+    min-height: 50px !important;
+    padding-bottom: 0 !important;
+    border-bottom: 0 !important;
+}
+
+.master-flat-page .master-flat-card {
+    margin-top: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.master-flat-page .list-toolbar,
+.master-flat-page .student-table-toolbar {
+    min-height: 74px !important;
+    padding: 16px 22px !important;
+    background: #fff !important;
+    border-bottom: 1px solid #dfe5ec !important;
+}
+
+.master-flat-page .list-toolbar form,
+.master-flat-page .table-search {
+    width: 100% !important;
+}
+
+.master-flat-page .list-toolbar input,
+.master-flat-page .list-toolbar select,
+.master-flat-page .table-search input,
+.master-flat-page .table-search select {
+    min-height: 42px !important;
+    border-radius: 8px !important;
+}
+
+.master-flat-page .table-wrap {
+    padding: 0 !important;
+}
+
+.master-flat-page .data-table {
+    width: 100% !important;
+    min-width: 760px !important;
+}
+
+.master-flat-page .data-table th {
+    height: 52px !important;
+    padding: 14px 16px !important;
+    color: #050b18 !important;
+    background: #fff !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+}
+
+.master-flat-page .data-table td {
+    padding: 15px 16px !important;
+    font-size: 13px !important;
+    vertical-align: middle !important;
+}
+
+.master-flat-page .data-table td:first-child,
+.master-flat-page .data-table th:first-child {
+    width: 72px !important;
+}
+
+.master-flat-page .pagination-wrap {
+    padding: 16px 22px !important;
+    border-top: 1px solid #e6ebf1 !important;
+}
+
+@media (max-width: 1100px) {
+    .student-page .student-flat-header {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+    }
+
+    .student-page .student-flat-header .student-title-actions {
+        width: 100% !important;
+        margin-left: 0 !important;
+        justify-content: flex-start !important;
+    }
+
+    .master-flat-page .master-flat-workspace {
+        padding: 24px 24px 22px !important;
+    }
+}
+
+@media (max-width: 700px) {
+    .master-flat-page {
+        padding: 18px 14px 32px !important;
+    }
+
+    .master-flat-page .master-flat-workspace {
+        padding: 20px 18px !important;
+    }
+}
+
+/* FINAL: transaction hub search stays inside the Data Siswa-style canvas */
+.payment-flat-page .payment-transaction-workspace {
+    padding: 30px 42px 26px !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: start !important;
+    gap: 18px 18px !important;
+}
+
+.payment-flat-page .payment-transaction-workspace .student-flat-header {
+    min-height: 46px !important;
+    border-bottom: 0 !important;
+}
+
+.payment-flat-page .payment-transaction-workspace .student-action-bar {
+    padding: 0 !important;
+    justify-content: flex-end !important;
+    border-bottom: 0 !important;
+}
+
+.payment-flat-page .payment-transaction-search {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 18px 0 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: end !important;
+    gap: 12px !important;
+    border-top: 1px solid #dfe5ec !important;
+}
+
+.payment-flat-page .payment-transaction-search label {
+    margin: 0 !important;
+    display: grid !important;
+    grid-template-columns: 140px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 18px !important;
+}
+
+.payment-flat-page .payment-transaction-search label > span {
+    padding: 0 !important;
+    color: #111827 !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+}
+
+.payment-flat-page .payment-transaction-search input[type="search"] {
+    width: 100% !important;
+    height: 46px !important;
+    border-radius: 8px !important;
+}
+
+.payment-flat-page .payment-transaction-search .student-filter-actions {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.payment-flat-page .payment-transaction-search .student-filter-actions .button {
+    height: 44px !important;
+    min-height: 44px !important;
+    border-radius: 8px !important;
+}
+
+.payment-flat-page .payment-transaction-search .student-search-button {
+    font-size: 15px !important;
+    font-weight: 800 !important;
+}
+
+.payment-flat-page .payment-transaction-search .student-search-button::after {
+    content: none !important;
+}
+
+.payment-flat-page .payment-transaction-card {
+    margin-top: 28px !important;
+}
+
+.payment-flat-page .student-data-card.payment-transaction-card {
+    margin-top: 28px !important;
+}
+
+.payment-flat-page .payment-transaction-results {
+    grid-column: 1 / -1 !important;
+    margin-top: 18px !important;
+    padding-top: 18px !important;
+    border-top: 1px solid #e5e9ef !important;
+}
+
+.payment-flat-page .payment-transaction-results .table-wrap {
+    width: 100% !important;
+    overflow-x: auto !important;
+}
+
+.payment-flat-page .payment-transaction-results .empty-state {
+    padding: 36px 20px 30px !important;
+    border: 1px dashed #dce3dd !important;
+    border-radius: 8px !important;
+    background: #fbfdf8 !important;
+}
+
+.payment-flat-page .payment-transaction-table {
+    min-width: 0 !important;
+    table-layout: fixed !important;
+}
+
+.payment-flat-page .payment-transaction-table th,
+.payment-flat-page .payment-transaction-table td {
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 12px 12px !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    vertical-align: middle !important;
+    overflow: visible !important;
+}
+
+.payment-flat-page .payment-transaction-table th {
+    padding-block: 13px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+}
+
+.payment-flat-page .payment-transaction-table th:first-child,
+.payment-flat-page .payment-transaction-table td:first-child {
+    width: 52px !important;
+}
+
+.payment-flat-page .payment-transaction-table th:nth-child(2),
+.payment-flat-page .payment-transaction-table td:nth-child(2) {
+    width: 88px !important;
+}
+
+.payment-flat-page .payment-transaction-table th:nth-child(3),
+.payment-flat-page .payment-transaction-table td:nth-child(3) {
+    width: 33% !important;
+}
+
+.payment-flat-page .payment-transaction-table th:nth-child(4),
+.payment-flat-page .payment-transaction-table td:nth-child(4) {
+    width: 135px !important;
+}
+
+.payment-flat-page .payment-transaction-table th:nth-child(5),
+.payment-flat-page .payment-transaction-table td:nth-child(5) {
+    width: 90px !important;
+}
+
+.payment-flat-page .payment-transaction-table th:nth-child(6),
+.payment-flat-page .payment-transaction-table td:nth-child(6) {
+    width: 150px !important;
+}
+
+.payment-flat-page .payment-student-name {
+    display: table-cell !important;
+    color: #0f2a4d !important;
+    font-size: 15px !important;
+    line-height: 1.35 !important;
+    font-weight: 500 !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+}
+
+.payment-flat-page .payment-transaction-table .education-code {
+    padding: 0 !important;
+    color: inherit !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    letter-spacing: 0 !important;
+}
+
+@media (max-width: 900px) {
+    .payment-flat-page .payment-transaction-workspace {
+        padding: 22px 20px !important;
+        grid-template-columns: 1fr !important;
+    }
+
+    .payment-flat-page .payment-transaction-workspace .student-action-bar {
+        justify-content: flex-start !important;
+    }
+
+    .payment-flat-page .payment-transaction-search,
+    .payment-flat-page .payment-transaction-search label {
+        grid-template-columns: 1fr !important;
+    }
+
+    .payment-flat-page .payment-transaction-search .student-filter-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .payment-flat-page .payment-transaction-search .student-filter-actions .button {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 700px) {
+    .student-personal-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .student-personal-fields .span-2 {
+        grid-column: span 1;
     }
 }

@@ -168,6 +168,7 @@ class MasterDataController extends Controller
             'studentYearId' => $studentYearId,
             'studentStatus' => $studentStatus,
             'studentOptions' => $this->studentOptions($tab, $showCreate),
+            'existingStudentOptions' => $this->existingStudentOptions($tab, $showCreate),
             'feeTypeOptions' => $this->feeTypeOptions($tab, $showCreate),
             'roleOptions' => Role::options(),
             'permissionOptions' => Role::PERMISSIONS,
@@ -300,14 +301,36 @@ class MasterDataController extends Controller
 
     public function storeStudent(Request $request): RedirectResponse
     {
-        Student::create($this->validateStudent($request));
+        $identityStudent = $request->filled('existing_student_id')
+            ? Student::findOrFail($request->integer('existing_student_id'))
+            : null;
+        $data = $this->validateStudent($request, null, $identityStudent);
+
+        if ($identityStudent) {
+            $identityStudent = $identityStudent->identityStudent ?: $identityStudent;
+            $data = array_merge($data, $identityStudent->only($this->studentPersonalFields()), [
+                'identity_student_id' => $identityStudent->id,
+            ]);
+        }
+
+        Student::create($data);
 
         return $this->done('students', 'Data siswa berhasil ditambahkan.');
     }
 
     public function updateStudent(Request $request, Student $student): RedirectResponse
     {
-        $student->update($this->validateStudent($request, $student));
+        $data = $this->validateStudent($request, $student);
+        $rootIdentityId = $student->identity_student_id ?: $student->id;
+
+        DB::transaction(function () use ($student, $data, $rootIdentityId) {
+            $student->update($data);
+
+            Student::where(fn ($query) => $query
+                ->whereKey($rootIdentityId)
+                ->orWhere('identity_student_id', $rootIdentityId))
+                ->update(collect($data)->only($this->studentPersonalFields())->all());
+        });
 
         return $this->done('students', 'Data siswa berhasil diperbarui.');
     }
@@ -359,6 +382,7 @@ class MasterDataController extends Controller
                 $student->schoolClass?->educationUnit?->code,
                 $student->schoolClass?->name,
                 $student->entry_date?->format('Y-m-d'),
+                $student->billing_start_date?->format('Y-m-d'),
                 $student->is_active ? 'Aktif' : 'Nonaktif',
                 $student->exit_date?->format('Y-m-d'),
                 $student->inactive_reason,
@@ -673,15 +697,16 @@ class MasterDataController extends Controller
         ]);
     }
 
-    private function validateStudent(Request $request, ?Student $student = null): array
+    private function validateStudent(Request $request, ?Student $student = null, ?Student $identityStudent = null): array
     {
-        $validated = $request->validate([
+        $newIdentity = ! $student && ! $identityStudent;
+        $rules = [
             'nis' => ['required', 'max:30'],
-            'nisn' => ['nullable', 'max:30', Rule::unique('students')->ignore($student)],
-            'name' => ['required', 'max:120'],
+            'nisn' => ['nullable', 'max:30'],
+            'name' => [$newIdentity || $student ? 'required' : 'nullable', 'max:120'],
             'birth_place' => ['nullable', 'max:120'],
             'birth_date' => ['nullable', 'date'],
-            'gender' => ['required', Rule::in(['L', 'P'])],
+            'gender' => [$newIdentity || $student ? 'required' : 'nullable', Rule::in(['L', 'P'])],
             'father_name' => ['nullable', 'max:120'],
             'mother_name' => ['nullable', 'max:120'],
             'father_whatsapp' => ['nullable', 'max:25'],
@@ -695,12 +720,31 @@ class MasterDataController extends Controller
             'school_class_id' => ['required', Rule::exists('school_classes', 'id')->where('education_unit_id', $request->education_unit_id)],
             'academic_year_id' => ['required', 'exists:academic_years,id'],
             'entry_date' => ['required', 'date'],
+            'billing_start_date' => ['nullable', 'date'],
             'exit_date' => ['nullable', Rule::requiredIf(fn () => ! $request->boolean('is_active')), 'date', 'after_or_equal:entry_date'],
             'inactive_reason' => ['nullable', Rule::requiredIf(fn () => ! $request->boolean('is_active')), 'max:255'],
             'guardian_name' => ['nullable', 'max:120'],
             'whatsapp' => ['nullable', 'max:25'],
             'is_active' => ['nullable', 'boolean'],
-        ]);
+        ];
+        if (! $student) {
+            $rules['existing_student_id'] = ['nullable', 'exists:students,id'];
+        }
+        $validated = $request->validate($rules);
+        if (! empty($validated['nisn'])) {
+            $nisnQuery = Student::where('nisn', $validated['nisn']);
+            if ($student) {
+                $rootIdentityId = $student->identity_student_id ?: $student->id;
+                $nisnQuery->where(fn ($query) => $query
+                    ->whereKeyNot($rootIdentityId)
+                    ->where(fn ($group) => $group
+                        ->whereNull('identity_student_id')
+                        ->orWhere('identity_student_id', '!=', $rootIdentityId)));
+            }
+            if ($nisnQuery->exists()) {
+                throw ValidationException::withMessages(['nisn' => 'NISN sudah digunakan siswa lain.']);
+            }
+        }
         $nisIsUsed = Student::where('nis', $validated['nis'])
             ->when($student, fn ($query) => $query->whereKeyNot($student->id))
             ->whereHas('schoolClass', fn ($query) => $query->where('education_unit_id', $validated['education_unit_id']))
@@ -710,7 +754,20 @@ class MasterDataController extends Controller
                 'nis' => 'NIS sudah digunakan pada unit pendidikan yang dipilih.',
             ]);
         }
-        unset($validated['education_unit_id']);
+        if ($identityStudent) {
+            $rootIdentityId = $identityStudent->identity_student_id ?: $identityStudent->id;
+            $alreadyInUnit = Student::where(fn ($query) => $query
+                ->whereKey($rootIdentityId)
+                ->orWhere('identity_student_id', $rootIdentityId))
+                ->whereHas('schoolClass', fn ($query) => $query->where('education_unit_id', $validated['education_unit_id']))
+                ->exists();
+            if ($alreadyInUnit) {
+                throw ValidationException::withMessages([
+                    'existing_student_id' => 'Siswa ini sudah terdaftar pada unit pendidikan yang dipilih.',
+                ]);
+            }
+        }
+        unset($validated['education_unit_id'], $validated['existing_student_id']);
         $validated['is_active'] = $request->boolean('is_active');
         if ($validated['is_active']) {
             $validated['exit_date'] = null;
@@ -722,7 +779,7 @@ class MasterDataController extends Controller
 
     private function studentImportHeaders(): array
     {
-        return ['No', 'NIS', 'NISN', 'Nama', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Kelamin', 'Nama Ayah', 'Nama Ibu', 'No. WA Ayah', 'No. WA Ibu', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Desa', 'Alamat', 'Unit Pendidikan', 'Kelas', 'Tanggal Masuk', 'Status', 'Tanggal Keluar', 'Alasan Nonaktif'];
+        return ['No', 'NIS', 'NISN', 'Nama', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Kelamin', 'Nama Ayah', 'Nama Ibu', 'No. WA Ayah', 'No. WA Ibu', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Desa', 'Alamat', 'Unit Pendidikan', 'Kelas', 'Tanggal Masuk', 'Mulai Tagihan Khusus', 'Status', 'Tanggal Keluar', 'Alasan Nonaktif'];
     }
 
     private function studentImportPreview(Request $request): ?array
@@ -773,6 +830,28 @@ class MasterDataController extends Controller
             ->get();
     }
 
+    private function existingStudentOptions(string $tab, bool $showCreate)
+    {
+        if (! $showCreate || $tab !== 'students') {
+            return collect();
+        }
+
+        return Student::select(['id', 'identity_student_id', 'nis', 'name', 'school_class_id'])
+            ->with('schoolClass.educationUnit:id,code')
+            ->whereNull('identity_student_id')
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function studentPersonalFields(): array
+    {
+        return [
+            'nisn', 'name', 'birth_place', 'birth_date', 'gender', 'father_name', 'mother_name',
+            'father_whatsapp', 'mother_whatsapp', 'province', 'city', 'district', 'village',
+            'address', 'guardian_name', 'whatsapp',
+        ];
+    }
+
     private function feeTypeOptions(string $tab, bool $showCreate)
     {
         if (! $showCreate || $tab !== 'fee-discounts') {
@@ -807,7 +886,7 @@ class MasterDataController extends Controller
 
     private function validateFeeType(Request $request, ?FeeType $feeType = null): array
     {
-        $allClasses = $request->input('school_class_id') === 'all';
+        $allClasses = $request->input('class_scope') === 'all' || $request->input('school_class_id') === 'all';
         $classIds = collect($request->input('school_class_ids', []))->filter()->map(fn ($id) => (int) $id)->values();
         if ($classIds->isEmpty() && ! $allClasses && $request->filled('school_class_id')) {
             $classIds = collect([(int) $request->input('school_class_id')]);
@@ -821,11 +900,22 @@ class MasterDataController extends Controller
             'school_class_id' => ['nullable'],
             'school_class_ids' => ['nullable', 'array'],
             'school_class_ids.*' => ['integer', Rule::exists('school_classes', 'id')->where('education_unit_id', $request->education_unit_id)],
+            'class_scope' => ['nullable', Rule::in(['all', 'selected'])],
             'amount' => ['required', 'integer', 'min:0'],
             'period' => ['nullable', Rule::in(['Bulanan', 'Tahunan', 'Sekali Bayar'])],
+            'creates_bill' => ['nullable', 'boolean'],
             'is_active' => ['nullable', 'boolean'],
         ]);
         $validated['payment_group'] ??= $feeType?->payment_group ?? 'lain-lain';
+
+        $fixedBehavior = [
+            'spp' => ['period' => 'Bulanan', 'creates_bill' => true],
+            'daftar-ulang' => ['period' => 'Sekali Bayar', 'creates_bill' => true],
+            'laundry' => ['period' => 'Bulanan', 'creates_bill' => false],
+        ][$validated['payment_group']] ?? null;
+        $validated['period'] = $fixedBehavior['period'] ?? ($validated['period'] ?? $feeType?->period ?? 'Sekali Bayar');
+        $validated['creates_bill'] = $fixedBehavior['creates_bill']
+            ?? ($request->has('creates_bill') ? $request->boolean('creates_bill') : ($feeType?->creates_bill ?? true));
 
         if ($validated['payment_group'] === 'spp' && $classIds->isEmpty()) {
             $allClasses = true;
@@ -890,9 +980,8 @@ class MasterDataController extends Controller
                 'school_class_id' => $classId,
                 'academic_year_id' => $validated['academic_year_id'] ?? $feeType?->academic_year_id,
                 'amount' => $validated['amount'],
-                'period' => $validated['payment_group'] === 'spp'
-                    ? 'Bulanan'
-                    : ($validated['period'] ?? $feeType?->period ?? 'Bulanan'),
+                'period' => $validated['period'],
+                'creates_bill' => $validated['creates_bill'],
                 'code' => $code,
                 'is_active' => $request->boolean('is_active'),
             ];

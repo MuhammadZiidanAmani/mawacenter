@@ -2,8 +2,14 @@
 
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\OtherPaymentController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SppPaymentController;
 use Illuminate\Support\Facades\Route;
+
+Route::prefix('keuangan/pembayaran')->name('finance.payments.')->controller(PaymentController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::get('/import', 'import')->name('import');
+});
 
 Route::prefix('keuangan/pembayaran/spp')->name('finance.spp.')->controller(SppPaymentController::class)->group(function () {
     Route::get('/', 'index')->name('index');

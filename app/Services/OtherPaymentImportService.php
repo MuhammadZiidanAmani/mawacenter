@@ -217,7 +217,7 @@ class OtherPaymentImportService
             $nis === '' => 'NIS kosong.',
             $name === '' => 'Nama siswa kosong.',
             $category === '' => 'Kategori pembayaran kosong.',
-            $unit === '' => 'Jenis pendidikan kosong.',
+            $unit === '' => 'Unit pendidikan kosong.',
             $nominal < 1 => 'Nominal harus lebih dari nol.',
             ! in_array($method, ['cash', 'transfer'], true) => 'Cara bayar harus cash atau transfer.',
             $transactionAt === null => 'Waktu transaksi tidak valid.',
@@ -274,7 +274,9 @@ class OtherPaymentImportService
         $header = strtolower(trim(preg_replace('/^\xEF\xBB\xBF/', '', $header)));
         $header = str_replace(['.', '/', ' '], ['', '_', '_'], $header);
 
-        return preg_replace('/_+/', '_', $header);
+        $header = preg_replace('/_+/', '_', $header);
+
+        return $header === 'unit_pendidikan' ? 'jenis_pendidikan' : $header;
     }
 
     private function normalizeDateTime(mixed $value): ?string

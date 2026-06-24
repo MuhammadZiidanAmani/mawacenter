@@ -1,6 +1,6 @@
 @php($sortDirection = request('sort') === $column ? request('direction', 'asc') : null)
 <span class="list-sort-heading">
-    {{ $label }}
+    <span class="list-sort-label">{{ $label }}</span>
     <span class="list-sort-arrows">
         <a href="{{ request()->url().'?'.http_build_query(array_merge(request()->except(['sort', 'direction', 'page']), ['sort' => $column, 'direction' => 'asc'])) }}"
            class="{{ $sortDirection === 'asc' ? 'active' : '' }}"
