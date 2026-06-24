@@ -16,6 +16,7 @@ use Illuminate\Validation\ValidationException;
 class BillService
 {
     private const DEFAULT_BILLING_START_DATE = '2025-01-01';
+
     private const JULY_INCLUDED_IN_REGISTRATION_UNITS = ['MTS', 'MA'];
 
     public function __construct(private ChargeCalculator $calculator) {}
@@ -190,13 +191,14 @@ class BillService
 
     public function syncOtherPayment(OtherPayment $payment): void
     {
-        $payment->loadMissing(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']);
+        $payment->loadMissing(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType.academicYear']);
         if (! $payment->feeType?->creates_bill || $payment->feeType?->payment_group === 'laundry') {
             return;
         }
 
         $date = CarbonImmutable::parse($payment->transaction_at);
-        [$bill] = $this->ensureFeeTypeBill($payment->student, $payment->student->academicYear, $payment->feeType, $date->year, $date->month);
+        $academicYear = $payment->feeType->academicYear ?? $payment->student->academicYear;
+        [$bill] = $this->ensureFeeTypeBill($payment->student, $academicYear, $payment->feeType, $date->year, $date->month);
         if ($payment->status === 'Diterima') {
             $bill->allocations()->updateOrCreate(
                 ['payment_type' => 'other', 'payment_id' => $payment->id],

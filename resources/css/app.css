@@ -506,13 +506,28 @@ main { width: min(1500px, 100%); margin: 0 auto; padding: 28px; }
     font-size: 14px;
     font-weight: 600;
 }
+.spp-summary-payment-row input.is-settled {
+    color: #2f6f33;
+    background: #eef8ef;
+    border-color: #acd2b1;
+    font-weight: 800;
+    cursor: not-allowed;
+}
 .spp-summary-payment-row input:focus {
     border-color: var(--blue);
     box-shadow: 0 0 0 4px #2e511914;
 }
 .spp-summary > .spp-summary-hidden { display: none !important; }
 .spp-quote-message { margin: 0; padding: 8px 24px 10px; color: var(--muted); font-size: 12px; }.spp-quote-message.error { color: var(--red); }
+.spp-quote-message.success { color: #2f6f33; font-weight: 700; }
 .spp-payment-form > .form-actions { padding: 0 24px 22px; }
+.spp-payment-form > .form-actions .button:disabled {
+    color: #5f7f61;
+    background: #eaf5eb;
+    border-color: #c7dec9;
+    box-shadow: none;
+    cursor: not-allowed;
+}
 .spp-history { margin-top: 20px; }
 .list-toolbar { padding: 18px; display: flex; align-items: center; justify-content: space-between; gap: 18px; background: white; border-bottom: 1px solid var(--line); }
 .list-toolbar label { display: flex; align-items: center; gap: 10px; color: #202020; font-size: 14px; }
@@ -6795,34 +6810,198 @@ body,
     margin-top: 24px !important;
 }
 
+/* FINAL: Data Siswa filter and table share one canvas */
+.student-page .student-list-filter-card {
+    margin-bottom: 0 !important;
+    padding-bottom: 30px !important;
+    border-bottom: 0 !important;
+    border-radius: 3px 3px 0 0 !important;
+    box-shadow: none !important;
+}
+
+.student-page .student-list-table-card {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: 1px solid #dfe5ec !important;
+    border-radius: 0 0 3px 3px !important;
+    box-shadow: none !important;
+}
+
+.student-page .student-list-table-card .student-table-toolbar {
+    min-height: 74px !important;
+}
+
+/* FINAL: Tambah Data Siswa uses one simple Data Siswa canvas */
+.student-create-page {
+    padding: 24px 30px 40px !important;
+}
+
+.student-create-page .student-create-canvas {
+    margin-bottom: 0 !important;
+    padding: 30px 42px 28px !important;
+    border-radius: 3px !important;
+    box-shadow: none !important;
+}
+
+.student-create-page .student-create-canvas .student-flat-header {
+    min-height: 50px !important;
+    padding-bottom: 20px !important;
+    border-bottom: 1px solid #dfe5ec !important;
+}
+
+.student-create-page .student-create-form {
+    min-height: 0 !important;
+    padding: 24px 0 0 !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px 20px !important;
+}
+
+.student-create-page .student-create-form label {
+    color: #3f4f63 !important;
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    font-weight: 500 !important;
+}
+
+.student-create-page .student-create-form input,
+.student-create-page .student-create-form select {
+    height: 42px !important;
+    min-height: 42px !important;
+    color: #000 !important;
+    background: #fff !important;
+    border-color: #d9e0ea !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+}
+
+.student-create-page .student-existing-choice {
+    padding: 0 0 2px !important;
+    border: 0 !important;
+    background: transparent !important;
+}
+
+.student-create-page .student-existing-choice strong {
+    color: #000 !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+}
+
+.student-create-page .student-existing-choice p {
+    margin: 4px 0 0 !important;
+    color: #647086 !important;
+    font-size: 13px !important;
+}
+
+.student-create-page .student-create-form .form-actions {
+    margin-top: 10px !important;
+    padding-top: 20px !important;
+    border-top: 1px solid #dfe5ec !important;
+}
+
+.student-create-page .student-whatsapp-copy {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+}
+
 /* FINAL: Data Master sub pages follow the simpler Data Siswa layout */
 .master-flat-page {
     padding: 24px 30px 40px !important;
 }
 
 .master-flat-page .master-flat-workspace {
-    margin-bottom: 14px !important;
-    padding: 30px 42px 26px !important;
+    margin-bottom: 0 !important;
+    padding: 18px 42px 8px !important;
+    border-bottom: 0 !important;
+    border-radius: 3px 3px 0 0 !important;
+    box-shadow: none !important;
 }
 
 .master-flat-page .master-flat-workspace .student-flat-header {
-    min-height: 50px !important;
+    min-height: 44px !important;
     padding-bottom: 0 !important;
     border-bottom: 0 !important;
 }
 
+.master-flat-page .master-filter-card,
+.master-flat-page .master-class-filter-card {
+    padding-bottom: 30px !important;
+}
+
+.master-flat-page .master-filter-card .student-flat-header,
+.master-flat-page .master-class-filter-card .student-flat-header {
+    padding-bottom: 18px !important;
+    border-bottom: 1px solid #dfe5ec !important;
+}
+
+.master-flat-page .master-filter-panel,
+.master-flat-page .master-class-filter-panel {
+    width: min(805px, 100%) !important;
+    margin-top: 24px !important;
+}
+
 .master-flat-page .master-flat-card {
     margin-top: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
+    padding: 0 20px 18px !important;
+    border-top: 1px solid #dfe5ec !important;
+    border-radius: 0 0 3px 3px !important;
+    box-shadow: none !important;
+    overflow: visible !important;
 }
 
 .master-flat-page .list-toolbar,
 .master-flat-page .student-table-toolbar {
-    min-height: 74px !important;
-    padding: 16px 22px !important;
+    min-height: 68px !important;
+    padding: 0 !important;
     background: #fff !important;
-    border-bottom: 1px solid #dfe5ec !important;
+    border-bottom: 0 !important;
+}
+
+.master-flat-page .list-toolbar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+}
+
+.master-flat-page .list-toolbar > label:first-of-type {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    color: #5f6f89 !important;
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+    font-weight: 400 !important;
+    white-space: nowrap !important;
+}
+
+.master-flat-page .list-toolbar > label:first-of-type select {
+    width: 86px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 0 12px !important;
+    border-color: #d9e0ea !important;
+    border-radius: 8px !important;
+    font-size: 15px !important;
+}
+
+.master-flat-page .list-toolbar > label:last-of-type {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    color: #5f6f89 !important;
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+    font-weight: 400 !important;
+    white-space: nowrap !important;
+}
+
+.master-flat-page .list-toolbar > label:last-of-type input {
+    width: 184px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 12px !important;
+    border-color: #d9e0ea !important;
+    border-radius: 0 !important;
+    font-size: 14px !important;
 }
 
 .master-flat-page .list-toolbar form,
@@ -6839,28 +7018,43 @@ body,
 }
 
 .master-flat-page .table-wrap {
-    padding: 0 !important;
+    padding: 0 10px !important;
 }
 
 .master-flat-page .data-table {
     width: 100% !important;
     min-width: 760px !important;
+    border-collapse: collapse !important;
 }
 
 .master-flat-page .data-table th {
-    height: 52px !important;
-    padding: 14px 16px !important;
-    color: #050b18 !important;
+    height: 36px !important;
+    padding: 7px 9px !important;
+    color: #000 !important;
     background: #fff !important;
+    border: 1px solid #e9edf2 !important;
     font-size: 13px !important;
-    font-weight: 800 !important;
+    line-height: 1.35 !important;
+    font-weight: 500 !important;
     text-transform: uppercase !important;
 }
 
 .master-flat-page .data-table td {
-    padding: 15px 16px !important;
+    height: 36px !important;
+    padding: 7px 9px !important;
+    color: #000 !important;
+    border: 1px solid #e9edf2 !important;
     font-size: 13px !important;
+    line-height: 1.35 !important;
     vertical-align: middle !important;
+}
+
+.master-flat-page .data-table tbody tr:nth-child(odd) {
+    background: #f3f5f7 !important;
+}
+
+.master-flat-page .data-table tbody tr:nth-child(even) {
+    background: #fff !important;
 }
 
 .master-flat-page .data-table td:first-child,
@@ -6886,7 +7080,29 @@ body,
     }
 
     .master-flat-page .master-flat-workspace {
+        padding: 18px 24px 8px !important;
+    }
+
+    .student-create-page .student-create-canvas {
         padding: 24px 24px 22px !important;
+    }
+}
+
+@media (max-width: 760px) {
+    .student-create-page {
+        padding: 16px !important;
+    }
+
+    .student-create-page .student-create-form {
+        grid-template-columns: 1fr !important;
+    }
+
+    .student-create-page .span-2 {
+        grid-column: span 1 !important;
+    }
+
+    .student-create-page .student-whatsapp-copy {
+        grid-template-columns: 1fr !important;
     }
 }
 
@@ -6896,7 +7112,7 @@ body,
     }
 
     .master-flat-page .master-flat-workspace {
-        padding: 20px 18px !important;
+        padding: 16px 18px 8px !important;
     }
 }
 

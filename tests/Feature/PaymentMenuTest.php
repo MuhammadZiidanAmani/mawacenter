@@ -245,6 +245,8 @@ class PaymentMenuTest extends TestCase
         $this->get('/keuangan/pembayaran/lain-lain/create?category=daftar-ulang')
             ->assertOk()
             ->assertSee('data-payment-category="daftar-ulang"', false)
+            ->assertSee('Total Bayar')
+            ->assertDontSee('Nominal Dibayar Sekarang')
             ->assertSee('>Daftar Ulang 7A</option>', false)
             ->assertDontSee('Daftar Ulang 7A · PONPES', false);
 
@@ -345,12 +347,83 @@ class PaymentMenuTest extends TestCase
             ->assertSee('DU-20260615-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT))
             ->assertSee('@page { size: A4 portrait; margin: 0; }', false)
             ->assertSee('Tahun Pelajaran')
-            ->assertSee('Potongan (Rp)')
+            ->assertSee('Keringanan (Rp)')
             ->assertSee("window.addEventListener('load', () => window.print())", false);
 
         $this->delete(route('finance.other.destroy', $payment))
             ->assertRedirect('/keuangan/pembayaran/lain-lain?category=daftar-ulang');
         $this->assertDatabaseMissing('other_payments', ['id' => $payment->id]);
+    }
+
+    public function test_registration_payment_can_use_future_inactive_academic_year(): void
+    {
+        $currentYear = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $futureYear = AcademicYear::create(['name' => '2026/2027', 'is_active' => false]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        $student = Student::create([
+            'nis' => '2601',
+            'name' => 'Siswa Tahun Depan',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $currentYear->id,
+            'is_active' => true,
+        ]);
+        $feeType = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'school_class_id' => $class->id,
+            'academic_year_id' => $futureYear->id,
+            'payment_group' => 'daftar-ulang',
+            'code' => 'DAFTAR-ULANG-2026-VII-A',
+            'name' => 'Daftar Ulang 2026/2027 VII A',
+            'amount' => 1200000,
+            'period' => 'Sekali Bayar',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create());
+
+        $this->get('/keuangan/pembayaran?search=Tahun%20Depan')
+            ->assertOk()
+            ->assertSee('Daftar Ulang');
+
+        $this->get('/keuangan/pembayaran/lain-lain/create?category=daftar-ulang&academic_year_id='.$futureYear->id.'&student_id='.$student->id)
+            ->assertOk()
+            ->assertSee('Tahun Pelajaran')
+            ->assertSee('2026/2027')
+            ->assertSee('Daftar Ulang 2026/2027 VII A');
+
+        $this->getJson('/keuangan/pembayaran/lain-lain/quote?category=daftar-ulang&student_id='.$student->id.'&fee_type_id='.$feeType->id)
+            ->assertOk()
+            ->assertJson([
+                'original_amount' => 1200000,
+                'remaining_amount' => 1200000,
+            ]);
+
+        $this->post('/keuangan/pembayaran/lain-lain?category=daftar-ulang', [
+            'transaction_date' => '2026-06-24',
+            'transaction_time' => '09:00:00',
+            'student_id' => $student->id,
+            'academic_year_id' => $futureYear->id,
+            'fee_type_id' => $feeType->id,
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'paid_amount' => 1200000,
+        ])->assertRedirect('/keuangan/pembayaran/lain-lain?category=daftar-ulang');
+
+        $this->assertDatabaseHas('other_payments', [
+            'student_id' => $student->id,
+            'fee_type_id' => $feeType->id,
+            'paid_amount' => 1200000,
+            'payment_status' => 'Lunas',
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'student_id' => $student->id,
+            'academic_year_id' => $futureYear->id,
+            'source_type' => 'fee_type',
+            'fee_type_id' => $feeType->id,
+            'status' => 'Lunas',
+        ]);
     }
 
     public function test_registration_payment_rejects_category_for_another_class(): void

@@ -50,6 +50,10 @@ class StoreOtherPaymentRequest extends FormRequest
             $rules['months.*'] = ['integer', 'between:1,12'];
         }
 
+        if ($this->string('category')->value() === 'daftar-ulang') {
+            $rules['academic_year_id'] = ['nullable', 'exists:academic_years,id'];
+        }
+
         return $rules;
     }
 }

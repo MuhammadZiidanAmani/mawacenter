@@ -31,9 +31,12 @@ class ChargeCalculator
 
         $student->loadMissing('academicYear');
 
+        $isRegistrationFee = $feeType
+            && ($feeType->payment_group === 'daftar-ulang' || $feeType->code === 'DAFTAR-ULANG' || str_starts_with($feeType->code, 'DAFTAR-ULANG-'));
+
         if (! $feeType || ! $feeType->is_active
             || $feeType->education_unit_id !== $student->schoolClass?->education_unit_id
-            || ($feeType->academic_year_id !== null && $feeType->academic_year_id !== $student->academic_year_id)
+            || (! $isRegistrationFee && $feeType->academic_year_id !== null && $feeType->academic_year_id !== $student->academic_year_id)
             || ($feeType->school_class_id !== null && $feeType->school_class_id !== $student->school_class_id)) {
             return 0;
         }

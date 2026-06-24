@@ -216,9 +216,14 @@ const feePeriodField = document.querySelector('[data-fee-period-field]');
 const feePeriod = document.querySelector('[data-fee-period]');
 const feeBehaviorTitle = document.querySelector('[data-fee-behavior-title]');
 const feeBehaviorDescription = document.querySelector('[data-fee-behavior-description]');
-const studentFilterUnit = document.querySelector('[data-student-filter-unit]');
-const studentFilterClass = document.querySelector('[data-student-filter-class]');
-const studentFilterClassOptions = studentFilterClass ? Array.from(studentFilterClass.options) : [];
+const studentFilterPairs = Array.from(document.querySelectorAll('[data-student-filter-unit]'))
+    .map((unitSelect) => {
+        const scope = unitSelect.closest('form') || document;
+        const classSelect = scope.querySelector('[data-student-filter-class]');
+
+        return classSelect ? { unitSelect, classSelect, options: Array.from(classSelect.options) } : null;
+    })
+    .filter(Boolean);
 const studentFilterToggle = document.querySelector('[data-student-filter-toggle]');
 const studentFilterPanel = document.querySelector('[data-student-filter-panel]');
 const studentExportToggle = document.querySelector('[data-student-export-toggle]');
@@ -527,12 +532,13 @@ if (registrationClassList) {
 feeCategories.forEach((input) => input.addEventListener('change', syncFeeCategory));
 masterForm?.querySelectorAll('input[name="creates_bill"]').forEach((input) => input.addEventListener('change', syncFeeCategory));
 syncFeeCategory();
-const filterStudentListClasses = (preserveSelection = false) => {
-    if (!studentFilterUnit || !studentFilterClass) return;
-    const unitId = studentFilterUnit.value;
-    const currentClass = preserveSelection ? studentFilterClass.value : '';
-    studentFilterClass.disabled = false;
-    studentFilterClassOptions.forEach((option) => {
+const filterStudentListClasses = (filterPair, preserveSelection = false) => {
+    if (!filterPair) return;
+    const { unitSelect, classSelect, options } = filterPair;
+    const unitId = unitSelect.value;
+    const currentClass = preserveSelection ? classSelect.value : '';
+    classSelect.disabled = false;
+    options.forEach((option) => {
         if (!option.value) {
             option.textContent = 'semua';
             option.hidden = false;
@@ -541,12 +547,14 @@ const filterStudentListClasses = (preserveSelection = false) => {
         option.hidden = Boolean(unitId) && option.dataset.unitId !== unitId;
         option.disabled = option.hidden;
     });
-    studentFilterClass.value = currentClass && studentFilterClassOptions.some((option) => option.value === currentClass && !option.hidden)
+    classSelect.value = currentClass && options.some((option) => option.value === currentClass && !option.hidden)
         ? currentClass
         : '';
 };
-studentFilterUnit?.addEventListener('change', () => filterStudentListClasses());
-filterStudentListClasses(true);
+studentFilterPairs.forEach((filterPair) => {
+    filterPair.unitSelect.addEventListener('change', () => filterStudentListClasses(filterPair));
+    filterStudentListClasses(filterPair, true);
+});
 const filterStudentExportClasses = () => {
     if (!studentExportUnit || !studentExportClass) return;
     const unitId = studentExportUnit.value;
@@ -1247,12 +1255,16 @@ if (otherForm) {
     const student = otherForm.querySelector('[data-other-student]');
     const studentSearch = otherForm.querySelector('[data-other-student-search]');
     const fee = otherForm.querySelector('[data-other-fee]');
+    const academicYear = otherForm.querySelector('[data-other-academic-year]');
     const message = otherForm.querySelector('[data-other-message]');
     const original = otherForm.querySelector('[data-other-original]');
     const discount = otherForm.querySelector('[data-other-discount]');
     const paid = otherForm.querySelector('[data-other-paid]');
     const total = otherForm.querySelector('[data-other-total]');
     const paidInput = otherForm.querySelector('[data-other-paid-input]');
+    const submitButton = otherForm.querySelector('[data-other-submit]');
+    const autoFillPaidInput = otherForm.dataset.paymentCategory === 'daftar-ulang';
+    let paidInputEditedManually = Boolean(digitsOnly(paidInput.value));
     const time = otherForm.querySelector('[data-other-time]');
     const clockDisplay = otherForm.querySelector('[data-wib-clock]');
     const feeOptions = Array.from(fee.options).filter((option) => option.value);
@@ -1269,20 +1281,39 @@ if (otherForm) {
         time.value = clock.value;
         clockDisplay.value = clock.display;
     };
+    const setOtherPaymentClosed = (closed) => {
+        if (!autoFillPaidInput) return;
+        otherForm.dataset.paymentClosed = closed ? 'true' : 'false';
+        paidInput.readOnly = closed;
+        paidInput.dataset.currencyDisabled = String(closed);
+        paidInput.classList.toggle('is-settled', closed);
+        if (closed) paidInput.value = 'Sudah Lunas';
+        if (submitButton) {
+            submitButton.disabled = closed;
+            submitButton.textContent = closed ? 'Sudah Lunas' : 'Simpan Pembayaran';
+        }
+    };
     const resetOtherQuote = (text = 'Pilih siswa dan kategori pembayaran untuk menghitung nominal.') => {
+        setOtherPaymentClosed(false);
         original.textContent = currency.format(0);
         discount.textContent = currency.format(0);
         paid.textContent = currency.format(0);
         total.textContent = currency.format(0);
         paidInput.dataset.max = '';
+        if (autoFillPaidInput && !paidInputEditedManually) paidInput.value = '';
         message.textContent = text;
         message.classList.remove('error');
+        message.classList.remove('success');
+    };
+    const fillOtherPaidInputFromQuote = (amount) => {
+        if (paidInputEditedManually) return;
+        paidInput.value = Number(amount) > 0 ? formatThousands(amount) : '';
     };
     const filterOtherFees = () => {
         syncOtherStudent();
         const classId = student.selectedOptions[0]?.dataset.classId;
         const unitId = student.selectedOptions[0]?.dataset.unitId;
-        const yearId = student.selectedOptions[0]?.dataset.yearId;
+        const yearId = academicYear?.value || student.selectedOptions[0]?.dataset.yearId;
         let availableFees = 0;
         feeOptions.forEach((option) => {
             const hidden = !classId
@@ -1298,7 +1329,7 @@ if (otherForm) {
         if (feePlaceholder) {
             feePlaceholder.textContent = !student.value
                 ? 'Pilih siswa terlebih dahulu'
-                : (availableFees > 0 ? 'Pilih kategori pembayaran...' : 'Tidak ada pembayaran sesuai unit, kelas, dan tahun siswa');
+                : (availableFees > 0 ? 'Pilih kategori pembayaran...' : 'Tidak ada pembayaran sesuai unit, kelas, dan tahun pelajaran');
         }
     };
     const updateOtherQuote = async () => {
@@ -1321,14 +1352,42 @@ if (otherForm) {
             paid.textContent = currency.format(data.paid_amount);
             total.textContent = currency.format(data.remaining_amount);
             paidInput.dataset.max = data.remaining_amount;
-            message.textContent = data.remaining_amount > 0 ? 'Masukkan pembayaran maksimal sebesar sisa tagihan.' : 'Kategori pembayaran ini sudah lunas.';
+            const isSettled = Number(data.remaining_amount) <= 0;
+            if (autoFillPaidInput) {
+                setOtherPaymentClosed(isSettled);
+                if (!isSettled) fillOtherPaidInputFromQuote(data.remaining_amount);
+            }
+            message.classList.toggle('success', isSettled);
+            message.textContent = !isSettled
+                ? (autoFillPaidInput
+                    ? `Total Bayar otomatis terisi ${currency.format(data.remaining_amount)} dan tetap bisa diedit untuk pembayaran sebagian.`
+                    : 'Masukkan pembayaran maksimal sebesar sisa tagihan.')
+                : 'Pembayaran daftar ulang ini sudah lunas. Tidak perlu membuat transaksi baru.';
         } catch (error) {
             resetOtherQuote(error.message);
             message.classList.add('error');
         }
     };
-    student.addEventListener('change', () => { filterOtherFees(); updateOtherQuote(); });
-    fee.addEventListener('change', updateOtherQuote);
+    paidInput.addEventListener('input', () => {
+        paidInputEditedManually = true;
+    });
+    student.addEventListener('change', () => {
+        paidInputEditedManually = false;
+        filterOtherFees();
+        updateOtherQuote();
+    });
+    fee.addEventListener('change', () => {
+        paidInputEditedManually = false;
+        updateOtherQuote();
+    });
+    academicYear?.addEventListener('change', () => {
+        paidInputEditedManually = false;
+        filterOtherFees();
+        updateOtherQuote();
+    });
+    otherForm.addEventListener('submit', (event) => {
+        if (otherForm.dataset.paymentClosed === 'true') event.preventDefault();
+    });
     updateClock();
     window.setInterval(updateClock, 1000);
     filterOtherFees();

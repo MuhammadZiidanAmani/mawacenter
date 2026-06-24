@@ -51,6 +51,12 @@ class MasterDataController extends Controller
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
         $studentYearId = $request->integer('year_id') ?: $activeAcademicYear?->id;
         $studentStatus = $request->query('status', 'active');
+        $classYearId = $tab === 'classes' ? ($request->integer('year_id') ?: null) : null;
+        $classStatus = $tab === 'classes' ? $request->query('status', 'active') : null;
+        $feeTypeClassId = $tab === 'fee-types' ? ($request->integer('class_id') ?: null) : null;
+        $feeTypeClassUnitId = $feeTypeClassId ? SchoolClass::whereKey($feeTypeClassId)->value('education_unit_id') : null;
+        $feeTypeYearId = $tab === 'fee-types' ? ($request->integer('year_id') ?: null) : null;
+        $feeTypeStatus = $tab === 'fee-types' ? $request->query('status', 'active') : null;
         $studentSort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'class'], true)
             ? $request->string('sort')->value()
             : 'name';
@@ -72,9 +78,14 @@ class MasterDataController extends Controller
                         ->orderByRaw($this->educationUnitOrderExpression())
                         ->orderBy('name')
                 )->paginate($perPage)->withQueryString(),
-            'classes' => SchoolClass::select('school_classes.*')->with(['educationUnit'])->withCount('students')
+            'classes' => SchoolClass::select('school_classes.*')->with(['educationUnit'])->withCount([
+                'students' => fn ($query) => $query
+                    ->when($classYearId, fn ($studentQuery, $yearId) => $studentQuery->where('academic_year_id', $yearId)),
+            ])
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('school_classes.name', 'like', "%{$search}%")->orWhere('school_classes.level', 'like', "%{$search}%")))
                 ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->where('school_classes.education_unit_id', $unitId))
+                ->when($classYearId, fn ($query, $yearId) => $query->whereHas('students', fn ($studentQuery) => $studentQuery->where('academic_year_id', $yearId)))
+                ->when($classStatus !== null && $classStatus !== '', fn ($query) => $query->where('school_classes.is_active', $classStatus === 'active'))
                 ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
                 ->when(
                     in_array($listSort, ['name', 'unit', 'students_count', 'is_active'], true),
@@ -90,6 +101,14 @@ class MasterDataController extends Controller
                 )->paginate($perPage)->withQueryString(),
             'fee-types' => FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
+                ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->where('education_unit_id', $unitId))
+                ->when($feeTypeClassId && $feeTypeClassUnitId, fn ($query) => $query
+                    ->where('education_unit_id', $feeTypeClassUnitId)
+                    ->where(fn ($feeType) => $feeType
+                        ->where('school_class_id', $feeTypeClassId)
+                        ->orWhereNull('school_class_id')))
+                ->when($feeTypeYearId, fn ($query, $yearId) => $query->where('academic_year_id', $yearId))
+                ->when($feeTypeStatus !== null && $feeTypeStatus !== '', fn ($query) => $query->where('is_active', $feeTypeStatus === 'active'))
                 ->orderBy(match ($listSort) {
                     'name' => 'name', 'unit' => 'education_unit_id', 'class' => 'school_class_id',
                     'year' => 'academic_year_id', 'amount' => 'amount', 'is_active' => 'is_active',
@@ -167,6 +186,10 @@ class MasterDataController extends Controller
             'activeAcademicYear' => $activeAcademicYear,
             'studentYearId' => $studentYearId,
             'studentStatus' => $studentStatus,
+            'classYearId' => $classYearId,
+            'classStatus' => $classStatus,
+            'feeTypeYearId' => $feeTypeYearId,
+            'feeTypeStatus' => $feeTypeStatus,
             'studentOptions' => $this->studentOptions($tab, $showCreate),
             'existingStudentOptions' => $this->existingStudentOptions($tab, $showCreate),
             'feeTypeOptions' => $this->feeTypeOptions($tab, $showCreate),

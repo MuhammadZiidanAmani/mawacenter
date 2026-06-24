@@ -27,8 +27,8 @@
         th, td { height: 6.2mm; padding: .9mm 1.4mm; border: 1px solid #555; text-align: left; font-size: 12.5px; line-height: 1.22; vertical-align: middle; }
         th { height: 5.2mm; font-size: 12.5px; font-weight: 700; text-align: center; }
         th.number { text-align: center; }
-        .transaction-time { width: 18%; }
-        .month { width: 50%; }
+        .transaction-time { width: 20%; white-space: nowrap; }
+        .month { width: 48%; }
         .year { width: 8%; text-align: center; }
         .payment-method { width: 9%; text-align: center; }
         .amount { width: 15%; }
@@ -83,7 +83,7 @@
         <thead><tr><th class="transaction-time">Waktu Transaksi</th><th class="month">Bulan</th><th class="year">Tahun</th><th class="payment-method">Bayar</th><th class="amount number">Nominal</th></tr></thead>
         <tbody>
             <tr>
-                <td>{{ $payment->transaction_at->format('d-m-Y H:i:s') }}</td>
+                <td class="transaction-time">{{ $payment->transaction_at->format('d-m-Y H:i:s') }}</td>
                 <td>{{ $payment->items->map(fn ($item) => $months[$item->month])->join(', ') }}</td>
                 <td>{{ $payment->items->pluck('year')->unique()->join(', ') }}</td>
                 <td>{{ $payment->payment_method }}</td>

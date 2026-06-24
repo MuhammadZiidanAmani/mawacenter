@@ -153,13 +153,13 @@ class MasterDataTest extends TestCase
 
         $this->get('/master-data/create?tab=fee-types')
             ->assertOk()
-            ->assertSee('Kelompok Kategori')
+            ->assertSee('Kategori Pembayaran')
             ->assertSee('SPP')
             ->assertSee('Tahun Pelajaran')
-            ->assertSee('Pilih Kelas')
+            ->assertSee('Kelas Tertentu')
             ->assertSee('data-registration-class-list', false)
             ->assertSee('data-registration-all-classes', false)
-            ->assertSee('Pilih beberapa kelas yang memakai kategori ini, atau centang Semua Kelas.')
+            ->assertSee('Kategori akan berlaku untuk seluruh kelas pada unit yang dipilih.')
             ->assertSee('data-currency-input', false);
 
         EducationUnit::create(['code' => 'PAUD', 'name' => 'Pendidikan Anak Usia Dini', 'is_active' => true]);
@@ -210,7 +210,10 @@ class MasterDataTest extends TestCase
 
         $this->get('/master-data?tab=classes&unit_id='.$firstUnit->id)
             ->assertOk()
+            ->assertSee('master-class-filter-panel', false)
             ->assertSee('Filter unit pendidikan', false)
+            ->assertSee('Filter tahun pelajaran', false)
+            ->assertSee('Filter status data', false)
             ->assertSee('<option value="'.$firstUnit->id.'" selected>MI</option>', false)
             ->assertDontSee('<option value="'.$firstUnit->id.'" selected>MI - Madrasah Ibtidaiyah</option>', false)
             ->assertSeeInOrder([
@@ -228,6 +231,33 @@ class MasterDataTest extends TestCase
             ->assertViewHas('data', fn ($data) => $data->getCollection()->pluck('name')->all() === [
                 'A1', 'A2', 'Kelas MI', 'Kelas MTs', 'Kelas Bakulan',
             ] && $data->getCollection()->firstWhere('name', 'Kelas MTs')->students_count === 2);
+    }
+
+    public function test_class_list_can_be_filtered_by_year_and_status(): void
+    {
+        $currentYear = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $previousYear = AcademicYear::create(['name' => '2024/2025', 'is_active' => false]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $currentClass = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII', 'is_active' => true]);
+        $previousClass = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VIII A', 'level' => 'Kelas VIII', 'is_active' => true]);
+        $inactiveClass = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'IX A', 'level' => 'Kelas IX', 'is_active' => false]);
+
+        Student::create(['nis' => '3001', 'name' => 'Siswa Aktif Tahun Ini', 'gender' => 'L', 'school_class_id' => $currentClass->id, 'academic_year_id' => $currentYear->id, 'is_active' => true]);
+        Student::create(['nis' => '3002', 'name' => 'Siswa Tahun Lalu', 'gender' => 'P', 'school_class_id' => $previousClass->id, 'academic_year_id' => $previousYear->id, 'is_active' => true]);
+        Student::create(['nis' => '3003', 'name' => 'Siswa Kelas Nonaktif', 'gender' => 'L', 'school_class_id' => $inactiveClass->id, 'academic_year_id' => $currentYear->id, 'is_active' => true]);
+
+        $this->get('/master-data?tab=classes&year_id='.$currentYear->id.'&status=active')
+            ->assertOk()
+            ->assertSee('<option value="'.$currentYear->id.'" selected>'.$currentYear->name.'</option>', false)
+            ->assertSee('<option value="active" selected>Aktif</option>', false)
+            ->assertViewHas('data', fn ($data) => $data->total() === 1
+                && $data->first()->is($currentClass)
+                && $data->first()->students_count === 1);
+
+        $this->get('/master-data?tab=classes&status=inactive')
+            ->assertOk()
+            ->assertSee('<option value="inactive" selected>Nonaktif</option>', false)
+            ->assertViewHas('data', fn ($data) => $data->total() === 1 && $data->first()->is($inactiveClass));
     }
 
     public function test_same_class_name_can_be_used_by_different_education_units(): void
@@ -354,6 +384,40 @@ class MasterDataTest extends TestCase
         $this->assertSame(2000000, app(ChargeCalculator::class)->baseAmount($student, 'fee_type', $feeType));
         $this->assertSame(0, app(ChargeCalculator::class)->baseAmount($otherStudent, 'fee_type', $feeType));
         $this->get('/master-data?tab=fee-types')->assertOk()->assertSee('Semua Kelas');
+    }
+
+    public function test_fee_type_list_can_be_filtered_by_unit_class_year_and_status(): void
+    {
+        $currentYear = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $previousYear = AcademicYear::create(['name' => '2024/2025', 'is_active' => false]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'MA', 'name' => 'Madrasah Aliyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        $otherClass = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VIII A', 'level' => 'Kelas VIII']);
+        $outsideClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'X A', 'level' => 'Kelas X']);
+
+        $specificFee = FeeType::create(['code' => 'SPP-VII-A', 'name' => 'SPP VII A', 'payment_group' => 'spp', 'education_unit_id' => $unit->id, 'school_class_id' => $class->id, 'academic_year_id' => $currentYear->id, 'amount' => 350000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true]);
+        $allClassFee = FeeType::create(['code' => 'KEGIATAN-MTS', 'name' => 'Kegiatan MTs', 'payment_group' => 'lain-lain', 'education_unit_id' => $unit->id, 'school_class_id' => null, 'academic_year_id' => $currentYear->id, 'amount' => 100000, 'period' => 'Tahunan', 'creates_bill' => false, 'is_active' => true]);
+        FeeType::create(['code' => 'SPP-VIII-A', 'name' => 'SPP VIII A', 'payment_group' => 'spp', 'education_unit_id' => $unit->id, 'school_class_id' => $otherClass->id, 'academic_year_id' => $currentYear->id, 'amount' => 360000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true]);
+        FeeType::create(['code' => 'SPP-LAMA', 'name' => 'SPP Tahun Lalu', 'payment_group' => 'spp', 'education_unit_id' => $unit->id, 'school_class_id' => $class->id, 'academic_year_id' => $previousYear->id, 'amount' => 300000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true]);
+        $inactiveFee = FeeType::create(['code' => 'NONAKTIF', 'name' => 'Kategori Nonaktif', 'payment_group' => 'lain-lain', 'education_unit_id' => $unit->id, 'school_class_id' => $class->id, 'academic_year_id' => $currentYear->id, 'amount' => 50000, 'period' => 'Tahunan', 'creates_bill' => false, 'is_active' => false]);
+        FeeType::create(['code' => 'SPP-MA', 'name' => 'SPP MA', 'payment_group' => 'spp', 'education_unit_id' => $otherUnit->id, 'school_class_id' => $outsideClass->id, 'academic_year_id' => $currentYear->id, 'amount' => 400000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true]);
+
+        $this->get('/master-data?tab=fee-types&unit_id='.$unit->id.'&class_id='.$class->id.'&year_id='.$currentYear->id.'&status=active')
+            ->assertOk()
+            ->assertSee('master-fee-filter-panel', false)
+            ->assertSee('data-student-filter-class', false)
+            ->assertSee('<option value="'.$unit->id.'" selected>MTs</option>', false)
+            ->assertSee('<option value="'.$class->id.'" data-unit-id="'.$unit->id.'" selected>VII A</option>', false)
+            ->assertSee('<option value="'.$currentYear->id.'" selected>'.$currentYear->name.'</option>', false)
+            ->assertViewHas('data', fn ($data) => $data->total() === 2
+                && $data->getCollection()->pluck('id')->contains($specificFee->id)
+                && $data->getCollection()->pluck('id')->contains($allClassFee->id));
+
+        $this->get('/master-data?tab=fee-types&status=inactive')
+            ->assertOk()
+            ->assertSee('<option value="inactive" selected>Nonaktif</option>', false)
+            ->assertViewHas('data', fn ($data) => $data->total() === 1 && $data->first()->is($inactiveFee));
     }
 
     public function test_spp_category_is_unique_per_scope(): void
@@ -972,7 +1036,7 @@ class MasterDataTest extends TestCase
             ->assertSee('SPP-20260612-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT))
             ->assertSee('@page { size: A4 portrait; margin: 0; }', false)
             ->assertSee('Juni')
-            ->assertSee('Potongan (Rp)')
+            ->assertSee('Keringanan (Rp)')
             ->assertSee("window.addEventListener('load', () => window.print())", false);
     }
 
@@ -990,7 +1054,7 @@ class MasterDataTest extends TestCase
 
         $this->get('/keuangan/pembayaran/lain-lain?category=daftar-ulang')
             ->assertOk()
-            ->assertSee('Daftar Pembayaran Daftar Ulang')
+            ->assertSee('Pembayaran Daftar Ulang')
             ->assertSee('sort=total&amp;direction=desc', false)
             ->assertDontSee('Data Transaksi')
             ->assertSee('/keuangan/pembayaran/lain-lain/create');
@@ -998,7 +1062,8 @@ class MasterDataTest extends TestCase
         $this->get('/keuangan/pembayaran/lain-lain/create?category=daftar-ulang')
             ->assertOk()
             ->assertSee('Tambah Pembayaran Daftar Ulang')
-            ->assertSee('Nominal Dibayar Sekarang')
+            ->assertSee('Total Bayar')
+            ->assertDontSee('Nominal Dibayar Sekarang')
             ->assertSee('Rina')
             ->assertSee('Daftar Ulang');
         $this->getJson('/keuangan/pembayaran/lain-lain/quote?category=daftar-ulang&student_id='.$student->id.'&fee_type_id='.$feeType->id)

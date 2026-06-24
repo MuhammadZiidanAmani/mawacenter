@@ -97,6 +97,7 @@ class OtherPaymentController extends Controller
 
         return view('finance.other', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
+            'academicYears' => AcademicYear::orderByDesc('name')->get(),
             'students' => Student::select('students.*')->with('schoolClass.educationUnit')
                 ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
                 ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')

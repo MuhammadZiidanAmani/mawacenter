@@ -28,8 +28,8 @@
         .payment-table { width: 100%; border-collapse: collapse; }
         .payment-table th, .payment-table td { padding: 4px 5px; border: 1px solid #555; font-size: 12.5px; line-height: 1.22; vertical-align: middle; }
         .payment-table th { background: #f5f5f5; font-weight: bold; text-align: center; }
-        .payment-table .transaction-column { width: 18%; }
-        .payment-table .month-column { width: 50%; }
+        .payment-table .transaction-column { width: 20%; white-space: nowrap; }
+        .payment-table .month-column { width: 48%; }
         .payment-table .year-column { width: 8%; }
         .payment-table .method-column { width: 9%; }
         .payment-table .amount-column { width: 15%; }
@@ -91,7 +91,7 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ $payment->transaction_at->format('d-m-Y H.i') }} WIB</td>
+                <td class="transaction-column">{{ $payment->transaction_at->format('d-m-Y H.i') }} WIB</td>
                 <td>{{ $payment->items->map(fn ($item) => $months[$item->month])->join(', ') }}</td>
                 <td>{{ $payment->items->pluck('year')->unique()->join(', ') }}</td>
                 <td>{{ $payment->payment_method }}</td>

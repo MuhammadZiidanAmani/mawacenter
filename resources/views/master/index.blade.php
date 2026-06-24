@@ -44,7 +44,7 @@
         'data-users' => ['Data User', 'users', $stats['users'] ?? 0],
     ];
     $labels = [
-        'students' => ['Data Siswa', 'Kelola identitas, kelas, wali, dan status siswa.', 'Tambah Siswa'],
+        'students' => ['Data Siswa', 'Kelola identitas, kelas, wali, dan status siswa.', 'Tambah Data Siswa'],
         'education-units' => ['Unit Pendidikan', 'Daftar unit pendidikan yang tersedia.', 'Tambah Unit Pendidikan'],
         'classes' => ['Kelas', 'Daftar kelas yang tersedia.', 'Tambah Kelas'],
         'academic-years' => ['Tahun Pelajaran', 'Daftar tahun pelajaran yang tersedia.', 'Tambah Tahun Pelajaran'],
@@ -70,7 +70,7 @@
             <button class="icon-button notification-button" aria-label="Notifikasi">{!! $icon('bell') !!}<span></span></button>
             <button class="icon-button logout-button" type="button" aria-label="Keluar" title="Keluar">{!! $icon('logout') !!}</button>
         </header>
-        <main class="{{ ! $showCreate ? 'student-page master-flat-page' : 'master-create-page' }}">
+        <main class="{{ $showCreate ? ($tab === 'students' ? 'student-page student-create-page' : 'master-create-page') : ($tab === 'students' ? 'student-page' : 'student-page master-flat-page') }}">
             @if (session('success'))
                 <div class="result-modal-backdrop show" data-alert>
                     <div class="result-modal success-result">
@@ -94,6 +94,21 @@
             @endif
 
             @if ($showCreate)
+                @if ($tab === 'students')
+                <section class="student-workspace student-create-canvas">
+                    <div class="student-flat-header">
+                        <h1>{{ $labels[$tab][2] }}</h1>
+                        <div class="student-title-actions">
+                            <a href="{{ route('student-management.students.index') }}" class="button student-filter-reset">Kembali ke Daftar</a>
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ route('master.'.$tab.'.store') }}" class="master-form master-create-form student-create-form">
+                        @csrf
+                        @include('master.partials.form-fields')
+                        <div class="form-actions span-2"><a href="{{ route('student-management.students.index') }}" class="button button-secondary">Batal</a><button class="button button-primary">Simpan Data</button></div>
+                    </form>
+                </section>
+                @else
                 <section class="hero master-hero">
                     <div><p class="eyebrow">Pengelolaan Data · Tambah</p><h1>{{ $labels[$tab][2] }}</h1><p>Lengkapi formulir berikut untuk menambahkan data baru.</p></div>
                     <a href="{{ $tab === 'students' ? route('student-management.students.index') : route('master.index', ['tab' => $tab]) }}" class="button button-secondary">Kembali ke Daftar</a>
@@ -106,20 +121,46 @@
                         <div class="form-actions span-2"><a href="{{ $tab === 'students' ? route('student-management.students.index') : route('master.index', ['tab' => $tab]) }}" class="button button-secondary">Batal</a><button class="button button-primary">Simpan Data</button></div>
                     </form>
                 </section>
+                @endif
             @else
             @if ($tab !== 'students')
-            <section class="student-workspace master-flat-workspace">
+            <section class="student-workspace master-flat-workspace {{ in_array($tab, ['classes', 'fee-types'], true) ? 'master-filter-card' : '' }} {{ $tab === 'classes' ? 'master-class-filter-card' : '' }} {{ $tab === 'fee-types' ? 'master-fee-filter-card' : '' }}">
                 <div class="student-flat-header">
                     <h1>{{ $labels[$tab][0] }}</h1>
                     <div class="student-title-actions">
                         <a href="{{ route('master.create', ['tab' => $tab]) }}" class="button student-add-button">{!! $icon('plus') !!} {{ $labels[$tab][2] }}</a>
                     </div>
                 </div>
+                @if ($tab === 'classes')
+                <form method="GET" action="{{ route('master.index') }}" class="student-filter-panel master-class-filter-panel">
+                    <input type="hidden" name="tab" value="classes">
+                    <label><span>Unit Pendidikan</span><select name="unit_id" aria-label="Filter unit pendidikan"><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                    <label><span>Tahun Pelajaran</span><select name="year_id" aria-label="Filter tahun pelajaran"><option value="">semua</option>@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($classYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
+                    <label><span>Status Data</span><select name="status" aria-label="Filter status data"><option value="">Semua Status</option><option value="active" @selected($classStatus === 'active')>Aktif</option><option value="inactive" @selected($classStatus === 'inactive')>Nonaktif</option></select></label>
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                    <div class="student-filter-actions">
+                        <button class="button student-search-button" aria-label="Tampilkan data kelas">{!! $icon('search') !!}</button>
+                    </div>
+                </form>
+                @endif
+                @if ($tab === 'fee-types')
+                <form method="GET" action="{{ route('master.index') }}" class="student-filter-panel master-filter-panel master-fee-filter-panel">
+                    <input type="hidden" name="tab" value="fee-types">
+                    <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit aria-label="Filter unit pendidikan"><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                    <label><span>Kelas</span><select name="class_id" data-student-filter-class aria-label="Filter kelas"><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
+                    <label><span>Tahun Pelajaran</span><select name="year_id" aria-label="Filter tahun pelajaran"><option value="">semua</option>@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($feeTypeYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
+                    <label><span>Status Data</span><select name="status" aria-label="Filter status data"><option value="">Semua Status</option><option value="active" @selected($feeTypeStatus === 'active')>Aktif</option><option value="inactive" @selected($feeTypeStatus === 'inactive')>Nonaktif</option></select></label>
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                    <div class="student-filter-actions">
+                        <button class="button student-search-button" aria-label="Tampilkan kategori pembayaran">{!! $icon('search') !!}</button>
+                    </div>
+                </form>
+                @endif
             </section>
             @endif
 
             @if ($tab === 'students')
-                <section class="student-workspace">
+                <section class="student-workspace student-list-filter-card">
                     @php
                         $studentExportQuery = array_filter([
                             'unit_id' => request('unit_id'),
@@ -228,7 +269,7 @@
             </section>
             @endif
 
-            <section class="card master-card student-data-card {{ $tab !== 'students' ? 'master-flat-card' : '' }}">
+            <section class="card master-card student-data-card {{ $tab === 'students' ? 'student-list-table-card' : 'master-flat-card' }}">
                 @if (! in_array($tab, ['students', 'academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users']))
                 <div class="master-tabs">
                     @foreach ($tabs as $key => $item)
@@ -278,7 +319,7 @@
                     @include('partials.list-toolbar', [
                         'action' => route('master.index'),
                         'searchLabel' => 'Cari data master',
-                        'unitFilter' => $tab === 'classes' ? $educationUnits : null,
+                        'unitFilter' => null,
                     ])
                 @endif
                 <div class="table-wrap"><table class="data-table {{ $tab === 'students' ? 'student-flat-table' : '' }}">

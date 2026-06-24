@@ -188,15 +188,30 @@
                 <form method="POST" action="{{ route('finance.other.store', ['category' => $paymentSection['key']]) }}" class="card spp-payment-form" data-other-form data-payment-category="{{ $paymentSection['key'] }}" data-quote-url="{{ route('finance.other.quote', ['category' => $paymentSection['key']]) }}">@csrf
                     <div class="spp-form-section"><div class="spp-form-heading"><strong>Informasi Transaksi</strong></div><div class="spp-form-grid">
                         <label>Waktu Transaksi <span class="spp-inline"><span class="date-picker-field" data-date-picker-control><input type="text" name="transaction_date" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ old('transaction_date', now()->format('d/m/Y')) }}" required data-other-date data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal" data-date-picker-button>{!! $icon('calendar') !!}</button></span><span class="wib-clock-field"><input type="text" value="{{ now()->format('H.i') }}" readonly data-wib-clock><b>WIB</b></span><input type="hidden" name="transaction_time" value="{{ old('transaction_time', now()->format('H:i:s')) }}" data-other-time></span></label>
+                        @if($paymentSection['key'] === 'daftar-ulang')
+                        <label>Tahun Pelajaran <select name="academic_year_id" data-other-academic-year><option value="">Semua Tahun Pelajaran</option>@foreach($academicYears as $year)<option value="{{ $year->id }}" @selected(old('academic_year_id', request('academic_year_id', $activeAcademicYear?->id)) == $year->id)>{{ $year->name }}{{ $year->is_active ? ' · Aktif' : '' }}</option>@endforeach</select></label>
+                        @endif
                         <div class="spp-form-field"><span>Siswa</span><div class="student-search-picker" data-student-picker><input type="search" name="student_search" value="{{ old('student_search') }}" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" required data-student-search data-other-student-search><select name="student_id" data-other-student data-student-source><option value="">Pilih siswa...</option>@foreach($students as $student)<option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-unit-id="{{ $student->schoolClass?->education_unit_id }}" data-year-id="{{ $student->academic_year_id }}" @selected(old('student_id', request('student_id'))==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>@endforeach</select><div class="student-search-results" data-student-results hidden></div></div></div>
                         <label>Kategori Pembayaran <select name="fee_type_id" required data-other-fee disabled><option value="">Pilih siswa terlebih dahulu</option>@foreach($feeTypes as $feeType)<option value="{{ $feeType->id }}" data-class-id="{{ $feeType->school_class_id }}" data-class-name="{{ $feeType->schoolClass?->name }}" data-unit-id="{{ $feeType->education_unit_id }}" data-unit-code="{{ $feeType->educationUnit?->code }}" data-year-id="{{ $feeType->academic_year_id }}" @selected(old('fee_type_id')==$feeType->id)>{{ $feeType->name }}</option>@endforeach</select></label>
                         <label>Cara Bayar <select name="payment_method" required><option @selected(($defaultPaymentMethod ?? 'Cash')==='Cash')>Cash</option><option @selected(($defaultPaymentMethod ?? 'Cash')==='Transfer')>Transfer</option></select></label>
                         <label>Status <select name="status" required><option>Diterima</option><option>Pending</option></select></label>
+                        @if($paymentSection['key'] !== 'daftar-ulang')
                         <label>Nominal Dibayar Sekarang <input type="text" inputmode="numeric" name="paid_amount" required value="{{ old('paid_amount') }}" placeholder="Masukkan nominal yang dibayar" data-other-paid-input data-currency-input></label>
+                        @endif
                     </div></div>
+                    @if($paymentSection['key'] === 'daftar-ulang')
+                    <div class="spp-summary">
+                        <div><span>Nominal Asli</span><strong class="spp-summary-readonly" data-other-original>Rp 0</strong></div>
+                        <div class="discount"><span>Keringanan</span><strong class="spp-summary-readonly" data-other-discount>Rp 0</strong></div>
+                        <div class="total spp-summary-payment-row"><span>Total Bayar</span><input type="text" inputmode="numeric" name="paid_amount" required value="{{ old('paid_amount') }}" placeholder="Otomatis sesuai sisa tagihan, bisa diedit" data-other-paid-input data-currency-input></div>
+                        <div class="spp-summary-hidden" aria-hidden="true"><span>Sudah Dibayar</span><strong data-other-paid>Rp 0</strong></div>
+                        <div class="spp-summary-hidden" aria-hidden="true"><span>Sisa Tagihan</span><strong data-other-total>Rp 0</strong></div>
+                    </div>
+                    @else
                     <div class="other-payment-summary"><div><span>Nominal Asli</span><strong data-other-original>Rp 0</strong></div><div class="discount"><span>Keringanan Otomatis</span><strong data-other-discount>Rp 0</strong></div><div><span>Sudah Dibayar</span><strong data-other-paid>Rp 0</strong></div><div class="total"><span>Sisa Tagihan</span><strong data-other-total>Rp 0</strong></div></div>
+                    @endif
                     <p class="spp-quote-message" data-other-message>Pilih siswa dan kategori pembayaran untuk menghitung nominal.</p>
-                    <div class="form-actions"><a href="{{ route('finance.other.index', ['category' => $paymentSection['key']]) }}" class="button button-secondary">Batal</a><button class="button button-primary">Simpan Pembayaran</button></div>
+                    <div class="form-actions"><a href="{{ route('finance.other.index', ['category' => $paymentSection['key']]) }}" class="button button-secondary">Batal</a><button class="button button-primary" data-other-submit>Simpan Pembayaran</button></div>
                 </form>
                 @endif
             </section>

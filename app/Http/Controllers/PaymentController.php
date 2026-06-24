@@ -45,7 +45,7 @@ class PaymentController extends Controller
                     $student->setAttribute('payment_options', $feeTypes
                         ->filter(fn (FeeType $feeType) => $feeType->education_unit_id === $unitId
                             && (! $feeType->school_class_id || $feeType->school_class_id === $student->school_class_id)
-                            && (! $feeType->academic_year_id || $feeType->academic_year_id === $student->academic_year_id))
+                            && ($this->paymentGroup($feeType) === 'daftar-ulang' || ! $feeType->academic_year_id || $feeType->academic_year_id === $student->academic_year_id))
                         ->groupBy(fn (FeeType $feeType) => $this->paymentGroup($feeType))
                         ->keys()
                         ->all());
