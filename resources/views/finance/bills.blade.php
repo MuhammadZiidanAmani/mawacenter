@@ -10,7 +10,6 @@
 @php
     $svg = fn ($path, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$path.'</svg>';
     $icons = [
-        'database' => '<ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v12c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/>',
         'receipt' => '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/>',
         'wallet' => '<path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/>',
         'menu' => '<path d="M4 6h16M4 12h16M4 18h16"/>',
@@ -42,24 +41,20 @@
                 <div class="result-modal-backdrop show" data-alert><div class="result-modal success-result"><span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>
             @endif
 
-            <section class="student-workspace">
+            <section class="student-workspace student-list-filter-card bills-filter-card">
                 <div class="student-flat-header">
                     <h1>Tagihan Siswa</h1>
-                </div>
-                <div class="student-action-bar">
-                    <form method="POST" action="{{ route('finance.bills.sync') }}" class="bill-sync-form-flat">
-                        @csrf
-                        @foreach($billQuery(['year', 'until_month']) as $key => $value)
-                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                        @endforeach
-                        <input type="hidden" name="year" value="{{ $year }}">
-                        <input type="hidden" name="until_month" value="{{ $untilMonth }}">
-                        <button class="button student-add-button">{!! $icon('database') !!} Sinkronkan</button>
-                    </form>
-                    <a href="{{ route('finance.bills.index') }}" class="button action-orange">Reset</a>
-                    <a href="{{ route('finance.spp.create') }}" class="button action-purple">{!! $icon('wallet') !!} Bayar SPP</a>
-                    <a href="{{ route('finance.other.create', ['category' => 'daftar-ulang']) }}" class="button action-purple">{!! $icon('receipt') !!} Bayar Daftar Ulang</a>
-                    <a href="{{ route('finance.other.create') }}" class="button action-purple">{!! $icon('receipt') !!} Bayar Lain-lain</a>
+                    <div class="student-title-actions student-action-bar">
+                        <form method="POST" action="{{ route('finance.bills.sync') }}" class="bill-sync-form-flat">
+                            @csrf
+                            @foreach($billQuery(['year', 'until_month']) as $key => $value)
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endforeach
+                            <input type="hidden" name="year" value="{{ $year }}">
+                            <input type="hidden" name="until_month" value="{{ $untilMonth }}">
+                            <button class="button button-secondary">Perbarui Tagihan</button>
+                        </form>
+                    </div>
                 </div>
 
                 <form method="GET" action="{{ route('finance.bills.index') }}" class="student-filter-panel bills-filter-panel">
@@ -67,18 +62,7 @@
                     <input type="hidden" name="until_month" value="{{ $untilMonth }}">
                     <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                     <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
-                    <span class="bill-filter-field-label">Siswa</span>
-                    <div class="student-search-picker bill-student-picker" data-student-picker data-student-optional>
-                        <input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" data-student-search>
-                        <select name="student_id" data-student-source>
-                            <option value="">Semua siswa</option>
-                            @foreach($studentOptions as $student)
-                                <option value="{{ $student->id }}" @selected(request('student_id') == $student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
-                            @endforeach
-                        </select>
-                        <div class="student-search-results" data-student-results hidden></div>
-                    </div>
-                    <input type="hidden" name="search" value="{{ request('search') }}">
+                    <label><span>Cari Siswa</span><input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Nama atau NIS"></label>
                     <input type="hidden" name="per_page" value="{{ request('per_page') }}">
                     <input type="hidden" name="sort" value="{{ request('sort') }}">
                     <input type="hidden" name="direction" value="{{ request('direction') }}">
@@ -86,30 +70,15 @@
                     <div class="bill-filter-total"><span class="bill-filter-value">{{ $rupiah($stats['remaining']) }}</span><small>{{ number_format($stats['students'], 0, ',', '.') }} siswa</small></div>
                     <div class="student-filter-actions">
                         <button class="button student-search-button" aria-label="Tampilkan data">{!! $icon('search') !!}</button>
+                        <a href="{{ route('finance.bills.index') }}" class="button button-secondary bill-filter-reset">Reset</a>
                     </div>
                 </form>
             </section>
 
-            <section class="card student-data-card bills-data-card">
-                <div class="student-table-toolbar">
-                    <form method="GET" action="{{ route('finance.bills.index') }}" class="student-table-length">
-                        @foreach($billQuery(['per_page']) as $key => $value)
-                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                        @endforeach
-                        <label>Show
-                            <select name="per_page" onchange="this.form.submit()">
-                                @foreach([10, 25, 50, 100, 500] as $size)<option value="{{ $size }}" @selected(request('per_page', 10) == $size)>{{ $size }}</option>@endforeach
-                                <option value="all" @selected(request('per_page') === 'all')>All</option>
-                            </select>
-                            entries
-                        </label>
-                    </form>
-                    <form method="GET" action="{{ route('finance.bills.index') }}" class="student-table-search">
-                        @foreach($billQuery(['search']) as $key => $value)
-                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                        @endforeach
-                        <label>Search: <input name="search" value="{{ request('search') }}" aria-label="Cari tagihan berdasarkan nama atau NIS"></label>
-                    </form>
+            <section class="card student-data-card student-list-table-card bills-data-card">
+                <div class="student-table-toolbar bill-list-summary">
+                    <strong>Daftar Tagihan Siswa</strong>
+                    <span>Total {{ $rupiah($stats['remaining']) }} · SPP {{ $rupiah($stats['spp']) }} · Lain-lain {{ $rupiah($stats['other']) }}</span>
                 </div>
 
                 <div class="table-wrap">
@@ -118,18 +87,20 @@
                             <col class="bill-col-no">
                             <col class="bill-col-nis">
                             <col class="bill-col-name">
+                            <col class="bill-col-unit">
                             <col class="bill-col-class">
                             <col class="bill-col-total">
-                            <col class="bill-col-detail">
+                            <col class="bill-col-action">
                         </colgroup>
                         <thead>
                             <tr>
                                 <th>No</th>
                                 <th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th>
                                 <th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th>
+                                <th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit'])</th>
                                 <th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th>
                                 <th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th>
-                                <th>Rincian</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -138,35 +109,46 @@
                                 <tr>
                                     <td>{{ $studentsWithBills->firstItem() + $loop->index }}</td>
                                     <td>{{ $student->nis }}</td>
-                                    <td><span class="bill-student-name">{{ $student->name }}</span><small class="bill-student-unit">Unit Pendidikan: {{ $student->schoolClass?->educationUnit?->code ?? '-' }}</small></td>
+                                    <td><span class="bill-student-name">{{ $student->name }}</span></td>
+                                    <td>{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</td>
                                     <td>{{ $student->schoolClass?->name ?? '-' }}</td>
                                     <td><span class="bill-total">{{ $rupiah($summary['total_remaining']) }}</span></td>
                                     <td>
-                                        <details class="bill-row-detail">
-                                            <summary>Lihat</summary>
-                                            <div class="bill-detail-panel">
-                                                <div class="bill-detail-block">
-                                                    <span class="bill-detail-title">SPP</span>
-                                                    @forelse($summary['spp'] as $item)
-                                                        <span>{{ $item['month_name'] }} {{ $item['year'] }} <span class="bill-detail-amount">{{ $rupiah($item['remaining']) }}</span></span>
-                                                    @empty
-                                                        <span class="bill-clear">{!! $icon('check') !!} Lunas</span>
-                                                    @endforelse
+                                        <div class="bill-row-actions">
+                                            <details class="bill-row-detail">
+                                                <summary>Aksi</summary>
+                                                <div class="bill-detail-panel">
+                                                    <div class="bill-action-links">
+                                                        @if($summary['spp_remaining'] > 0)
+                                                            <a href="{{ route('finance.spp.create', ['student_id' => $student->id]) }}" class="button button-primary">Bayar SPP</a>
+                                                        @endif
+                                                        @if($summary['other_remaining'] > 0)
+                                                            <a href="{{ route('finance.other.create', ['student_id' => $student->id]) }}" class="button button-secondary">Bayar Lain-lain</a>
+                                                        @endif
+                                                    </div>
+                                                    <div class="bill-detail-block">
+                                                        <span class="bill-detail-title">SPP</span>
+                                                        @forelse($summary['spp'] as $item)
+                                                            <span>{{ $item['month_name'] }} {{ $item['year'] }} <span class="bill-detail-amount">{{ $rupiah($item['remaining']) }}</span></span>
+                                                        @empty
+                                                            <span class="bill-clear">{!! $icon('check') !!} Lunas</span>
+                                                        @endforelse
+                                                    </div>
+                                                    <div class="bill-detail-block">
+                                                        <span class="bill-detail-title">Lain-lain</span>
+                                                        @forelse($summary['other'] as $item)
+                                                            <span>{{ $item['name'] }} <span class="bill-detail-amount">{{ $rupiah($item['remaining']) }}</span></span>
+                                                        @empty
+                                                            <span class="bill-clear">{!! $icon('check') !!} Lunas</span>
+                                                        @endforelse
+                                                    </div>
                                                 </div>
-                                                <div class="bill-detail-block">
-                                                    <span class="bill-detail-title">Lain-lain</span>
-                                                    @forelse($summary['other'] as $item)
-                                                        <span>{{ $item['name'] }} <span class="bill-detail-amount">{{ $rupiah($item['remaining']) }}</span></span>
-                                                    @empty
-                                                        <span class="bill-clear">{!! $icon('check') !!} Lunas</span>
-                                                    @endforelse
-                                                </div>
-                                            </div>
-                                        </details>
+                                            </details>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="empty-state">Belum ada tagihan pada filter ini.</td></tr>
+                                <tr><td colspan="7" class="empty-state">Belum ada tagihan pada filter ini.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

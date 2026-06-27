@@ -32,11 +32,24 @@
     $paymentQuery = fn (array $except = []) => collect(request()->except(array_merge($except, ['page'])))
         ->filter(fn ($value) => is_scalar($value))
         ->all();
-    $filterDateFrom = request('date_from', now()->format('d/m/Y'));
-    $filterDateTo = request('date_to', now()->format('d/m/Y'));
+    $nativeDateValue = function ($value, $fallback = null) {
+        $value = filled($value) ? (string) $value : (string) $fallback;
+        foreach (['Y-m-d', 'd/m/Y'] as $format) {
+            try {
+                $date = \Carbon\CarbonImmutable::createFromFormat($format, $value);
+                if ($date !== false) return $date->format('Y-m-d');
+            } catch (\Throwable) {
+                //
+            }
+        }
+
+        return $fallback ?? now()->toDateString();
+    };
+    $filterDateFrom = $nativeDateValue(request('date_from'), now()->startOfMonth()->toDateString());
+    $filterDateTo = $nativeDateValue(request('date_to'), now()->toDateString());
 @endphp
 <div class="app-shell">
-    @include('partials.sidebar', ['activeMenu' => 'payment'])
+    @include('partials.sidebar', ['activeMenu' => 'payment', 'activePaymentMenu' => 'history'])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar">
@@ -50,18 +63,18 @@
             @if($errors->any())<div class="result-modal-backdrop show" data-alert><div class="result-modal error-result"><span class="result-icon">!</span><strong>Perlu Diperiksa</strong><p>{{ $errors->first() }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>@endif
             @unless($showCreate)
             <div>
-                <section class="student-workspace payment-workspace">
+                <section class="student-workspace payment-workspace payment-single-canvas">
                     <div class="student-flat-header">
                         <h1>Pembayaran {{ $paymentSection['title'] }}</h1>
-                    </div>
-                    <div class="student-action-bar">
-                        <a href="{{ route('finance.other.create', ['category' => $paymentSection['key']]) }}" class="button student-add-button">{!! $icon('plus') !!} Tambah</a>
-                        <button type="button" class="button action-purple spp-import-toggle {{ $importPreview || $errors->any() ? 'active' : '' }}" data-spp-import-toggle aria-expanded="{{ $errors->any() ? 'true' : 'false' }}">{!! $icon('upload') !!} Import</button>
+                        <div class="student-title-actions">
+                            <a href="{{ route('finance.other.create', ['category' => $paymentSection['key']]) }}" class="button student-add-button">{!! $icon('plus') !!} Tambah</a>
+                            <button type="button" class="button action-purple spp-import-toggle {{ $importPreview || $errors->any() ? 'active' : '' }}" data-spp-import-toggle aria-expanded="{{ $errors->any() ? 'true' : 'false' }}">{!! $icon('upload') !!} Import</button>
+                        </div>
                     </div>
                     <form method="GET" action="{{ route('finance.other.index', ['category' => $paymentSection['key']]) }}" class="student-filter-panel payment-filter-panel payment-filter-compact">
                         <input type="hidden" name="category" value="{{ $paymentSection['key'] }}">
                         <div class="payment-filter-primary">
-                            <label class="payment-date-filter"><span>Waktu</span><span class="payment-date-range"><span class="date-picker-field" data-date-picker-control><input type="text" name="date_from" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ $filterDateFrom }}" data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal awal" data-date-picker-button>{!! $icon('calendar') !!}</button></span><b>-</b><span class="date-picker-field" data-date-picker-control><input type="text" name="date_to" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ $filterDateTo }}" data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal akhir" data-date-picker-button>{!! $icon('calendar') !!}</button></span></span></label>
+                            <label class="payment-date-filter"><span>Waktu</span><span class="payment-date-range"><input type="date" name="date_from" value="{{ $filterDateFrom }}"><b>-</b><input type="date" name="date_to" value="{{ $filterDateTo }}"></span></label>
                             <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                             <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
                             <label class="payment-student-field"><span>Siswa</span><span class="payment-student-filter"><span class="student-search-picker" data-student-picker data-student-optional><input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" data-student-search><select name="student_id" data-student-source><option value="">Semua siswa</option>@foreach($studentOptions as $student)<option value="{{ $student->id }}" @selected(request('student_id') == $student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>@endforeach</select><span class="student-search-results" data-student-results hidden></span></span></span></label>
@@ -83,7 +96,6 @@
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
                     </form>
-                </section>
                 <div class="spp-import-modal-backdrop {{ $errors->any() ? 'show' : '' }}" data-spp-import-panel @if(! $errors->any()) hidden @endif>
                     <section class="spp-import-modal" role="dialog" aria-modal="true" aria-labelledby="other-import-title">
                         <header class="spp-import-modal-head">
@@ -136,7 +148,7 @@
                     <div class="table-wrap spp-import-table-wrap"><table class="data-table spp-import-table other-import-preview-table"><thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>Kategori Excel</th><th>Nominal</th><th>Status</th><th>Keterangan</th></tr></thead><tbody>@foreach(array_slice($importPreview['rows'],0,100) as $row)<tr class="spp-import-row {{ strtolower($row['status']) }}"><td><span class="spp-line-number">{{ $row['line'] }}</span></td><td><strong class="spp-import-nis">{{ $row['nis'] }}</strong></td><td><strong>{{ $row['name'] }}</strong></td><td><span class="other-import-category">{{ $row['category'] }}</span><small>{{ $row['unit'] }}</small></td><td><strong class="spp-import-amount">Rp {{ number_format($row['nominal'],0,',','.') }}</strong></td><td><span class="status {{ $row['status']==='Valid'?'success':($row['status']==='Duplikat'?'warning':'danger') }}">{{ $row['status'] }}</span></td><td><span class="spp-import-message">{{ $row['message'] }}</span></td></tr>@endforeach</tbody></table></div>
                 </section>
                 @endif
-                <section class="card student-data-card payment-data-card spp-history other-payment-history">
+                <div class="student-data-card payment-data-card spp-history other-payment-history">
                     @include('partials.list-toolbar', ['action' => route('finance.other.index', ['category' => $paymentSection['key']]), 'searchLabel' => 'Cari pembayaran '.$paymentSection['title']])
                     <div class="table-wrap"><table @class(['data-table', 'student-flat-table', 'payment-flat-table', 'spp-list-table', 'registration-payment-table' => in_array($paymentSection['key'], ['daftar-ulang', 'laundry'], true)])><thead><tr><th>No</th><th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'method', 'label' => 'Cara Bayar'])</th><th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th><th>Rincian</th></tr></thead><tbody>
                         @forelse($payments as $payment)
@@ -163,6 +175,7 @@
                             </td></tr>
                         @empty <tr><td colspan="7" class="empty-state">Belum ada pembayaran {{ $paymentSection['title'] }}.</td></tr> @endforelse
                     </tbody></table></div><div class="pagination-wrap">{{ $payments->links() }}</div>
+                </div>
                 </section>
             </div>
             @else
@@ -171,7 +184,7 @@
                 @if($paymentSection['key'] === 'laundry')
                 <form method="POST" action="{{ route('finance.other.store', ['category' => 'laundry']) }}" class="card spp-payment-form" data-laundry-form data-payment-category="laundry" data-quote-url="{{ route('finance.other.quote', ['category' => 'laundry']) }}" data-months-url="{{ route('finance.other.months', ['category' => 'laundry']) }}">@csrf
                     <div class="spp-form-section"><div class="spp-form-heading"><strong>Informasi Transaksi</strong></div><div class="spp-form-grid">
-                        <label>Waktu Transaksi <span class="spp-inline"><span class="date-picker-field" data-date-picker-control><input type="text" name="transaction_date" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ old('transaction_date', now()->format('d/m/Y')) }}" required data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal" data-date-picker-button>{!! $icon('calendar') !!}</button></span><span class="wib-clock-field"><input type="text" value="{{ now()->format('H.i') }}" readonly data-wib-clock><b>WIB</b></span><input type="hidden" name="transaction_time" value="{{ old('transaction_time', now()->format('H:i:s')) }}" data-laundry-time></span></label>
+                        <label>Waktu Transaksi <span class="spp-inline"><input type="date" name="transaction_date" value="{{ $nativeDateValue(old('transaction_date'), now()->toDateString()) }}" required><span class="wib-clock-field"><input type="text" value="{{ now()->format('H.i') }}" readonly data-wib-clock><b>WIB</b></span><input type="hidden" name="transaction_time" value="{{ old('transaction_time', now()->format('H:i:s')) }}" data-laundry-time></span></label>
                         <div class="spp-form-field"><span>Siswa</span><div class="student-search-picker" data-student-picker><input type="search" name="student_search" value="{{ old('student_search') }}" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" required data-student-search><select name="student_id" data-laundry-student data-student-source><option value="">Pilih siswa...</option>@foreach($students as $student)<option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-unit-id="{{ $student->schoolClass?->education_unit_id }}" data-year-id="{{ $student->academic_year_id }}" @selected(old('student_id', request('student_id'))==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>@endforeach</select><div class="student-search-results" data-student-results hidden></div></div></div>
                         <label>Kategori Laundry <select name="fee_type_id" required data-laundry-fee disabled><option value="">Pilih siswa terlebih dahulu</option>@foreach($feeTypes as $feeType)<option value="{{ $feeType->id }}" data-class-id="{{ $feeType->school_class_id }}" data-unit-id="{{ $feeType->education_unit_id }}" data-year-id="{{ $feeType->academic_year_id }}" @selected(old('fee_type_id')==$feeType->id)>{{ $feeType->name }}</option>@endforeach</select></label>
                         <fieldset class="spp-month-field"><legend>Bulan</legend><div class="spp-months">@foreach($months as $number=>$name)<label><input type="checkbox" name="months[]" value="{{ $number }}" @checked(in_array($number, old('months', [])))><span class="spp-month-name">{{ $name }}</span><small class="spp-month-status">Belum Dibayar</small></label>@endforeach</div></fieldset>
@@ -187,7 +200,7 @@
                 @else
                 <form method="POST" action="{{ route('finance.other.store', ['category' => $paymentSection['key']]) }}" class="card spp-payment-form" data-other-form data-payment-category="{{ $paymentSection['key'] }}" data-quote-url="{{ route('finance.other.quote', ['category' => $paymentSection['key']]) }}">@csrf
                     <div class="spp-form-section"><div class="spp-form-heading"><strong>Informasi Transaksi</strong></div><div class="spp-form-grid">
-                        <label>Waktu Transaksi <span class="spp-inline"><span class="date-picker-field" data-date-picker-control><input type="text" name="transaction_date" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ old('transaction_date', now()->format('d/m/Y')) }}" required data-other-date data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal" data-date-picker-button>{!! $icon('calendar') !!}</button></span><span class="wib-clock-field"><input type="text" value="{{ now()->format('H.i') }}" readonly data-wib-clock><b>WIB</b></span><input type="hidden" name="transaction_time" value="{{ old('transaction_time', now()->format('H:i:s')) }}" data-other-time></span></label>
+                        <label>Waktu Transaksi <span class="spp-inline"><input type="date" name="transaction_date" value="{{ $nativeDateValue(old('transaction_date'), now()->toDateString()) }}" required data-other-date><span class="wib-clock-field"><input type="text" value="{{ now()->format('H.i') }}" readonly data-wib-clock><b>WIB</b></span><input type="hidden" name="transaction_time" value="{{ old('transaction_time', now()->format('H:i:s')) }}" data-other-time></span></label>
                         @if($paymentSection['key'] === 'daftar-ulang')
                         <label>Tahun Pelajaran <select name="academic_year_id" data-other-academic-year><option value="">Semua Tahun Pelajaran</option>@foreach($academicYears as $year)<option value="{{ $year->id }}" @selected(old('academic_year_id', request('academic_year_id', $activeAcademicYear?->id)) == $year->id)>{{ $year->name }}{{ $year->is_active ? ' · Aktif' : '' }}</option>@endforeach</select></label>
                         @endif
@@ -221,7 +234,7 @@
                     <div class="form-modal-header"><div><p class="eyebrow">Pembayaran · {{ $paymentSection['title'] }}</p><h2>Edit Transaksi</h2></div><button type="button" class="icon-button" data-other-crud-close>×</button></div>
                     <form method="POST" data-other-edit-form class="master-form spp-edit-form">@csrf @method('PUT')
                         <div class="spp-edit-readonly"><span data-other-edit-summary>Data siswa dan kategori pembayaran tidak dapat diubah.</span></div>
-                        <label>Tanggal Transaksi<span class="date-picker-field" data-date-picker-control><input type="text" name="transaction_date" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" required data-indonesian-date><input type="date" tabindex="-1" aria-hidden="true" data-date-picker><button type="button" aria-label="Pilih tanggal" data-date-picker-button>{!! $icon('calendar') !!}</button></span></label>
+                        <label>Tanggal Transaksi<input type="date" name="transaction_date" required></label>
                         <label>Jam Transaksi (WIB)<input type="text" name="transaction_time" inputmode="numeric" placeholder="Contoh: 18.00" pattern="(?:[01]\d|2[0-3])[.:][0-5]\d" required></label>
                         <label>Cara Bayar<select name="payment_method" required><option>Cash</option><option>Transfer</option></select></label>
                         <label>Status Penerimaan<select name="status" required><option>Diterima</option><option>Pending</option></select></label>

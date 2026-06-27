@@ -71,6 +71,14 @@ class PaymentController extends Controller
         ]);
     }
 
+    public function history(): View
+    {
+        return view('finance.payments', [
+            'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
+            'mode' => 'history',
+        ]);
+    }
+
     private function paymentGroup(FeeType $feeType): string
     {
         if ($feeType->payment_group) {

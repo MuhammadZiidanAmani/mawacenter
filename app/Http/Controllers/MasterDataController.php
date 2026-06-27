@@ -51,12 +51,14 @@ class MasterDataController extends Controller
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
         $studentYearId = $request->integer('year_id') ?: $activeAcademicYear?->id;
         $studentStatus = $request->query('status', 'active');
-        $classYearId = $tab === 'classes' ? ($request->integer('year_id') ?: null) : null;
+        $classYearId = $tab === 'classes' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
         $classStatus = $tab === 'classes' ? $request->query('status', 'active') : null;
         $feeTypeClassId = $tab === 'fee-types' ? ($request->integer('class_id') ?: null) : null;
         $feeTypeClassUnitId = $feeTypeClassId ? SchoolClass::whereKey($feeTypeClassId)->value('education_unit_id') : null;
-        $feeTypeYearId = $tab === 'fee-types' ? ($request->integer('year_id') ?: null) : null;
+        $feeTypeYearId = $tab === 'fee-types' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
         $feeTypeStatus = $tab === 'fee-types' ? $request->query('status', 'active') : null;
+        $feeDiscountYearId = $tab === 'fee-discounts' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
+        $feeDiscountStatus = $tab === 'fee-discounts' ? $request->query('status', 'active') : null;
         $studentSort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'class'], true)
             ? $request->string('sort')->value()
             : 'name';
@@ -107,7 +109,10 @@ class MasterDataController extends Controller
                     ->where(fn ($feeType) => $feeType
                         ->where('school_class_id', $feeTypeClassId)
                         ->orWhereNull('school_class_id')))
-                ->when($feeTypeYearId, fn ($query, $yearId) => $query->where('academic_year_id', $yearId))
+                ->when($feeTypeYearId, fn ($query, $yearId) => $query
+                    ->where(fn ($feeType) => $feeType
+                        ->where('academic_year_id', $yearId)
+                        ->orWhereNull('academic_year_id')))
                 ->when($feeTypeStatus !== null && $feeTypeStatus !== '', fn ($query) => $query->where('is_active', $feeTypeStatus === 'active'))
                 ->orderBy(match ($listSort) {
                     'name' => 'name', 'unit' => 'education_unit_id', 'class' => 'school_class_id',
@@ -117,6 +122,10 @@ class MasterDataController extends Controller
                 ->orderBy('name')->paginate($perPage)->withQueryString(),
             'fee-discounts' => FeeDiscount::with(['student.schoolClass.educationUnit', 'feeType'])
                 ->when($search, fn ($query) => $query->whereHas('student', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")))
+                ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->whereHas('student.schoolClass', fn ($class) => $class->where('education_unit_id', $unitId)))
+                ->when($request->integer('class_id'), fn ($query, $classId) => $query->whereHas('student', fn ($student) => $student->where('school_class_id', $classId)))
+                ->when($feeDiscountYearId, fn ($query, $yearId) => $query->whereHas('student', fn ($student) => $student->where('academic_year_id', $yearId)))
+                ->when($feeDiscountStatus !== null && $feeDiscountStatus !== '', fn ($query) => $query->where('is_active', $feeDiscountStatus === 'active'))
                 ->orderBy(match ($listSort) {
                     'student' => 'student_id', 'payment' => 'source_type',
                     'discount' => 'discount_value', 'is_active' => 'is_active',
@@ -174,7 +183,26 @@ class MasterDataController extends Controller
             });
         }
 
+        $studentClassAlumniCount = 0;
+        $studentClassAlumniClass = null;
+        $studentClassAlumniYear = null;
+        if ($tab === 'students' && $studentStatus === 'active' && $request->integer('unit_id') && $request->integer('class_id') && $studentYearId) {
+            $studentClassAlumniClass = SchoolClass::with('educationUnit')
+                ->whereKey($request->integer('class_id'))
+                ->where('education_unit_id', $request->integer('unit_id'))
+                ->first();
+            $studentClassAlumniYear = AcademicYear::find($studentYearId);
+
+            if ($studentClassAlumniClass && $studentClassAlumniYear) {
+                $studentClassAlumniCount = Student::where('school_class_id', $studentClassAlumniClass->id)
+                    ->where('academic_year_id', $studentYearId)
+                    ->where('is_active', true)
+                    ->count();
+            }
+        }
+
         $showCreate = $request->routeIs('master.create') || $request->routeIs('student-management.students.create');
+        $showStudentImport = $request->routeIs('student-management.students.import');
         $studentImportPreview = $this->studentImportPreview($request);
 
         return view('master.index', [
@@ -190,6 +218,8 @@ class MasterDataController extends Controller
             'classStatus' => $classStatus,
             'feeTypeYearId' => $feeTypeYearId,
             'feeTypeStatus' => $feeTypeStatus,
+            'feeDiscountYearId' => $feeDiscountYearId,
+            'feeDiscountStatus' => $feeDiscountStatus,
             'studentOptions' => $this->studentOptions($tab, $showCreate),
             'existingStudentOptions' => $this->existingStudentOptions($tab, $showCreate),
             'feeTypeOptions' => $this->feeTypeOptions($tab, $showCreate),
@@ -197,8 +227,12 @@ class MasterDataController extends Controller
             'permissionOptions' => Role::PERMISSIONS,
             'stats' => $this->masterStats(),
             'showCreate' => $showCreate,
+            'showStudentImport' => $showStudentImport,
             'studentImportPreview' => $studentImportPreview,
             'studentImportToken' => $request->string('import_token')->value() ?: null,
+            'studentClassAlumniCount' => $studentClassAlumniCount,
+            'studentClassAlumniClass' => $studentClassAlumniClass,
+            'studentClassAlumniYear' => $studentClassAlumniYear,
         ]);
     }
 
@@ -221,19 +255,197 @@ class MasterDataController extends Controller
         return $this->index($request);
     }
 
+    public function studentImport(Request $request)
+    {
+        $request->merge(['tab' => 'students']);
+
+        return $this->index($request);
+    }
+
     public function studentTransfer(Request $request)
     {
-        return $this->studentManagementPlaceholder('Pindah Kelas', 'Kelola pemindahan siswa antar kelas dalam tahun pelajaran berjalan.', 'pindah-kelas');
+        return $this->studentClassMovementPage($request, 'transfer');
     }
 
     public function studentPromotion(Request $request)
     {
-        return $this->studentManagementPlaceholder('Naik Kelas', 'Proses kenaikan kelas siswa untuk tahun pelajaran berikutnya.', 'naik-kelas');
+        return $this->studentClassMovementPage($request, 'promotion');
+    }
+
+    public function storeStudentTransfer(Request $request): RedirectResponse
+    {
+        return $this->storeStudentClassMovement($request, 'transfer');
+    }
+
+    public function storeStudentPromotion(Request $request): RedirectResponse
+    {
+        return $this->storeStudentClassMovement($request, 'promotion');
+    }
+
+    public function classAlumniCreate(Request $request)
+    {
+        $activeAcademicYear = AcademicYear::where('is_active', true)->first();
+        $yearId = $request->integer('year_id') ?: $activeAcademicYear?->id;
+        $unitId = $request->integer('unit_id');
+        $classId = $request->integer('class_id');
+
+        $class = $unitId && $classId
+            ? SchoolClass::with('educationUnit')
+                ->whereKey($classId)
+                ->where('education_unit_id', $unitId)
+                ->first()
+            : null;
+        $year = $yearId ? AcademicYear::find($yearId) : null;
+
+        if (! $class || ! $year) {
+            return redirect()->route('student-management.students.index', array_filter([
+                'unit_id' => $unitId,
+                'class_id' => $classId,
+                'year_id' => $yearId,
+                'status' => 'active',
+            ], fn ($value) => filled($value)))->with('error', 'Pilih unit pendidikan, kelas, dan tahun pelajaran aktif terlebih dahulu.');
+        }
+
+        $studentCount = Student::where('school_class_id', $class->id)
+            ->where('academic_year_id', $year->id)
+            ->where('is_active', true)
+            ->count();
+
+        if ($studentCount < 1) {
+            return redirect()->route('student-management.students.index', [
+                'unit_id' => $unitId,
+                'class_id' => $classId,
+                'year_id' => $yearId,
+                'status' => 'active',
+            ])->with('error', 'Tidak ada siswa aktif pada kelas dan tahun pelajaran yang dipilih.');
+        }
+
+        return view('student-management.class-alumni', [
+            'activeAcademicYear' => $activeAcademicYear,
+            'class' => $class,
+            'year' => $year,
+            'studentCount' => $studentCount,
+        ]);
+    }
+
+    public function storeClassAlumni(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'unit_id' => ['required', 'exists:education_units,id'],
+            'class_id' => ['required', 'exists:school_classes,id'],
+            'year_id' => ['required', 'exists:academic_years,id'],
+            'exit_date' => ['required', 'date'],
+            'inactive_reason' => ['required', 'string', 'max:120'],
+        ]);
+
+        $class = SchoolClass::whereKey($validated['class_id'])
+            ->where('education_unit_id', $validated['unit_id'])
+            ->first();
+
+        if (! $class) {
+            throw ValidationException::withMessages([
+                'class_id' => 'Kelas tidak sesuai dengan unit pendidikan yang dipilih.',
+            ]);
+        }
+
+        $students = Student::where('school_class_id', $validated['class_id'])
+            ->where('academic_year_id', $validated['year_id'])
+            ->where('is_active', true);
+
+        $count = (clone $students)->count();
+        if ($count < 1) {
+            throw ValidationException::withMessages([
+                'class_id' => 'Tidak ada siswa aktif pada kelas dan tahun pelajaran yang dipilih.',
+            ]);
+        }
+
+        $students->update([
+            'is_active' => false,
+            'exit_date' => $validated['exit_date'],
+            'inactive_reason' => $validated['inactive_reason'],
+        ]);
+
+        return redirect()->route('student-management.students.index', [
+            'unit_id' => $validated['unit_id'],
+            'class_id' => $validated['class_id'],
+            'year_id' => $validated['year_id'],
+            'status' => 'inactive',
+        ])->with('success', number_format($count, 0, ',', '.').' siswa berhasil dijadikan alumni.');
     }
 
     public function studentAlumni(Request $request)
     {
-        return $this->studentManagementPlaceholder('Data Alumni', 'Kelola data siswa yang sudah lulus atau menjadi alumni.', 'alumni');
+        $activeAcademicYear = AcademicYear::where('is_active', true)->first();
+        $selectedUnitId = $request->integer('unit_id') ?: null;
+        $selectedClassId = $request->integer('class_id') ?: null;
+        $selectedYearId = $request->integer('year_id') ?: null;
+        $selectedReason = trim((string) $request->query('reason', ''));
+        $search = trim((string) $request->query('search', ''));
+        $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'class', 'year', 'exit_date', 'reason'], true)
+            ? $request->string('sort')->value()
+            : 'name';
+        $direction = $request->query('direction') === 'desc' ? 'desc' : 'asc';
+        $perPageInput = $request->query('per_page', 10);
+        $perPage = in_array((string) $perPageInput, ['10', '25', '50', '100', '500', 'all'], true) ? (string) $perPageInput : '10';
+
+        $alumniQuery = Student::select('students.*')
+            ->with(['schoolClass.educationUnit', 'academicYear'])
+            ->where('students.is_active', false)
+            ->when($selectedUnitId, fn ($query, $unitId) => $query->whereHas('schoolClass', fn ($class) => $class->where('education_unit_id', $unitId)))
+            ->when($selectedClassId, fn ($query, $classId) => $query->where('students.school_class_id', $classId))
+            ->when($selectedYearId, fn ($query, $yearId) => $query->where('students.academic_year_id', $yearId))
+            ->when($selectedReason !== '', fn ($query) => $query->where('students.inactive_reason', $selectedReason))
+            ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
+            ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+            ->leftJoin('academic_years', 'academic_years.id', '=', 'students.academic_year_id')
+            ->when($search !== '', fn ($query) => $query->where(fn ($q) => $q
+                ->where('students.nis', 'like', "%{$search}%")
+                ->orWhere('students.nisn', 'like', "%{$search}%")
+                ->orWhere('students.name', 'like', "%{$search}%")
+                ->orWhere('students.inactive_reason', 'like', "%{$search}%")
+                ->orWhere('education_units.code', 'like', "%{$search}%")
+                ->orWhere('school_classes.name', 'like', "%{$search}%")
+                ->orWhere('academic_years.name', 'like', "%{$search}%")));
+
+        match ($sort) {
+            'nis' => $alumniQuery->orderBy('students.nis', $direction),
+            'name' => $alumniQuery->orderBy('students.name', $direction),
+            'gender' => $alumniQuery->orderBy('students.gender', $direction),
+            'unit' => $alumniQuery
+                ->orderByRaw(str_replace('code', 'education_units.code', $this->educationUnitOrderExpression())." {$direction}")
+                ->orderBy('education_units.name', $direction),
+            'class' => $alumniQuery->orderBy('school_classes.name', $direction),
+            'year' => $alumniQuery->orderBy('academic_years.name', $direction),
+            'exit_date' => $alumniQuery->orderBy('students.exit_date', $direction),
+            'reason' => $alumniQuery->orderBy('students.inactive_reason', $direction),
+            default => $alumniQuery->orderBy('students.name'),
+        };
+
+        $alumni = $alumniQuery->paginate($perPage === 'all' ? PHP_INT_MAX : (int) $perPage)->withQueryString();
+        $reasonOptions = Student::query()
+            ->where('is_active', false)
+            ->whereNotNull('inactive_reason')
+            ->where('inactive_reason', '!=', '')
+            ->distinct()
+            ->orderBy('inactive_reason')
+            ->pluck('inactive_reason');
+
+        return view('student-management.alumni', [
+            'activeAcademicYear' => $activeAcademicYear,
+            'academicYears' => $this->academicYearOptions(),
+            'educationUnits' => $this->educationUnitOptions(),
+            'classes' => $this->classOptions(),
+            'alumni' => $alumni,
+            'reasonOptions' => $reasonOptions,
+            'filters' => [
+                'unit_id' => $selectedUnitId,
+                'class_id' => $selectedClassId,
+                'year_id' => $selectedYearId,
+                'reason' => $selectedReason,
+                'search' => $search,
+                'per_page' => $perPage,
+            ],
+        ]);
     }
 
     public function storeAcademicYear(Request $request): RedirectResponse
@@ -436,7 +648,7 @@ class MasterDataController extends Controller
     {
         $activeYear = AcademicYear::where('is_active', true)->first();
         if (! $activeYear) {
-            return redirect()->route('student-management.students.index')
+            return redirect()->route('student-management.students.import')
                 ->withErrors(['file' => 'Atur tahun pelajaran aktif terlebih dahulu.']);
         }
 
@@ -457,7 +669,7 @@ class MasterDataController extends Controller
             throw $exception;
         }
 
-        return redirect()->route('student-management.students.index', [
+        return redirect()->route('student-management.students.import', [
             'import_token' => $token,
         ]);
     }
@@ -467,7 +679,7 @@ class MasterDataController extends Controller
         $validated = $request->validate(['token' => ['required', 'uuid']]);
         $stored = $request->session()->pull("student_imports.{$validated['token']}");
         if (! $stored || ! Storage::exists($stored['path'])) {
-            return redirect()->route('student-management.students.index')
+            return redirect()->route('student-management.students.import')
                 ->withErrors(['file' => 'File preview sudah tidak tersedia. Silakan unggah ulang.']);
         }
 
@@ -475,7 +687,7 @@ class MasterDataController extends Controller
         if (! $activeYear) {
             Storage::delete($stored['path']);
 
-            return redirect()->route('student-management.students.index')
+            return redirect()->route('student-management.students.import')
                 ->withErrors(['file' => 'Tahun pelajaran untuk file ini sudah tidak tersedia.']);
         }
 
@@ -1095,5 +1307,170 @@ class MasterDataController extends Controller
                 'alumni' => Student::where('is_active', false)->count(),
             ],
         ]);
+    }
+
+    private function studentClassMovementPage(Request $request, string $mode)
+    {
+        $activeAcademicYear = AcademicYear::where('is_active', true)->first();
+        $selectedYearId = $request->integer('year_id') ?: $activeAcademicYear?->id;
+        $selectedUnitId = $request->integer('unit_id') ?: null;
+        $selectedClassId = $request->integer('class_id') ?: null;
+        $search = trim((string) $request->input('search', ''));
+        $selectedStatus = $request->query('status', 'active');
+        $isPromotion = $mode === 'promotion';
+        $movementSort = in_array($request->string('sort')->value(), ['nis', 'name', 'unit', 'class', 'year'], true)
+            ? $request->string('sort')->value()
+            : null;
+        $movementDirection = $request->query('direction') === 'desc' ? 'desc' : 'asc';
+        $perPageInput = $request->query('per_page', 10);
+        $perPage = in_array((string) $perPageInput, ['10', '25', '50', '100', '500', 'all'], true) ? (string) $perPageInput : '10';
+
+        $studentsQuery = Student::select('students.*')
+            ->with(['schoolClass.educationUnit', 'academicYear'])
+            ->when(in_array($selectedStatus, ['active', 'inactive'], true), fn ($query) => $query->where('students.is_active', $selectedStatus === 'active'))
+            ->when($selectedYearId, fn ($query) => $query->where('students.academic_year_id', $selectedYearId))
+            ->when($selectedClassId, fn ($query) => $query->where('students.school_class_id', $selectedClassId))
+            ->when($selectedUnitId, fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->where('education_unit_id', $selectedUnitId)))
+            ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
+            ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+            ->leftJoin('academic_years', 'academic_years.id', '=', 'students.academic_year_id')
+            ->when($search !== '', fn ($query) => $query->where(fn ($q) => $q
+                ->where('students.name', 'like', "%{$search}%")
+                ->orWhere('students.nis', 'like', "%{$search}%")
+                ->orWhere('education_units.code', 'like', "%{$search}%")
+                ->orWhere('education_units.name', 'like', "%{$search}%")
+                ->orWhere('school_classes.name', 'like', "%{$search}%")
+                ->orWhere('academic_years.name', 'like', "%{$search}%")));
+
+        match ($movementSort) {
+            'nis' => $studentsQuery->orderBy('students.nis', $movementDirection),
+            'name' => $studentsQuery->orderBy('students.name', $movementDirection),
+            'unit' => $studentsQuery->orderByRaw(str_replace('code', 'education_units.code', $this->educationUnitOrderExpression())." {$movementDirection}"),
+            'class' => $studentsQuery->orderBy('school_classes.name', $movementDirection),
+            'year' => $studentsQuery->orderBy('academic_years.name', $movementDirection),
+            default => $studentsQuery
+                ->orderByRaw(str_replace('code', 'education_units.code', $this->educationUnitOrderExpression()))
+                ->orderBy('school_classes.name')
+                ->orderBy('students.name'),
+        };
+
+        $students = $perPage === 'all'
+            ? $studentsQuery->get()
+            : $studentsQuery->paginate((int) $perPage)->withQueryString();
+
+        return view('student-management.class-movement', [
+            'title' => $isPromotion ? 'Naik Kelas' : 'Pindah Kelas',
+            'description' => $isPromotion
+                ? 'Pilih tahun pelajaran dan kelas tujuan, centang siswa yang akan diproses, lalu konfirmasi kenaikan kelas.'
+                : 'Pilih kelas tujuan, centang siswa yang akan diproses, lalu konfirmasi pemindahan kelas.',
+            'section' => $isPromotion ? 'naik-kelas' : 'pindah-kelas',
+            'mode' => $mode,
+            'activeAcademicYear' => $activeAcademicYear,
+            'academicYears' => $this->academicYearOptions(),
+            'educationUnits' => $this->educationUnitOptions(),
+            'classes' => $this->classOptions(),
+            'students' => $students,
+            'filters' => [
+                'year_id' => $selectedYearId,
+                'unit_id' => $selectedUnitId,
+                'class_id' => $selectedClassId,
+                'search' => $search,
+                'status' => $selectedStatus,
+                'per_page' => $perPage,
+            ],
+            'targetYearId' => $isPromotion
+                ? (AcademicYear::where('id', '!=', $selectedYearId)->orderByDesc('name')->value('id') ?: $selectedYearId)
+                : $selectedYearId,
+        ]);
+    }
+
+    private function storeStudentClassMovement(Request $request, string $mode): RedirectResponse
+    {
+        $isPromotion = $mode === 'promotion';
+        $validated = $request->validate([
+            'student_ids' => ['required', 'array', 'min:1'],
+            'student_ids.*' => ['integer', 'exists:students,id'],
+            'source_year_id' => ['required', 'exists:academic_years,id'],
+            'target_year_id' => [$isPromotion ? 'required' : 'nullable', 'exists:academic_years,id'],
+            'target_class_id' => ['required', 'exists:school_classes,id'],
+            'unit_id' => ['nullable', 'exists:education_units,id'],
+            'class_id' => ['nullable', 'exists:school_classes,id'],
+            'search' => ['nullable', 'string', 'max:120'],
+            'status' => ['nullable', 'in:active,inactive,all'],
+        ]);
+
+        $targetYearId = $isPromotion ? (int) $validated['target_year_id'] : (int) $validated['source_year_id'];
+        $targetClassId = (int) $validated['target_class_id'];
+        $targetClass = SchoolClass::findOrFail($targetClassId);
+        $studentIds = collect($validated['student_ids'])->map(fn ($id) => (int) $id)->unique()->values();
+        $students = Student::whereIn('id', $studentIds)
+            ->where('is_active', true)
+            ->where('academic_year_id', $validated['source_year_id'])
+            ->get();
+
+        if ($students->count() !== $studentIds->count()) {
+            throw ValidationException::withMessages([
+                'student_ids' => 'Ada siswa yang tidak aktif, tidak ditemukan, atau tidak sesuai tahun pelajaran sumber.',
+            ]);
+        }
+
+        $unchanged = $students->every(fn (Student $student) => (int) $student->school_class_id === $targetClassId
+            && (int) $student->academic_year_id === $targetYearId);
+        if ($unchanged) {
+            throw ValidationException::withMessages([
+                'target_class_id' => $isPromotion
+                    ? 'Kelas dan tahun pelajaran tujuan masih sama dengan data siswa terpilih.'
+                    : 'Kelas tujuan masih sama dengan kelas siswa terpilih.',
+            ]);
+        }
+
+        $normalizeStudentName = fn (string $name): string => Str::of($name)->squish()->lower()->value();
+        $selectedDuplicateNames = $students
+            ->groupBy(fn (Student $student) => $normalizeStudentName($student->name))
+            ->filter(fn ($group, string $name) => $name !== '' && $group->count() > 1)
+            ->map(fn ($group) => $group->first()->name)
+            ->values();
+        $targetStudents = Student::select(['id', 'name'])
+            ->where('academic_year_id', $targetYearId)
+            ->where('school_class_id', $targetClassId)
+            ->whereNotIn('id', $studentIds)
+            ->get();
+        $targetDuplicateNames = $students
+            ->filter(fn (Student $student) => $targetStudents->contains(
+                fn (Student $targetStudent) => $normalizeStudentName($targetStudent->name) === $normalizeStudentName($student->name)
+            ))
+            ->pluck('name')
+            ->unique()
+            ->values();
+        $duplicateNames = collect($selectedDuplicateNames->all())
+            ->merge($targetDuplicateNames->all())
+            ->unique()
+            ->values();
+
+        if ($duplicateNames->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'target_class_id' => 'Kelas tujuan sudah memiliki siswa dengan nama yang sama: '.$duplicateNames->join(', ').'.',
+            ]);
+        }
+
+        DB::transaction(function () use ($students, $targetClassId, $targetYearId) {
+            Student::whereIn('id', $students->pluck('id'))->update([
+                'school_class_id' => $targetClassId,
+                'academic_year_id' => $targetYearId,
+            ]);
+        });
+
+        $route = $isPromotion ? 'student-management.class-promotion.index' : 'student-management.class-transfer.index';
+        $message = $isPromotion
+            ? number_format($students->count(), 0, ',', '.').' siswa berhasil dinaikkan kelas.'
+            : number_format($students->count(), 0, ',', '.').' siswa berhasil dipindahkan kelas.';
+
+        return redirect()->route($route, array_filter([
+            'year_id' => $targetYearId,
+            'unit_id' => $targetClass->education_unit_id,
+            'class_id' => $targetClassId,
+            'search' => $validated['search'] ?? null,
+            'status' => $validated['status'] ?? null,
+        ], fn ($value) => filled($value)))->with('success', $message);
     }
 }

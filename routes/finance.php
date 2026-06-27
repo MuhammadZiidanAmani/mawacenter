@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('keuangan/pembayaran')->name('finance.payments.')->controller(PaymentController::class)->group(function () {
     Route::get('/', 'index')->name('index');
+    Route::get('/riwayat', 'history')->name('history');
     Route::get('/import', 'import')->name('import');
 });
 

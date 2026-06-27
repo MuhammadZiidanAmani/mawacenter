@@ -34,7 +34,7 @@ class OtherPaymentController extends Controller
         $perPage = $this->perPage($request);
         $search = $request->string('search')->value();
         $section = $this->section($request);
-        $dateFrom = $this->filterDate($request, 'date_from') ?? now()->startOfDay();
+        $dateFrom = $this->filterDate($request, 'date_from') ?? now()->startOfMonth()->startOfDay();
         $dateTo = $this->filterDate($request, 'date_to', true) ?? now()->endOfDay();
         $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'unit', 'class', 'method', 'total'], true)
             ? $request->string('sort')->value()

@@ -41,27 +41,19 @@
             <section class="student-workspace report-workspace">
                 <div class="student-flat-header">
                     <h1>Laporan Pembayaran</h1>
-                </div>
-                <div class="student-action-bar">
-                    <a href="{{ route('reports.export', request()->query()) }}" class="button student-add-button">{!! $icon('download') !!} Export CSV</a>
-                    <a href="{{ route('reports.index') }}" class="button action-orange">Reset</a>
+                    <div class="student-title-actions">
+                        <a href="{{ route('reports.export', request()->query()) }}" class="button student-add-button">{!! $icon('download') !!} Export CSV</a>
+                        <a href="{{ route('reports.index') }}" class="button action-orange">Reset</a>
+                    </div>
                 </div>
 
                 <form method="GET" action="{{ route('reports.index') }}" class="student-filter-panel report-filter-panel">
                     <label class="report-date-filter">
                         <span>Waktu</span>
                         <span class="report-date-range">
-                            <span class="date-picker-field" data-date-picker-control>
-                                <input type="text" name="date_from" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ $filters['date_from']->format('d/m/Y') }}" data-indonesian-date>
-                                <input type="date" tabindex="-1" aria-hidden="true" data-date-picker>
-                                <button type="button" aria-label="Pilih tanggal awal" data-date-picker-button>{!! $icon('calendar') !!}</button>
-                            </span>
+                            <input type="date" name="date_from" value="{{ $filters['date_from']->format('Y-m-d') }}" aria-label="Tanggal awal">
                             <b>-</b>
-                            <span class="date-picker-field" data-date-picker-control>
-                                <input type="text" name="date_to" inputmode="numeric" placeholder="DD/MM/YYYY" pattern="(?:0[1-9]|[12]\d|3[01])/(?:0[1-9]|1[0-2])/\d{4}" value="{{ $filters['date_to']->format('d/m/Y') }}" data-indonesian-date>
-                                <input type="date" tabindex="-1" aria-hidden="true" data-date-picker>
-                                <button type="button" aria-label="Pilih tanggal akhir" data-date-picker-button>{!! $icon('calendar') !!}</button>
-                            </span>
+                            <input type="date" name="date_to" value="{{ $filters['date_to']->format('Y-m-d') }}" aria-label="Tanggal akhir">
                         </span>
                     </label>
                     <label><span>Kategori Pembayaran</span><select name="type"><option value="">-- semua --</option><option value="spp" @selected($filters['type'] === 'spp')>SPP</option><option value="daftar-ulang" @selected($filters['type'] === 'daftar-ulang')>Daftar Ulang</option><option value="laundry" @selected($filters['type'] === 'laundry')>Laundry</option><option value="lain-lain" @selected($filters['type'] === 'lain-lain')>Lain-lain</option></select></label>
@@ -97,9 +89,8 @@
                         <button class="button student-search-button" aria-label="Tampilkan laporan">{!! $icon('search') !!}</button>
                     </div>
                 </form>
-            </section>
 
-            <section class="card student-data-card report-data-card">
+                <section class="card student-data-card report-data-card">
                 <div class="student-table-toolbar">
                     <form method="GET" action="{{ route('reports.index') }}" class="student-table-length">
                         @foreach($reportQuery(['per_page']) as $key => $value)
@@ -128,8 +119,11 @@
                             <col class="report-col-date">
                             <col class="report-col-nis">
                             <col class="report-col-name">
+                            <col class="report-col-unit">
                             <col class="report-col-class">
                             <col class="report-col-type">
+                            <col class="report-col-method">
+                            <col class="report-col-status">
                             <col class="report-col-total">
                             <col class="report-col-detail">
                         </colgroup>
@@ -139,8 +133,11 @@
                                 <th>@include('partials.sortable-heading', ['column' => 'date', 'label' => 'Tanggal'])</th>
                                 <th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th>
                                 <th>@include('partials.sortable-heading', ['column' => 'student', 'label' => 'Nama'])</th>
+                                <th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit'])</th>
                                 <th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th>
                                 <th>@include('partials.sortable-heading', ['column' => 'type', 'label' => 'Kategori'])</th>
+                                <th>@include('partials.sortable-heading', ['column' => 'method', 'label' => 'Cara Bayar'])</th>
+                                <th>@include('partials.sortable-heading', ['column' => 'status', 'label' => 'Status'])</th>
                                 <th>@include('partials.sortable-heading', ['column' => 'amount', 'label' => 'Nominal'])</th>
                                 <th>Rincian</th>
                             </tr>
@@ -151,29 +148,33 @@
                                     <td>{{ $transactions->firstItem() + $loop->index }}</td>
                                     <td><span class="report-date-main">{{ $item['date']->format('d/m/Y') }}</span><small>{{ $item['date']->format('H:i') }}</small></td>
                                     <td>{{ $item['nis'] }}</td>
-                                    <td><span class="report-student-name">{{ $item['student'] }}</span><small>Unit Pendidikan: {{ $item['unit'] }}</small></td>
+                                    <td><span class="report-student-name">{{ $item['student'] }}</span></td>
+                                    <td><span class="education-code">{{ $item['unit'] }}</span></td>
                                     <td>{{ $item['class'] }}</td>
                                     <td><span class="report-type {{ $item['group'] }}">{{ $item['type'] }}</span></td>
+                                    <td>{{ $item['method'] }}</td>
+                                    <td><span class="status {{ $item['status'] === 'Diterima' ? 'success' : 'warning' }}">{{ $item['status'] }}</span></td>
                                     <td><span class="report-amount">{{ $rupiah($item['amount']) }}</span></td>
                                     <td>
                                         <details class="report-row-detail">
                                             <summary>Lihat</summary>
                                             <div class="report-detail-panel">
                                                 <span><b>Kategori</b>{{ $item['description'] }}</span>
-                                                <span><b>Cara Bayar</b>{{ $item['method'] }}</span>
-                                                <span><b>Status</b>{{ $item['status'] }}</span>
+                                                <span><b>Unit</b>{{ $item['unit'] }}</span>
+                                                <span><b>Kelas</b>{{ $item['class'] }}</span>
                                                 <span><b>Petugas</b>{{ $item['operator'] }}</span>
                                             </div>
                                         </details>
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="8" class="empty-state">Belum ada transaksi pada filter ini.</td></tr>
+                                <tr><td colspan="11" class="empty-state">Belum ada transaksi pada filter ini.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
                 <div class="pagination-wrap">{{ $transactions->links() }}</div>
+                </section>
             </section>
         </main>
     </div>

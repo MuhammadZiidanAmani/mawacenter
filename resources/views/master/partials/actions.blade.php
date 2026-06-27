@@ -1,8 +1,10 @@
 @php($actionParameters = $type === 'students' ? array_merge([$row], request()->query()) : [$row])
 @php($deleteParameters = $type === 'students' ? array_merge([$type, $row->id], request()->query()) : [$type, $row->id])
-<div class="table-actions">
-    <button class="icon-button edit-button" type="button" title="Edit" data-edit-record='@json($row)' data-update-action="{{ route('master.'.$type.'.update', $actionParameters) }}">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+@php($isStudentAction = $type === 'students')
+@php($studentActionStyle = 'width:24px !important;height:32px !important;min-width:24px !important;min-height:32px !important;margin:0 !important;padding:0 !important;border:0 !important;background:transparent !important;box-shadow:none !important;border-radius:6px !important;display:inline-grid !important;place-items:center !important;')
+<div class="table-actions {{ $isStudentAction ? 'student-ghost-actions' : '' }}" @if($isStudentAction) style="display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:0 !important;width:48px !important;height:44px !important;margin:0 !important;padding:0 !important;" @endif>
+    <button class="icon-button edit-button" type="button" title="Edit" data-edit-record='@json($row)' data-update-action="{{ route('master.'.$type.'.update', $actionParameters) }}" @if($isStudentAction) style="{{ $studentActionStyle }}color:#0d6b3d !important;" @endif>
+        <svg class="icon" viewBox="0 0 24 24" @if($isStudentAction) style="width:16px;height:16px;" @endif><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
     </button>
-    <form method="POST" action="{{ route('master.destroy', $deleteParameters) }}" onsubmit="return confirm('Hapus data ini?')">@csrf @method('DELETE')<button class="icon-button delete-button" title="Hapus"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    <form method="POST" action="{{ route('master.destroy', $deleteParameters) }}" onsubmit="return confirm('Hapus data ini?')" @if($isStudentAction) style="display:inline-flex !important;margin:0 !important;padding:0 !important;" @endif>@csrf @method('DELETE')<button class="icon-button delete-button" title="Hapus" @if($isStudentAction) style="{{ $studentActionStyle }}color:#ef1f2d !important;" @endif><svg class="icon" viewBox="0 0 24 24" @if($isStudentAction) style="width:16px !important;height:16px !important;" @endif><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
 </div>

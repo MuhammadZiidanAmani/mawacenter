@@ -3,13 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $mode === 'import' ? 'Import Pembayaran' : 'Transaksi Baru' }} - MA'WA CENTER</title>
+    <title>{{ $mode === 'import' ? 'Import Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Transaksi Baru') }} - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
 <div class="app-shell">
     @include('partials.sidebar', [
         'activeMenu' => 'payment',
+        'activePaymentMenu' => $mode === 'import' ? 'import' : ($mode === 'history' ? 'history' : 'transaction'),
     ])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
 
@@ -20,40 +21,49 @@
             <div class="topbar-spacer"></div>
         </header>
 
-        <main @class(['payment-hub-page', 'student-page payment-flat-page' => $mode === 'payment'])>
-            <section @class(['payment-hub-heading' => $mode === 'import', 'student-workspace payment-transaction-workspace' => $mode === 'payment'])>
-                @if($mode === 'payment')
-                    <div class="student-flat-header">
+        <main @class(['payment-hub-page', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
+            @if($mode === 'payment')
+                <div class="student-flat-header payment-page-heading">
+                    <div class="student-master-heading">
                         <h1>Transaksi Baru</h1>
+                        <p>Cari siswa, pilih jenis tagihan, lalu proses pembayaran sesuai kebutuhan.</p>
                     </div>
-                    <div class="student-action-bar">
-                        <a class="button button-secondary" href="{{ route('finance.spp.index') }}">Riwayat SPP</a>
-                        <a class="button button-secondary" href="{{ route('finance.other.index') }}">Riwayat Lainnya</a>
-                        <a class="button button-primary" href="{{ route('finance.payments.import') }}">Import Pembayaran</a>
-                    </div>
+                </div>
+            @endif
+
+            <section @class(['payment-hub-heading' => $mode === 'import', 'student-workspace payment-transaction-workspace' => $mode === 'payment', 'student-workspace payment-history-workspace' => $mode === 'history'])>
+                @if($mode === 'payment')
                     <form method="GET" action="{{ route('finance.payments.index') }}" class="student-filter-panel payment-transaction-search">
                         <label>
                             <span>Cari Siswa</span>
                             <input type="search" name="search" value="{{ $search }}" placeholder="Ketik nama, NIS, atau NISN..." autofocus required>
                         </label>
-                        <div class="student-filter-actions">
-                            <a href="{{ route('finance.payments.index') }}" class="button student-filter-reset">Reset</a>
+                        <div class="student-filter-actions payment-search-actions">
                             <button class="button student-search-button">Cari</button>
+                            <a href="{{ route('finance.payments.index') }}" class="button student-filter-reset">Reset</a>
                         </div>
                     </form>
 
                     @if($search !== '')
                         <div class="payment-transaction-results">
                             <div class="table-wrap">
-                                <table class="data-table student-flat-table payment-transaction-table">
+                                <table class="payment-transaction-table">
+                                    <colgroup>
+                                        <col class="column-number">
+                                        <col class="column-nis">
+                                        <col class="column-name">
+                                        <col class="column-unit">
+                                        <col class="column-class">
+                                        <col class="column-bill">
+                                    </colgroup>
                                     <thead>
                                         <tr>
-                                            <th>No</th>
-                                            <th>NIS</th>
-                                            <th>Nama Siswa</th>
-                                            <th>Unit Pendidikan</th>
-                                            <th>Kelas</th>
-                                            <th>Tagihan</th>
+                                            <th class="column-number">No</th>
+                                            <th class="column-nis">NIS</th>
+                                            <th class="column-name">Nama Siswa</th>
+                                            <th class="column-unit">Unit Pendidikan</th>
+                                            <th class="column-class">Kelas</th>
+                                            <th class="column-bill">Tagihan</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -62,13 +72,13 @@
                                             @foreach($registrations as $student)
                                                 @php($options = $student->payment_options ?? [])
                                                 <tr>
-                                                    <td>{{ $loop->parent->iteration }}{{ $registrations->count() > 1 ? '.'.$loop->iteration : '' }}</td>
-                                                    <td><strong>{{ $student->nis }}</strong></td>
-                                                    <td class="payment-student-name">{{ $identity->name }}</td>
-                                                    <td><span class="education-code">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</span></td>
-                                                    <td>{{ $student->schoolClass?->name ?? '-' }}</td>
-                                                    <td>
-                                                        <div class="payment-option-buttons payment-option-buttons-flat">
+                                                    <td class="column-number">{{ $loop->parent->iteration }}{{ $registrations->count() > 1 ? '.'.$loop->iteration : '' }}</td>
+                                                    <td class="column-nis">{{ $student->nis }}</td>
+                                                    <td class="column-name payment-student-name">{{ $identity->name }}</td>
+                                                    <td class="column-unit"><span class="education-code">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</span></td>
+                                                    <td class="column-class">{{ $student->schoolClass?->name ?? '-' }}</td>
+                                                    <td class="column-bill">
+                                                        <div class="payment-option-buttons-flat">
                                                             @if(in_array('spp', $options, true))
                                                                 <a href="{{ route('finance.spp.create', ['student_id' => $student->id]) }}">SPP</a>
                                                             @endif
@@ -103,6 +113,30 @@
                             </div>
                         </div>
                     @endif
+                @elseif($mode === 'history')
+                    <div class="student-flat-header">
+                        <div class="student-master-heading">
+                            <h1>Riwayat Pembayaran</h1>
+                            <p>Pilih jenis riwayat untuk melihat transaksi yang sudah tercatat.</p>
+                        </div>
+                        <div class="student-action-bar">
+                            <a class="button student-add-button" href="{{ route('finance.payments.index') }}">Transaksi Baru</a>
+                        </div>
+                    </div>
+                    <div class="payment-history-grid">
+                        @foreach([
+                            ['SPP', 'Pembayaran bulanan SPP siswa.', route('finance.spp.index'), 'SPP'],
+                            ['Daftar Ulang', 'Pembayaran daftar ulang dan biaya awal siswa.', route('finance.other.index', ['category' => 'daftar-ulang']), 'DU'],
+                            ['Laundry', 'Pembayaran laundry bulanan siswa.', route('finance.other.index', ['category' => 'laundry']), 'LD'],
+                            ['Lain-lain', 'Kategori pembayaran lainnya.', route('finance.other.index'), 'LL'],
+                        ] as [$title, $description, $url, $code])
+                            <a href="{{ $url }}" class="payment-history-card">
+                                <span>{{ $code }}</span>
+                                <strong>Riwayat {{ $title }}</strong>
+                                <small>{{ $description }}</small>
+                            </a>
+                        @endforeach
+                    </div>
                 @else
                     <div>
                         <p class="eyebrow">Pembayaran</p>
@@ -115,8 +149,7 @@
                 @endif
             </section>
 
-            @if($mode === 'payment')
-            @else
+            @if($mode === 'import')
                 <section class="payment-import-grid">
                     @foreach([
                         ['spp', 'SPP', 'Pembayaran bulanan SPP.', route('finance.spp.import.preview')],

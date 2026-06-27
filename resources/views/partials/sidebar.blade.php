@@ -2,6 +2,7 @@
     $activeMenu = $activeMenu ?? '';
     $activeStudentMenu = $activeStudentMenu ?? '';
     $activeMasterMenu = $activeMasterMenu ?? '';
+    $activePaymentMenu = $activePaymentMenu ?? '';
     $sidebarSvg = fn ($path, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$path.'</svg>';
     $sidebarIcons = [
         'grid' => '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>',
@@ -22,6 +23,7 @@
     $canAccess = fn (string $permission) => auth()->user()?->hasPermission($permission) ?? false;
     $studentOpen = $activeMenu === 'students';
     $masterOpen = $activeMenu === 'master';
+    $paymentOpen = $activeMenu === 'payment';
 @endphp
 <aside class="sidebar" data-sidebar>
     <div class="brand"><div class="brand-mark"><img src="{{ asset('images/mawa-center-mark.png') }}" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
@@ -41,7 +43,14 @@
         </div>
         @endif
         @if($canAccess('payments'))
-        <a href="{{ route('finance.payments.index') }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
+        <div class="nav-group nested-nav {{ $paymentOpen ? 'open' : '' }}">
+            <button type="button" class="nav-item nav-parent {{ $paymentOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $paymentOpen ? 'true' : 'false' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
+            <div class="nav-submenu">
+                <a href="{{ route('finance.payments.index') }}" class="{{ $activePaymentMenu === 'transaction' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Transaksi Baru</span></a>
+                <a href="{{ route('finance.payments.history') }}" class="{{ $activePaymentMenu === 'history' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Riwayat Pembayaran</span></a>
+                <a href="{{ route('finance.payments.import') }}" class="{{ $activePaymentMenu === 'import' ? 'active' : '' }}">{!! $sidebarIcon('database') !!}<span>Import Pembayaran</span></a>
+            </div>
+        </div>
         @endif
         @if($canAccess('bills'))
         <a href="{{ route('finance.bills.index') }}" class="nav-item {{ $activeMenu === 'bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</a>

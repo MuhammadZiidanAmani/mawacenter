@@ -28,13 +28,43 @@ class PaymentMenuTest extends TestCase
         ]);
     }
 
-    public function test_payment_menu_is_single_direct_sidebar_item(): void
+    public function test_payment_menu_has_transaction_history_and_import_submenus(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']))->get('/')
             ->assertOk()
             ->assertSee('Pembayaran')
-            ->assertDontSee('Transaksi Baru')
-            ->assertDontSee('Import Pembayaran');
+            ->assertSee('Transaksi Baru')
+            ->assertSee('Riwayat Pembayaran')
+            ->assertSee('Import Pembayaran');
+    }
+
+    public function test_payment_history_page_has_clear_links_for_each_payment_group(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get('/keuangan/pembayaran/riwayat')
+            ->assertOk()
+            ->assertSee('Riwayat Pembayaran')
+            ->assertSee('Riwayat SPP')
+            ->assertSee('Riwayat Daftar Ulang')
+            ->assertSee('Riwayat Laundry')
+            ->assertSee('Riwayat Lain-lain')
+            ->assertSee(route('finance.other.index', ['category' => 'daftar-ulang']), false)
+            ->assertSee(route('finance.other.index', ['category' => 'laundry']), false)
+            ->assertSee(route('finance.other.index'), false)
+            ->assertDontSee('Riwayat Lainnya');
+    }
+
+    public function test_transaction_hub_stays_focused_without_history_buttons(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get('/keuangan/pembayaran')
+            ->assertOk()
+            ->assertSee('Transaksi Baru')
+            ->assertSee('Cari Siswa')
+            ->assertDontSee('Riwayat SPP')
+            ->assertDontSee('Riwayat Daftar Ulang')
+            ->assertDontSee('Riwayat Laundry')
+            ->assertDontSee('Riwayat Lain-lain');
     }
 
     public function test_transaction_hub_groups_one_student_across_education_units(): void
@@ -101,11 +131,12 @@ class PaymentMenuTest extends TestCase
 
         $this->actingAs($user)->get('/keuangan/pembayaran/lain-lain?category=daftar-ulang')
             ->assertOk()
-            ->assertSee('Daftar Pembayaran Daftar Ulang');
+            ->assertSee('Pembayaran Daftar Ulang')
+            ->assertSee('name="date_from" value="'.now()->startOfMonth()->toDateString().'"', false);
 
         $this->actingAs($user)->get('/keuangan/pembayaran/lain-lain?category=laundry')
             ->assertOk()
-            ->assertSee('Daftar Pembayaran Laundry');
+            ->assertSee('Pembayaran Laundry');
     }
 
     public function test_payment_section_rejects_fee_type_from_another_group(): void
@@ -209,7 +240,7 @@ class PaymentMenuTest extends TestCase
             'remaining_amount' => 100000,
         ]);
 
-        $this->get('/keuangan/pembayaran/lain-lain?category=laundry')
+        $this->get('/keuangan/pembayaran/lain-lain?category=laundry&date_from=2026-06-16&date_to=2026-06-16')
             ->assertOk()
             ->assertSee('Januari 2026, Februari 2026')
             ->assertSee('data-other-edit-url="'.route('finance.other.show', $payment).'"', false)
@@ -278,9 +309,11 @@ class PaymentMenuTest extends TestCase
                 'paid_amount' => 0,
                 'remaining_amount' => 1000000,
             ]);
-        $this->get('/laporan?start_date=2026-06-14&end_date=2026-06-14&type=other')
+        $this->get('/laporan?start_date=2026-06-14&end_date=2026-06-14&type=daftar-ulang')
             ->assertOk()
-            ->assertDontSee('Siswa Daftar Ulang');
+            ->assertSee('Siswa Daftar Ulang')
+            ->assertSee('Pending')
+            ->assertSee('<div class="total"><span>Rp 0</span><small>0 diterima</small></div>', false);
 
         $this->post('/keuangan/pembayaran/lain-lain?category=daftar-ulang', [
             'transaction_date' => '2026-06-14',
@@ -300,11 +333,11 @@ class PaymentMenuTest extends TestCase
             ]);
 
         $payment = OtherPayment::latest('id')->firstOrFail();
-        $this->get('/keuangan/pembayaran/lain-lain?category=daftar-ulang')
+        $this->get('/keuangan/pembayaran/lain-lain?category=daftar-ulang&date_from=2026-06-14&date_to=2026-06-14')
             ->assertOk()
             ->assertSee(route('finance.other.receipt', $payment), false)
             ->assertSee('title="Cetak Struk"', false)
-            ->assertSee('<span class="education-code">PONPES</span>', false)
+            ->assertSee('Unit Pendidikan: PONPES')
             ->assertSee('registration-payment-table', false)
             ->assertSee('Unit Pendidikan')
             ->assertSee('class="registration-payment-detail"', false)

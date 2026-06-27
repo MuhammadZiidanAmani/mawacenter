@@ -98,25 +98,27 @@ document.querySelector('[data-spp-import-file]')?.addEventListener('change', (ev
 
 const sppImportToggle = document.querySelector('[data-spp-import-toggle]');
 const sppImportPanel = document.querySelector('[data-spp-import-panel]');
-const setSppImportModal = (open) => {
+const setSppImportPanel = (open) => {
     if (!sppImportPanel) return;
     sppImportPanel.hidden = !open;
     sppImportPanel.classList.toggle('show', open);
     sppImportToggle?.classList.toggle('active', open);
     sppImportToggle?.setAttribute('aria-expanded', String(open));
-    document.body.style.overflow = open ? 'hidden' : '';
+    const isModal = sppImportPanel.classList.contains('spp-import-modal-backdrop');
+    document.body.style.overflow = open && isModal ? 'hidden' : '';
+    if (open && !isModal) sppImportPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 };
 sppImportToggle?.addEventListener('click', () => {
-    setSppImportModal(sppImportPanel?.hidden ?? true);
+    setSppImportPanel(sppImportPanel?.hidden ?? true);
 });
-document.querySelectorAll('[data-spp-import-close]').forEach((button) => button.addEventListener('click', () => setSppImportModal(false)));
+document.querySelectorAll('[data-spp-import-close]').forEach((button) => button.addEventListener('click', () => setSppImportPanel(false)));
 sppImportPanel?.addEventListener('click', (event) => {
-    if (event.target === sppImportPanel) setSppImportModal(false);
+    if (event.target === sppImportPanel && sppImportPanel.classList.contains('spp-import-modal-backdrop')) setSppImportPanel(false);
 });
 document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && sppImportPanel && !sppImportPanel.hidden) setSppImportModal(false);
+    if (event.key === 'Escape' && sppImportPanel && !sppImportPanel.hidden) setSppImportPanel(false);
 });
-if (sppImportPanel && !sppImportPanel.hidden) document.body.style.overflow = 'hidden';
+if (sppImportPanel && !sppImportPanel.hidden && sppImportPanel.classList.contains('spp-import-modal-backdrop')) document.body.style.overflow = 'hidden';
 
 const setSidebar = (open) => {
     sidebar?.classList.toggle('open', open);
@@ -1181,8 +1183,7 @@ document.querySelectorAll('[data-spp-edit-url]').forEach((button) => button.addE
         const data = await response.json();
         if (!response.ok) throw new Error(data.message ?? 'Data transaksi gagal dimuat.');
         form.action = button.dataset.sppUpdateUrl;
-        form.elements.transaction_date.value = formatIndonesianDate(data.transaction_date);
-        form.elements.transaction_date.dispatchEvent(new Event('input', { bubbles: true }));
+        form.elements.transaction_date.value = data.transaction_date;
         form.elements.transaction_time.value = data.transaction_time.slice(0, 5).replace(':', '.');
         form.elements.payment_method.value = data.payment_method;
         form.elements.status.value = data.status;
@@ -1231,8 +1232,7 @@ document.querySelectorAll('[data-other-edit-url]').forEach((button) => button.ad
         const data = await response.json();
         if (!response.ok) throw new Error(data.message ?? 'Data transaksi gagal dimuat.');
         form.action = button.dataset.otherUpdateUrl;
-        form.elements.transaction_date.value = formatIndonesianDate(data.transaction_date);
-        form.elements.transaction_date.dispatchEvent(new Event('input', { bubbles: true }));
+        form.elements.transaction_date.value = data.transaction_date;
         form.elements.transaction_time.value = data.transaction_time.slice(0, 5).replace(':', '.');
         form.elements.payment_method.value = data.payment_method;
         form.elements.status.value = data.status;
@@ -1436,6 +1436,82 @@ if (studentImportToolbar) {
         renderStudentImportRows();
     });
     renderStudentImportRows();
+}
+
+const classMovementForm = document.querySelector('[data-class-movement-form]');
+if (classMovementForm) {
+    const studentCheckboxes = Array.from(classMovementForm.querySelectorAll('[data-class-movement-student]'));
+    const studentRows = Array.from(classMovementForm.querySelectorAll('[data-class-movement-row]'));
+    const emptyRow = classMovementForm.querySelector('[data-class-movement-empty]');
+    const checkAll = classMovementForm.querySelector('[data-class-movement-check-all]');
+    const countLabel = classMovementForm.querySelector('[data-class-movement-count]');
+    const limitSelect = classMovementForm.querySelector('[data-class-movement-limit]');
+    const searchInput = classMovementForm.querySelector('[data-class-movement-search]');
+    const submitButton = classMovementForm.querySelector('[data-class-movement-submit]');
+    const targetClass = classMovementForm.querySelector('[data-class-movement-target]');
+    const actionLabel = classMovementForm.dataset.classMovementActionLabel || 'proses';
+
+    const normalizeClassMovementSearch = (value) => value.trim().toLocaleLowerCase('id-ID').replace(/\s+/g, ' ');
+    const selectedStudents = () => studentCheckboxes.filter((checkbox) => checkbox.checked);
+    const visibleStudentRows = () => studentRows.filter((row) => !row.hidden);
+    const renderClassMovementSelection = () => {
+        const selectedCount = selectedStudents().length;
+        const visibleRows = visibleStudentRows();
+        const visibleCheckboxes = visibleRows
+            .map((row) => row.querySelector('[data-class-movement-student]'))
+            .filter(Boolean);
+        const selectedVisibleCount = visibleCheckboxes.filter((checkbox) => checkbox.checked).length;
+        if (countLabel) countLabel.textContent = selectedCount.toLocaleString('id-ID');
+        if (submitButton) submitButton.disabled = selectedCount < 1;
+        if (checkAll) {
+            checkAll.checked = visibleCheckboxes.length > 0 && selectedVisibleCount === visibleCheckboxes.length;
+            checkAll.indeterminate = selectedVisibleCount > 0 && selectedVisibleCount < visibleCheckboxes.length;
+        }
+        studentCheckboxes.forEach((checkbox) => {
+            checkbox.closest('tr')?.classList.toggle('is-selected', checkbox.checked);
+        });
+    };
+    const renderClassMovementRows = () => {
+        const query = normalizeClassMovementSearch(searchInput?.value ?? '');
+        const matchingRows = studentRows.filter((row) => !query || normalizeClassMovementSearch(row.dataset.search ?? '').includes(query));
+        const visibleLimit = !limitSelect || limitSelect.value === 'all' ? matchingRows.length : Number(limitSelect.value);
+        const visibleRows = new Set(matchingRows.slice(0, visibleLimit));
+
+        studentRows.forEach((row) => {
+            row.hidden = !visibleRows.has(row);
+        });
+        if (emptyRow) emptyRow.hidden = visibleRows.size > 0;
+        renderClassMovementSelection();
+    };
+
+    checkAll?.addEventListener('change', () => {
+        visibleStudentRows().forEach((row) => {
+            const checkbox = row.querySelector('[data-class-movement-student]');
+            if (checkbox) checkbox.checked = checkAll.checked;
+        });
+        renderClassMovementSelection();
+    });
+
+    studentCheckboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', renderClassMovementSelection);
+    });
+    limitSelect?.addEventListener('change', renderClassMovementRows);
+    searchInput?.addEventListener('input', renderClassMovementRows);
+
+    classMovementForm.addEventListener('submit', (event) => {
+        const selectedCount = selectedStudents().length;
+        if (selectedCount < 1) {
+            event.preventDefault();
+            return;
+        }
+        const targetLabel = targetClass?.selectedOptions?.[0]?.textContent?.trim();
+        if (targetClass && !targetClass.value) return;
+        if (!window.confirm(`Yakin ${actionLabel} ${selectedCount.toLocaleString('id-ID')} siswa ke ${targetLabel}?`)) {
+            event.preventDefault();
+        }
+    });
+
+    renderClassMovementRows();
 }
 
 const billBuilder = document.querySelector('[data-bill-builder]');
