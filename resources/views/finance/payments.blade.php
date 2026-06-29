@@ -10,7 +10,7 @@
 <div class="app-shell">
     @include('partials.sidebar', [
         'activeMenu' => 'payment',
-        'activePaymentMenu' => $mode === 'import' ? 'import' : ($mode === 'history' ? 'history' : 'transaction'),
+        'activePaymentMenu' => $mode === 'history' ? 'history' : 'transaction',
     ])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
 
@@ -27,6 +27,9 @@
                     <div class="student-master-heading">
                         <h1>Transaksi Baru</h1>
                         <p>Cari siswa, pilih jenis tagihan, lalu proses pembayaran sesuai kebutuhan.</p>
+                    </div>
+                    <div class="student-action-bar payment-page-actions">
+                        <a class="button student-add-button payment-import-entry-button" href="{{ route('finance.payments.import') }}">Import Pembayaran</a>
                     </div>
                 </div>
             @endif
@@ -49,7 +52,6 @@
                             <div class="table-wrap">
                                 <table class="payment-transaction-table">
                                     <colgroup>
-                                        <col class="column-number">
                                         <col class="column-nis">
                                         <col class="column-name">
                                         <col class="column-unit">
@@ -58,12 +60,11 @@
                                     </colgroup>
                                     <thead>
                                         <tr>
-                                            <th class="column-number">No</th>
                                             <th class="column-nis">NIS</th>
-                                            <th class="column-name">Nama Siswa</th>
+                                            <th class="column-name">Nama</th>
                                             <th class="column-unit">Unit Pendidikan</th>
                                             <th class="column-class">Kelas</th>
-                                            <th class="column-bill">Tagihan</th>
+                                            <th class="column-bill">Pembayaran</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -72,34 +73,30 @@
                                             @foreach($registrations as $student)
                                                 @php($options = $student->payment_options ?? [])
                                                 <tr>
-                                                    <td class="column-number">{{ $loop->parent->iteration }}{{ $registrations->count() > 1 ? '.'.$loop->iteration : '' }}</td>
                                                     <td class="column-nis">{{ $student->nis }}</td>
-                                                    <td class="column-name payment-student-name">{{ $identity->name }}</td>
+                                                    <td class="column-name">{{ $identity->name }}</td>
                                                     <td class="column-unit"><span class="education-code">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</span></td>
                                                     <td class="column-class">{{ $student->schoolClass?->name ?? '-' }}</td>
                                                     <td class="column-bill">
                                                         <div class="payment-option-buttons-flat">
-                                                            @if(in_array('spp', $options, true))
-                                                                <a href="{{ route('finance.spp.create', ['student_id' => $student->id]) }}">SPP</a>
-                                                            @endif
-                                                            @if(in_array('daftar-ulang', $options, true))
-                                                                <a href="{{ route('finance.other.create', ['category' => 'daftar-ulang', 'student_id' => $student->id]) }}">Daftar Ulang</a>
-                                                            @endif
-                                                            @if(in_array('laundry', $options, true))
-                                                                <a href="{{ route('finance.other.create', ['category' => 'laundry', 'student_id' => $student->id]) }}">Laundry</a>
-                                                            @endif
-                                                            @if(in_array('lain-lain', $options, true))
-                                                                <a href="{{ route('finance.other.create', ['student_id' => $student->id]) }}">Lainnya</a>
-                                                            @endif
-                                                            @if(empty($options))
-                                                                <small>Belum ada kategori</small>
+                                                            @forelse($options as $option)
+                                                                @if($option['status'] === 'payable')
+                                                                    <a href="{{ $option['url'] }}">{{ $option['label'] }}</a>
+                                                                @else
+                                                                    <span class="payment-option-paid">{{ $option['label'] }} Lunas</span>
+                                                                @endif
+                                                            @empty
+                                                                <small>Semua pembayaran lunas</small>
+                                                            @endforelse
+                                                            @if(! empty($options) && collect($options)->every(fn ($option) => $option['status'] === 'paid'))
+                                                                <small class="payment-option-all-paid">Semua pembayaran lunas</small>
                                                             @endif
                                                         </div>
                                                     </td>
                                                 </tr>
                                             @endforeach
                                         @empty
-                                            <tr><td colspan="6" class="empty-state">Siswa tidak ditemukan.</td></tr>
+                                            <tr><td colspan="5" class="empty-state">Siswa tidak ditemukan.</td></tr>
                                         @endforelse
                                     </tbody>
                                 </table>

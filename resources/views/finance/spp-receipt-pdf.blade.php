@@ -28,7 +28,7 @@
         .payment-table { width: 100%; border-collapse: collapse; }
         .payment-table th, .payment-table td { padding: 4px 5px; border: 1px solid #555; font-size: 12.5px; line-height: 1.22; vertical-align: middle; }
         .payment-table th { background: #f5f5f5; font-weight: bold; text-align: center; }
-        .payment-table .transaction-column { width: 20%; white-space: nowrap; }
+        .payment-table .transaction-column { width: 20%; white-space: nowrap; text-align: center; }
         .payment-table .month-column { width: 48%; }
         .payment-table .year-column { width: 8%; }
         .payment-table .method-column { width: 9%; }
@@ -93,15 +93,13 @@
             <tr>
                 <td class="transaction-column">{{ $payment->transaction_at->format('d-m-Y H.i') }} WIB</td>
                 <td>{{ $payment->items->map(fn ($item) => $months[$item->month])->join(', ') }}</td>
-                <td>{{ $payment->items->pluck('year')->unique()->join(', ') }}</td>
-                <td>{{ $payment->payment_method }}</td>
+                <td class="year-column center">{{ $payment->items->pluck('year')->unique()->join(', ') }}</td>
+                <td class="method-column center">{{ $payment->payment_method }}</td>
                 <td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td>
             </tr>
             <tr><td colspan="4" class="totals-label">Keringanan (Rp)</td><td class="number">{{ number_format($payment->discount_amount, 0, ',', '.') }}</td></tr>
-            @if($payment->remaining_amount > 0)
-                <tr><td colspan="4" class="totals-label">Sisa Tagihan (Rp)</td><td class="number">{{ number_format($payment->remaining_amount, 0, ',', '.') }}</td></tr>
-            @endif
             <tr class="grand-total"><td colspan="4" class="totals-label">Total Bayar (Rp)</td><td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td></tr>
+            <tr><td colspan="4" class="totals-label">Sisa Tagihan s/d {{ $outstandingSummary['label'] }} (Rp)</td><td class="number">{{ number_format($outstandingSummary['remaining_amount'], 0, ',', '.') }}</td></tr>
         </tbody>
     </table>
 

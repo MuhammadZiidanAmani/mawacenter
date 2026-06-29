@@ -51,60 +51,105 @@
     <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1"><span></span> Jadikan tahun pelajaran aktif</label>
 @elseif ($tab === 'fee-types')
     @php($selectedPaymentGroup = old('payment_group', 'spp'))
-    <div class="span-2 fee-category-field" data-fee-category-field>
-        <span>Kategori Pembayaran</span>
-        <div class="fee-category-options">
-            @foreach([
-                'spp' => ['SPP', 'Tagihan rutin setiap bulan'],
-                'daftar-ulang' => ['Daftar Ulang', 'Tagihan satu kali'],
-                'laundry' => ['Laundry', 'Dicatat sesuai bulan yang diikuti'],
-                'lain-lain' => ['Lain-lain', 'Biaya selain tiga kategori di atas'],
-            ] as $value => [$label, $description])
-                <label>
-                    <input type="radio" name="payment_group" value="{{ $value }}" required @checked($selectedPaymentGroup === $value) data-fee-category>
-                    <span><strong>{{ $label }}</strong><small>{{ $description }}</small></span>
+    <div class="fee-type-v8 span-2">
+        <section class="fee-type-v8-section fee-type-v8-main">
+            <div class="fee-type-v8-section-title">
+                <strong>Informasi Pembayaran</strong>
+                <span>Pilih jenis pembayaran, isi nama kategori, lalu tentukan nominal.</span>
+            </div>
+            <div class="fee-type-v8-grid">
+                <div class="fee-type-v8-field fee-category-field" data-fee-category-field>
+                    <span>Jenis Pembayaran</span>
+                    <select name="payment_group" required data-fee-category>
+                        <option value="spp" @selected($selectedPaymentGroup === 'spp')>SPP</option>
+                        <option value="daftar-ulang" @selected($selectedPaymentGroup === 'daftar-ulang')>Daftar Ulang</option>
+                        <option value="laundry" @selected($selectedPaymentGroup === 'laundry')>Laundry</option>
+                        <option value="lain-lain" @selected($selectedPaymentGroup === 'lain-lain')>Lain-lain</option>
+                    </select>
+                </div>
+
+                <label class="fee-type-v8-field fee-type-v8-field-full">
+                    <span>Nama Kategori Pembayaran</span>
+                    <input name="name" required value="{{ old('name') }}" placeholder="Contoh: SPP Bulanan atau Uang Gedung">
                 </label>
-            @endforeach
-        </div>
-    </div>
-    <label class="span-2">Nama Kategori <input name="name" required value="{{ old('name') }}" placeholder="Contoh: SPP Bulanan atau Uang Gedung"></label>
-    <label>Unit Pendidikan <select name="education_unit_id" required data-student-unit><option value="">Pilih Unit Pendidikan</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(old('education_unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
-    <label>Tahun Pelajaran <select name="academic_year_id" required>@foreach($academicYears as $year)<option value="{{ $year->id }}" @selected(old('academic_year_id', $activeAcademicYear?->id) == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
-    <div class="span-2 registration-class-field">
-        <span>Berlaku untuk</span>
-        <div class="fee-scope-options">
-            <label><input type="radio" name="class_scope" value="all" @checked(old('class_scope', old('school_class_id') === 'all' ? 'all' : 'all') === 'all') data-registration-all-classes><span>Semua Kelas</span></label>
-            <label><input type="radio" name="class_scope" value="selected" @checked(old('class_scope') === 'selected') data-registration-selected-classes><span>Kelas Tertentu</span></label>
-        </div>
-        <input type="hidden" name="school_class_id" value="{{ old('class_scope', 'all') === 'all' ? 'all' : '' }}" data-registration-scope-value>
-        <div class="registration-class-list fee-selected-classes" data-registration-class-list hidden>
-            @foreach($classes as $class)
-                <label data-unit-id="{{ $class->education_unit_id }}" @if(old('education_unit_id') != $class->education_unit_id) hidden @endif>
-                    <input type="checkbox" name="school_class_ids[]" value="{{ $class->id }}" @checked(in_array($class->id, old('school_class_ids', [])))>
-                    <span>{{ $class->educationUnit?->code }} - {{ $class->name }}</span>
+
+                <label class="fee-type-v8-field fee-type-v8-money">
+                    <span>Nominal</span>
+                    <input type="text" inputmode="numeric" name="amount" required value="{{ old('amount') }}" placeholder="0" data-currency-input>
                 </label>
-            @endforeach
-            <p data-registration-class-empty>Pilih unit pendidikan terlebih dahulu.</p>
-        </div>
-        <small data-fee-scope-help>Kategori akan berlaku untuk seluruh kelas pada unit yang dipilih.</small>
+
+                <div class="fee-type-v8-field fee-behavior-summary" data-fee-behavior-summary>
+                    <span>Perilaku</span>
+                    <strong data-fee-behavior-title>Tagihan bulanan</strong>
+                    <small data-fee-behavior-description>SPP akan masuk ke tagihan siswa setiap bulan.</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="fee-type-v8-section">
+            <div class="fee-type-v8-section-title">
+                <strong>Cakupan Kategori</strong>
+                <span>Tentukan unit, tahun pelajaran, dan kelas yang memakai kategori ini.</span>
+            </div>
+            <div class="fee-type-v8-grid fee-type-v8-grid-compact">
+                <label class="fee-type-v8-field">
+                    <span>Unit Pendidikan</span>
+                    <select name="education_unit_id" required data-student-unit>
+                        <option value="">Pilih Unit</option>
+                        @foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(old('education_unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach
+                    </select>
+                </label>
+                <label class="fee-type-v8-field">
+                    <span>Tahun Pelajaran</span>
+                    <select name="academic_year_id" required>
+                        @foreach($academicYears as $year)<option value="{{ $year->id }}" @selected(old('academic_year_id', $activeAcademicYear?->id) == $year->id)>{{ $year->name }}</option>@endforeach
+                    </select>
+                </label>
+                <div class="fee-type-v8-field registration-class-field">
+                    <span>Berlaku untuk</span>
+                    <select name="class_scope" data-registration-scope-select>
+                        <option value="all" @selected(old('class_scope', old('school_class_id') === 'all' ? 'all' : 'all') === 'all')>Semua Kelas</option>
+                        <option value="selected" @selected(old('class_scope') === 'selected')>Kelas Tertentu</option>
+                    </select>
+                    <input type="radio" name="class_scope_shadow" value="all" @checked(old('class_scope', old('school_class_id') === 'all' ? 'all' : 'all') === 'all') data-registration-all-classes hidden>
+                    <input type="radio" name="class_scope_shadow" value="selected" @checked(old('class_scope') === 'selected') data-registration-selected-classes hidden>
+                    <input type="hidden" name="school_class_id" value="{{ old('class_scope', 'all') === 'all' ? 'all' : '' }}" data-registration-scope-value>
+                    <div class="registration-class-list fee-selected-classes" data-registration-class-list hidden>
+                        @foreach($classes as $class)
+                            <label data-unit-id="{{ $class->education_unit_id }}" @if(old('education_unit_id') != $class->education_unit_id) hidden @endif>
+                                <input type="checkbox" name="school_class_ids[]" value="{{ $class->id }}" @checked(in_array($class->id, old('school_class_ids', [])))>
+                                <span>{{ $class->educationUnit?->code }} - {{ $class->name }}</span>
+                            </label>
+                        @endforeach
+                        <p data-registration-class-empty>Pilih unit pendidikan terlebih dahulu.</p>
+                    </div>
+                    <small data-fee-scope-help>Kategori akan berlaku untuk seluruh kelas pada unit yang dipilih.</small>
+                </div>
+            </div>
+        </section>
+
+        <section class="fee-type-v8-section fee-type-v8-settings">
+            <div class="fee-type-v8-section-title">
+                <strong>Pengaturan</strong>
+                <span>Atur pencatatan dan status kategori.</span>
+            </div>
+            <div class="fee-type-v8-grid">
+                <div class="fee-type-v8-field fee-billing-choice" data-fee-billing-choice hidden>
+                    <span>Pencatatan Pembayaran</span>
+                    <div class="fee-scope-options fee-type-v8-scope">
+                        <label><input type="radio" name="creates_bill" value="1" @checked(old('creates_bill', '1') === '1')><span>Dijadikan Tagihan</span></label>
+                        <label><input type="radio" name="creates_bill" value="0" @checked(old('creates_bill') === '0')><span>Transaksi Langsung</span></label>
+                    </div>
+                    <small>Gunakan transaksi langsung jika pembayaran tidak perlu muncul sebagai kewajiban siswa.</small>
+                </div>
+                <label class="fee-type-v8-field" data-fee-period-field hidden>
+                    <span>Periode Tagihan</span>
+                    <select name="period" required data-fee-period><option>Bulanan</option><option>Tahunan</option><option>Sekali Bayar</option></select>
+                </label>
+                <label class="switch-field fee-type-v8-status"><input type="checkbox" name="is_active" value="1" checked><span></span> Kategori pembayaran aktif</label>
+            </div>
+        </section>
     </div>
-    <label>Nominal <input type="text" inputmode="numeric" name="amount" required value="{{ old('amount') }}" placeholder="0" data-currency-input></label>
-    <div class="fee-behavior-summary" data-fee-behavior-summary>
-        <strong data-fee-behavior-title>Tagihan bulanan</strong>
-        <small data-fee-behavior-description>SPP akan masuk ke tagihan siswa setiap bulan.</small>
-    </div>
-    <div class="span-2 fee-billing-choice" data-fee-billing-choice hidden>
-        <span>Pencatatan Pembayaran</span>
-        <div class="fee-scope-options">
-            <label><input type="radio" name="creates_bill" value="1" @checked(old('creates_bill', '1') === '1')><span>Dijadikan Tagihan</span></label>
-            <label><input type="radio" name="creates_bill" value="0" @checked(old('creates_bill') === '0')><span>Transaksi Langsung</span></label>
-        </div>
-        <small>Gunakan transaksi langsung jika pembayaran tidak perlu muncul sebagai kewajiban siswa.</small>
-    </div>
-    <label class="span-2" data-fee-period-field hidden>Periode Tagihan
-        <select name="period" required data-fee-period><option>Bulanan</option><option>Tahunan</option><option>Sekali Bayar</option></select>
-    </label>
-    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Kategori pembayaran aktif</label>
 @elseif ($tab === 'data-roles')
     <label>Kode Role <input name="key" required value="{{ old('key') }}" placeholder="contoh: admin_unit"></label>
     <label>Nama Role <input name="name" required value="{{ old('name') }}" placeholder="Contoh: Admin Unit"></label>

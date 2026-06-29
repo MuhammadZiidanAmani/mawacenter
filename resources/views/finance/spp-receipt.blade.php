@@ -7,9 +7,14 @@
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; color: #111; background: #eef1f5; font-family: Arial, sans-serif; font-size: 12.5px; line-height: 1.25; }
-        .receipt-actions { width: min(210mm, calc(100% - 24px)); margin: 18px auto 10px; display: flex; justify-content: flex-end; gap: 8px; }
-        .receipt-actions button, .receipt-actions a { min-height: 40px; padding: 0 16px; display: inline-flex; align-items: center; color: #0d5f36; background: white; border: 1px solid #cfd7e3; border-radius: 7px; cursor: pointer; font: inherit; font-weight: 700; text-decoration: none; }
-        .receipt-actions .print { color: white; background: #0d5f36; border-color: #0d5f36; }
+        .receipt-actions { width: min(210mm, calc(100% - 24px)); margin: 18px auto 10px; display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .receipt-actions button, .receipt-actions a, .receipt-actions summary { min-height: 40px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; color: #1f2f46; background: white; border: 1px solid #cfd7e3; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 700; text-decoration: none; list-style: none; }
+        .receipt-actions summary::-webkit-details-marker { display: none; }
+        .receipt-actions .primary, .receipt-actions .print { color: #fff; background: #157144; border-color: #157144; }
+        .receipt-actions .primary:hover, .receipt-actions .print:hover { background: #0d5f36; border-color: #0d5f36; }
+        .next-unit { position: relative; }
+        .next-unit div { position: absolute; top: 46px; right: 0; z-index: 5; min-width: 220px; padding: 8px; display: grid; gap: 6px; background: #fff; border: 1px solid #cfd7e3; border-radius: 8px; box-shadow: 0 12px 28px rgba(15, 23, 42, .14); }
+        .next-unit div a { justify-content: flex-start; min-height: 36px; padding: 0 12px; border: 0; font-weight: 600; }
         .page { width: 210mm; min-height: 297mm; margin: 0 auto 12mm; padding: 5mm 10mm 10mm; background: white; border: 1px solid #d5d9df; box-shadow: 0 8px 30px #17203314; }
         .receipt-header { padding: 0 1mm 1.3mm; display: grid; grid-template-columns: 14mm 1fr 36mm; align-items: center; gap: 2.5mm; border-bottom: .6mm solid #999; }
         .receipt-logo { width: 12mm; height: 12mm; display: block; object-fit: contain; }
@@ -27,7 +32,7 @@
         th, td { height: 6.2mm; padding: .9mm 1.4mm; border: 1px solid #555; text-align: left; font-size: 12.5px; line-height: 1.22; vertical-align: middle; }
         th { height: 5.2mm; font-size: 12.5px; font-weight: 700; text-align: center; }
         th.number { text-align: center; }
-        .transaction-time { width: 20%; white-space: nowrap; }
+        .transaction-time { width: 20%; white-space: nowrap; text-align: center; }
         .month { width: 48%; }
         .year { width: 8%; text-align: center; }
         .payment-method { width: 9%; text-align: center; }
@@ -53,10 +58,25 @@
 </head>
 <body>
 <div class="receipt-actions">
-    <a href="{{ route('finance.spp.index') }}">Kembali</a>
-    <button type="button" class="print" onclick="window.print()">Cetak Struk</button>
+    <button type="button" class="print" onclick="window.print()">Cetak</button>
+    <a href="{{ route('finance.spp.receipt.download', $payment) }}">Unduh PDF</a>
+    <button type="button" data-receipt-jpg>Unduh JPG</button>
+    @if($otherSppStudents->count() === 1)
+        <a class="primary" href="{{ route('finance.spp.create', ['student_id' => $otherSppStudents->first()->id]) }}">Bayar SPP Unit Lain</a>
+    @elseif($otherSppStudents->count() > 1)
+        <details class="next-unit">
+            <summary class="primary">Bayar SPP Unit Lain</summary>
+            <div>
+                @foreach($otherSppStudents as $nextStudent)
+                    <a href="{{ route('finance.spp.create', ['student_id' => $nextStudent->id]) }}">
+                        {{ $nextStudent->schoolClass?->educationUnit?->code ?? '-' }} · {{ $nextStudent->schoolClass?->name ?? '-' }}
+                    </a>
+                @endforeach
+            </div>
+        </details>
+    @endif
 </div>
-<main class="page">
+<main class="page" data-receipt-page>
     <header class="receipt-header">
         <img class="receipt-logo" src="{{ asset('images/logo-yayasan-mambaul-hikmah.png') }}" alt="Logo Yayasan Mambaul Hikmah">
         <div class="institution">
@@ -85,12 +105,13 @@
             <tr>
                 <td class="transaction-time">{{ $payment->transaction_at->format('d-m-Y H:i:s') }}</td>
                 <td>{{ $payment->items->map(fn ($item) => $months[$item->month])->join(', ') }}</td>
-                <td>{{ $payment->items->pluck('year')->unique()->join(', ') }}</td>
-                <td>{{ $payment->payment_method }}</td>
+                <td class="year">{{ $payment->items->pluck('year')->unique()->join(', ') }}</td>
+                <td class="payment-method">{{ $payment->payment_method }}</td>
                 <td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td>
             </tr>
             <tr class="totals"><td colspan="4" class="totals-label">Keringanan (Rp)</td><td class="number">{{ number_format($payment->discount_amount, 0, ',', '.') }}</td></tr>
             <tr class="totals grand-total"><td colspan="4" class="totals-label">Total Bayar (Rp)</td><td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td></tr>
+            <tr class="totals"><td colspan="4" class="totals-label">Sisa Tagihan s/d {{ $outstandingSummary['label'] }} (Rp)</td><td class="number">{{ number_format($outstandingSummary['remaining_amount'], 0, ',', '.') }}</td></tr>
         </tbody>
     </table>
 
@@ -106,7 +127,32 @@
     <div class="receipt-footer"></div>
 </main>
 <script>
-    window.addEventListener('load', () => window.print());
+document.querySelector('[data-receipt-jpg]')?.addEventListener('click', async () => {
+    const page = document.querySelector('[data-receipt-page]');
+    if (!page) return;
+    const width = page.offsetWidth;
+    const height = page.offsetHeight;
+    const styles = document.querySelector('style')?.textContent ?? '';
+    const markup = new XMLSerializer().serializeToString(page.cloneNode(true));
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width * 2}" height="${height * 2}" viewBox="0 0 ${width} ${height}"><foreignObject width="100%" height="100%"><div xmlns="http://www.w3.org/1999/xhtml"><style>${styles}</style>${markup}</div></foreignObject></svg>`;
+    const image = new Image();
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+    image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = width * 2;
+        canvas.height = height * 2;
+        const context = canvas.getContext('2d');
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        const link = document.createElement('a');
+        link.download = 'struk-spp-{{ $payment->student?->nis }}-{{ $payment->id }}.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+    };
+    image.src = url;
+});
 </script>
 </body>
 </html>

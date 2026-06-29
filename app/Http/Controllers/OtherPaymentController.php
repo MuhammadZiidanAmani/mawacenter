@@ -7,6 +7,7 @@ use App\Http\Requests\StoreOtherPaymentRequest;
 use App\Http\Requests\UpdateOtherPaymentRequest;
 use App\Models\AcademicYear;
 use App\Models\AppSetting;
+use App\Models\Bill;
 use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
@@ -91,9 +92,20 @@ class OtherPaymentController extends Controller
         ]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request, OtherPaymentService $payments)
     {
         $section = $this->section($request);
+        $feeTypes = $this->feeTypes($section);
+
+        if ($request->filled('student_id')) {
+            $selectedStudent = Student::with('schoolClass.educationUnit')->findOrFail($request->integer('student_id'));
+            $matchedFeeTypes = $this->matchedFeeTypesForStudent($selectedStudent, $feeTypes, $section);
+
+            if ($matchedFeeTypes->isNotEmpty() && ! $this->hasPayableFeeTypeForStudent($selectedStudent, $matchedFeeTypes, $section, $payments)) {
+                return redirect()->route('finance.payments.index')
+                    ->withErrors(['student_id' => 'Pembayaran '.$section['title'].' siswa ini sudah lunas dan tidak perlu diproses kembali.']);
+            }
+        }
 
         return view('finance.other', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
@@ -106,7 +118,7 @@ class OtherPaymentController extends Controller
                 ->orderBy('education_units.name')
                 ->orderBy('students.name')
                 ->get(),
-            'feeTypes' => $this->feeTypes($section),
+            'feeTypes' => $feeTypes,
             'defaultPaymentMethod' => AppSetting::valueFor('default_payment_method', 'Cash'),
             'years' => range(now()->year - 2, now()->year + 2),
             'showCreate' => true,
@@ -389,6 +401,43 @@ class OtherPaymentController extends Controller
             ->where('is_active', true)
             ->paymentGroup($section['key'])
             ->orderBy('name')->get();
+    }
+
+    private function matchedFeeTypesForStudent(Student $student, $feeTypes, array $section)
+    {
+        $unitId = $student->schoolClass?->education_unit_id;
+
+        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->education_unit_id === $unitId
+            && (! $feeType->school_class_id || $feeType->school_class_id === $student->school_class_id)
+            && ($section['key'] === 'daftar-ulang' || ! $feeType->academic_year_id || $feeType->academic_year_id === $student->academic_year_id));
+    }
+
+    private function hasPayableFeeTypeForStudent(Student $student, $feeTypes, array $section, OtherPaymentService $payments): bool
+    {
+        if ($feeTypes->contains(fn (FeeType $feeType) => ! $feeType->creates_bill)) {
+            return true;
+        }
+
+        if ($section['key'] === 'daftar-ulang') {
+            foreach ($feeTypes as $feeType) {
+                try {
+                    if (($payments->quote($student, $feeType)['remaining_amount'] ?? 0) > 0) {
+                        return true;
+                    }
+                } catch (ValidationException) {
+                    continue;
+                }
+            }
+
+            return false;
+        }
+
+        return Bill::where('student_id', $student->id)
+            ->where('source_type', 'fee_type')
+            ->whereIn('fee_type_id', $feeTypes->pluck('id'))
+            ->where('remaining_amount', '>', 0)
+            ->where('status', '!=', 'Dibatalkan')
+            ->exists();
     }
 
     private function filterOptions(array $section): array

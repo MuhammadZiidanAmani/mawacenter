@@ -46,11 +46,20 @@
 
         return $fallback ?? now()->toDateString();
     };
+    $nativeTimeValue = function ($value, $fallback = null) {
+        $value = filled($value) ? (string) $value : (string) $fallback;
+        if (preg_match('/^([01]?\d|2[0-3])[.:]([0-5]\d)/', $value, $matches)) {
+            $hour = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+            return "{$hour}:{$matches[2]}";
+        }
+
+        return now()->format('H:i');
+    };
     $filterDateFrom = $nativeDateValue(request('date_from'), now()->toDateString());
     $filterDateTo = $nativeDateValue(request('date_to'), now()->toDateString());
 @endphp
 <div class="app-shell">
-    @include('partials.sidebar', ['activeMenu' => 'payment', 'activePaymentMenu' => 'history'])
+    @include('partials.sidebar', ['activeMenu' => 'payment', 'activePaymentMenu' => $showCreate ? 'transaction' : 'history'])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar">
@@ -61,7 +70,9 @@
             <button class="icon-button logout-button">{!! $icon('logout') !!}</button>
         </header>
         <main @class(['finance-page' => $showCreate, 'student-page payment-flat-page' => ! $showCreate])>
-            @php($paymentAction = session('payment_action'))
+            @php
+                $paymentAction = session('payment_action');
+            @endphp
             @if($paymentAction)<div class="result-modal-backdrop show" data-alert><div class="result-modal success-result payment-action-result"><span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><div class="payment-result-actions"><a href="{{ $paymentAction['receipt_url'] }}" target="_blank" class="button button-primary">Cetak</a><a href="{{ $paymentAction['download_url'] }}" class="button button-secondary">Unduh PDF</a><a href="{{ $paymentAction['back_url'] }}" class="button button-secondary">Kembali</a></div></div></div>@elseif(session('success'))<div class="result-modal-backdrop show" data-alert><div class="result-modal success-result"><span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>@endif
             @if($errors->any())<div class="result-modal-backdrop show" data-alert><div class="result-modal error-result"><span class="result-icon">!</span><strong>Perlu Diperiksa</strong><p>{{ $errors->first() }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>@endif
             @unless($showCreate)
@@ -185,33 +196,99 @@
             </div>
             @else
             <section class="spp-form-page payment-create-page">
-                <form method="POST" action="{{ route('finance.spp.store') }}" class="card spp-payment-form" data-spp-form data-quote-url="{{ route('finance.spp.quote') }}" data-months-url="{{ route('finance.spp.months') }}">
-                @csrf
-                <div class="spp-form-topbar">
-                    <strong>Informasi Transaksi</strong>
-                    <a href="{{ route('finance.spp.index') }}" class="button button-secondary">Kembali ke Daftar</a>
-                </div>
-                <div class="spp-form-section">
-                    <div class="spp-form-grid">
-                        <label>Waktu Transaksi <span class="spp-inline"><input type="date" name="transaction_date" value="{{ $nativeDateValue(old('transaction_date'), now()->toDateString()) }}" required data-spp-date><span class="wib-clock-field"><input type="text" value="{{ now()->format('H.i') }}" readonly data-wib-clock><b>WIB</b></span><input type="hidden" name="transaction_time" value="{{ old('transaction_time', now()->format('H:i:s')) }}" data-spp-time></span></label>
-                        <div class="spp-form-field"><span>Siswa</span><div class="student-search-picker" data-student-picker><input type="search" placeholder="Ketik NIS atau nama siswa..." autocomplete="off" required data-student-search><select name="student_id" data-spp-student data-student-source><option value="">Pilih siswa...</option>@foreach($students as $student)<option value="{{ $student->id }}" @selected(old('student_id', request('student_id'))==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>@endforeach</select><div class="student-search-results" data-student-results hidden></div></div></div>
-                        <fieldset class="spp-month-field"><legend>Bulan</legend><div class="spp-months">@foreach($months as $number=>$name)<label><input type="checkbox" name="months[]" value="{{ $number }}" @checked(in_array($number, old('months', [])))><span class="spp-month-name">{{ $name }}</span><small class="spp-month-status">Belum Dibayar</small></label>@endforeach</div></fieldset>
-                        <label>Tahun <span class="spp-year-control"><select name="year" required data-spp-year>@foreach($years as $year)<option value="{{ $year }}" @selected(old('year', now()->year)==$year)>{{ $year }}</option>@endforeach</select><small class="spp-arrears-notice" data-spp-arrears-notice hidden></small></span></label>
-                        <label>Cara Bayar <select name="payment_method" required><option @selected(($defaultPaymentMethod ?? 'Cash')==='Cash')>Cash</option><option @selected(($defaultPaymentMethod ?? 'Cash')==='Transfer')>Transfer</option></select></label>
-                        <label>Status <select name="status" required><option>Diterima</option><option>Pending</option></select></label>
+                <div class="student-flat-header payment-create-heading">
+                    <div class="student-master-heading">
+                        <h1>Pembayaran SPP</h1>
+                        <p>Lengkapi data pembayaran SPP sebelum transaksi disimpan.</p>
                     </div>
                 </div>
-                <div class="spp-summary">
-                    <div><span>Besar SPP / Bulan</span><strong class="spp-summary-readonly" data-spp-base>Rp 0</strong></div>
-                    <div><span>Total SPP</span><strong class="spp-summary-readonly" data-spp-original>Rp 0</strong></div>
-                    <div class="discount"><span>Keringanan</span><strong class="spp-summary-readonly" data-spp-discount>Rp 0</strong></div>
-                    <div class="total spp-summary-payment-row"><span>Total Bayar</span><input type="text" inputmode="numeric" name="paid_amount" required value="{{ old('paid_amount') }}" placeholder="Otomatis sesuai sisa tagihan, bisa diedit" data-spp-paid-input data-currency-input></div>
-                    <div class="spp-summary-hidden" aria-hidden="true"><span>Total Wajib</span><strong data-spp-total>Rp 0</strong></div>
-                    <div class="spp-summary-hidden" aria-hidden="true"><span>Sudah Dibayar</span><strong data-spp-paid>Rp 0</strong></div>
-                    <div class="spp-summary-hidden" aria-hidden="true"><span>Sisa Tagihan</span><strong data-spp-remaining>Rp 0</strong><small data-spp-status>Belum Lunas</small></div>
+                <form method="POST" action="{{ route('finance.spp.store') }}" class="card payment-spp-v8-form" data-spp-form data-quote-url="{{ route('finance.spp.quote') }}" data-months-url="{{ route('finance.spp.months') }}">
+                @csrf
+                <div class="payment-form-body">
+                    <select name="student_id" data-spp-student hidden>
+                        @foreach($students as $student)
+                            <option value="{{ $student->id }}" @selected(old('student_id', request('student_id')) == $student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->schoolClass?->name ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
+                        @endforeach
+                    </select>
+
+                    <section class="payment-spp-v8-layout">
+                        <div class="payment-spp-v8-main">
+                            <section class="payment-spp-v8-time-grid">
+                                <label>Tanggal
+                                    <input type="date" name="transaction_date" value="{{ $nativeDateValue(old('transaction_date'), now()->toDateString()) }}" required data-spp-date>
+                                </label>
+                                <label>Jam
+                                    <span class="payment-spp-clock-field">
+                                        <input type="time" name="transaction_time" value="{{ $nativeTimeValue(old('transaction_time'), now()->format('H:i:s')) }}" required data-wib-clock data-spp-time>
+                                        <b>WIB</b>
+                                    </span>
+                                </label>
+                            </section>
+
+                            <div class="payment-spp-v8-student-control">
+                                <label class="payment-spp-student-field-compact">Siswa
+                                    <input class="payment-spp-student-input-compact" type="text" value="{{ $selectedStudent?->schoolClass?->educationUnit?->code ?? '-' }} - {{ $selectedStudent?->nis }} - {{ $selectedStudent?->name }}" readonly>
+                                </label>
+                                <a href="{{ route('finance.payments.index') }}" class="button button-secondary payment-spp-change-student">Ganti Siswa</a>
+                            </div>
+
+                            <section class="payment-spp-period-block">
+                                <div class="payment-spp-period-field">
+                                    <label>Jumlah Bulan
+                                        <span class="payment-spp-month-input">
+                                            <input type="number" name="month_count" min="1" max="120" step="1" value="{{ old('month_count') }}" required data-spp-month-count-input>
+                                        </span>
+                                    </label>
+                                    <div class="payment-spp-period-result">
+                                        <span>Dibayar sampai</span>
+                                        <strong data-spp-paid-until>-</strong>
+                                    </div>
+                                </div>
+                                <small data-spp-arrears-notice>Memuat periode tagihan SPP...</small>
+                            </section>
+
+                            <section class="payment-spp-v8-payment-grid">
+                                <label>Cara Bayar
+                                    <select name="payment_method" required><option @selected(($defaultPaymentMethod ?? 'Cash')==='Cash')>Cash</option><option @selected(($defaultPaymentMethod ?? 'Cash')==='Transfer')>Transfer</option></select>
+                                </label>
+                                <label>Status
+                                    <select name="status" required><option>Diterima</option><option>Pending</option></select>
+                                </label>
+                                <label class="payment-spp-total-field">Total Bayar
+                                    <input type="text" inputmode="numeric" name="paid_amount" required value="{{ old('paid_amount') }}" placeholder="Otomatis sesuai tagihan, bisa diedit" data-spp-paid-input data-currency-input>
+                                </label>
+                            </section>
+                        </div>
+                        <aside class="payment-spp-receipt-summary">
+                            <span class="payment-spp-receipt-title">Ringkasan</span>
+                            <strong class="payment-spp-receipt-name">{{ $selectedStudent?->name }}</strong>
+                            <small>{{ $selectedStudent?->nis }} · {{ $selectedStudent?->schoolClass?->educationUnit?->code ?? '-' }} · {{ $selectedStudent?->schoolClass?->name ?? '-' }}</small>
+                            <div class="payment-spp-receipt-period">
+                                <span>Periode</span>
+                                <strong data-spp-period>-</strong>
+                                <small><span data-spp-month-count>0 bulan</span> x <span data-spp-base>Rp 0</span></small>
+                            </div>
+                            <dl>
+                                <div><dt>Subtotal</dt><dd data-spp-original>Rp 0</dd></div>
+                                <div><dt>Keringanan</dt><dd data-spp-discount>Rp 0</dd></div>
+                                <div><dt>Sudah Dibayar</dt><dd data-spp-paid>Rp 0</dd></div>
+                                <div><dt>Sisa Tagihan</dt><dd data-spp-remaining>Rp 0</dd></div>
+                            </dl>
+                            <div class="payment-spp-receipt-total">
+                                <span>Total Bayar</span>
+                                <strong data-spp-total>Rp 0</strong>
+                                <small data-spp-status>Belum Lunas</small>
+                            </div>
+                            <p class="payment-spp-message" data-spp-message>Memuat tagihan SPP siswa.</p>
+                        </aside>
+                    </section>
+
+                    <div data-spp-hidden-months></div>
                 </div>
-                <p class="spp-quote-message" data-spp-message>Pilih siswa dan bulan untuk menghitung pembayaran.</p>
-                <div class="form-actions"><a href="{{ route('finance.spp.index') }}" class="button button-secondary">Batal</a><button class="button button-primary">Simpan Pembayaran</button></div>
+                <div class="form-actions">
+                    <a href="{{ route('finance.spp.index') }}" class="button button-secondary">Batal</a>
+                    <button class="button button-primary" formtarget="_blank">Simpan Pembayaran</button>
+                </div>
             </form>
             </section>
             @endunless

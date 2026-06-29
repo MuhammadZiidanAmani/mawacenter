@@ -49,9 +49,6 @@
                     <h1>Jadikan Alumni</h1>
                     <p>Periksa kelas, tanggal, dan alasan sebelum siswa dipindahkan ke status alumni.</p>
                 </div>
-                <div class="student-title-actions">
-                    <a href="{{ route('student-management.students.index', ['unit_id' => $class->education_unit_id, 'class_id' => $class->id, 'year_id' => $year->id, 'status' => 'active']) }}" class="button student-filter-reset">Kembali ke Daftar</a>
-                </div>
             </div>
 
             <section class="student-workspace student-create-canvas student-class-alumni-canvas">

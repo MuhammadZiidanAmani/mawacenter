@@ -101,9 +101,6 @@
                             <h1>{{ $labels[$tab][2] }}</h1>
                             <p>Lengkapi identitas, kelas, wali, dan status siswa.</p>
                         </div>
-                        <div class="student-title-actions">
-                            <a href="{{ route('student-management.students.index') }}" class="button student-filter-reset">Kembali ke Daftar</a>
-                        </div>
                     </div>
                     <form method="POST" action="{{ route('master.'.$tab.'.store') }}" class="master-form master-create-form student-create-form">
                         @csrf
@@ -127,7 +124,6 @@
                 @endphp
                 <section class="hero master-hero">
                     <div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Pengelolaan Data · Tambah</p>@endif<h1>{{ $labels[$tab][2] }}</h1><p>Lengkapi formulir berikut untuk menambahkan data baru.</p></div>
-                    <a href="{{ $tab === 'students' ? route('student-management.students.index') : route('master.index', ['tab' => $tab]) }}" class="button button-secondary">Kembali ke Daftar</a>
                 </section>
                 <section class="card master-create-card">
                     <div class="master-create-heading"><div><strong>Informasi {{ $labels[$tab][0] }}</strong><span>{{ $createDescription }}</span></div></div>
@@ -145,9 +141,6 @@
                         <div class="student-master-heading">
                             <h1>Import Data Siswa</h1>
                             <p>Unggah file Excel, periksa preview, lalu konfirmasi data yang valid.</p>
-                        </div>
-                        <div class="student-title-actions">
-                            <a href="{{ route('student-management.students.index') }}" class="button student-filter-reset">Kembali ke Daftar</a>
                         </div>
                     </div>
 

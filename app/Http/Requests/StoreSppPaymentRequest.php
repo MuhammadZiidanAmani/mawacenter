@@ -18,8 +18,9 @@ class StoreSppPaymentRequest extends FormRequest
             $this->merge(['transaction_date' => "{$matches[3]}-{$matches[2]}-{$matches[1]}"]);
         }
 
-        if (preg_match('/^([01]\d|2[0-3])[.:]([0-5]\d)$/', (string) $this->input('transaction_time'), $matches)) {
-            $this->merge(['transaction_time' => "{$matches[1]}:{$matches[2]}:00"]);
+        if (preg_match('/^([01]?\d|2[0-3])[.:]([0-5]\d)$/', (string) $this->input('transaction_time'), $matches)) {
+            $hour = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+            $this->merge(['transaction_time' => "{$hour}:{$matches[2]}:00"]);
         }
     }
 
@@ -29,9 +30,10 @@ class StoreSppPaymentRequest extends FormRequest
             'transaction_date' => ['required', 'date'],
             'transaction_time' => ['required', 'date_format:H:i:s'],
             'student_id' => ['required', 'exists:students,id'],
-            'months' => ['required', 'array', 'min:1'],
+            'month_count' => ['required_without:months', 'integer', 'min:1', 'max:120'],
+            'months' => ['required_without:month_count', 'array', 'min:1'],
             'months.*' => ['integer', 'between:1,12'],
-            'year' => ['required', 'integer', 'between:2000,2100'],
+            'year' => ['required_with:months', 'integer', 'between:2000,2100'],
             'payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
             'status' => ['required', Rule::in(['Diterima', 'Pending'])],
             'paid_amount' => ['required', 'integer', 'min:1'],

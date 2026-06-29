@@ -48,7 +48,6 @@
             <div class="nav-submenu">
                 <a href="{{ route('finance.payments.index') }}" class="{{ $activePaymentMenu === 'transaction' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Transaksi Baru</span></a>
                 <a href="{{ route('finance.payments.history') }}" class="{{ $activePaymentMenu === 'history' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Riwayat Pembayaran</span></a>
-                <a href="{{ route('finance.payments.import') }}" class="{{ $activePaymentMenu === 'import' ? 'active' : '' }}">{!! $sidebarIcon('database') !!}<span>Import Pembayaran</span></a>
             </div>
         </div>
         @endif

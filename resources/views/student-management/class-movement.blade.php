@@ -63,9 +63,6 @@
                         <h1>{{ $title }}</h1>
                         <p>{{ $description }}</p>
                     </div>
-                    <div class="student-title-actions">
-                        <a href="{{ route('student-management.students.index') }}" class="button button-secondary">Data Siswa</a>
-                    </div>
                 </div>
 
                 <form method="GET" action="{{ $isPromotion ? route('student-management.class-promotion.index') : route('student-management.class-transfer.index') }}" class="student-filter-panel class-movement-filter" data-student-filter-panel>

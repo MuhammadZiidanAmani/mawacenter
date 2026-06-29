@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CorrectSppPaymentRequest;
 use App\Http\Requests\PreviewSppPaymentImportRequest;
-use App\Http\Requests\SppSelectionRequest;
 use App\Http\Requests\StoreSppPaymentRequest;
 use App\Http\Requests\UpdateSppPaymentRequest;
 use App\Models\AcademicYear;
@@ -78,8 +77,19 @@ class SppPaymentController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request, SppPaymentService $payments): View|RedirectResponse
     {
+        if (! $request->filled('student_id')) {
+            return redirect()->route('finance.payments.index')
+                ->withErrors(['student_id' => 'Pilih siswa terlebih dahulu dari Transaksi Baru.']);
+        }
+
+        $selectedStudent = Student::with('schoolClass.educationUnit')->findOrFail($request->integer('student_id'));
+        if ($payments->paymentPlan($selectedStudent)['max_month_count'] < 1) {
+            return redirect()->route('finance.payments.index')
+                ->withErrors(['student_id' => 'SPP siswa ini sudah lunas dan tidak perlu diproses kembali.']);
+        }
+
         return view('finance.spp', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'students' => Student::select('students.*')->with('schoolClass.educationUnit')
@@ -90,29 +100,32 @@ class SppPaymentController extends Controller
                 ->orderBy('education_units.name')
                 ->orderBy('students.name')
                 ->get(),
+            'selectedStudent' => $selectedStudent,
             'years' => range(now()->year - 2, now()->year + 2),
             'defaultPaymentMethod' => AppSetting::valueFor('default_payment_method', 'Cash'),
             'showCreate' => true,
         ]);
     }
 
-    public function quote(SppSelectionRequest $request, SppPaymentService $payments): JsonResponse
+    public function quote(Request $request, SppPaymentService $payments): JsonResponse
     {
-        $validated = $request->validated();
+        $validated = $request->validate([
+            'student_id' => ['required', 'exists:students,id'],
+            'month_count' => ['required', 'integer', 'min:1', 'max:120'],
+        ]);
         $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
 
-        return response()->json($payments->quote($student, (int) $validated['year'], $validated['months']));
+        return response()->json($payments->quoteByMonthCount($student, (int) $validated['month_count']));
     }
 
     public function months(Request $request, SppPaymentService $payments): JsonResponse
     {
         $validated = $request->validate([
             'student_id' => ['required', 'exists:students,id'],
-            'year' => ['required', 'integer', 'between:2000,2100'],
         ]);
         $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
 
-        return response()->json($payments->monthStatuses($student, (int) $validated['year']));
+        return response()->json($payments->paymentPlan($student));
     }
 
     public function store(StoreSppPaymentRequest $request, SppPaymentService $payments): RedirectResponse
@@ -121,13 +134,8 @@ class SppPaymentController extends Controller
         $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
         $payment = $payments->record($student, $validated);
 
-        return redirect()->route('finance.spp.index')
-            ->with('success', 'Pembayaran SPP berhasil disimpan.')
-            ->with('payment_action', [
-                'receipt_url' => route('finance.spp.receipt', $payment),
-                'download_url' => route('finance.spp.receipt.download', $payment),
-                'back_url' => route('finance.spp.index'),
-            ]);
+        return redirect()->route('finance.spp.receipt', $payment)
+            ->with('success', 'Pembayaran SPP berhasil disimpan.');
     }
 
     public function previewImport(PreviewSppPaymentImportRequest $request, SppPaymentImportService $importer): View
@@ -227,25 +235,44 @@ class SppPaymentController extends Controller
         ]);
     }
 
-    public function receipt(SppPayment $sppPayment): View
+    public function receipt(SppPayment $sppPayment, SppPaymentService $payments): View
     {
         $sppPayment->load(['student.schoolClass.educationUnit', 'items']);
+        $outstandingSummary = $payments->outstandingSummaryUntilCurrent($sppPayment->student);
+        $rootIdentityId = $sppPayment->student?->identity_student_id ?: $sppPayment->student_id;
+        $otherSppStudents = Student::select('students.*')->with('schoolClass.educationUnit')
+            ->where('students.is_active', true)
+            ->where('students.id', '!=', $sppPayment->student_id)
+            ->where(fn ($query) => $query
+                ->where('students.id', $rootIdentityId)
+                ->orWhere('students.identity_student_id', $rootIdentityId))
+            ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
+            ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+            ->orderByRaw($this->educationUnitOrderExpression())
+            ->orderBy('school_classes.name')
+            ->select('students.*')
+            ->get();
 
         return view('finance.spp-receipt', [
+            'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'payment' => $sppPayment,
+            'otherSppStudents' => $otherSppStudents,
+            'outstandingSummary' => $outstandingSummary,
             'receiptNumber' => $this->receiptNumber($sppPayment),
             'months' => [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'],
             'receiptSettings' => AppSetting::values(),
         ]);
     }
 
-    public function downloadReceipt(SppPayment $sppPayment): Response
+    public function downloadReceipt(SppPayment $sppPayment, SppPaymentService $payments): Response
     {
         $sppPayment->load(['student.schoolClass.educationUnit', 'items']);
+        $outstandingSummary = $payments->outstandingSummaryUntilCurrent($sppPayment->student);
         $logoPath = public_path('images/logo-yayasan-mambaul-hikmah.png');
         $html = view('finance.spp-receipt-pdf', [
             'payment' => $sppPayment,
             'receiptNumber' => $this->receiptNumber($sppPayment),
+            'outstandingSummary' => $outstandingSummary,
             'logo' => 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)),
             'months' => [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'],
             'receiptSettings' => AppSetting::values(),

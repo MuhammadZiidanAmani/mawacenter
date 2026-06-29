@@ -228,7 +228,7 @@ class MasterDataTest extends TestCase
             $this->get('/master-data/create?tab='.$tab)
                 ->assertOk()
                 ->assertSee($heading)
-                ->assertSee('Kembali ke Daftar')
+                ->assertDontSee('Kembali ke Daftar')
                 ->assertDontSee('data-modal-open', false);
         }
 
