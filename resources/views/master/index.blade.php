@@ -126,7 +126,9 @@
                     <div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Pengelolaan Data · Tambah</p>@endif<h1>{{ $labels[$tab][2] }}</h1><p>Lengkapi formulir berikut untuk menambahkan data baru.</p></div>
                 </section>
                 <section class="card master-create-card">
+                    @if ($tab !== 'fee-types')
                     <div class="master-create-heading"><div><strong>Informasi {{ $labels[$tab][0] }}</strong><span>{{ $createDescription }}</span></div></div>
+                    @endif
                     <form method="POST" action="{{ route('master.'.$tab.'.store') }}" class="master-form master-create-form">
                         @csrf
                         @include('master.partials.form-fields')

@@ -988,11 +988,18 @@ if (laundryForm) {
     const student = laundryForm.querySelector('[data-laundry-student]');
     const fee = laundryForm.querySelector('[data-laundry-fee]');
     const year = laundryForm.querySelector('[data-laundry-year]');
-    const monthInputs = Array.from(laundryForm.querySelectorAll('input[name="months[]"]'));
+    const monthCountInput = laundryForm.querySelector('[data-laundry-month-count]');
+    const monthValues = laundryForm.querySelector('[data-laundry-month-values]');
+    const periodEnd = laundryForm.querySelector('[data-laundry-period-end]');
+    const startNote = laundryForm.querySelector('[data-laundry-start-note]');
     const message = laundryForm.querySelector('[data-laundry-message]');
     const paidInput = laundryForm.querySelector('[data-laundry-paid-input]');
     const paymentStatus = laundryForm.querySelector('[data-laundry-status]');
+    const summaryName = laundryForm.querySelector('[data-laundry-summary-name]');
+    const summaryMeta = laundryForm.querySelector('[data-laundry-summary-meta]');
+    const summaryCategory = laundryForm.querySelector('[data-laundry-summary-category]');
     const feeOptions = Array.from(fee.options).filter((option) => option.value);
+    let payableMonths = [];
     const outputs = {
         base: laundryForm.querySelector('[data-laundry-base]'),
         original: laundryForm.querySelector('[data-laundry-original]'),
@@ -1001,15 +1008,46 @@ if (laundryForm) {
         paid: laundryForm.querySelector('[data-laundry-paid]'),
         remaining: laundryForm.querySelector('[data-laundry-remaining]'),
     };
-    const updateClock = () => {
-        const clock = currentWibClock();
-        laundryForm.querySelector('[data-laundry-time]').value = clock.value;
-        laundryForm.querySelector('[data-wib-clock]').value = clock.display;
+    const updateLaundrySummary = () => {
+        const selectedStudent = student.selectedOptions[0];
+        const selectedFee = fee.selectedOptions[0];
+        if (summaryName) summaryName.textContent = selectedStudent?.dataset.name || '-';
+        if (summaryMeta) {
+            summaryMeta.textContent = selectedStudent?.value
+                ? `${selectedStudent.dataset.nis || '-'} · ${selectedStudent.dataset.unitCode || '-'} · ${selectedStudent.dataset.className || '-'}`
+                : 'Pilih siswa terlebih dahulu';
+        }
+        if (summaryCategory) summaryCategory.textContent = selectedFee?.value ? selectedFee.textContent.trim() : 'Laundry';
     };
-    const resetQuote = (text = 'Pilih siswa, set Laundry, dan bulan untuk menghitung pembayaran.') => {
+    const monthLabel = (item) => item ? `${item.month_name} ${item.year}` : '-';
+    const selectedLaundryMonths = () => payableMonths.slice(0, Math.max(0, Number(monthCountInput.value || 0)));
+    const renderHiddenMonths = (months = []) => {
+        if (!monthValues) return;
+        monthValues.innerHTML = '';
+        months.forEach((item) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'months[]';
+            input.value = item.month;
+            monthValues.appendChild(input);
+        });
+    };
+    const updateLaundryPeriod = () => {
+        const selected = selectedLaundryMonths();
+        renderHiddenMonths(selected);
+        if (periodEnd) periodEnd.textContent = monthLabel(selected.at(-1));
+        if (startNote) {
+            startNote.textContent = payableMonths.length
+                ? `Laundry yang belum dibayar dimulai dari ${monthLabel(payableMonths[0])}.`
+                : 'Pilih siswa dan kategori Laundry untuk melihat periode pembayaran.';
+        }
+    };
+    const resetQuote = (text = 'Pilih siswa, kategori Laundry, dan jumlah bulan untuk menghitung pembayaran.') => {
         Object.values(outputs).forEach((output) => { output.textContent = currency.format(0); });
         paymentStatus.textContent = 'Belum Lunas';
         paidInput.removeAttribute('max');
+        updateLaundrySummary();
+        updateLaundryPeriod();
         message.textContent = text;
         message.classList.remove('error');
     };
@@ -1031,26 +1069,11 @@ if (laundryForm) {
         fee.options[0].textContent = !student.value
             ? 'Pilih siswa terlebih dahulu'
             : (available ? 'Pilih set Laundry...' : 'Set Laundry untuk siswa belum tersedia');
-    };
-    const applyMonthAvailability = () => {
-        monthInputs.forEach((input) => {
-            const label = input.closest('label');
-            const status = input.dataset.paymentStatus || 'Belum Dibayar';
-            label.classList.toggle('is-paid', status === 'Lunas');
-            label.classList.toggle('is-partial', status === 'Belum Lunas');
-            label.classList.toggle('is-unpaid', status === 'Belum Dibayar');
-            label.querySelector('.spp-month-status').textContent = status === 'Lunas' ? 'Sudah Dibayar' : status;
-            input.disabled = status === 'Lunas' || !input.dataset.paymentStatus;
-        });
-        const payable = monthInputs.filter((input) => input.dataset.paymentStatus && input.dataset.paymentStatus !== 'Lunas');
-        payable.forEach((input, index) => {
-            const enabled = index === 0 || payable[index - 1].checked;
-            input.disabled = !enabled;
-            if (!enabled) input.checked = false;
-        });
+        updateLaundrySummary();
     };
     const updateQuote = async () => {
-        const months = monthInputs.filter((input) => input.checked).map((input) => input.value);
+        const months = selectedLaundryMonths();
+        updateLaundryPeriod();
         if (!student.value || !fee.value || !year.value || months.length === 0) {
             resetQuote();
             return;
@@ -1061,7 +1084,7 @@ if (laundryForm) {
             fee_type_id: fee.value,
             year: year.value,
         });
-        months.forEach((month) => params.append('months[]', month));
+        months.forEach((month) => params.append('months[]', month.month));
         try {
             message.textContent = 'Menghitung nominal dan keringanan...';
             const response = await fetch(`${laundryForm.dataset.quoteUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
@@ -1076,23 +1099,20 @@ if (laundryForm) {
             paymentStatus.textContent = data.payment_status;
             paidInput.max = data.remaining_amount;
             message.textContent = data.remaining_amount > 0
-                ? `${months.length} bulan dipilih. Masukkan titipan atau pelunasan maksimal ${currency.format(data.remaining_amount)}.`
-                : 'Seluruh bulan yang dipilih sudah lunas.';
+                ? `${months.length} bulan Laundry siap diproses. Maksimal pembayaran ${currency.format(data.remaining_amount)}.`
+                : 'Periode Laundry yang dipilih sudah lunas.';
         } catch (error) {
             resetQuote(error.message);
             message.classList.add('error');
         }
     };
     const loadMonths = async (clearSelection = false) => {
-        if (clearSelection) monthInputs.forEach((input) => { input.checked = false; });
-        monthInputs.forEach((input) => {
-            input.disabled = true;
-            delete input.dataset.paymentStatus;
-            input.closest('label').querySelector('.spp-month-status').textContent = 'Memuat...';
-        });
+        if (clearSelection) monthCountInput.value = '';
+        monthCountInput.removeAttribute('max');
+        payableMonths = [];
+        updateLaundryPeriod();
         if (!student.value || !fee.value || !year.value) {
-            resetQuote('Pilih siswa dan set Laundry untuk melihat bulan yang dapat dibayar.');
-            monthInputs.forEach((input) => { input.closest('label').querySelector('.spp-month-status').textContent = 'Pilih siswa'; });
+            resetQuote('Pilih siswa dan kategori Laundry untuk melihat periode yang dapat dibayar.');
             return;
         }
         const params = new URLSearchParams({
@@ -1105,15 +1125,16 @@ if (laundryForm) {
             const response = await fetch(`${laundryForm.dataset.monthsUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
             const data = await response.json();
             if (!response.ok) throw new Error(Object.values(data.errors ?? {}).flat()[0] ?? data.message ?? 'Status bulan gagal dimuat.');
-            data.months.forEach((month) => {
-                const input = monthInputs.find((item) => Number(item.value) === Number(month.month));
-                if (input) input.dataset.paymentStatus = month.payment_status;
-            });
-            applyMonthAvailability();
-            const first = data.months.find((month) => Number(month.month) === Number(data.first_payable_month));
-            resetQuote(first
-                ? `Pembayaran berikutnya dimulai dari bulan ${first.month_name}. Pilih bulan secara berurutan.`
-                : 'Seluruh pembayaran Laundry pada tahun ini sudah lunas.');
+            payableMonths = data.months.filter((month) => Number(month.remaining_amount) > 0);
+            monthCountInput.max = Math.max(1, payableMonths.length);
+            if (!monthCountInput.value && payableMonths.length) monthCountInput.value = 1;
+            if (Number(monthCountInput.value) > payableMonths.length) monthCountInput.value = payableMonths.length;
+            updateLaundryPeriod();
+            if (payableMonths.length) {
+                updateQuote();
+            } else {
+                resetQuote('Seluruh pembayaran Laundry pada tahun ini sudah lunas.');
+            }
         } catch (error) {
             resetQuote(error.message);
             message.classList.add('error');
@@ -1126,13 +1147,19 @@ if (laundryForm) {
     });
     fee.addEventListener('change', () => loadMonths(true));
     year.addEventListener('change', () => loadMonths(true));
-    monthInputs.forEach((input) => input.addEventListener('change', () => {
-        applyMonthAvailability();
+    monthCountInput.addEventListener('input', () => {
+        if (monthCountInput.value === '') {
+            updateLaundryPeriod();
+            resetQuote();
+            return;
+        }
+        const max = Number(monthCountInput.max || payableMonths.length || 12);
+        const value = Math.max(1, Math.min(max, Number(monthCountInput.value || 1)));
+        if (String(value) !== monthCountInput.value) monthCountInput.value = value;
         updateQuote();
-    }));
-    updateClock();
-    window.setInterval(updateClock, 1000);
+    });
     filterFees();
+    updateLaundrySummary();
     loadMonths();
 }
 
