@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\Bill;
 use App\Models\FeeType;
 use App\Models\Student;
+use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentService;
 use App\Services\SppPaymentService;
 use Illuminate\Contracts\View\View;
@@ -15,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 
 class PaymentController extends Controller
 {
-    public function index(Request $request, SppPaymentService $sppPayments, OtherPaymentService $otherPayments): View
+    public function index(Request $request, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): View
     {
         $search = trim($request->string('search')->value());
         $people = collect();
@@ -36,7 +37,7 @@ class PaymentController extends Controller
                 ->values();
 
             if ($identityIds->isNotEmpty()) {
-                $registrations = Student::with(['schoolClass.educationUnit'])
+                $registrations = Student::with(['academicYear', 'schoolClass.educationUnit'])
                     ->where('is_active', true)
                     ->where(fn ($query) => $query
                         ->whereIn('id', $identityIds)
@@ -45,8 +46,8 @@ class PaymentController extends Controller
                     ->get();
                 $feeTypes = FeeType::where('is_active', true)->get();
 
-                $registrations->each(function (Student $student) use ($feeTypes, $sppPayments, $otherPayments) {
-                    $student->setAttribute('payment_options', $this->paymentOptions($student, $feeTypes, $sppPayments, $otherPayments));
+                $registrations->each(function (Student $student) use ($feeTypes, $sppPayments, $otherPayments, $laundryPayments) {
+                    $student->setAttribute('payment_options', $this->paymentOptions($student, $feeTypes, $sppPayments, $otherPayments, $laundryPayments));
                 });
 
                 $people = $registrations->groupBy(fn (Student $student) => $student->identity_student_id ?: $student->id);
@@ -56,6 +57,7 @@ class PaymentController extends Controller
         return view('finance.payments', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'search' => $search,
+            'selectedStudentId' => (int) $request->integer('student_id'),
             'people' => $people,
             'mode' => 'payment',
         ]);
@@ -90,7 +92,7 @@ class PaymentController extends Controller
         return str_contains(strtolower($feeType->name), 'laundry') ? 'laundry' : 'lain-lain';
     }
 
-    private function paymentOptions(Student $student, Collection $feeTypes, SppPaymentService $sppPayments, OtherPaymentService $otherPayments): array
+    private function paymentOptions(Student $student, Collection $feeTypes, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): array
     {
         $matchedFeeTypes = $this->matchedFeeTypes($student, $feeTypes);
         $grouped = $matchedFeeTypes->groupBy(fn (FeeType $feeType) => $this->paymentGroup($feeType));
@@ -103,21 +105,92 @@ class PaymentController extends Controller
 
         return collect($definitions)
             ->filter(fn (array $definition, string $group) => $grouped->has($group))
-            ->map(function (array $definition, string $group) use ($student, $grouped, $sppPayments, $otherPayments) {
+            ->map(function (array $definition, string $group) use ($student, $grouped, $sppPayments, $otherPayments, $laundryPayments) {
                 $feeTypes = $grouped->get($group);
                 $payable = $group === 'spp'
                     ? ($sppPayments->paymentPlan($student)['max_month_count'] > 0)
                     : $this->hasPayableFeeType($student, $feeTypes, $group, $otherPayments);
+                $summary = $this->paymentOptionSummary($student, $feeTypes, $group, $sppPayments, $otherPayments, $laundryPayments);
 
                 return [
                     'key' => $group,
                     'label' => $definition['label'],
                     'url' => $definition['url'],
                     'status' => $payable ? 'payable' : 'paid',
+                    'amount_label' => $summary['amount_label'],
+                    'detail_label' => $summary['detail_label'],
                 ];
             })
             ->values()
             ->all();
+    }
+
+    private function paymentOptionSummary(Student $student, Collection $feeTypes, string $group, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): array
+    {
+        if ($group === 'spp') {
+            $plan = $sppPayments->paymentPlan($student);
+            $monthCount = max(0, (int) ($plan['default_month_count'] ?: $plan['max_month_count']));
+            $remainingAmount = 0;
+
+            if ($monthCount > 0) {
+                try {
+                    $quote = $sppPayments->quoteByMonthCount($student, $monthCount);
+                    $remainingAmount = (int) ($quote['remaining_amount'] ?? 0);
+                } catch (ValidationException) {
+                    $remainingAmount = (int) collect($plan['periods'] ?? [])->sum('remaining_amount');
+                }
+            }
+
+            return [
+                'amount_label' => $this->rupiah($remainingAmount),
+                'detail_label' => $monthCount > 0 ? $monthCount.' bulan' : 'Tidak ada tagihan',
+            ];
+        }
+
+        if ($group === 'laundry') {
+            $remainingAmount = 0;
+            $detailLabel = 'Per bulan';
+
+            foreach ($feeTypes as $feeType) {
+                try {
+                    $statuses = $laundryPayments->monthStatuses($student, $feeType, now()->year);
+                    $firstPayable = collect($statuses['months'] ?? [])->first(fn (array $item) => ($item['remaining_amount'] ?? 0) > 0);
+                    if ($firstPayable) {
+                        $remainingAmount += (int) $firstPayable['remaining_amount'];
+                        $detailLabel = ($firstPayable['month_name'] ?? 'Bulan ini').' '.$firstPayable['year'];
+                    }
+                } catch (ValidationException) {
+                    continue;
+                }
+            }
+
+            return [
+                'amount_label' => $this->rupiah($remainingAmount),
+                'detail_label' => $detailLabel,
+            ];
+        }
+
+        $remainingAmount = 0;
+        $detailLabel = $group === 'daftar-ulang' ? 'Tagihan tahunan' : 'Tagihan wajib';
+
+        foreach ($feeTypes as $feeType) {
+            try {
+                $quote = $otherPayments->quote($student, $feeType);
+                $remainingAmount += (int) ($quote['remaining_amount'] ?? 0);
+            } catch (ValidationException) {
+                continue;
+            }
+        }
+
+        return [
+            'amount_label' => $this->rupiah($remainingAmount),
+            'detail_label' => $detailLabel,
+        ];
+    }
+
+    private function rupiah(int $amount): string
+    {
+        return 'Rp '.number_format(max(0, $amount), 0, ',', '.');
     }
 
     private function matchedFeeTypes(Student $student, Collection $feeTypes): Collection

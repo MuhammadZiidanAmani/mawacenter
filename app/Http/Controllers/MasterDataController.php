@@ -69,7 +69,7 @@ class MasterDataController extends Controller
         $data = match ($tab) {
             'academic-years' => AcademicYear::withCount('students')
                 ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))
-                ->orderBy(in_array($listSort, ['name', 'is_active'], true) ? $listSort : 'created_at', $listSort ? $listDirection : 'desc')
+                ->orderByDesc('name')
                 ->paginate($perPage)->withQueryString(),
             'education-units' => EducationUnit::withCount('schoolClasses')
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
@@ -80,78 +80,115 @@ class MasterDataController extends Controller
                         ->orderByRaw($this->educationUnitOrderExpression())
                         ->orderBy('name')
                 )->paginate($perPage)->withQueryString(),
-            'classes' => SchoolClass::select('school_classes.*')->with(['educationUnit'])->withCount([
-                'students' => fn ($query) => $query
-                    ->when($classYearId, fn ($studentQuery, $yearId) => $studentQuery->where('academic_year_id', $yearId)),
-            ])
-                ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('school_classes.name', 'like', "%{$search}%")->orWhere('school_classes.level', 'like', "%{$search}%")))
-                ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->where('school_classes.education_unit_id', $unitId))
-                ->when($classYearId, fn ($query, $yearId) => $query->whereHas('students', fn ($studentQuery) => $studentQuery->where('academic_year_id', $yearId)))
-                ->when($classStatus !== null && $classStatus !== '', fn ($query) => $query->where('school_classes.is_active', $classStatus === 'active'))
-                ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
-                ->when(
-                    in_array($listSort, ['name', 'unit', 'students_count', 'is_active'], true),
-                    fn ($query) => $query->orderBy(match ($listSort) {
-                        'unit' => 'education_units.name',
-                        'students_count' => 'students_count',
-                        'is_active' => 'school_classes.is_active',
-                        default => 'school_classes.name',
-                    }, $listDirection),
-                    fn ($query) => $query
-                        ->orderByRaw(str_replace('code', 'education_units.code', $this->educationUnitOrderExpression()))
-                        ->orderBy('education_units.name')->orderBy('school_classes.name')
-                )->paginate($perPage)->withQueryString(),
-            'fee-types' => FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
-                ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
-                ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->where('education_unit_id', $unitId))
-                ->when($feeTypeClassId && $feeTypeClassUnitId, fn ($query) => $query
-                    ->where('education_unit_id', $feeTypeClassUnitId)
-                    ->where(fn ($feeType) => $feeType
-                        ->where('school_class_id', $feeTypeClassId)
-                        ->orWhereNull('school_class_id')))
-                ->when($feeTypeYearId, fn ($query, $yearId) => $query
-                    ->where(fn ($feeType) => $feeType
-                        ->where('academic_year_id', $yearId)
-                        ->orWhereNull('academic_year_id')))
-                ->when($feeTypeStatus !== null && $feeTypeStatus !== '', fn ($query) => $query->where('is_active', $feeTypeStatus === 'active'))
-                ->orderBy(match ($listSort) {
-                    'name' => 'name', 'unit' => 'education_unit_id', 'class' => 'school_class_id',
-                    'year' => 'academic_year_id', 'amount' => 'amount', 'is_active' => 'is_active',
-                    default => 'education_unit_id',
-                }, $listSort ? $listDirection : 'asc')
-                ->orderBy('name')->paginate($perPage)->withQueryString(),
-            'fee-discounts' => FeeDiscount::with(['student.schoolClass.educationUnit', 'feeType'])
-                ->when($search, fn ($query) => $query->whereHas('student', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")))
-                ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->whereHas('student.schoolClass', fn ($class) => $class->where('education_unit_id', $unitId)))
-                ->when($request->integer('class_id'), fn ($query, $classId) => $query->whereHas('student', fn ($student) => $student->where('school_class_id', $classId)))
-                ->when($feeDiscountYearId, fn ($query, $yearId) => $query->whereHas('student', fn ($student) => $student->where('academic_year_id', $yearId)))
-                ->when($feeDiscountStatus !== null && $feeDiscountStatus !== '', fn ($query) => $query->where('is_active', $feeDiscountStatus === 'active'))
-                ->orderBy(match ($listSort) {
-                    'student' => 'student_id', 'payment' => 'source_type',
-                    'discount' => 'discount_value', 'is_active' => 'is_active',
-                    default => 'created_at',
-                }, $listSort ? $listDirection : 'desc')->paginate($perPage)->withQueryString(),
-            'data-roles' => Role::withCount('users')
-                ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('key', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")->orWhere('description', 'like', "%{$search}%")))
-                ->orderBy(match ($listSort) {
-                    'name' => 'name',
-                    'key' => 'key',
-                    'users_count' => 'users_count',
-                    'is_active' => 'is_active',
-                    default => 'name',
-                }, $listSort ? $listDirection : 'asc')
-                ->paginate($perPage)->withQueryString(),
-            'data-users' => User::query()
-                ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('username', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")->orWhere('role', 'like', "%{$search}%")))
-                ->when($request->filled('role'), fn ($query) => $query->where('role', $request->query('role')))
-                ->orderBy(match ($listSort) {
-                    'name' => 'name',
-                    'username' => 'username',
-                    'email' => 'email',
-                    'role' => 'role',
-                    default => 'name',
-                }, $listSort ? $listDirection : 'asc')
-                ->paginate($perPage)->withQueryString(),
+            'classes' => (function () use ($request, $search, $classYearId, $classStatus, $listSort, $listDirection, $perPage) {
+                $query = SchoolClass::select('school_classes.*')->with(['educationUnit'])->withCount([
+                    'students' => fn ($query) => $query
+                        ->when($classYearId, fn ($studentQuery, $yearId) => $studentQuery->where('academic_year_id', $yearId)),
+                ])
+                    ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('school_classes.name', 'like', "%{$search}%")->orWhere('school_classes.level', 'like', "%{$search}%")))
+                    ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->where('school_classes.education_unit_id', $unitId))
+                    ->when($classStatus !== null && $classStatus !== '', fn ($query) => $query->where('school_classes.is_active', $classStatus === 'active'))
+                    ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                    ->when(
+                        in_array($listSort, ['name', 'unit', 'students_count', 'is_active'], true),
+                        fn ($query) => $query->orderBy(match ($listSort) {
+                            'unit' => 'education_units.name',
+                            'students_count' => 'students_count',
+                            'is_active' => 'school_classes.is_active',
+                            default => 'school_classes.name',
+                        }, $listDirection),
+                        fn ($query) => $query
+                            ->orderByRaw(str_replace('code', 'education_units.code', $this->educationUnitOrderExpression()))
+                            ->orderBy('education_units.name')->orderBy('school_classes.name')
+                    );
+
+                $classPerPage = $request->query('per_page') === 'all'
+                    ? max(1, (clone $query)->count())
+                    : ($request->has('per_page') ? $perPage : 25);
+
+                return $query->paginate($classPerPage)->withQueryString();
+            })(),
+            'fee-types' => (function () use ($request, $search, $feeTypeClassId, $feeTypeClassUnitId, $feeTypeYearId, $feeTypeStatus, $listSort, $listDirection, $perPage) {
+                $query = FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
+                    ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
+                    ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->where('education_unit_id', $unitId))
+                    ->when($feeTypeClassId && $feeTypeClassUnitId, fn ($query) => $query
+                        ->where('education_unit_id', $feeTypeClassUnitId)
+                        ->where(fn ($feeType) => $feeType
+                            ->where('school_class_id', $feeTypeClassId)
+                            ->orWhereNull('school_class_id')))
+                    ->when($feeTypeYearId, fn ($query, $yearId) => $query
+                        ->where(fn ($feeType) => $feeType
+                            ->where('academic_year_id', $yearId)
+                            ->orWhereNull('academic_year_id')))
+                    ->when($feeTypeStatus !== null && $feeTypeStatus !== '', fn ($query) => $query->where('is_active', $feeTypeStatus === 'active'))
+                    ->orderBy(match ($listSort) {
+                        'name' => 'name', 'unit' => 'education_unit_id', 'class' => 'school_class_id',
+                        'year' => 'academic_year_id', 'amount' => 'amount', 'is_active' => 'is_active',
+                        default => 'education_unit_id',
+                    }, $listSort ? $listDirection : 'asc')
+                    ->orderBy('name');
+
+                $feeTypePerPage = $request->query('per_page') === 'all'
+                    ? max(1, (clone $query)->count())
+                    : ($request->has('per_page') ? $perPage : 25);
+
+                return $query->paginate($feeTypePerPage)->withQueryString();
+            })(),
+            'fee-discounts' => (function () use ($request, $search, $feeDiscountYearId, $feeDiscountStatus, $listSort, $listDirection, $perPage) {
+                $query = FeeDiscount::with(['student.schoolClass.educationUnit', 'feeType'])
+                    ->when($search, fn ($query) => $query->whereHas('student', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")))
+                    ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->whereHas('student.schoolClass', fn ($class) => $class->where('education_unit_id', $unitId)))
+                    ->when($request->integer('class_id'), fn ($query, $classId) => $query->whereHas('student', fn ($student) => $student->where('school_class_id', $classId)))
+                    ->when($feeDiscountYearId, fn ($query, $yearId) => $query->whereHas('student', fn ($student) => $student->where('academic_year_id', $yearId)))
+                    ->when($feeDiscountStatus !== null && $feeDiscountStatus !== '', fn ($query) => $query->where('is_active', $feeDiscountStatus === 'active'))
+                    ->orderBy(match ($listSort) {
+                        'student' => 'student_id', 'payment' => 'source_type',
+                        'discount' => 'discount_value', 'is_active' => 'is_active',
+                        default => 'created_at',
+                    }, $listSort ? $listDirection : 'desc');
+
+                $feeDiscountPerPage = $request->query('per_page') === 'all'
+                    ? max(1, (clone $query)->count())
+                    : ($request->has('per_page') ? $perPage : 25);
+
+                return $query->paginate($feeDiscountPerPage)->withQueryString();
+            })(),
+            'data-roles' => (function () use ($request, $search, $listSort, $listDirection, $perPage) {
+                $query = Role::withCount('users')
+                    ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('key', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")->orWhere('description', 'like', "%{$search}%")))
+                    ->orderBy(match ($listSort) {
+                        'name' => 'name',
+                        'key' => 'key',
+                        'users_count' => 'users_count',
+                        'is_active' => 'is_active',
+                        default => 'name',
+                    }, $listSort ? $listDirection : 'asc');
+
+                $rolePerPage = $request->query('per_page') === 'all'
+                    ? max(1, (clone $query)->count())
+                    : ($request->has('per_page') ? $perPage : 25);
+
+                return $query->paginate($rolePerPage)->withQueryString();
+            })(),
+            'data-users' => (function () use ($request, $search, $listSort, $listDirection, $perPage) {
+                $query = User::query()
+                    ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('username', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")->orWhere('role', 'like', "%{$search}%")))
+                    ->when($request->filled('role'), fn ($query) => $query->where('role', $request->query('role')))
+                    ->orderBy(match ($listSort) {
+                        'name' => 'name',
+                        'username' => 'username',
+                        'email' => 'email',
+                        'role' => 'role',
+                        default => 'name',
+                    }, $listSort ? $listDirection : 'asc');
+
+                $userPerPage = $request->query('per_page') === 'all'
+                    ? max(1, (clone $query)->count())
+                    : ($request->has('per_page') ? $perPage : 25);
+
+                return $query->paginate($userPerPage)->withQueryString();
+            })(),
             default => Student::select('students.*')->with(['schoolClass.educationUnit'])
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('students.name', 'like', "%{$search}%")->orWhere('students.nis', 'like', "%{$search}%")->orWhere('students.nisn', 'like', "%{$search}%")))
                 ->when($request->integer('class_id'), fn ($query, $classId) => $query->where('students.school_class_id', $classId))
@@ -1046,9 +1083,11 @@ class MasterDataController extends Controller
 
     private function academicYearOptions()
     {
-        return AcademicYear::select(['id', 'name', 'is_active', 'created_at'])
-            ->orderByDesc('is_active')
-            ->latest()
+        return AcademicYear::select(['id', 'name', 'start_date', 'end_date', 'is_active', 'created_at'])
+            ->orderByRaw('CASE WHEN start_date IS NULL THEN 1 ELSE 0 END')
+            ->orderByDesc('start_date')
+            ->orderByDesc('name')
+            ->orderByDesc('id')
             ->get();
     }
 

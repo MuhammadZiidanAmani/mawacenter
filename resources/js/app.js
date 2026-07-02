@@ -467,8 +467,10 @@ const filterStudentClasses = (selectedClass = '') => {
 const syncRegistrationScope = () => {
     if (!registrationAllClasses || !registrationClassList) return;
     const allClasses = registrationAllClasses.checked;
+    const classScopeField = registrationClassList.closest('.fee-type-simple-field');
     if (registrationScopeSelect) registrationScopeSelect.value = allClasses ? 'all' : 'selected';
     registrationClassList.hidden = allClasses;
+    classScopeField?.classList.toggle('is-class-specific', !allClasses);
     if (registrationScopeValue) registrationScopeValue.value = allClasses ? 'all' : '';
     if (feeScopeHelp) {
         feeScopeHelp.textContent = allClasses
@@ -1000,6 +1002,11 @@ if (laundryForm) {
     const summaryCategory = laundryForm.querySelector('[data-laundry-summary-category]');
     const feeOptions = Array.from(fee.options).filter((option) => option.value);
     let payableMonths = [];
+    const buildLaundryUrl = (baseUrl, params) => {
+        const url = new URL(baseUrl, window.location.origin);
+        params.forEach((value, key) => url.searchParams.append(key, value));
+        return url.toString();
+    };
     const outputs = {
         base: laundryForm.querySelector('[data-laundry-base]'),
         original: laundryForm.querySelector('[data-laundry-original]'),
@@ -1079,7 +1086,6 @@ if (laundryForm) {
             return;
         }
         const params = new URLSearchParams({
-            category: 'laundry',
             student_id: student.value,
             fee_type_id: fee.value,
             year: year.value,
@@ -1087,7 +1093,7 @@ if (laundryForm) {
         months.forEach((month) => params.append('months[]', month.month));
         try {
             message.textContent = 'Menghitung nominal dan keringanan...';
-            const response = await fetch(`${laundryForm.dataset.quoteUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
+            const response = await fetch(buildLaundryUrl(laundryForm.dataset.quoteUrl, params), { headers: { Accept: 'application/json' } });
             const data = await response.json();
             if (!response.ok) throw new Error(Object.values(data.errors ?? {}).flat()[0] ?? data.message ?? 'Perhitungan gagal.');
             outputs.base.textContent = currency.format(data.items[0]?.original_amount ?? 0);
@@ -1116,13 +1122,12 @@ if (laundryForm) {
             return;
         }
         const params = new URLSearchParams({
-            category: 'laundry',
             student_id: student.value,
             fee_type_id: fee.value,
             year: year.value,
         });
         try {
-            const response = await fetch(`${laundryForm.dataset.monthsUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
+            const response = await fetch(buildLaundryUrl(laundryForm.dataset.monthsUrl, params), { headers: { Accept: 'application/json' } });
             const data = await response.json();
             if (!response.ok) throw new Error(Object.values(data.errors ?? {}).flat()[0] ?? data.message ?? 'Status bulan gagal dimuat.');
             payableMonths = data.months.filter((month) => Number(month.remaining_amount) > 0);

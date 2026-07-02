@@ -10,7 +10,7 @@
 <div class="app-shell">
     @include('partials.sidebar', [
         'activeMenu' => 'payment',
-        'activePaymentMenu' => $mode === 'history' ? 'history' : 'transaction',
+        'activePaymentMenu' => $mode === 'history' ? 'history' : ($mode === 'import' ? 'import' : 'transaction'),
     ])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
 
@@ -21,95 +21,198 @@
             <div class="topbar-spacer"></div>
         </header>
 
-        <main @class(['payment-hub-page', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
+        <main @class(['payment-hub-page', 'payment-transaction-page' => $mode === 'payment', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
             @if($mode === 'payment')
                 <div class="student-flat-header payment-page-heading">
                     <div class="student-master-heading">
+                        <nav class="payment-responsive-breadcrumb" aria-label="Breadcrumb">
+                            <span>Transaksi</span>
+                            <span aria-hidden="true">/</span>
+                            <strong>Transaksi Baru</strong>
+                        </nav>
                         <h1>Transaksi Baru</h1>
-                        <p>Cari siswa, pilih jenis tagihan, lalu proses pembayaran sesuai kebutuhan.</p>
-                    </div>
-                    <div class="student-action-bar payment-page-actions">
-                        <a class="button student-add-button payment-import-entry-button" href="{{ route('finance.payments.import') }}">Import Pembayaran</a>
+                        <p>Cari siswa, pilih pembayaran, lalu proses transaksi sesuai kebutuhan.</p>
                     </div>
                 </div>
             @endif
 
             <section @class(['payment-hub-heading' => $mode === 'import', 'student-workspace payment-transaction-workspace' => $mode === 'payment', 'student-workspace payment-history-workspace' => $mode === 'history'])>
                 @if($mode === 'payment')
-                    <form method="GET" action="{{ route('finance.payments.index') }}" class="student-filter-panel payment-transaction-search">
-                        <label>
-                            <span>Cari Siswa</span>
-                            <input type="search" name="search" value="{{ $search }}" placeholder="Ketik nama, NIS, atau NISN..." autofocus required>
-                        </label>
-                        <div class="student-filter-actions payment-search-actions">
-                            <button class="button student-search-button">Cari</button>
-                            <a href="{{ route('finance.payments.index') }}" class="button student-filter-reset">Reset</a>
-                        </div>
-                    </form>
+                    @php
+                        $selectedStudentId = (int) ($selectedStudentId ?? 0);
+                        $selectedRegistrations = $selectedStudentId
+                            ? $people->first(fn ($registrations) => $registrations->contains('id', $selectedStudentId))
+                            : null;
+                        $selectedIdentity = $selectedRegistrations
+                            ? ($selectedRegistrations->firstWhere('identity_student_id', null) ?? $selectedRegistrations->first())
+                            : null;
+                    @endphp
+                    <div class="payment-one-stop-layout">
+                        <section class="payment-one-stop-main">
+                            <div class="payment-one-stop-card-title">
+                                <span aria-hidden="true">CS</span>
+                                <strong>Cari Siswa</strong>
+                            </div>
+                            <form method="GET" action="{{ route('finance.payments.index') }}" class="payment-one-stop-search">
+                                <label>
+                                    <span>Nama atau NIS Siswa</span>
+                                    <input type="search" name="search" value="{{ $search }}" placeholder="Ketik nama, NIS, atau NISN..." autofocus required>
+                                </label>
+                                <div class="payment-one-stop-actions">
+                                    <button class="button payment-one-stop-submit">Cari</button>
+                                    <a href="{{ route('finance.payments.index') }}" class="button student-filter-reset">Reset</a>
+                                </div>
+                            </form>
 
-                    @if($search !== '')
-                        <div class="payment-transaction-results">
-                            <div class="table-wrap">
-                                <table class="payment-transaction-table">
-                                    <colgroup>
-                                        <col class="column-nis">
-                                        <col class="column-name">
-                                        <col class="column-unit">
-                                        <col class="column-class">
-                                        <col class="column-bill">
-                                    </colgroup>
-                                    <thead>
-                                        <tr>
-                                            <th class="column-nis">NIS</th>
-                                            <th class="column-name">Nama</th>
-                                            <th class="column-unit">Unit Pendidikan</th>
-                                            <th class="column-class">Kelas</th>
-                                            <th class="column-bill">Pembayaran</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($people as $registrations)
-                                            @php($identity = $registrations->firstWhere('identity_student_id', null) ?? $registrations->first())
-                                            @foreach($registrations as $student)
-                                                @php($options = $student->payment_options ?? [])
-                                                <tr>
-                                                    <td class="column-nis">{{ $student->nis }}</td>
-                                                    <td class="column-name">{{ $identity->name }}</td>
-                                                    <td class="column-unit"><span class="education-code">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</span></td>
-                                                    <td class="column-class">{{ $student->schoolClass?->name ?? '-' }}</td>
-                                                    <td class="column-bill">
-                                                        <div class="payment-option-buttons-flat">
-                                                            @forelse($options as $option)
-                                                                @if($option['status'] === 'payable')
-                                                                    <a href="{{ $option['url'] }}">{{ $option['label'] }}</a>
-                                                                @else
-                                                                    <span class="payment-option-paid">{{ $option['label'] }} Lunas</span>
-                                                                @endif
-                                                            @empty
-                                                                <small>Semua pembayaran lunas</small>
-                                                            @endforelse
-                                                            @if(! empty($options) && collect($options)->every(fn ($option) => $option['status'] === 'paid'))
-                                                                <small class="payment-option-all-paid">Semua pembayaran lunas</small>
+                            @if($search !== '' && $people->isNotEmpty() && ! $selectedRegistrations)
+                                <div class="payment-one-stop-student-list">
+                                    @foreach($people as $registrations)
+                                        @php
+                                            $identity = $registrations->firstWhere('identity_student_id', null) ?? $registrations->first();
+                                            $isSelected = $selectedRegistrations && $selectedRegistrations->contains('id', $identity->id);
+                                            $unitSummary = $registrations
+                                                ->map(fn ($student) => trim(($student->schoolClass?->educationUnit?->code ?? '-') . ' ' . ($student->schoolClass?->name ?? '-')))
+                                                ->filter()
+                                                ->unique()
+                                                ->join(' · ');
+                                        @endphp
+                                        <a
+                                            href="{{ route('finance.payments.index', ['search' => $identity->name, 'student_id' => $identity->id]) }}"
+                                            @class(['payment-one-stop-student-card', 'is-selected' => $isSelected])
+                                        >
+                                            <span class="payment-one-stop-avatar" aria-hidden="true">{{ strtoupper(substr($identity->name, 0, 1)) }}</span>
+                                            <span class="payment-one-stop-student-copy">
+                                                <strong>{{ $identity->name }}</strong>
+                                                <small>NIS: {{ $identity->nis }}{{ $unitSummary ? ' · '.$unitSummary : '' }}</small>
+                                            </span>
+                                            <span class="payment-one-stop-unit-count">{{ $registrations->count() }} unit</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </section>
+
+                        <section class="payment-one-stop-side">
+                            @if($search !== '')
+                                @if($people->isEmpty())
+                                    <div class="payment-one-stop-empty-state">
+                                        <strong>Siswa tidak ditemukan</strong>
+                                        <span>Periksa kembali nama, NIS, atau NISN yang dicari.</span>
+                                    </div>
+                                @elseif(! $selectedRegistrations)
+                                    <div class="payment-one-stop-empty-state">
+                                        <strong>Belum ada siswa yang dipilih</strong>
+                                        <span>Pilih salah satu siswa dari hasil pencarian untuk melihat unit dan pilihan pembayaran.</span>
+                                    </div>
+                                @else
+                                    <article class="payment-one-stop-person">
+                                        <div class="payment-one-stop-person-head">
+                                            <span class="payment-responsive-avatar" aria-hidden="true">{{ strtoupper(substr($selectedIdentity->name, 0, 1)) }}</span>
+                                            <span class="payment-responsive-profile-copy">
+                                                <span class="payment-responsive-kicker">Profil Siswa</span>
+                                                <strong>{{ $selectedIdentity->name }}</strong>
+                                                <small>NIS: {{ $selectedIdentity->nis }}{{ $selectedIdentity->nisn ? ' · NISN: '.$selectedIdentity->nisn : '' }}</small>
+                                            </span>
+                                            <span class="payment-responsive-status">Aktif</span>
+                                        </div>
+
+                                        <div class="payment-one-stop-units">
+                                            @foreach($selectedRegistrations as $student)
+                                                @php
+                                                    $options = collect($student->payment_options ?? []);
+                                                    $mandatoryOptions = $options->whereIn('key', ['spp', 'daftar-ulang', 'lain-lain'])->values();
+                                                    $optionalOptions = $options->whereIn('key', ['laundry'])->values();
+                                                    $unitCode = $student->schoolClass?->educationUnit?->code ?? '-';
+                                                @endphp
+                                                <div class="payment-one-stop-unit-card">
+                                                    <div class="payment-one-stop-unit-meta">
+                                                        <span class="payment-responsive-unit-mark" aria-hidden="true">{{ strtoupper(substr($unitCode, 0, 2)) }}</span>
+                                                        <span class="payment-responsive-unit-copy">
+                                                            <strong>{{ $unitCode }}</strong>
+                                                            <span>{{ $student->schoolClass?->name ?? '-' }} · {{ $student->academicYear?->name ?? '-' }}</span>
+                                                        </span>
+                                                    </div>
+
+                                                    <div class="payment-one-stop-bill-section">
+                                                        <span class="payment-one-stop-section-title">Tagihan Wajib</span>
+                                                        <div class="payment-one-stop-bill-list">
+                                                            @if($mandatoryOptions->isEmpty())
+                                                                <span class="payment-one-stop-empty">Tidak ada tagihan wajib aktif.</span>
+                                                            @else
+                                                                @foreach($mandatoryOptions as $option)
+                                                                    @if($option['status'] === 'payable')
+                                                                        <a href="{{ $option['url'] }}" class="payment-one-stop-bill is-payable">
+                                                                            <span class="payment-one-stop-bill-top">
+                                                                                <strong>{{ $option['label'] === 'Lainnya' ? 'Lain-lain' : $option['label'] }}</strong>
+                                                                                <small>Proses</small>
+                                                                            </span>
+                                                                            <span class="payment-one-stop-bill-amount">{{ $option['amount_label'] ?? 'Rp 0' }}</span>
+                                                                            <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
+                                                                        </a>
+                                                                    @else
+                                                                        <span class="payment-one-stop-bill is-paid">
+                                                                            <span class="payment-one-stop-bill-top">
+                                                                                <strong>{{ $option['label'] === 'Lainnya' ? 'Lain-lain' : $option['label'] }}</strong>
+                                                                                <small>Lunas</small>
+                                                                            </span>
+                                                                            <span class="payment-one-stop-bill-amount">{{ $option['amount_label'] ?? 'Rp 0' }}</span>
+                                                                            <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
+                                                                        </span>
+                                                                    @endif
+                                                                @endforeach
                                                             @endif
                                                         </div>
-                                                    </td>
-                                                </tr>
+                                                    </div>
+
+                                                    <div class="payment-one-stop-bill-section">
+                                                        <span class="payment-one-stop-section-title">Pembayaran Opsional</span>
+                                                        <div class="payment-one-stop-bill-list">
+                                                            @if($optionalOptions->isEmpty())
+                                                                <span class="payment-one-stop-empty">Laundry belum tersedia untuk siswa ini.</span>
+                                                            @else
+                                                                @foreach($optionalOptions as $option)
+                                                                    @if($option['status'] === 'payable')
+                                                                        <a href="{{ $option['url'] }}" class="payment-one-stop-bill is-optional">
+                                                                            <span class="payment-one-stop-bill-top">
+                                                                                <strong>{{ $option['label'] }}</strong>
+                                                                                <small>Proses</small>
+                                                                            </span>
+                                                                            <span class="payment-one-stop-bill-amount">{{ $option['amount_label'] ?? 'Rp 0' }}</span>
+                                                                            <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
+                                                                        </a>
+                                                                    @else
+                                                                        <span class="payment-one-stop-bill is-paid">
+                                                                            <span class="payment-one-stop-bill-top">
+                                                                                <strong>{{ $option['label'] }}</strong>
+                                                                                <small>Lunas</small>
+                                                                            </span>
+                                                                            <span class="payment-one-stop-bill-amount">{{ $option['amount_label'] ?? 'Rp 0' }}</span>
+                                                                            <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
+                                                                        </span>
+                                                                    @endif
+                                                                @endforeach
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             @endforeach
-                                        @empty
-                                            <tr><td colspan="5" class="empty-state">Siswa tidak ditemukan.</td></tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    @else
-                        <div class="payment-transaction-results">
-                            <div class="empty-state">
-                                <strong>Cari siswa terlebih dahulu</strong>
-                                <span>Gunakan nama, NIS, atau NISN. Jika siswa terdaftar di beberapa unit, setiap unit akan tampil sebagai baris terpisah.</span>
-                            </div>
-                        </div>
-                    @endif
+                                        </div>
+
+                                        <div class="payment-one-stop-detail">
+                                            <span>Rincian Pembayaran</span>
+                                            <strong>Pilih salah satu pembayaran</strong>
+                                            <small>Form transaksi dan rincian nominal akan terbuka sesuai jenis pembayaran yang dipilih.</small>
+                                        </div>
+                                    </article>
+                                @endif
+                            @else
+                                <div class="payment-one-stop-empty-state">
+                                    <strong>Cari siswa terlebih dahulu</strong>
+                                    <span>Gunakan nama, NIS, atau NISN. Jika siswa terdaftar di beberapa unit, semua unit akan muncul sebagai pilihan pembayaran.</span>
+                                </div>
+                            @endif
+                        </section>
+                    </div>
                 @elseif($mode === 'history')
                     <div class="student-flat-header">
                         <div class="student-master-heading">

@@ -39,14 +39,14 @@
         <label>Alasan Nonaktif <input name="inactive_reason" value="{{ old('inactive_reason') }}" placeholder="Contoh: Lulus, pindah, mengundurkan diri"></label>
     </div>
 @elseif ($tab === 'education-units')
-    <label>Kode Unit <input name="code" required value="{{ old('code') }}" placeholder="Contoh: MTs"></label><label>Nama Unit <input name="name" required value="{{ old('name') }}" placeholder="Madrasah Tsanawiyah"></label>
+    <label>Kode Unit <input name="code" required value="{{ old('code') }}" placeholder="" autocomplete="off"></label><label>Nama Unit <input name="name" required value="{{ old('name') }}" placeholder="" autocomplete="off"></label>
     <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Unit pendidikan aktif</label>
 @elseif ($tab === 'classes')
     <label>Unit Pendidikan <select name="education_unit_id" required><option value="">Pilih Unit Pendidikan</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(old('education_unit_id') == $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>@endforeach</select></label>
-    <label>Nama Kelas <input name="name" required value="{{ old('name') }}" placeholder="Contoh: VII A"></label>
+    <label>Nama Kelas <input name="name" required value="{{ old('name') }}" placeholder="" autocomplete="off"></label>
     <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Kelas aktif</label>
 @elseif ($tab === 'academic-years')
-    <label class="span-2">Tahun Pelajaran <input name="name" required value="{{ old('name') }}" placeholder="2025/2026"></label>
+    <label class="span-2">Tahun Pelajaran <input name="name" required value="{{ old('name') }}" placeholder="" autocomplete="off"></label>
     <label>Tanggal Mulai <input type="date" name="start_date" value="{{ old('start_date') }}"></label><label>Tanggal Selesai <input type="date" name="end_date" value="{{ old('end_date') }}"></label>
     <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1"><span></span> Jadikan tahun pelajaran aktif</label>
 @elseif ($tab === 'fee-types')
@@ -54,7 +54,7 @@
     <div class="fee-type-simple span-2">
         <label class="fee-type-simple-field">
             <span>Nama Kategori Pembayaran</span>
-            <input name="name" required value="{{ old('name') }}" placeholder="Contoh: SPP Bulanan atau Uang Gedung">
+            <input name="name" required value="{{ old('name') }}" placeholder="" autocomplete="off">
         </label>
 
         <label class="fee-type-simple-field fee-type-simple-short">
@@ -156,7 +156,9 @@
     </label>
     <label class="span-2">Password <input type="password" name="password" autocomplete="new-password" placeholder="Wajib saat tambah, kosongkan saat edit jika tidak diganti"></label>
 @else
-    <label class="span-2">Siswa
+    <div class="fee-discount-simple span-2">
+    <label class="fee-discount-simple-field fee-discount-student-field">
+        <span>Siswa</span>
         <div class="student-search-picker" data-student-picker>
             <input type="search" placeholder="Ketik nama siswa atau NIS..." autocomplete="off" required data-student-search>
             <select name="student_id" required data-student-source><option value="">Pilih Siswa</option>@foreach($studentOptions as $student)<option value="{{ $student->id }}" @selected(old('student_id') == $student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>@endforeach</select>
@@ -164,7 +166,8 @@
         </div>
     </label>
     @php($selectedDiscountPayment = old('source_type', 'spp') === 'fee_type' && old('fee_type_id') ? 'fee_type:'.old('fee_type_id') : 'spp')
-    <label>Kategori Pembayaran
+    <label class="fee-discount-simple-field">
+        <span>Kategori Pembayaran</span>
         <select required data-discount-payment>
             <option value="spp" @selected($selectedDiscountPayment === 'spp')>SPP</option>
             @foreach($feeTypeOptions as $feeType)<option value="fee_type:{{ $feeType->id }}" @selected($selectedDiscountPayment === 'fee_type:'.$feeType->id)>{{ $feeType->name }}</option>@endforeach
@@ -172,10 +175,11 @@
         <input type="hidden" name="source_type" value="{{ old('source_type', 'spp') }}" data-discount-source>
         <input type="hidden" name="fee_type_id" value="{{ old('fee_type_id') }}" data-discount-fee-type>
     </label>
-    <label>Jenis Keringanan <select name="discount_type" required data-discount-type><option value="amount">Potongan Nominal</option><option value="percentage">Potongan Persentase</option></select></label>
-    <label>Nilai Keringanan <input type="text" inputmode="numeric" name="discount_value" required value="{{ old('discount_value') }}" placeholder="Contoh: 300.000 atau 50" data-discount-value data-currency-input></label>
-    <label>Tanggal Mulai <input type="date" name="start_date" required value="{{ old('start_date', now()->toDateString()) }}"></label>
-    <label>Tanggal Selesai <input type="date" name="end_date" value="{{ old('end_date') }}"></label>
-    <label class="span-2">Alasan Keringanan <input name="reason" value="{{ old('reason') }}" placeholder="Contoh: Beasiswa atau keringanan khusus"></label>
-    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked><span></span> Keringanan aktif</label>
+    <label class="fee-discount-simple-field"><span>Jenis Keringanan</span><select name="discount_type" required data-discount-type><option value="amount">Potongan Nominal</option><option value="percentage">Potongan Persentase</option></select></label>
+    <label class="fee-discount-simple-field"><span>Nilai Keringanan</span><input type="text" inputmode="numeric" name="discount_value" required value="{{ old('discount_value') }}" placeholder="Contoh: 300.000 atau 50" data-discount-value data-currency-input></label>
+    <label class="fee-discount-simple-field"><span>Tanggal Mulai</span><input type="date" name="start_date" required value="{{ old('start_date', now()->toDateString()) }}"></label>
+    <label class="fee-discount-simple-field"><span>Tanggal Selesai</span><input type="date" name="end_date" value="{{ old('end_date') }}"></label>
+    <label class="fee-discount-simple-field fee-discount-reason-field"><span>Alasan Keringanan</span><input name="reason" value="{{ old('reason') }}" placeholder="Contoh: Beasiswa atau keringanan khusus"></label>
+    <label class="switch-field fee-discount-simple-status"><input type="checkbox" name="is_active" value="1" checked><span></span> Keringanan aktif</label>
+    </div>
 @endif

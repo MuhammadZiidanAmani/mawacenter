@@ -1,0 +1,393 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Kategori Pembayaran | Ma'wa Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#111c2c",
+                        "on-primary-fixed": "#002110",
+                        "inverse-on-surface": "#ebf1ff",
+                        "surface": "#f9f9ff",
+                        "primary-fixed-dim": "#92d5aa",
+                        "inverse-surface": "#263142",
+                        "on-surface-variant": "#404942",
+                        "surface-container-high": "#dee8ff",
+                        "outline": "#707971",
+                        "on-secondary-fixed-variant": "#424b05",
+                        "secondary-fixed-dim": "#c2cd7b",
+                        "on-tertiary-fixed-variant": "#414941",
+                        "on-background": "#111c2c",
+                        "tertiary-fixed-dim": "#c1c9be",
+                        "secondary-fixed": "#deea95",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#aef2c5",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#92d5aa",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#d8e3fa",
+                        "on-tertiary-container": "#c1c9bf",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#1b5e3c",
+                        "on-secondary-fixed": "#191e00",
+                        "secondary": "#5a631e",
+                        "on-primary-fixed-variant": "#085231",
+                        "outline-variant": "#bfc9c0",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#deea95",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#e7eeff",
+                        "primary": "#004528",
+                        "surface-dim": "#cfdaf1",
+                        "surface-bright": "#f9f9ff",
+                        "on-tertiary-fixed": "#161d17",
+                        "tertiary-container": "#4d554d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#93d5aa",
+                        "on-secondary-container": "#606a23",
+                        "tertiary-fixed": "#dde5da",
+                        "surface-tint": "#296a47",
+                        "surface-container-highest": "#d8e3fa",
+                        "background": "#f9f9ff",
+                        "surface-container-low": "#f0f3ff",
+                        "tertiary": "#363e36"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "base": "4px",
+                        "lg": "24px",
+                        "gutter": "12px",
+                        "container-padding": "16px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "title-md": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "headline-lg": ["Manrope"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "title-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-aktif { background-color: #E6F4EA; color: #1B5E3C; }
+        .bg-tidak-aktif { background-color: #EDF2F7; color: #4A5568; }
+        .safe-bottom { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+        
+        /* Custom scrollbar for mobile drawers */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #bfc9c0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface border-b border-outline-variant flex justify-between items-center h-16 px-md w-full">
+<div class="flex items-center gap-sm">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors duration-200 text-primary" onclick="toggleDrawer()">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Ma'wa Center</h1>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors duration-200 text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A clean, professional headshot of a financial administrator in business attire, set against a blurred office background with soft corporate lighting. The style is modern and high-resolution, conveying trust and efficiency within a digital financial management context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCpmx83eSP-uYU-wvtQkCb5FGiAt8AwMh6SNOnIRMYaWeCCOJ9i2RRvn5lUa9OAKiAVrNn0OG9qxiGpAQ4c96XjqVqtI_q8KDEcrDecaMkNsPH3RojgGf4NIcD3d4hFpffR-UWk9GoXijCT7KurjEJExlrSTeEv-u-08crADiUcokOr234S--YWAAV_rYbmqmUJ6wbwXbKttlY87cfRk8sbINU7b0ZCLp4QDLJ8hp-cKADUTy8fAK59ay-ksnQ7PnAxP7D643hwdOK">
+</div>
+</div>
+</header>
+<!-- NavigationDrawer (Mobile Overlay) -->
+<div class="fixed inset-0 bg-black/50 z-[60] opacity-0 pointer-events-none transition-opacity duration-300" id="drawer-overlay" onclick="toggleDrawer()"></div>
+<aside class="fixed top-0 left-0 h-full w-80 bg-surface z-[70] -translate-x-full transition-transform duration-300 flex flex-col py-lg shadow-lg" id="main-drawer">
+<div class="px-md mb-lg">
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md font-bold text-primary">Ma'wa Center</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Financial Management</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto space-y-1">
+<div class="px-md py-sm text-label-sm uppercase tracking-wider text-outline">Main Menu</div>
+<a class="flex items-center gap-md text-on-surface-variant mx-md px-md py-sm hover:bg-surface-container rounded-full transition-all duration-300" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-body-md text-body-md">Year Management</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant mx-md px-md py-sm hover:bg-surface-container rounded-full transition-all duration-300" href="#">
+<span class="material-symbols-outlined">school</span>
+<span class="font-body-md text-body-md">Education Units</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant mx-md px-md py-sm hover:bg-surface-container rounded-full transition-all duration-300" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md text-body-md">Class Management</span>
+</a>
+<a class="flex items-center gap-md bg-secondary-container text-on-secondary-container mx-md px-md py-sm rounded-full transition-all duration-300" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-body-md text-body-md">Payment Categories</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant mx-md px-md py-sm hover:bg-surface-container rounded-full transition-all duration-300" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-body-md text-body-md">Student Data</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant mx-md px-md py-sm hover:bg-surface-container rounded-full transition-all duration-300" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md text-body-md">System Logs</span>
+</a>
+</nav>
+<div class="mt-auto px-md py-sm border-t border-outline-variant flex justify-between items-center">
+<span class="text-label-md font-label-md text-outline">v1.0.4</span>
+<button class="text-error flex items-center gap-1 font-label-md">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+                Sign Out
+            </button>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="pt-20 px-container-padding safe-bottom">
+<!-- Breadcrumb & Header -->
+<section class="mb-lg">
+<div class="inline-flex items-center px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed mb-sm">
+<div class="w-2 h-2 rounded-full bg-primary-container mr-2 animate-pulse"></div>
+<span class="font-label-md text-label-md">Tahun Pelajaran Aktif: 2025/2026</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Kategori Pembayaran</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Atur SPP, daftar ulang, laundry, dan pembayaran lainnya.</p>
+</section>
+<!-- Search & Filter Card -->
+<section class="bg-surface-container-low rounded-xl border border-outline-variant p-md mb-lg">
+<div class="relative mb-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-outline-variant bg-surface-bright focus:ring-2 focus:ring-primary focus:border-primary font-body-md" placeholder="Cari kategori pembayaran..." type="text">
+</div>
+<!-- Filter Grid -->
+<div class="grid grid-cols-2 gap-gutter mb-md">
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Unit Pendidikan</label>
+<select class="w-full p-2 text-body-md rounded-lg border-outline-variant bg-surface-bright">
+<option>Semua</option>
+<option>MTs</option>
+<option>PONPES</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Kelas</label>
+<select class="w-full p-2 text-body-md rounded-lg border-outline-variant bg-surface-bright">
+<option>Semua Kelas</option>
+<option>Kelas 7</option>
+<option>Kelas 8</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Tahun Pelajaran</label>
+<select class="w-full p-2 text-body-md rounded-lg border-outline-variant bg-surface-bright">
+<option>2025/2026</option>
+<option>2024/2025</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Status</label>
+<select class="w-full p-2 text-body-md rounded-lg border-outline-variant bg-surface-bright">
+<option>Aktif</option>
+<option>Tidak Aktif</option>
+</select>
+</div>
+</div>
+<div class="flex gap-gutter">
+<button class="flex-1 bg-primary text-on-primary font-title-md text-title-md py-2.5 rounded-lg active:scale-95 transition-transform">Terapkan</button>
+<button class="px-md py-2.5 border border-outline text-on-surface-variant font-title-md text-title-md rounded-lg active:scale-95 transition-transform">Reset</button>
+</div>
+</section>
+<!-- Responsive Mobile Cards (Bento-style list) -->
+<section class="space-y-md">
+<!-- Card Item 1 -->
+<div class="bg-surface-bright border border-outline-variant rounded-xl p-md shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h3 class="font-title-md text-title-md text-primary">SPP Bulanan</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Tagihan Bulanan</p>
+</div>
+<span class="px-3 py-1 rounded-full text-label-sm font-label-sm bg-aktif">Aktif</span>
+</div>
+<div class="grid grid-cols-2 gap-sm py-md border-y border-outline-variant my-md">
+<div>
+<span class="block text-label-md font-label-md text-on-surface-variant mb-1">Unit / Kelas</span>
+<p class="font-body-md text-body-md font-semibold">MTs • Semua Kelas</p>
+</div>
+<div class="text-right">
+<span class="block text-label-md font-label-md text-on-surface-variant mb-1">Nominal</span>
+<p class="font-title-md text-title-md text-primary">Rp 60.000</p>
+</div>
+</div>
+<div class="flex justify-end gap-sm">
+<button class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-lg text-primary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span class="font-label-md">Edit</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-lg text-error hover:bg-error-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+<span class="font-label-md">Hapus</span>
+</button>
+</div>
+</div>
+<!-- Card Item 2 -->
+<div class="bg-surface-bright border border-outline-variant rounded-xl p-md shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h3 class="font-title-md text-title-md text-primary">Laundry Bulanan</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Transaksi Langsung</p>
+</div>
+<span class="px-3 py-1 rounded-full text-label-sm font-label-sm bg-aktif">Aktif</span>
+</div>
+<div class="grid grid-cols-2 gap-sm py-md border-y border-outline-variant my-md">
+<div>
+<span class="block text-label-md font-label-md text-on-surface-variant mb-1">Unit / Kelas</span>
+<p class="font-body-md text-body-md font-semibold">PONPES • Semua Kelas</p>
+</div>
+<div class="text-right">
+<span class="block text-label-md font-label-md text-on-surface-variant mb-1">Nominal</span>
+<p class="font-title-md text-title-md text-primary">Rp 110.000</p>
+</div>
+</div>
+<div class="flex justify-end gap-sm">
+<button class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-lg text-primary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span class="font-label-md">Edit</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-lg text-error hover:bg-error-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+<span class="font-label-md">Hapus</span>
+</button>
+</div>
+</div>
+<!-- Card Item 3 -->
+<div class="bg-surface-bright border border-outline-variant rounded-xl p-md shadow-sm opacity-60">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h3 class="font-title-md text-title-md text-primary">Biaya Seragam</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Pendaftaran Awal</p>
+</div>
+<span class="px-3 py-1 rounded-full text-label-sm font-label-sm bg-tidak-aktif">Non-Aktif</span>
+</div>
+<div class="grid grid-cols-2 gap-sm py-md border-y border-outline-variant my-md">
+<div>
+<span class="block text-label-md font-label-md text-on-surface-variant mb-1">Unit / Kelas</span>
+<p class="font-body-md text-body-md font-semibold">MTs • Kelas 7</p>
+</div>
+<div class="text-right">
+<span class="block text-label-md font-label-md text-on-surface-variant mb-1">Nominal</span>
+<p class="font-title-md text-title-md text-primary">Rp 450.000</p>
+</div>
+</div>
+<div class="flex justify-end gap-sm">
+<button class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-lg text-primary hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span class="font-label-md">Edit</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-lg text-error hover:bg-error-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+<span class="font-label-md">Hapus</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-lg flex items-center justify-center z-50 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-20 px-sm pb-safe bg-surface border-t border-outline-variant z-50">
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-low transition-colors rounded-xl">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md mt-1">Dashboard</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-low transition-colors rounded-xl">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-md text-label-md mt-1">Reports</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1 scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">database</span>
+<span class="font-label-md text-label-md mt-1">Master</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container-low transition-colors rounded-xl">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md mt-1">Settings</span>
+</button>
+</nav>
+<script>
+        function toggleDrawer() {
+            const drawer = document.getElementById('main-drawer');
+            const overlay = document.getElementById('drawer-overlay');
+            const isOpen = drawer.classList.contains('translate-x-0');
+            
+            if (isOpen) {
+                drawer.classList.replace('translate-x-0', '-translate-x-full');
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+            } else {
+                drawer.classList.replace('-translate-x-full', 'translate-x-0');
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        // Active Ripple Effect for Buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                let ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+<style>
+        .ripple {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-effect 0.6s linear;
+            pointer-events: none;
+        }
+        @keyframes ripple-effect {
+            to { transform: scale(4); opacity: 0; }
+        }
+    </style>
+</body></html>

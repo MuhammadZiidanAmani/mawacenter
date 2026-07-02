@@ -1,0 +1,344 @@
+<!DOCTYPE html><html class="light" lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Ma'wa Center - Data Role</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#93d5aa",
+                        "on-secondary-fixed-variant": "#424b05",
+                        "primary-fixed": "#aef2c5",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed": "#002110",
+                        "surface-container-low": "#f0f3ff",
+                        "on-tertiary-container": "#c1c9bf",
+                        "tertiary": "#363e36",
+                        "on-primary": "#ffffff",
+                        "outline": "#707971",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#deea95",
+                        "tertiary-container": "#4d554d",
+                        "surface-variant": "#d8e3fa",
+                        "surface-container-highest": "#d8e3fa",
+                        "tertiary-fixed-dim": "#c1c9be",
+                        "secondary-fixed-dim": "#c2cd7b",
+                        "tertiary-fixed": "#dde5da",
+                        "outline-variant": "#bfc9c0",
+                        "on-secondary-container": "#606a23",
+                        "on-surface-variant": "#404942",
+                        "on-error": "#ffffff",
+                        "primary": "#004528",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-tint": "#296a47",
+                        "primary-container": "#1b5e3c",
+                        "inverse-surface": "#263142",
+                        "on-background": "#111c2c",
+                        "secondary": "#5a631e",
+                        "background": "#f9f9ff",
+                        "surface-container-high": "#dee8ff",
+                        "secondary-container": "#deea95",
+                        "on-surface": "#111c2c",
+                        "inverse-primary": "#92d5aa",
+                        "inverse-on-surface": "#ebf1ff",
+                        "on-tertiary-fixed": "#161d17",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f9f9ff",
+                        "primary-fixed-dim": "#92d5aa",
+                        "on-secondary-fixed": "#191e00",
+                        "on-primary-fixed-variant": "#085231",
+                        "surface-container": "#e7eeff",
+                        "surface": "#f9f9ff",
+                        "on-tertiary-fixed-variant": "#414941",
+                        "surface-dim": "#cfdaf1"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "base": "4px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "container-padding": "16px",
+                        "sm": "8px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "title-md": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "headline-lg": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "title-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        
+        .active-nav-indicator {
+            position: absolute;
+            bottom: -2px;
+            height: 3px;
+            width: 20px;
+            background-color: currentColor;
+            border-radius: 99px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid #E2E8F0;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-24">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-40 bg-surface flex justify-between items-center px-container-padding py-md w-full border-b border-outline-variant">
+<div class="flex items-center gap-sm">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile font-bold text-primary">MA'WA CENTER</h1>
+</div>
+<div class="flex items-center gap-xs">
+<button class="p-2 hover:bg-surface-container rounded-full transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+</div>
+</header>
+<main class="px-container-padding py-lg flex flex-col gap-lg">
+<!-- Hero Section -->
+<section>
+<div class="flex flex-col gap-xs">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">Data Role</h2>
+<p class="text-on-surface-variant font-body-md">Kelola role pengguna sistem.</p>
+</div>
+<!-- Active Academic Year Chip -->
+<div class="mt-md flex items-center gap-sm bg-surface-container-low border border-outline-variant rounded-full px-4 py-2 w-fit">
+<span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+<span class="font-label-md text-label-md text-on-surface-variant">Tahun Pelajaran Aktif: 2025/2026</span>
+</div>
+</section>
+<!-- Search & Filter -->
+<section class="flex flex-col gap-md">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="Cari role..." type="text">
+</div>
+<div class="flex gap-sm overflow-x-auto pb-1 no-scrollbar">
+<button class="flex items-center gap-xs px-4 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md whitespace-nowrap">
+<span class="material-symbols-outlined text-[18px]">filter_list</span> Filter
+                </button>
+<button class="flex items-center gap-xs px-4 py-2 bg-surface border border-outline-variant text-on-surface-variant rounded-full font-label-md text-label-md whitespace-nowrap">
+                    Status: Aktif
+                </button>
+<button class="flex items-center gap-xs px-4 py-2 bg-surface border border-outline-variant text-on-surface-variant rounded-full font-label-md text-label-md whitespace-nowrap">
+                    Urutan: Nama
+                </button>
+</div>
+</section>
+<!-- Role Cards Grid -->
+<section class="flex flex-col gap-gutter">
+<!-- Card 1: Admin -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-md shadow-sm">
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<h3 class="font-title-md text-title-md text-on-surface">Admin</h3>
+<p class="text-on-surface-variant text-[12px]">Role bawaan sistem</p>
+</div>
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full font-label-sm text-label-sm">
+                        admin
+                    </span>
+</div>
+<div class="space-y-3">
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-xs">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-label-sm text-[10px]">7 akses</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Hak Akses:</span>
+</div>
+<p class="text-on-surface-variant text-label-sm leading-relaxed">Dashboard, Manajemen Siswa, Pembayaran, Laporan, Pengaturan...</p>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-outline-variant/30">
+<div class="flex flex-col">
+<span class="text-outline text-[11px] font-medium uppercase tracking-wider">Jumlah User</span>
+<span class="font-title-md text-title-md">1 Personel</span>
+</div>
+<span class="bg-[#E6F4EA] text-[#1B5E3C] px-3 py-1 rounded-full font-label-md text-label-md">
+                            Aktif
+                        </span>
+</div>
+</div>
+<div class="flex gap-sm mt-2">
+<button class="flex-1 flex items-center justify-center gap-xs py-2.5 bg-surface border border-outline-variant rounded-lg text-primary hover:bg-surface-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span class="font-label-md text-label-md">Edit</span>
+</button>
+<button class="w-12 flex items-center justify-center py-2.5 bg-error-container/20 border border-error/20 rounded-lg text-error hover:bg-error-container/30 transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Card 2: Bendahara -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-md shadow-sm">
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<h3 class="font-title-md text-title-md text-on-surface">Bendahara</h3>
+<p class="text-on-surface-variant text-[12px]">Role bawaan sistem</p>
+</div>
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full font-label-sm text-label-sm">
+                        bendahara
+                    </span>
+</div>
+<div class="space-y-3">
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-xs">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-label-sm text-[10px]">7 akses</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Hak Akses:</span>
+</div>
+<p class="text-on-surface-variant text-label-sm leading-relaxed">Dashboard, Manajemen Siswa, Pembayaran, Laporan...</p>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-outline-variant/30">
+<div class="flex flex-col">
+<span class="text-outline text-[11px] font-medium uppercase tracking-wider">Jumlah User</span>
+<span class="font-title-md text-title-md">0 Personel</span>
+</div>
+<span class="bg-[#E6F4EA] text-[#1B5E3C] px-3 py-1 rounded-full font-label-md text-label-md">
+                            Aktif
+                        </span>
+</div>
+</div>
+<div class="flex gap-sm mt-2">
+<button class="flex-1 flex items-center justify-center gap-xs py-2.5 bg-surface border border-outline-variant rounded-lg text-primary hover:bg-surface-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span class="font-label-md text-label-md">Edit</span>
+</button>
+<button class="w-12 flex items-center justify-center py-2.5 bg-error-container/20 border border-error/20 rounded-lg text-error hover:bg-error-container/30 transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Card 3: Staff (Inactive Example) -->
+<div class="glass-card rounded-xl p-md flex flex-col gap-md shadow-sm opacity-90">
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<h3 class="font-title-md text-title-md text-on-surface">Staff TU</h3>
+<p class="text-on-surface-variant text-[12px]">Role kustom unit</p>
+</div>
+<span class="bg-primary-container/10 text-primary border border-primary/20 px-3 py-1 rounded-full font-label-sm text-label-sm">
+                        staff_tu
+                    </span>
+</div>
+<div class="space-y-3">
+<div class="flex flex-col gap-xs">
+<div class="flex items-center gap-xs">
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded font-label-sm text-[10px]">3 akses</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Hak Akses:</span>
+</div>
+<p class="text-on-surface-variant text-label-sm leading-relaxed">Manajemen Siswa, Pembayaran Ringan...</p>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-outline-variant/30">
+<div class="flex flex-col">
+<span class="text-outline text-[11px] font-medium uppercase tracking-wider">Jumlah User</span>
+<span class="font-title-md text-title-md">4 Personel</span>
+</div>
+<span class="bg-[#EDF2F7] text-[#4A5568] px-3 py-1 rounded-full font-label-md text-label-md">
+                            Tidak Aktif
+                        </span>
+</div>
+</div>
+<div class="flex gap-sm mt-2">
+<button class="flex-1 flex items-center justify-center gap-xs py-2.5 bg-surface border border-outline-variant rounded-lg text-primary hover:bg-surface-container transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+<span class="font-label-md text-label-md">Edit</span>
+</button>
+<button class="w-12 flex items-center justify-center py-2.5 bg-error-container/20 border border-error/20 rounded-lg text-error hover:bg-error-container/30 transition-all active:scale-95">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+</section>
+</main>
+<!-- FAB -->
+<button class="fixed right-6 bottom-24 w-14 h-14 bg-primary text-on-primary rounded-2xl shadow-xl flex items-center justify-center transition-all hover:scale-110 active:scale-90 z-40">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</button>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-2 pb-safe bg-surface border-t border-outline-variant h-20 z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[24px]">dashboard</span>
+<span class="font-label-sm text-label-sm mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[24px]">assessment</span>
+<span class="font-label-sm text-label-sm mt-1">Reports</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-5 py-1.5 active:scale-90 duration-150 relative" href="#">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">database</span>
+<span class="font-label-sm text-label-sm font-bold mt-1">Master</span>
+<div class="active-nav-indicator"></div>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant py-1 hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="font-label-sm text-label-sm mt-1">Settings</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interactions for the cards
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('touchstart', () => {
+                card.style.transform = 'scale(0.98)';
+                card.style.transition = 'transform 0.1s ease';
+            });
+            card.addEventListener('touchend', () => {
+                card.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

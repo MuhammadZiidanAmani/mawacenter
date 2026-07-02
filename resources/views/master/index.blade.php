@@ -12,6 +12,7 @@
     $icons = [
         'grid' => '<path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/>',
         'database' => '<ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/>',
+        'school' => '<path d="m3 10 9-5 9 5-9 5-9-5Z"/><path d="M6 12v5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-5"/><path d="M21 10v6"/>',
         'users' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/>',
         'calendar' => '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',
         'receipt' => '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/>',
@@ -33,6 +34,10 @@
         'wallet' => '<path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/>',
         'finance' => '<rect x="3" y="5" width="18" height="15" rx="3"/><path d="M7 5V3h10v2M3 10h18M7 15h3"/>',
         'card' => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h2"/>',
+        'history' => '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5M12 7v5l3 2"/>',
+        'clock' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+        'info' => '<circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/>',
+        'filter' => '<path d="M4 6h16M7 12h10M10 18h4"/>',
     ];
     $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
     $tabs = [
@@ -49,7 +54,7 @@
         'classes' => ['Kelas', 'Daftar kelas yang tersedia.', 'Tambah Kelas'],
         'academic-years' => ['Tahun Pelajaran', 'Daftar tahun pelajaran yang tersedia.', 'Tambah Tahun Pelajaran'],
         'fee-types' => ['Kategori Pembayaran', 'Atur SPP, daftar ulang, laundry, dan pembayaran lainnya.', 'Tambah Kategori Pembayaran'],
-        'fee-discounts' => ['Keringanan Biaya', 'Atur potongan SPP atau pembayaran lainnya untuk siswa.', 'Tambah Keringanan'],
+        'fee-discounts' => ['Keringanan Biaya', 'Atur potongan SPP atau pembayaran lainnya untuk siswa.', 'Tambah Keringanan Biaya'],
         'data-roles' => ['Data Role', 'Kelola role pengguna sistem.', 'Tambah Role'],
         'data-users' => ['Data User', 'Kelola akun pengguna dan role aksesnya.', 'Tambah User'],
     ];
@@ -111,8 +116,6 @@
                 @else
                 @php
                     $createDescriptions = [
-                        'academic-years' => 'Pastikan nama periode, tanggal, dan status aktif sudah sesuai.',
-                        'education-units' => 'Pastikan kode, nama unit, dan status aktif sudah sesuai.',
                         'classes' => 'Pastikan unit pendidikan, nama kelas, dan status aktif sudah sesuai.',
                         'fee-types' => 'Pastikan kategori, unit, kelas, nominal, dan status aktif sudah sesuai.',
                         'fee-discounts' => 'Pastikan siswa, jenis pembayaran, nilai keringanan, tanggal, dan status aktif sudah sesuai.',
@@ -126,7 +129,7 @@
                     <div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Pengelolaan Data · Tambah</p>@endif<h1>{{ $labels[$tab][2] }}</h1><p>Lengkapi formulir berikut untuk menambahkan data baru.</p></div>
                 </section>
                 <section class="card master-create-card">
-                    @if ($tab !== 'fee-types')
+                    @if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))
                     <div class="master-create-heading"><div><strong>Informasi {{ $labels[$tab][0] }}</strong><span>{{ $createDescription }}</span></div></div>
                     @endif
                     <form method="POST" action="{{ route('master.'.$tab.'.store') }}" class="master-form master-create-form">
@@ -166,7 +169,7 @@
                 @endif
             @else
             @if ($tab !== 'students')
-            <section class="student-workspace master-flat-workspace {{ in_array($tab, ['classes', 'fee-types', 'fee-discounts'], true) ? 'master-filter-card' : '' }} {{ $tab === 'classes' ? 'master-class-filter-card' : '' }} {{ $tab === 'fee-types' ? 'master-fee-filter-card' : '' }} {{ $tab === 'fee-discounts' ? 'master-discount-filter-card' : '' }}">
+            <section class="student-workspace master-flat-workspace {{ in_array($tab, ['fee-types', 'fee-discounts', 'data-roles', 'data-users'], true) ? 'master-filter-card' : '' }} {{ $tab === 'fee-types' ? 'master-fee-filter-card' : '' }} {{ $tab === 'fee-discounts' ? 'master-discount-filter-card' : '' }} {{ $tab === 'data-roles' ? 'master-role-filter-card' : '' }} {{ $tab === 'data-users' ? 'master-user-filter-card' : '' }}">
                 <div class="student-flat-header">
                     @if (in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))
                     <div class="master-sample-heading">
@@ -177,50 +180,9 @@
                     <h1>{{ $labels[$tab][0] }}</h1>
                     @endif
                     <div class="student-title-actions">
-                        <a href="{{ route('master.create', ['tab' => $tab]) }}" class="button student-add-button {{ in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true) ? 'master-primary-add-button' : '' }}">{!! $icon('plus') !!} {{ $labels[$tab][2] }}</a>
+                        <a href="{{ route('master.create', ['tab' => $tab]) }}" class="button student-add-button {{ in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true) ? 'master-primary-add-button' : '' }} {{ in_array($tab, ['academic-years', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true) ? 'academic-year-add-button' : '' }}">{!! $icon('plus') !!} {{ in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true) ? 'Tambah' : $labels[$tab][2] }}</a>
                     </div>
                 </div>
-                @if ($tab === 'classes')
-                <form method="GET" action="{{ route('master.index') }}" class="student-filter-panel master-class-filter-panel">
-                    <input type="hidden" name="tab" value="classes">
-                    <label class="class-filter-unit"><span>Unit Pendidikan</span><select name="unit_id" aria-label="Filter unit pendidikan"><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
-                    <label class="class-filter-year"><span>Tahun Pelajaran</span><select name="year_id" aria-label="Filter tahun pelajaran"><option value="">semua</option>@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($classYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
-                    <label class="class-filter-status"><span>Status Data</span><select name="status" aria-label="Filter status data"><option value="">Semua Status</option><option value="active" @selected($classStatus === 'active')>Aktif</option><option value="inactive" @selected($classStatus === 'inactive')>Nonaktif</option></select></label>
-                    <input type="hidden" name="search" value="{{ request('search') }}">
-                    <div class="student-filter-actions">
-                        <button class="button student-search-button">Cari</button>
-                        <a href="{{ route('master.index', ['tab' => 'classes']) }}" class="button student-filter-reset">Reset</a>
-                    </div>
-                </form>
-                @endif
-                @if ($tab === 'fee-types')
-                <form method="GET" action="{{ route('master.index') }}" class="student-filter-panel master-filter-panel master-fee-filter-panel">
-                    <input type="hidden" name="tab" value="fee-types">
-                    <label class="fee-type-filter-unit"><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit aria-label="Filter unit pendidikan"><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
-                    <label class="fee-type-filter-class"><span>Kelas</span><select name="class_id" data-student-filter-class aria-label="Filter kelas"><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
-                    <label class="fee-type-filter-year"><span>Tahun Pelajaran</span><select name="year_id" aria-label="Filter tahun pelajaran"><option value="">semua</option>@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($feeTypeYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
-                    <label class="fee-type-filter-status"><span>Status Data</span><select name="status" aria-label="Filter status data"><option value="">Semua Status</option><option value="active" @selected($feeTypeStatus === 'active')>Aktif</option><option value="inactive" @selected($feeTypeStatus === 'inactive')>Nonaktif</option></select></label>
-                    <input type="hidden" name="search" value="{{ request('search') }}">
-                    <div class="student-filter-actions">
-                        <button class="button student-search-button">Cari</button>
-                        <a href="{{ route('master.index', ['tab' => 'fee-types']) }}" class="button student-filter-reset">Reset</a>
-                    </div>
-                </form>
-                @endif
-                @if ($tab === 'fee-discounts')
-                <form method="GET" action="{{ route('master.index') }}" class="student-filter-panel master-filter-panel master-discount-filter-panel">
-                    <input type="hidden" name="tab" value="fee-discounts">
-                    <label class="fee-discount-filter-unit"><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit aria-label="Filter unit pendidikan"><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
-                    <label class="fee-discount-filter-class"><span>Kelas</span><select name="class_id" data-student-filter-class aria-label="Filter kelas"><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
-                    <label class="fee-discount-filter-year"><span>Tahun Pelajaran</span><select name="year_id" aria-label="Filter tahun pelajaran"><option value="">semua</option>@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($feeDiscountYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
-                    <label class="fee-discount-filter-status"><span>Status Data</span><select name="status" aria-label="Filter status data"><option value="">Semua Status</option><option value="active" @selected($feeDiscountStatus === 'active')>Aktif</option><option value="inactive" @selected($feeDiscountStatus === 'inactive')>Nonaktif</option></select></label>
-                    <input type="hidden" name="search" value="{{ request('search') }}">
-                    <div class="student-filter-actions">
-                        <button class="button student-search-button">Cari</button>
-                        <a href="{{ route('master.index', ['tab' => 'fee-discounts']) }}" class="button student-filter-reset">Reset</a>
-                    </div>
-                </form>
-                @endif
             </section>
             @endif
 
@@ -278,7 +240,523 @@
             </section>
             @endif
 
-            <section class="card master-card student-data-card {{ $tab === 'students' ? 'student-list-table-card' : 'master-flat-card' }} {{ $tab === 'academic-years' ? 'academic-year-table-card' : '' }} {{ $tab === 'education-units' ? 'education-unit-table-card' : '' }} {{ $tab === 'classes' ? 'class-table-card' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table-card' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table-card' : '' }} {{ $tab === 'data-roles' ? 'data-role-table-card' : '' }} {{ $tab === 'data-users' ? 'data-user-table-card' : '' }}">
+            @if ($tab === 'academic-years')
+            <section class="academic-year-card-section">
+                <div class="academic-year-card-grid">
+                    @forelse ($data as $row)
+                        @php
+                            $periodLabel = $row->is_active
+                                ? 'Periode Berjalan'
+                                : ($row->start_date && $row->start_date->isFuture()
+                                    ? 'Periode Mendatang'
+                                    : ($row->end_date && $row->end_date->isPast() ? 'Periode Selesai' : 'Arsip Data'));
+                        @endphp
+                        <article class="academic-year-card {{ $row->is_active ? 'is-active' : '' }}">
+                            <div class="academic-year-card-top">
+                                <div class="academic-year-card-main">
+                                    <span class="academic-year-card-icon" aria-hidden="true">
+                                        {!! $row->is_active ? $icon('calendar') : $icon($periodLabel === 'Periode Mendatang' ? 'clock' : 'history') !!}
+                                    </span>
+                                    <span>
+                                        <strong>{{ $row->name }}</strong>
+                                        <small>{{ $periodLabel }}</small>
+                                    </span>
+                                </div>
+                                <span class="academic-year-status {{ $row->is_active ? 'is-active' : 'is-inactive' }}">
+                                    @if($row->is_active)<i></i>@endif
+                                    {{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}
+                                </span>
+                            </div>
+                            <div class="academic-year-card-dates">
+                                <span>Mulai: <strong>{{ $row->start_date ? $row->start_date->translatedFormat('d M Y') : '-' }}</strong></span>
+                                <span>Sampai: <strong>{{ $row->end_date ? $row->end_date->translatedFormat('d M Y') : '-' }}</strong></span>
+                            </div>
+                            <div class="academic-year-card-footer">
+                                <span>Ditambahkan: {{ $row->created_at ? $row->created_at->translatedFormat('d M Y') : '-' }}</span>
+                                @include('master.partials.actions', ['type' => 'academic-years', 'row' => $row])
+                            </div>
+                        </article>
+                    @empty
+                        <div class="academic-year-empty">
+                            <strong>Data belum tersedia</strong>
+                            <span>Tambahkan tahun pelajaran baru untuk mulai mengatur periode akademik.</span>
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="pagination-wrap">{{ $data->links() }}</div>
+            </section>
+            @elseif ($tab === 'education-units')
+            <section class="education-unit-card-section">
+                <div class="education-unit-card-grid">
+                    @forelse ($data as $row)
+                        <article class="education-unit-card {{ $row->is_active ? 'is-active' : '' }}">
+                            <div class="education-unit-card-top">
+                                <div class="education-unit-card-badges">
+                                    <span class="education-unit-code">{{ $row->code }}</span>
+                                    <span class="education-unit-status {{ $row->is_active ? 'is-active' : 'is-inactive' }}">{{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}</span>
+                                </div>
+                                @include('master.partials.actions', ['type' => 'education-units', 'row' => $row])
+                            </div>
+                            <div class="education-unit-card-name">
+                                <span>{!! $icon('school') !!}</span>
+                                <strong>{{ $row->name }}</strong>
+                            </div>
+                            <div class="education-unit-card-meta">
+                                <span>Jumlah Kelas</span>
+                                <strong>{{ $row->school_classes_count }}</strong>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="education-unit-empty">
+                            <strong>Data belum tersedia</strong>
+                            <span>Tambahkan unit pendidikan untuk mulai mengelola kelas dan data siswa.</span>
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="pagination-wrap">{{ $data->links() }}</div>
+            </section>
+            @elseif ($tab === 'classes')
+            <section class="class-card-section">
+                <form method="GET" action="{{ route('master.index') }}" class="class-card-filter">
+                    <input type="hidden" name="tab" value="classes">
+                    <input type="hidden" name="per_page" value="{{ request('per_page', 25) }}">
+
+                    <div class="class-card-filter-grid">
+                        <label>
+                            <span>Unit Pendidikan</span>
+                            <select name="unit_id" aria-label="Filter unit pendidikan">
+                                <option value="">semua</option>
+                                @foreach ($educationUnits as $unit)
+                                    <option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label>
+                            <span>Tahun Pelajaran</span>
+                            <select name="year_id" aria-label="Filter tahun pelajaran">
+                                <option value="">semua</option>
+                                @foreach ($academicYears as $year)
+                                    <option value="{{ $year->id }}" @selected($classYearId == $year->id)>{{ $year->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label>
+                            <span>Status Data</span>
+                            <select name="status" aria-label="Filter status data">
+                                <option value="">Semua Status</option>
+                                <option value="active" @selected($classStatus === 'active')>Aktif</option>
+                                <option value="inactive" @selected($classStatus === 'inactive')>Tidak Aktif</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label class="class-card-search">
+                        {!! $icon('search') !!}
+                        <input name="search" value="{{ request('search') }}" placeholder="Cari kelas..." aria-label="Cari kelas">
+                    </label>
+
+                    <div class="class-card-filter-actions">
+                        <button class="button class-card-search-button">Terapkan</button>
+                        <a href="{{ route('master.index', ['tab' => 'classes']) }}" class="button class-card-reset-button">Reset</a>
+                    </div>
+                </form>
+
+                <div class="class-card-count">
+                    <form method="GET" action="{{ route('master.index') }}" class="class-card-length">
+                        @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                            @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
+                        @endforeach
+                        <input type="hidden" name="tab" value="classes">
+                        <label>Tampilkan
+                            <select name="per_page" onchange="this.form.submit()" aria-label="Jumlah kelas yang ditampilkan">
+                                @foreach([10, 25, 50, 100, 500] as $size)
+                                    <option value="{{ $size }}" @selected((string) request('per_page', '25') === (string) $size)>{{ $size }}</option>
+                                @endforeach
+                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                            </select>
+                            kelas
+                        </label>
+                    </form>
+                    <span>
+                        {{ ($data->total() ?? 0) > 0 ? 'Menampilkan '.number_format($data->firstItem(), 0, ',', '.').'-'.number_format($data->lastItem(), 0, ',', '.').' dari '.number_format($data->total(), 0, ',', '.').' kelas' : 'Menampilkan 0 dari 0 kelas' }}
+                    </span>
+                </div>
+
+                <div class="class-card-list">
+                    @forelse ($data as $row)
+                        <article class="class-card-item {{ $row->is_active ? 'is-active' : '' }}">
+                            <div class="class-card-top">
+                                <div class="class-card-title">
+                                    <span class="class-card-status {{ $row->is_active ? 'is-active' : 'is-inactive' }}">{{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}</span>
+                                    <strong>{{ $row->name }}</strong>
+                                </div>
+                                @include('master.partials.actions', ['type' => 'classes', 'row' => $row])
+                            </div>
+                            <div class="class-card-meta">
+                                <span>{!! $icon('school') !!}<b>{{ $row->educationUnit?->name ?? '-' }}</b></span>
+                                <span>{!! $icon('users') !!}<b>{{ $row->students_count }} Siswa</b></span>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="class-card-empty">
+                            <strong>Data belum tersedia</strong>
+                            <span>Tambahkan kelas baru untuk mulai mengatur rombel dan siswa.</span>
+                        </div>
+                    @endforelse
+                </div>
+
+            </section>
+            @elseif ($tab === 'fee-types')
+            <section class="fee-type-card-section">
+                <form method="GET" action="{{ route('master.index') }}" class="fee-type-card-filter">
+                    <input type="hidden" name="tab" value="fee-types">
+                    <input type="hidden" name="per_page" value="{{ request('per_page', 25) }}">
+
+                    <div class="fee-type-card-filter-grid">
+                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit aria-label="Filter unit pendidikan"><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                        <label><span>Kelas</span><select name="class_id" data-student-filter-class aria-label="Filter kelas"><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
+                        <label><span>Tahun Pelajaran</span><select name="year_id" aria-label="Filter tahun pelajaran"><option value="">semua</option>@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($feeTypeYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
+                        <label><span>Status Data</span><select name="status" aria-label="Filter status data"><option value="">Semua Status</option><option value="active" @selected($feeTypeStatus === 'active')>Aktif</option><option value="inactive" @selected($feeTypeStatus === 'inactive')>Nonaktif</option></select></label>
+                    </div>
+                    <label class="fee-type-filter-search">
+                        {!! $icon('search') !!}
+                        <input name="search" value="{{ request('search') }}" placeholder="Cari kategori pembayaran..." aria-label="Cari kategori pembayaran">
+                    </label>
+
+                    <div class="fee-type-card-filter-actions">
+                        <button class="button fee-type-card-search-button">Terapkan</button>
+                        <a href="{{ route('master.index', ['tab' => 'fee-types']) }}" class="button fee-type-card-reset-button">Reset</a>
+                    </div>
+                </form>
+
+                <div class="fee-type-card-count">
+                    <form method="GET" action="{{ route('master.index') }}" class="fee-type-card-length">
+                        @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                            @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
+                        @endforeach
+                        <input type="hidden" name="tab" value="fee-types">
+                        <label>Tampilkan
+                            <select name="per_page" onchange="this.form.submit()" aria-label="Jumlah kategori pembayaran yang ditampilkan">
+                                @foreach([10, 25, 50, 100, 500] as $size)
+                                    <option value="{{ $size }}" @selected((string) request('per_page', '25') === (string) $size)>{{ $size }}</option>
+                                @endforeach
+                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                            </select>
+                            kategori
+                        </label>
+                    </form>
+                    <span>
+                        {{ ($data->total() ?? 0) > 0 ? 'Menampilkan '.number_format($data->firstItem(), 0, ',', '.').'-'.number_format($data->lastItem(), 0, ',', '.').' dari '.number_format($data->total(), 0, ',', '.').' kategori' : 'Menampilkan 0 dari 0 kategori' }}
+                    </span>
+                </div>
+
+                <div class="fee-type-card-list">
+                    @forelse ($data as $row)
+                        @php
+                            $behaviorLabel = $row->creates_bill ? 'Tagihan '.$row->period : 'Transaksi Langsung';
+                        @endphp
+                        <article class="fee-type-card-item {{ $row->is_active ? 'is-active' : 'is-inactive' }}">
+                            <div class="fee-type-card-top">
+                                <div class="fee-type-card-title">
+                                    <strong>{{ $row->name }}</strong>
+                                    <span>{{ $behaviorLabel }}</span>
+                                </div>
+                                <span class="fee-type-status {{ $row->is_active ? 'is-active' : 'is-inactive' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                            </div>
+                            <div class="fee-type-card-meta">
+                                <div class="fee-type-card-year">
+                                    <span>Tahun Pelajaran</span>
+                                    <strong>{{ $row->academicYear?->name ?? '-' }}</strong>
+                                </div>
+                                <div class="fee-type-card-amount">
+                                    <span>Nominal</span>
+                                    <strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong>
+                                </div>
+                                <div class="fee-type-card-unit">
+                                    <span>Unit / Kelas</span>
+                                    <strong>{{ $row->educationUnit?->code ?? '-' }} · {{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong>
+                                </div>
+                                <div class="fee-type-card-actions">
+                                    @include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])
+                                </div>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="fee-type-card-empty">
+                            <strong>Data belum tersedia</strong>
+                            <span>Tambahkan kategori pembayaran untuk mulai mengatur tagihan dan transaksi.</span>
+                        </div>
+                    @endforelse
+                </div>
+            </section>
+            @elseif ($tab === 'fee-discounts')
+            <section class="fee-discount-card-section">
+                <form method="GET" action="{{ route('master.index') }}" class="fee-discount-card-filter">
+                    <input type="hidden" name="tab" value="fee-discounts">
+                    <input type="hidden" name="per_page" value="{{ request('per_page', 25) }}">
+
+                    <div class="fee-discount-card-filter-grid">
+                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit aria-label="Filter unit pendidikan"><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                        <label><span>Kelas</span><select name="class_id" data-student-filter-class aria-label="Filter kelas"><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
+                        <label><span>Tahun Pelajaran</span><select name="year_id" aria-label="Filter tahun pelajaran"><option value="">semua</option>@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($feeDiscountYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
+                        <label><span>Status Data</span><select name="status" aria-label="Filter status data"><option value="">Semua Status</option><option value="active" @selected($feeDiscountStatus === 'active')>Aktif</option><option value="inactive" @selected($feeDiscountStatus === 'inactive')>Nonaktif</option></select></label>
+                    </div>
+                    <label class="fee-discount-filter-search">
+                        {!! $icon('search') !!}
+                        <input name="search" value="{{ request('search') }}" placeholder="Cari nama siswa..." aria-label="Cari nama siswa">
+                    </label>
+
+                    <div class="fee-discount-card-filter-actions">
+                        <button class="button fee-discount-card-search-button">Terapkan</button>
+                        <a href="{{ route('master.index', ['tab' => 'fee-discounts']) }}" class="button fee-discount-card-reset-button">Reset</a>
+                    </div>
+                </form>
+
+                <div class="fee-discount-card-count">
+                    <form method="GET" action="{{ route('master.index') }}" class="fee-discount-card-length">
+                        @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                            @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
+                        @endforeach
+                        <input type="hidden" name="tab" value="fee-discounts">
+                        <label>Tampilkan
+                            <select name="per_page" onchange="this.form.submit()" aria-label="Jumlah keringanan biaya yang ditampilkan">
+                                @foreach([10, 25, 50, 100, 500] as $size)
+                                    <option value="{{ $size }}" @selected((string) request('per_page', '25') === (string) $size)>{{ $size }}</option>
+                                @endforeach
+                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                            </select>
+                            keringanan
+                        </label>
+                    </form>
+                    <span>
+                        {{ ($data->total() ?? 0) > 0 ? 'Menampilkan '.number_format($data->firstItem(), 0, ',', '.').'-'.number_format($data->lastItem(), 0, ',', '.').' dari '.number_format($data->total(), 0, ',', '.').' keringanan' : 'Menampilkan 0 dari 0 keringanan' }}
+                    </span>
+                </div>
+
+                <div class="fee-discount-card-list">
+                    @forelse ($data as $row)
+                        @php
+                            $student = $row->student;
+                            $studentClass = $student?->schoolClass;
+                            $studentUnit = $studentClass?->educationUnit;
+                            $paymentLabel = $row->source_type === 'spp' ? 'SPP' : ($row->feeType?->name ?? '-');
+                            $discountLabel = $row->discount_type === 'percentage'
+                                ? number_format($row->discount_value, 0, ',', '.').'%'
+                                : 'Rp '.number_format($row->discount_value, 0, ',', '.');
+                            $effectiveLabel = $row->end_date
+                                ? 's/d '.$row->end_date->translatedFormat('M Y')
+                                : ($row->start_date ? 'Mulai '.$row->start_date->translatedFormat('M Y') : '-');
+                        @endphp
+                        <article class="fee-discount-card-item {{ $row->is_active ? 'is-active' : 'is-inactive' }}">
+                            <div class="fee-discount-card-top">
+                                <div class="fee-discount-card-title">
+                                    <span class="fee-discount-status {{ $row->is_active ? 'is-active' : 'is-inactive' }}">{{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}</span>
+                                    <strong>{{ $student?->name ?? '-' }}</strong>
+                                    <small>{{ $paymentLabel }} · {{ $studentUnit?->code ?? '-' }} · {{ $studentClass?->name ?? '-' }}</small>
+                                </div>
+                                <div class="fee-discount-card-actions">
+                                    @include('master.partials.actions', ['type' => 'fee-discounts', 'row' => $row])
+                                </div>
+                            </div>
+                            <div class="fee-discount-card-meta">
+                                <div>
+                                    <span>Potongan</span>
+                                    <strong>{{ $discountLabel }}</strong>
+                                    @if ($row->discount_amount)
+                                        <small>Setara Rp {{ number_format($row->discount_amount, 0, ',', '.') }}</small>
+                                    @endif
+                                </div>
+                                <div>
+                                    <span>{{ $row->end_date ? 'Berlaku' : 'Periode' }}</span>
+                                    <strong>{{ $effectiveLabel }}</strong>
+                                    <small>{{ $row->reason ?: 'Tanpa keterangan' }}</small>
+                                </div>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="fee-discount-card-empty">
+                            <strong>Data belum tersedia</strong>
+                            <span>Tambahkan keringanan biaya untuk siswa yang memenuhi ketentuan.</span>
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="pagination-wrap">{{ $data->links() }}</div>
+            </section>
+            @elseif ($tab === 'data-roles')
+            <section class="data-role-card-section">
+                <form method="GET" action="{{ route('master.index') }}" class="data-role-card-filter">
+                    <input type="hidden" name="tab" value="data-roles">
+                    <input type="hidden" name="per_page" value="{{ request('per_page', 25) }}">
+
+                    <label class="data-role-filter-search">
+                        {!! $icon('search') !!}
+                        <input name="search" value="{{ request('search') }}" placeholder="Cari role..." aria-label="Cari role">
+                    </label>
+
+                    <div class="data-role-card-filter-actions">
+                        <button class="button data-role-card-search-button">Terapkan</button>
+                        <a href="{{ route('master.index', ['tab' => 'data-roles']) }}" class="button data-role-card-reset-button">Reset</a>
+                    </div>
+                </form>
+
+                <div class="data-role-card-count">
+                    <form method="GET" action="{{ route('master.index') }}" class="data-role-card-length">
+                        @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                            @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
+                        @endforeach
+                        <input type="hidden" name="tab" value="data-roles">
+                        <label>Tampilkan
+                            <select name="per_page" onchange="this.form.submit()" aria-label="Jumlah role yang ditampilkan">
+                                @foreach([10, 25, 50, 100, 500] as $size)
+                                    <option value="{{ $size }}" @selected((string) request('per_page', '25') === (string) $size)>{{ $size }}</option>
+                                @endforeach
+                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                            </select>
+                            role
+                        </label>
+                    </form>
+                    <span>
+                        {{ ($data->total() ?? 0) > 0 ? 'Menampilkan '.number_format($data->firstItem(), 0, ',', '.').'-'.number_format($data->lastItem(), 0, ',', '.').' dari '.number_format($data->total(), 0, ',', '.').' role' : 'Menampilkan 0 dari 0 role' }}
+                    </span>
+                </div>
+
+                <div class="data-role-card-list">
+                    @forelse ($data as $row)
+                        @php
+                            $permissionLabels = $row->permissionLabels();
+                            $permissionCount = count($row->permissions ?? []);
+                            $permissionPreview = $permissionLabels
+                                ? implode(', ', array_slice($permissionLabels, 0, 4)).(count($permissionLabels) > 4 ? ', ...' : '')
+                                : 'Belum ada hak akses';
+                        @endphp
+                        <article class="data-role-card-item {{ $row->is_active ? 'is-active' : 'is-inactive' }}">
+                            <div class="data-role-card-top">
+                                <div class="data-role-card-title">
+                                    <div class="data-role-card-heading">
+                                        <strong>{{ $row->name }}</strong>
+                                        <span class="data-role-code">{{ $row->key }}</span>
+                                    </div>
+                                    <small>{{ $row->description ?: 'Tanpa deskripsi' }}</small>
+                                </div>
+                                <div class="data-role-card-actions">
+                                    @include('master.partials.actions', ['type' => 'data-roles', 'row' => $row])
+                                </div>
+                            </div>
+                            <div class="data-role-card-access">
+                                <span class="data-role-access-count">{{ $permissionCount }} akses</span>
+                                <span>Hak Akses:</span>
+                                <p>{{ $permissionPreview }}</p>
+                            </div>
+                            <div class="data-role-card-footer">
+                                <div>
+                                    <span>Jumlah User</span>
+                                    <strong>{{ $row->users_count }} Personel</strong>
+                                </div>
+                                <span class="data-role-status {{ $row->is_active ? 'is-active' : 'is-inactive' }}">{{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}</span>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="data-role-card-empty">
+                            <strong>Data belum tersedia</strong>
+                            <span>Tambahkan role untuk mulai mengatur hak akses pengguna sistem.</span>
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="pagination-wrap">{{ $data->links() }}</div>
+            </section>
+            @elseif ($tab === 'data-users')
+            <section class="data-user-card-section">
+                <form method="GET" action="{{ route('master.index') }}" class="data-user-card-filter">
+                    <input type="hidden" name="tab" value="data-users">
+                    <input type="hidden" name="per_page" value="{{ request('per_page', 25) }}">
+
+                    <label class="data-user-filter-search">
+                        {!! $icon('search') !!}
+                        <input name="search" value="{{ request('search') }}" placeholder="Cari nama atau email..." aria-label="Cari nama atau email">
+                    </label>
+                    <label class="data-user-filter-role"><span>Role</span><select name="role" aria-label="Filter role"><option value="">Semua Role</option>@foreach ($roleOptions as $key => $name)<option value="{{ $key }}" @selected(request('role') === $key)>{{ $name }}</option>@endforeach</select></label>
+
+                    <div class="data-user-card-filter-actions">
+                        <button class="button data-user-card-search-button">Terapkan</button>
+                        <a href="{{ route('master.index', ['tab' => 'data-users']) }}" class="button data-user-card-reset-button">Reset</a>
+                    </div>
+                </form>
+
+                <div class="data-user-card-count">
+                    <form method="GET" action="{{ route('master.index') }}" class="data-user-card-length">
+                        @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                            @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
+                        @endforeach
+                        <input type="hidden" name="tab" value="data-users">
+                        <label>Tampilkan
+                            <select name="per_page" onchange="this.form.submit()" aria-label="Jumlah user yang ditampilkan">
+                                @foreach([10, 25, 50, 100, 500] as $size)
+                                    <option value="{{ $size }}" @selected((string) request('per_page', '25') === (string) $size)>{{ $size }}</option>
+                                @endforeach
+                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                            </select>
+                            user
+                        </label>
+                    </form>
+                    <span>
+                        {{ ($data->total() ?? 0) > 0 ? 'Menampilkan '.number_format($data->firstItem(), 0, ',', '.').'-'.number_format($data->lastItem(), 0, ',', '.').' dari '.number_format($data->total(), 0, ',', '.').' user' : 'Menampilkan 0 dari 0 user' }}
+                    </span>
+                </div>
+
+                <div class="data-user-card-list">
+                    @forelse ($data as $row)
+                        @php
+                            $roleLabel = $row->roleLabel();
+                            $roleKey = $row->role ?: 'belum-diatur';
+                            $initials = collect(explode(' ', trim($row->name)))
+                                ->filter()
+                                ->take(2)
+                                ->map(fn ($part) => Str::upper(Str::substr($part, 0, 1)))
+                                ->implode('') ?: 'U';
+                        @endphp
+                        <article class="data-user-card-item">
+                            <div class="data-user-card-top">
+                                <div class="data-user-card-profile">
+                                    <span class="data-user-avatar">{{ $initials }}</span>
+                                    <span>
+                                        <strong>{{ $row->name }}</strong>
+                                        <small>{{ '@'.$row->username }}</small>
+                                    </span>
+                                </div>
+                                <span class="data-user-role">{{ $roleLabel }}</span>
+                            </div>
+                            <div class="data-user-card-meta">
+                                <div>
+                                    <span>Email</span>
+                                    <strong>{{ $row->email ?: '-' }}</strong>
+                                </div>
+                                <div>
+                                    <span>Kode Role</span>
+                                    <strong>{{ $roleKey }}</strong>
+                                </div>
+                            </div>
+                            <div class="data-user-card-footer">
+                                <span>Akun pengguna sistem</span>
+                                <div class="data-user-card-actions">
+                                    @include('master.partials.actions', ['type' => 'data-users', 'row' => $row])
+                                </div>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="data-user-card-empty">
+                            <strong>Data belum tersedia</strong>
+                            <span>Tambahkan user untuk mulai mengatur akun dan role akses.</span>
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="pagination-wrap">{{ $data->links() }}</div>
+            </section>
+            @else
+            <section class="card master-card student-data-card {{ $tab === 'students' ? 'student-list-table-card' : 'master-flat-card' }} {{ $tab === 'education-units' ? 'education-unit-table-card' : '' }} {{ $tab === 'classes' ? 'class-table-card' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table-card' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table-card' : '' }} {{ $tab === 'data-roles' ? 'data-role-table-card' : '' }} {{ $tab === 'data-users' ? 'data-user-table-card' : '' }}">
                 @if (! in_array($tab, ['students', 'academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users']))
                 <div class="master-tabs">
                     @foreach ($tabs as $key => $item)
@@ -380,15 +858,6 @@
                         </colgroup>
                         <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'students_count', 'label' => 'Jumlah Siswa'])</th><th>@include('partials.sortable-heading', ['column' => 'is_active', 'label' => 'Status'])</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->educationUnit?->name ?? '-' }}</strong></td><td><strong>{{ $row->students_count }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'classes', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
-                    @elseif ($tab === 'academic-years')
-                        <colgroup>
-                            <col class="academic-year-col-no">
-                            <col class="academic-year-col-name">
-                            <col class="academic-year-col-status">
-                            <col class="academic-year-col-actions">
-                        </colgroup>
-                        <thead><tr><th class="table-col-no">No.</th><th class="table-col-main">@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Tahun Pelajaran'])</th><th class="table-col-status">@include('partials.sortable-heading', ['column' => 'is_active', 'label' => 'Status'])</th><th class="table-col-actions">Aksi</th></tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td class="table-col-no">{{ $data->firstItem() + $loop->index }}</td><td class="table-col-main"><strong>{{ $row->name }}</strong></td><td class="table-col-status"><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}</span></td><td class="table-col-actions">@include('master.partials.actions', ['type' => 'academic-years', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'fee-types')
                         <colgroup>
                             <col class="fee-type-col-no">
@@ -447,6 +916,7 @@
                 </table></div>
                 <div class="pagination-wrap">{{ $data->links() }}</div>
             </section>
+            @endif
             @endif
             @endif
         </main>

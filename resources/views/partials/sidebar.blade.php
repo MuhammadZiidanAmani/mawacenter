@@ -36,6 +36,7 @@
             <button type="button" class="nav-item nav-parent {{ $studentOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $studentOpen ? 'true' : 'false' }}">{!! $sidebarIcon('users') !!}<span>Manajemen Siswa</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
                 <a href="{{ route('student-management.students.index') }}" class="{{ $activeStudentMenu === 'data-siswa' ? 'active' : '' }}">{!! $sidebarIcon('users') !!}<span>Data Siswa</span></a>
+                <a href="{{ route('student-management.identity-cleanup.index') }}" class="{{ $activeStudentMenu === 'rapikan-identitas' ? 'active' : '' }}">{!! $sidebarIcon('role') !!}<span>Rapikan Identitas</span></a>
                 <a href="{{ route('student-management.class-transfer.index') }}" class="{{ $activeStudentMenu === 'pindah-kelas' ? 'active' : '' }}">{!! $sidebarIcon('switch') !!}<span>Pindah Kelas</span></a>
                 <a href="{{ route('student-management.class-promotion.index') }}" class="{{ $activeStudentMenu === 'naik-kelas' ? 'active' : '' }}">{!! $sidebarIcon('arrow-up') !!}<span>Naik Kelas</span></a>
                 <a href="{{ route('student-management.alumni.index') }}" class="{{ $activeStudentMenu === 'alumni' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>Data Alumni</span></a>
@@ -47,6 +48,7 @@
             <button type="button" class="nav-item nav-parent {{ $paymentOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $paymentOpen ? 'true' : 'false' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
                 <a href="{{ route('finance.payments.index') }}" class="{{ $activePaymentMenu === 'transaction' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Transaksi Baru</span></a>
+                <a href="{{ route('finance.payments.import') }}" class="{{ $activePaymentMenu === 'import' ? 'active' : '' }}">{!! $sidebarIcon('arrow-up') !!}<span>Import Pembayaran</span></a>
                 <a href="{{ route('finance.payments.history') }}" class="{{ $activePaymentMenu === 'history' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Riwayat Pembayaran</span></a>
             </div>
         </div>
