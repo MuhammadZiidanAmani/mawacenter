@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pindah Kelas - Ma'wa Center</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Manrope -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#1b5e3c',
+              light: '#e8f5e9',
+              dark: '#14452c',
+            },
+            surface: '#f9fafb',
+          },
+          fontFamily: {
+            sans: ['Manrope', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-styling">
+    body {
+      background-color: #f3f4f6;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    /* Simple checkmark styling */
+    input[type="checkbox"]:checked {
+      background-color: #1b5e3c;
+      border-color: #1b5e3c;
+    }
+  </style>
+</head>
+<body class="font-sans text-slate-800">
+<!-- BEGIN: MainHeader -->
+<header class="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-brand-light flex items-center justify-center">
+<img alt="Logo" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyTBVSM0p75ZgIq5vKcFSEQychvN9ZbURRvnFBsTe-8-gRx8tVDwF6Bz2JoVQcG3FkxvHqcICPxzk7zvlOeGtC14jVxzkCf0-M5IFELtZ1AHCAC8kMIZXZywv343J8o9swJa05iuaaQz4znIBqsVedwzA-c06bNE0LvX5TCFLJTX3TKENyzspMyk-L_qknmVXMrkuJ6-XEulD2ihEyKR67nt2JwOX1gc5PBB4mqGKP4rr3hDmln8xR5piOLbsyy_umdg9kv4TavDdf"/>
+</div>
+<div>
+<h1 class="text-lg font-bold text-slate-900 leading-none">Pindah Kelas</h1>
+<p class="text-xs text-brand font-medium mt-1">Ma'wa Center</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-500 hover:bg-slate-100 rounded-full">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- END: MainHeader -->
+<main class="pb-40"> <!-- Added padding for sticky action footer -->
+<!-- BEGIN: Academic Year Badge -->
+<section class="px-4 py-3 bg-white mb-2 border-b border-slate-100">
+<div class="inline-flex items-center gap-2 bg-brand-light text-brand px-3 py-1.5 rounded-full text-xs font-semibold">
+<span class="w-2 h-2 rounded-full bg-brand animate-pulse"></span>
+        Tahun Pelajaran Aktif: 2026/2027
+      </div>
+</section>
+<!-- END: Academic Year Badge -->
+<!-- BEGIN: Filter Section -->
+<section class="px-4 py-2">
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+<button class="w-full px-4 py-3 flex items-center justify-between text-sm font-semibold text-slate-700 bg-white" id="toggleFilter">
+<span class="flex items-center gap-2">
+<svg class="h-5 w-5 text-brand" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Filter Pencarian
+          </span>
+<svg class="h-4 w-4 transition-transform duration-200" fill="none" id="filterArrow" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<div class="px-4 pb-4 space-y-3" id="filterContent">
+<div>
+<label class="block text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Unit Pendidikan</label>
+<select class="w-full rounded-lg border-slate-200 text-sm focus:border-brand focus:ring-brand">
+<option>Semua Unit</option>
+<option>SD IT</option>
+<option>SMP IT</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div>
+<label class="block text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Kelas Asal</label>
+<select class="w-full rounded-lg border-slate-200 text-sm focus:border-brand focus:ring-brand">
+<option>Semua</option>
+<option>7A</option>
+<option>7B</option>
+</select>
+</div>
+<div>
+<label class="block text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Status</label>
+<select class="w-full rounded-lg border-slate-200 text-sm focus:border-brand focus:ring-brand">
+<option>Aktif</option>
+<option>Tidak Aktif</option>
+</select>
+</div>
+</div>
+<button class="w-full bg-brand text-white font-bold py-2.5 rounded-lg text-sm shadow-md active:scale-95 transition-all">
+            Tampilkan Siswa
+          </button>
+</div>
+</div>
+</section>
+<!-- END: Filter Section -->
+<!-- BEGIN: Student List Section -->
+<section class="px-4 mt-2">
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-sm font-bold text-slate-600">Daftar Siswa</h2>
+<div class="flex items-center gap-2">
+<span class="text-xs text-slate-400">Pilih Semua</span>
+<input class="w-4 h-4 rounded text-brand border-slate-300" type="checkbox"/>
+</div>
+</div>
+<div class="space-y-3">
+<!-- Student Card 1 -->
+<label class="block bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-start gap-4 active:bg-slate-50 transition-colors">
+<input class="mt-1 w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand" type="checkbox"/>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-slate-900">Muhammad Al-Fatih</h3>
+<span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-bold">NIS: 2024001</span>
+</div>
+<div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+<div>
+<p class="text-slate-400">Unit</p>
+<p class="font-medium text-slate-700">SMP IT</p>
+</div>
+<div>
+<p class="text-slate-400">Kelas Saat Ini</p>
+<p class="font-medium text-slate-700">7-A (Umar)</p>
+</div>
+</div>
+</div>
+</label>
+<!-- Student Card 2 -->
+<label class="block bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-start gap-4 active:bg-slate-50 transition-colors">
+<input class="mt-1 w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand" type="checkbox"/>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-slate-900">Siti Aisyah</h3>
+<span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-bold">NIS: 2024042</span>
+</div>
+<div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+<div>
+<p class="text-slate-400">Unit</p>
+<p class="font-medium text-slate-700">SMP IT</p>
+</div>
+<div>
+<p class="text-slate-400">Kelas Saat Ini</p>
+<p class="font-medium text-slate-700">7-B (Khadijah)</p>
+</div>
+</div>
+</div>
+</label>
+<!-- Student Card 3 -->
+<label class="block bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-start gap-4 active:bg-slate-50 transition-colors">
+<input class="mt-1 w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand" type="checkbox"/>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-slate-900">Abdurrahman Wahid</h3>
+<span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-bold">NIS: 2024108</span>
+</div>
+<div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+<div>
+<p class="text-slate-400">Unit</p>
+<p class="font-medium text-slate-700">SMP IT</p>
+</div>
+<div>
+<p class="text-slate-400">Kelas Saat Ini</p>
+<p class="font-medium text-slate-700">7-A (Umar)</p>
+</div>
+</div>
+</div>
+</label>
+</div>
+</section>
+<!-- END: Student List Section -->
+</main>
+<!-- BEGIN: Sticky Action Footer -->
+<div class="fixed bottom-16 left-0 right-0 z-40 bg-white border-t border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] p-4">
+<div class="max-w-screen-xl mx-auto flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<div class="flex-1">
+<label class="block text-[10px] uppercase font-bold text-slate-500 mb-1 ml-1">Pindahkan ke Kelas:</label>
+<select class="w-full h-11 rounded-xl border-slate-300 text-sm focus:border-brand focus:ring-brand font-medium">
+<option disabled="" selected="">Pilih kelas tujuan...</option>
+<option>8-A (Abu Bakar)</option>
+<option>8-B (Fatimah)</option>
+<option>9-A (Hamzah)</option>
+</select>
+</div>
+<div class="text-center pt-5">
+<p class="text-[10px] text-slate-400 font-bold uppercase leading-none">Terpilih</p>
+<p class="text-brand font-black text-xl">2</p>
+</div>
+</div>
+<button class="w-full bg-brand text-white font-bold h-12 rounded-xl shadow-lg flex items-center justify-center gap-2 active:bg-brand-dark transition-all">
+<svg class="h-5 w-5" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+        Proses Pindah Kelas
+      </button>
+</div>
+</div>
+<!-- END: Sticky Action Footer -->
+<!-- BEGIN: Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 safe-area-bottom">
+<div class="flex justify-around items-center h-16">
+<a class="flex flex-col items-center justify-center w-full text-slate-400" href="#">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium">Beranda</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full text-brand" href="#">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] mt-1 font-bold">Siswa</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full text-slate-400" href="#">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium">Bayar</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full text-slate-400" href="#">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 17v-2m3 2v-4m3 2v-6m-9 10h12a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium">Laporan</span>
+</a>
+</div>
+</nav>
+<!-- END: Bottom Navigation -->
+<script data-purpose="interaction-logic">
+    // Simple filter toggle logic
+    const filterBtn = document.getElementById('toggleFilter');
+    const filterContent = document.getElementById('filterContent');
+    const filterArrow = document.getElementById('filterArrow');
+
+    let isOpen = true; // Start open as per desktop ref usually showing filters
+
+    filterBtn.addEventListener('click', () => {
+      isOpen = !isOpen;
+      if (isOpen) {
+        filterContent.classList.remove('hidden');
+        filterArrow.style.transform = 'rotate(0deg)';
+      } else {
+        filterContent.classList.add('hidden');
+        filterArrow.style.transform = 'rotate(-90deg)';
+      }
+    });
+  </script>
+</body></html>

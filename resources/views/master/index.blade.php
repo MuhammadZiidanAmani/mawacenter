@@ -209,7 +209,7 @@
                             <p>Kelola identitas, kelas, wali, dan status siswa.</p>
                         </div>
                         <div class="student-title-actions">
-                            <a href="{{ route('student-management.students.create') }}" class="button student-add-button">{!! $icon('plus') !!} Tambah Data Siswa</a>
+                            <a href="{{ route('student-management.students.create') }}" class="button student-add-button">{!! $icon('plus') !!} Tambah</a>
                             @if ($canClassAlumni)
                                 <a href="{{ route('student-management.students.class-alumni.create', ['unit_id' => request('unit_id'), 'class_id' => request('class_id'), 'year_id' => $studentYearId]) }}" class="button student-add-button">{!! $icon('check') !!} Jadikan Alumni</a>
                             @endif
@@ -218,14 +218,21 @@
                         </div>
                     </div>
 
-                    <form method="GET" action="{{ route('student-management.students.index') }}" class="student-filter-panel" data-student-filter-panel>
-                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
-                        <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
-                        <label><span>Tahun Pelajaran</span><select name="year_id">@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($studentYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
-                        <label><span>Status Data</span><select name="status"><option value="">Semua Status</option><option value="active" @selected($studentStatus === 'active')>Aktif</option><option value="inactive" @selected($studentStatus === 'inactive')>Nonaktif</option></select></label>
-                        <input type="hidden" name="search" value="{{ request('search') }}">
+                    <form method="GET" action="{{ route('student-management.students.index') }}" class="student-filter-panel student-reference-filter" data-student-filter-panel>
+                        <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">
+                        <div class="student-reference-filter-grid">
+                            <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                            <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
+                            <label><span>Tahun Pelajaran</span><select name="year_id">@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($studentYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
+                            <label><span>Status Data</span><select name="status"><option value="">Semua Status</option><option value="active" @selected($studentStatus === 'active')>Aktif</option><option value="inactive" @selected($studentStatus === 'inactive')>Nonaktif</option></select></label>
+                        </div>
+                        <label class="student-reference-search">
+                            <span>Cari siswa</span>
+                            {!! $icon('search') !!}
+                            <input name="search" value="{{ request('search') }}" placeholder="Nama atau NIS..." aria-label="Cari nama atau NIS">
+                        </label>
                         <div class="student-filter-actions">
-                            <button class="button student-search-button" aria-label="Tampilkan data">Cari</button>
+                            <button class="button student-search-button" aria-label="Tampilkan data">Terapkan</button>
                             <a href="{{ route('student-management.students.index') }}" class="button student-filter-reset">Reset</a>
                         </div>
                     </form>
@@ -272,7 +279,6 @@
                                 <span>Sampai: <strong>{{ $row->end_date ? $row->end_date->translatedFormat('d M Y') : '-' }}</strong></span>
                             </div>
                             <div class="academic-year-card-footer">
-                                <span>Ditambahkan: {{ $row->created_at ? $row->created_at->translatedFormat('d M Y') : '-' }}</span>
                                 @include('master.partials.actions', ['type' => 'academic-years', 'row' => $row])
                             </div>
                         </article>
@@ -801,6 +807,54 @@
                             @endforeach
                             <label>Search: <input name="search" value="{{ request('search') }}" aria-label="Cari siswa berdasarkan nama, NIS, atau NISN..."></label>
                         </form>
+                    </div>
+                    <div class="student-reference-card-count">
+                        <form method="GET" action="{{ route('student-management.students.index') }}" class="student-reference-card-length">
+                            @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                                @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
+                            @endforeach
+                            <label>Tampilkan
+                                <select name="per_page" onchange="this.form.submit()" aria-label="Jumlah siswa yang ditampilkan">
+                                    @foreach([10, 25, 50, 100, 500] as $size)
+                                        <option value="{{ $size }}" @selected((string) request('per_page', '10') === (string) $size)>{{ $size }}</option>
+                                    @endforeach
+                                    <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                </select>
+                                siswa
+                            </label>
+                        </form>
+                        <span>
+                            {{ ($data->total() ?? 0) > 0 ? 'Menampilkan '.number_format($data->firstItem(), 0, ',', '.').'-'.number_format($data->lastItem(), 0, ',', '.').' dari '.number_format($data->total(), 0, ',', '.').' siswa' : 'Menampilkan 0 dari 0 siswa' }}
+                        </span>
+                    </div>
+
+                    <div class="student-reference-card-list">
+                        @forelse ($data as $row)
+                            <article class="student-reference-card">
+                                <div class="student-reference-card-top">
+                                    <div class="student-reference-card-title">
+                                        <strong>{{ $row->name }}</strong>
+                                        <div class="student-reference-card-meta">
+                                            <span>{!! $icon('card') !!}<b>{{ $row->nis ?: '-' }}</b></span>
+                                            <span>{!! $icon('school') !!}<b>{{ $row->schoolClass?->educationUnit?->code ?? '-' }}</b></span>
+                                            <span>{!! $icon('users') !!}<b>Kelas {{ $row->schoolClass?->name ?? '-' }}</b></span>
+                                            <span>{!! $icon('info') !!}<b>{{ $row->gender === 'L' ? 'Laki-Laki' : 'Perempuan' }}</b></span>
+                                        </div>
+                                    </div>
+                                    <div class="student-reference-card-side">
+                                        <span class="student-reference-status {{ $row->is_active ? 'is-active' : 'is-inactive' }}">{{ $row->is_active ? 'Aktif' : 'Tidak Aktif' }}</span>
+                                        <div class="student-reference-card-actions">
+                                            @include('master.partials.actions', ['type' => 'students', 'row' => $row, 'studentCardAction' => true])
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        @empty
+                            <div class="student-reference-empty">
+                                <strong>Data belum tersedia</strong>
+                                <span>Belum ada siswa yang sesuai dengan filter saat ini.</span>
+                            </div>
+                        @endforelse
                     </div>
                 @else
                     @include('partials.list-toolbar', [

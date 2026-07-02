@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ma'wa Center - Data Siswa</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Manrope:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#cfdaf1",
+                        "on-primary-fixed": "#002110",
+                        "background": "#f9f9ff",
+                        "on-tertiary-container": "#c1c9bf",
+                        "surface-bright": "#f9f9ff",
+                        "primary-fixed": "#aef2c5",
+                        "tertiary-fixed": "#dde5da",
+                        "inverse-surface": "#263142",
+                        "tertiary": "#363e36",
+                        "on-tertiary-fixed-variant": "#414941",
+                        "on-error": "#ffffff",
+                        "inverse-on-surface": "#ebf1ff",
+                        "tertiary-container": "#4d554d",
+                        "primary-container": "#1b5e3c",
+                        "on-secondary-container": "#606a23",
+                        "secondary": "#5a631e",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#dee8ff",
+                        "surface-container": "#e7eeff",
+                        "on-background": "#111c2c",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#93d5aa",
+                        "on-secondary-fixed": "#191e00",
+                        "surface-variant": "#d8e3fa",
+                        "on-tertiary-fixed": "#161d17",
+                        "surface": "#f9f9ff",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#92d5aa",
+                        "secondary-container": "#deea95",
+                        "surface-container-low": "#f0f3ff",
+                        "outline": "#707971",
+                        "primary": "#004528",
+                        "on-primary-fixed-variant": "#085231",
+                        "surface-container-highest": "#d8e3fa",
+                        "on-surface-variant": "#404942",
+                        "on-secondary-fixed-variant": "#424b05",
+                        "secondary-fixed": "#deea95",
+                        "tertiary-fixed-dim": "#c1c9be",
+                        "on-surface": "#111c2c",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-tint": "#296a47",
+                        "secondary-fixed-dim": "#c2cd7b",
+                        "inverse-primary": "#92d5aa",
+                        "outline-variant": "#bfc9c0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "16px",
+                        "base": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "xl": "32px",
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "headline-lg": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "title-md": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                        "label-sm-mobile": ["10px", {"lineHeight": "12px", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "title-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .filter-collapsed {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .filter-expanded {
+            max-height: 500px;
+            transition: max-height 0.5s ease-in;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-container-high w-full top-0 sticky z-40 border-b border-outline-variant dark:border-outline flex justify-between items-center px-container-padding py-sm">
+<div class="flex items-center gap-sm">
+<button class="material-symbols-outlined text-primary dark:text-primary-fixed p-base rounded-full hover:bg-surface-container-low transition-colors">menu</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">Ma'wa Center</h1>
+</div>
+<div class="flex items-center gap-xs">
+<button class="material-symbols-outlined text-on-surface-variant dark:text-on-surface-variant p-base rounded-full hover:bg-surface-container-low transition-colors">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant dark:text-on-surface-variant p-base rounded-full hover:bg-surface-container-low transition-colors">account_circle</button>
+</div>
+</header>
+<main class="px-container-padding py-md space-y-md">
+<!-- Header Section -->
+<section class="space-y-xs">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-background">Data Siswa</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Kelola identitas, kelas, wali, dan status siswa.</p>
+</section>
+<!-- Utility Bar (Search & Actions) -->
+<section class="grid grid-cols-1 gap-gutter">
+<div class="flex items-center gap-sm">
+<div class="relative flex-grow">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all font-body-md" placeholder="Cari nama atau NIS..." type="text"/>
+</div>
+<button class="p-2 border border-outline-variant rounded-lg bg-white text-primary flex items-center justify-center" onclick="toggleFilters()">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+<!-- Import/Export Quick Actions -->
+<div class="flex gap-sm">
+<button class="flex-1 flex items-center justify-center gap-xs py-2 border border-outline-variant rounded-lg bg-white text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-[18px]">upload</span> Import
+                </button>
+<button class="flex-1 flex items-center justify-center gap-xs py-2 border border-outline-variant rounded-lg bg-white text-on-surface-variant font-label-md">
+<span class="material-symbols-outlined text-[18px]">download</span> Export
+                </button>
+</div>
+</section>
+<!-- Collapsible Filter Section -->
+<section class="filter-collapsed space-y-md bg-surface-container-low p-0 rounded-xl" id="filterSection">
+<div class="p-md space-y-md border border-outline-variant rounded-xl">
+<div class="grid grid-cols-2 gap-sm">
+<div class="space-y-xs">
+<label class="font-label-md text-on-surface-variant">Unit Pendidikan</label>
+<select class="w-full border border-outline-variant rounded-lg bg-white p-2 font-body-md">
+<option>Semua</option>
+<option>PONPES</option>
+<option>MTs</option>
+<option>MA</option>
+</select>
+</div>
+<div class="space-y-xs">
+<label class="font-label-md text-on-surface-variant">Kelas</label>
+<select class="w-full border border-outline-variant rounded-lg bg-white p-2 font-body-md">
+<option>Semua</option>
+<option>7A</option>
+<option>10B</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="space-y-xs">
+<label class="font-label-md text-on-surface-variant">Tahun Pelajaran</label>
+<select class="w-full border border-outline-variant rounded-lg bg-white p-2 font-body-md">
+<option>2026/2027</option>
+<option>2025/2026</option>
+</select>
+</div>
+<div class="space-y-xs">
+<label class="font-label-md text-on-surface-variant">Status Data</label>
+<select class="w-full border border-outline-variant rounded-lg bg-white p-2 font-body-md">
+<option>Aktif</option>
+<option>Tidak Aktif</option>
+</select>
+</div>
+</div>
+<div class="flex gap-sm pt-sm">
+<button class="flex-1 bg-primary text-white py-2 rounded-lg font-title-md">Terapkan</button>
+<button class="flex-1 bg-white border border-outline-variant py-2 rounded-lg font-title-md">Reset</button>
+</div>
+</div>
+</section>
+<!-- Student List Cards -->
+<section class="space-y-gutter">
+<!-- Card 1 -->
+<div class="bg-white border border-outline-variant rounded-xl p-md shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h3 class="font-title-md text-title-md text-primary">A. FAREL AL FAHREZI</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">NIS: 220005</p>
+</div>
+<span class="bg-[#E6F4EA] text-[#1B5E3C] px-2 py-0.5 rounded-full text-xs font-bold uppercase">Aktif</span>
+</div>
+<div class="grid grid-cols-2 gap-sm mb-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">school</span>
+<span class="font-label-md text-on-surface-variant">PONPES</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">group</span>
+<span class="font-label-md text-on-surface-variant">Kelas 10A</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">wc</span>
+<span class="font-label-md text-on-surface-variant">Laki-Laki</span>
+</div>
+</div>
+<div class="flex justify-end gap-sm pt-sm border-t border-outline-variant">
+<button class="p-2 text-primary border border-primary/20 rounded-lg bg-primary/5 hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 text-error border border-error/20 rounded-lg bg-error/5 hover:bg-error/10 transition-colors">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-white border border-outline-variant rounded-xl p-md shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h3 class="font-title-md text-title-md text-primary">A. RIZQON MAULANA</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">NIS: 250111</p>
+</div>
+<span class="bg-[#E6F4EA] text-[#1B5E3C] px-2 py-0.5 rounded-full text-xs font-bold uppercase">Aktif</span>
+</div>
+<div class="grid grid-cols-2 gap-sm mb-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">school</span>
+<span class="font-label-md text-on-surface-variant">MTs</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">group</span>
+<span class="font-label-md text-on-surface-variant">Kelas 7C</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">wc</span>
+<span class="font-label-md text-on-surface-variant">Laki-Laki</span>
+</div>
+</div>
+<div class="flex justify-end gap-sm pt-sm border-t border-outline-variant">
+<button class="p-2 text-primary border border-primary/20 rounded-lg bg-primary/5">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 text-error border border-error/20 rounded-lg bg-error/5">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white border border-outline-variant rounded-xl p-md shadow-sm">
+<div class="flex justify-between items-start mb-sm">
+<div>
+<h3 class="font-title-md text-title-md text-primary">A'SYA FATATUS SALMA</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">NIS: 202089</p>
+</div>
+<span class="bg-[#E6F4EA] text-[#1B5E3C] px-2 py-0.5 rounded-full text-xs font-bold uppercase">Aktif</span>
+</div>
+<div class="grid grid-cols-2 gap-sm mb-md">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">school</span>
+<span class="font-label-md text-on-surface-variant">PONPES</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">group</span>
+<span class="font-label-md text-on-surface-variant">Kelas 12B</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-[18px] text-outline">wc</span>
+<span class="font-label-md text-on-surface-variant">Perempuan</span>
+</div>
+</div>
+<div class="flex justify-end gap-sm pt-sm border-t border-outline-variant">
+<button class="p-2 text-primary border border-primary/20 rounded-lg bg-primary/5">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-2 text-error border border-error/20 rounded-lg bg-error/5">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Pagination Mobile Info -->
+<div class="flex items-center justify-between font-label-md text-on-surface-variant px-base">
+<span>Menampilkan 3 dari 124 siswa</span>
+<div class="flex gap-xs">
+<button class="p-1 border border-outline-variant rounded bg-white"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+<button class="p-1 border border-outline-variant rounded bg-white"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+</div>
+</div>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-20 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-40">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 600;">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface dark:bg-surface-container-highest border-t border-outline-variant dark:border-outline flex justify-around items-center h-16 px-base shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low transition-colors px-4 py-2">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low transition-colors px-4 py-2">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Laporan</span>
+</div>
+<!-- Active Tab: Master -->
+<div class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed font-bold scale-95 px-4 py-2">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">database</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Master</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-container-low transition-colors px-4 py-2">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm-mobile mt-1">Setelan</span>
+</div>
+</nav>
+<script>
+        function toggleFilters() {
+            const filterSec = document.getElementById('filterSection');
+            if (filterSec.classList.contains('filter-collapsed')) {
+                filterSec.classList.remove('filter-collapsed');
+                filterSec.classList.add('filter-expanded', 'mt-md');
+            } else {
+                filterSec.classList.add('filter-collapsed');
+                filterSec.classList.remove('filter-expanded', 'mt-md');
+            }
+        }
+    </script>
+</body></html>

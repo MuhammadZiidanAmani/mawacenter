@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rapikan Identitas - Ma'wa Center</title>
+<!-- Google Fonts: Manrope -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            corporateGreen: '#1b5e3c',
+            mawaLightGreen: '#f0f4f2',
+            mawaBorder: '#e2e8f0',
+          },
+          fontFamily: {
+            manrope: ['Manrope', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+<style data-purpose="custom-utilities">
+    body {
+      font-family: 'Manrope', sans-serif;
+      background-color: #f8fafc;
+    }
+    /* Smooth transition for filter section */
+    #filterSection {
+      transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+    }
+    .hidden-filters {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .visible-filters {
+      max-height: 1000px;
+      opacity: 1;
+      pointer-events: auto;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body class="text-slate-800">
+<!-- BEGIN: Header -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-50 px-4 py-3 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-3">
+<!-- Logo placeholder based on reference image -->
+<div class="w-10 h-10 bg-mawaLightGreen rounded-full flex items-center justify-center border border-corporateGreen/20">
+<img alt="Logo" class="rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrQvbiHyKWbQSWBm3IxkwQKBlWE4au1oU2N1gF1OFPNcs-Hf7weKwKCygMwaeooX94BAmY-eGcC6HSbELte0314hAiA_0pnNrUxZ71pTD5BC4t8cECRQX2DlMfSs0nfZ_tkD8EKWt_Flo5KdWNMDlpA8YCYZ5qQlfjw-0hWNwf8ytzjLIQs2p-OE_vrBOcEa-gOe8uq8Nz2ZYuwSwUMQt7HScyG16HwFEjHmEtDLBAegAd2uVe5O3QU8GAilZHNEnUvn30fwkMQsKB"/>
+</div>
+<div>
+<h1 class="text-sm font-extrabold text-corporateGreen leading-tight uppercase tracking-tight">Ma'wa Center</h1>
+<p class="text-[10px] text-slate-500 font-medium">Manajemen Keuangan</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button aria-label="Notifications" class="p-2 text-slate-400 hover:text-corporateGreen transition-colors">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<button aria-label="Logout" class="p-2 text-slate-400 hover:text-red-600 transition-colors">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</header>
+<!-- END: Header -->
+<!-- BEGIN: Main Content -->
+<main class="p-4 pb-24">
+<!-- Title & Breadcrumb-like status -->
+<div class="mb-6">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-corporateGreen rounded-full text-[11px] font-semibold mb-2 border border-green-100">
+<span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+        Tahun Pelajaran Aktif: 2026/2027
+      </div>
+<h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">Rapikan Identitas</h2>
+<p class="text-xs text-slate-500 mt-1 leading-relaxed">
+        Hubungkan data siswa yang sebenarnya satu orang, tetapi terdaftar di beberapa unit atau NIS.
+      </p>
+</div>
+<!-- BEGIN: Search and Filter Toggle -->
+<div class="flex flex-col gap-3 mb-6">
+<!-- Search Input -->
+<div class="relative group">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3">
+<svg class="w-5 h-5 text-slate-400 group-focus-within:text-corporateGreen transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</span>
+<input class="block w-full pl-10 pr-3 py-3 border-slate-200 rounded-xl bg-white shadow-sm focus:ring-corporateGreen focus:border-corporateGreen text-sm" placeholder="Cari nama siswa..." type="text"/>
+</div>
+<!-- Filter Toggle Button -->
+<button class="flex items-center justify-between w-full px-4 py-3 bg-white border border-slate-200 rounded-xl shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all" id="toggleFilters">
+<div class="flex items-center gap-2">
+<svg class="w-5 h-5 text-corporateGreen" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Filter Data
+        </div>
+<svg class="w-5 h-5 transition-transform duration-300" fill="none" id="chevronIcon" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+<!-- Expandable Filters Content -->
+<div class="hidden-filters bg-white border border-slate-200 rounded-xl p-4 shadow-inner" id="filterSection">
+<div class="grid grid-cols-1 gap-4">
+<div data-purpose="filter-item">
+<label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Unit Pendidikan</label>
+<select class="w-full border-slate-200 rounded-lg text-sm focus:ring-corporateGreen focus:border-corporateGreen">
+<option>Semua Unit</option>
+<option>TK Ma'wa</option>
+<option>SD Ma'wa</option>
+<option>SMP Ma'wa</option>
+</select>
+</div>
+<div data-purpose="filter-item">
+<label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Kelas</label>
+<select class="w-full border-slate-200 rounded-lg text-sm focus:ring-corporateGreen focus:border-corporateGreen">
+<option>Semua Kelas</option>
+<option>Kelas 1</option>
+<option>Kelas 2</option>
+</select>
+</div>
+<div data-purpose="filter-item">
+<label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tahun Pelajaran</label>
+<select class="w-full border-slate-200 rounded-lg text-sm focus:ring-corporateGreen focus:border-corporateGreen">
+<option>2026/2027</option>
+<option>2025/2026</option>
+</select>
+</div>
+<div data-purpose="filter-item">
+<label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Status Data</label>
+<select class="w-full border-slate-200 rounded-lg text-sm focus:ring-corporateGreen focus:border-corporateGreen">
+<option>Aktif</option>
+<option>Tidak Aktif</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-3 pt-2">
+<button class="py-2.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold">Reset</button>
+<button class="py-2.5 bg-corporateGreen text-white rounded-lg text-sm font-bold shadow-md shadow-corporateGreen/20">Terapkan Filter</button>
+</div>
+</div>
+</div>
+</div>
+<!-- END: Search and Filter Toggle -->
+<!-- BEGIN: Data List -->
+<div class="space-y-4">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Menampilkan 10 Siswa</span>
+<div class="flex items-center gap-1 text-xs font-bold text-corporateGreen">
+          Sortir <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</div>
+</div>
+<!-- Card Item 1 -->
+<div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group active:scale-[0.98] transition-transform" data-purpose="student-card">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="flex-shrink-0 w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center font-bold text-slate-400 border border-slate-100">
+              1
+            </div>
+<div>
+<h3 class="font-bold text-slate-900 text-[15px]">ABDILLAH SAEFI HAMMAM</h3>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+<p class="text-xs text-slate-500 italic">Nama dan tanggal lahir sama</p>
+</div>
+</div>
+</div>
+<button class="bg-corporateGreen p-3 rounded-xl text-white shadow-lg shadow-corporateGreen/30 active:translate-y-0.5 transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- Card Item 2 -->
+<div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group active:scale-[0.98] transition-transform" data-purpose="student-card">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="flex-shrink-0 w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center font-bold text-slate-400 border border-slate-100">
+              2
+            </div>
+<div>
+<h3 class="font-bold text-slate-900 text-[15px]">ABDUL QADIR RAMADHAN</h3>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+<p class="text-xs text-slate-500 italic">Nama dan tanggal lahir sama</p>
+</div>
+</div>
+</div>
+<button class="bg-corporateGreen p-3 rounded-xl text-white shadow-lg shadow-corporateGreen/30 active:translate-y-0.5 transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- Card Item 3 -->
+<div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm relative overflow-hidden group active:scale-[0.98] transition-transform" data-purpose="student-card">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="flex-shrink-0 w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center font-bold text-slate-400 border border-slate-100">
+              3
+            </div>
+<div>
+<h3 class="font-bold text-slate-900 text-[15px]">ABDUL QODIR ASYUJA'I</h3>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+<p class="text-xs text-slate-500 italic">Nama dan tanggal lahir sama</p>
+</div>
+</div>
+</div>
+<button class="bg-corporateGreen p-3 rounded-xl text-white shadow-lg shadow-corporateGreen/30 active:translate-y-0.5 transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+<!-- END: Data List -->
+<!-- Load More Button -->
+<div class="mt-8 flex justify-center">
+<button class="text-sm font-bold text-corporateGreen flex items-center gap-2 border-b-2 border-transparent hover:border-corporateGreen pb-1 transition-all">
+        Muat lebih banyak
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+</main>
+<!-- END: Main Content -->
+<!-- BEGIN: Navigation Tab Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-2 py-2 flex items-center justify-around shadow-[0_-4px_10px_rgba(0,0,0,0.03)] z-50">
+<a class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-corporateGreen transition-colors" href="#">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-[10px] font-bold">Dashboard</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-corporateGreen transition-colors" href="#">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-[10px] font-bold">Siswa</span>
+<span class="w-1 h-1 bg-corporateGreen rounded-full"></span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-corporateGreen transition-colors" href="#">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-[10px] font-bold">Bayar</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-corporateGreen transition-colors" href="#">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<span class="text-[10px] font-bold">Laporan</span>
+</a>
+</nav>
+<!-- END: Navigation Tab Bar -->
+<!-- BEGIN: Interactive Scripts -->
+<script data-purpose="toggle-filter-logic">
+    const toggleBtn = document.getElementById('toggleFilters');
+    const filterSection = document.getElementById('filterSection');
+    const chevronIcon = document.getElementById('chevronIcon');
+
+    toggleBtn.addEventListener('click', () => {
+      const isHidden = filterSection.classList.contains('hidden-filters');
+      if (isHidden) {
+        filterSection.classList.remove('hidden-filters');
+        filterSection.classList.add('visible-filters');
+        chevronIcon.classList.add('rotate-180');
+      } else {
+        filterSection.classList.add('hidden-filters');
+        filterSection.classList.remove('visible-filters');
+        chevronIcon.classList.remove('rotate-180');
+      }
+    });
+  </script>
+<!-- END: Interactive Scripts -->
+</body></html>

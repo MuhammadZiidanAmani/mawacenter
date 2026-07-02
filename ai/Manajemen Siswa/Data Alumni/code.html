@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Data Alumni - Ma'wa Center</title>
+<!-- Google Fonts: Manrope & Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "surface-container-high": "#dee8ff",
+                "inverse-primary": "#92d5aa",
+                "on-secondary-container": "#606a23",
+                "secondary-fixed-dim": "#c2cd7b",
+                "primary-fixed-dim": "#92d5aa",
+                "on-primary-fixed-variant": "#085231",
+                "tertiary-fixed-dim": "#c1c9be",
+                "surface-container-highest": "#d8e3fa",
+                "on-primary-fixed": "#002110",
+                "on-error": "#ffffff",
+                "on-tertiary-fixed": "#161d17",
+                "inverse-surface": "#263142",
+                "secondary-container": "#deea95",
+                "surface-bright": "#f9f9ff",
+                "on-tertiary-fixed-variant": "#414941",
+                "error-container": "#ffdad6",
+                "outline-variant": "#bfc9c0",
+                "surface-container": "#e7eeff",
+                "on-surface": "#111c2c",
+                "on-background": "#111c2c",
+                "surface-variant": "#d8e3fa",
+                "tertiary-container": "#4d554d",
+                "surface-tint": "#296a47",
+                "secondary-fixed": "#deea95",
+                "on-secondary-fixed": "#191e00",
+                "on-tertiary-container": "#c1c9bf",
+                "primary": "#004528",
+                "on-surface-variant": "#404942",
+                "surface-container-low": "#f0f3ff",
+                "primary-container": "#1b5e3c",
+                "primary-fixed": "#aef2c5",
+                "outline": "#707971",
+                "surface": "#f9f9ff",
+                "on-primary": "#ffffff",
+                "surface-container-lowest": "#ffffff",
+                "tertiary": "#363e36",
+                "on-tertiary": "#ffffff",
+                "background": "#f9f9ff",
+                "on-error-container": "#93000a",
+                "error": "#ba1a1a",
+                "inverse-on-surface": "#ebf1ff",
+                "tertiary-fixed": "#dde5da",
+                "on-primary-container": "#93d5aa",
+                "secondary": "#5a631e",
+                "on-secondary-fixed-variant": "#424b05",
+                "surface-dim": "#cfdaf1",
+                "on-secondary": "#ffffff"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "xl": "32px",
+                "container-padding": "16px",
+                "xs": "4px",
+                "sm": "8px",
+                "gutter": "12px",
+                "base": "4px",
+                "md": "16px",
+                "lg": "24px"
+            },
+            "fontFamily": {
+                "title-md": ["Inter"],
+                "headline-lg": ["Manrope"],
+                "headline-md": ["Manrope"],
+                "body-md": ["Inter"],
+                "label-md": ["Inter"],
+                "body-lg": ["Inter"],
+                "label-sm": ["Inter"],
+                "headline-lg-mobile": ["Manrope"]
+            },
+            "fontSize": {
+                "title-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+                "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .active-nav-bg {
+            background-color: #deea95; /* secondary-container match */
+            color: #606a23; /* on-secondary-container match */
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .card-shadow {
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-surface border-b border-outline-variant z-40 flex items-center justify-between px-md py-sm">
+<div class="flex items-center gap-md">
+<button class="active:opacity-70 transition-opacity p-1">
+<span class="material-symbols-outlined text-primary">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Ma'wa Center</h1>
+</div>
+<div class="flex items-center gap-md">
+<button class="active:opacity-70 transition-opacity p-1">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+</div>
+</header>
+<main class="px-container-padding pt-lg">
+<!-- Title & Description -->
+<section class="mb-lg">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-xs">Data Alumni</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Kelola data siswa yang sudah lulus atau berstatus nonaktif/alumni.</p>
+</section>
+<!-- Search and Filter Bar -->
+<section class="mb-lg space-y-sm">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg font-body-md focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="Cari nama atau NIS..." type="text"/>
+</div>
+<div class="flex gap-sm">
+<button class="flex-1 flex items-center justify-center gap-sm bg-surface border border-outline-variant py-2 rounded-lg font-label-md text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-title-md">filter_list</span>
+<span>Filter Data</span>
+</button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg font-label-md active:scale-95 transition-transform">
+                    Cari
+                </button>
+</div>
+</section>
+<!-- Data Cards List -->
+<div class="space-y-gutter">
+<!-- Card 1 -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md card-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex flex-col">
+<h3 class="font-title-md text-title-md text-primary">A. FAREL AL FAHREZI</h3>
+<span class="font-label-md text-on-surface-variant">NIS: 220005</span>
+</div>
+<div class="flex gap-xs">
+<span class="px-2 py-0.5 bg-[#E6F4EA] text-[#1B5E3C] rounded-full text-[10px] font-bold uppercase tracking-wider">Laki-Laki</span>
+<span class="px-2 py-0.5 bg-primary-container text-on-primary-container rounded-full text-[10px] font-bold uppercase tracking-wider">Lulus</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-y-sm border-y border-outline-variant py-sm my-sm">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline text-[18px]">school</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-outline font-label-md uppercase">Unit</span>
+<span class="text-body-md font-medium">MTs</span>
+</div>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline text-[18px]">event_available</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-outline font-label-md uppercase">Tanggal</span>
+<span class="text-body-md font-medium">27/06/2026</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-label-md text-on-surface-variant italic">Th. Pelajaran: 2025/2026</span>
+<div class="flex gap-sm">
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-primary hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-title-md">edit</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-error hover:bg-error-container">
+<span class="material-symbols-outlined text-title-md">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md card-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex flex-col">
+<h3 class="font-title-md text-title-md text-primary">A'ISYAH JAMIYLATUN NISA</h3>
+<span class="font-label-md text-on-surface-variant">NIS: 220153</span>
+</div>
+<div class="flex gap-xs">
+<span class="px-2 py-0.5 bg-[#EDF2F7] text-[#4A5568] rounded-full text-[10px] font-bold uppercase tracking-wider">Perempuan</span>
+<span class="px-2 py-0.5 bg-primary-container text-on-primary-container rounded-full text-[10px] font-bold uppercase tracking-wider">Lulus</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-y-sm border-y border-outline-variant py-sm my-sm">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline text-[18px]">school</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-outline font-label-md uppercase">Unit</span>
+<span class="text-body-md font-medium">MTs</span>
+</div>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline text-[18px]">event_available</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-outline font-label-md uppercase">Tanggal</span>
+<span class="text-body-md font-medium">27/06/2026</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-label-md text-on-surface-variant italic">Th. Pelajaran: 2025/2026</span>
+<div class="flex gap-sm">
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-primary hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-title-md">edit</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-error hover:bg-error-container">
+<span class="material-symbols-outlined text-title-md">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface border border-outline-variant rounded-xl p-md card-shadow">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex flex-col">
+<h3 class="font-title-md text-title-md text-primary">ABDILLAH SAEFI HAMMAM</h3>
+<span class="font-label-md text-on-surface-variant">NIS: 220001</span>
+</div>
+<div class="flex gap-xs">
+<span class="px-2 py-0.5 bg-[#E6F4EA] text-[#1B5E3C] rounded-full text-[10px] font-bold uppercase tracking-wider">Laki-Laki</span>
+<span class="px-2 py-0.5 bg-primary-container text-on-primary-container rounded-full text-[10px] font-bold uppercase tracking-wider">Lulus</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-y-sm border-y border-outline-variant py-sm my-sm">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline text-[18px]">school</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-outline font-label-md uppercase">Unit</span>
+<span class="text-body-md font-medium">MTs</span>
+</div>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-outline text-[18px]">event_available</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-outline font-label-md uppercase">Tanggal</span>
+<span class="text-body-md font-medium">27/06/2026</span>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-label-md text-on-surface-variant italic">Th. Pelajaran: 2025/2026</span>
+<div class="flex gap-sm">
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-primary hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-title-md">edit</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center border border-outline-variant rounded-lg text-error hover:bg-error-container">
+<span class="material-symbols-outlined text-title-md">delete</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination Section -->
+<section class="mt-lg flex flex-col items-center gap-md">
+<p class="font-body-md text-body-md text-on-surface-variant">Menampilkan <span class="font-bold text-primary">3</span> dari <span class="font-bold text-primary">124</span> alumni</p>
+<div class="flex items-center gap-sm">
+<button class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant text-outline active:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex gap-xs">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-on-primary font-bold">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant text-on-surface-variant font-medium">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant text-on-surface-variant font-medium">3</button>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full border border-outline-variant text-primary active:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</section>
+</main>
+<!-- FAB -->
+<button class="fixed bottom-24 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center active:scale-90 transition-transform z-50">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-container-padding py-xs bg-surface border-t border-outline-variant">
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-sm text-label-sm">Reports</span>
+</div>
+<!-- ACTIVE: Master Data -->
+<div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">database</span>
+<span class="font-label-sm text-label-sm">Master Data</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-high transition-all">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</div>
+</nav>
+<!-- Interactive script for some ripple-like micro-interactions -->
+<script>
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', function(e) {
+                let ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                this.appendChild(ripple);
+                let d = Math.max(this.clientWidth, this.clientHeight);
+                ripple.style.width = ripple.style.height = d + 'px';
+                ripple.style.left = e.clientX - this.offsetLeft - d / 2 + 'px';
+                ripple.style.top = e.clientY - this.offsetTop - d / 2 + 'px';
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+    </script>
+</body></html>
