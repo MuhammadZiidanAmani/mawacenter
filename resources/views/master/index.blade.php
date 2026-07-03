@@ -5,6 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Master Data - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock {
+            box-sizing: border-box !important;
+            width: min(100%, 1404px) !important;
+            max-width: min(1404px, calc(100vw - 96px)) !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+
+        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-flat-header,
+        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > #student-data-filter,
+        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-count,
+        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-list {
+            box-sizing: border-box !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-list {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            gap: 18px !important;
+        }
+
+        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
+            grid-template-columns: 160px 150px 120px minmax(220px, 300px) max-content !important;
+            grid-template-rows: auto !important;
+            justify-content: stretch !important;
+        }
+
+        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-flat-header {
+            padding-right: 0 !important;
+        }
+
+        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1) {
+            grid-column: 1 !important;
+            grid-row: 1 !important;
+        }
+
+        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2) {
+            grid-column: 2 !important;
+            grid-row: 1 !important;
+        }
+
+        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3) {
+            grid-column: 3 !important;
+            grid-row: 1 !important;
+        }
+
+        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
+            grid-column: 4 !important;
+            grid-row: 1 !important;
+        }
+
+        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+            grid-column: 5 !important;
+            grid-row: 1 !important;
+            align-self: end !important;
+            width: auto !important;
+            min-width: 0 !important;
+        }
+
+        @media (width <= 760px) {
+            html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock {
+                width: 100% !important;
+                max-width: none !important;
+            }
+
+            html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-list {
+                grid-template-columns: 1fr !important;
+            }
+
+            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
+                grid-template-columns: 1fr !important;
+            }
+
+            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
+            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
+            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3),
+            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search,
+            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+                grid-column: auto !important;
+                grid-row: auto !important;
+            }
+
+            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                width: 100% !important;
+            }
+        }
+    </style>
 </head>
 <body>
 @php
@@ -187,13 +278,12 @@
             @endif
 
             @if ($tab === 'students')
-                <section class="student-workspace student-list-filter-card">
+                <section class="student-workspace student-list-filter-card student-reference-align-lock">
                     @php
                         $studentExportQuery = array_filter([
                             'unit_id' => request('unit_id'),
                             'class_id' => request('class_id'),
                             'year_id' => $studentYearId,
-                            'status' => $studentStatus,
                             'search' => request('search'),
                         ], fn ($value) => filled($value));
                         $canClassAlumni = request()->filled('unit_id')
@@ -218,22 +308,21 @@
                         </div>
                     </div>
 
-                    <form method="GET" action="{{ route('student-management.students.index') }}" class="student-filter-panel student-reference-filter" data-student-filter-panel>
+                    <form id="student-data-filter" method="GET" action="{{ route('student-management.students.index') }}" class="student-filter-panel student-reference-filter student-fee-card-filter" style="box-sizing: border-box !important; width: 100% !important; max-width: 100% !important;" data-student-filter-panel>
                         <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">
-                        <div class="student-reference-filter-grid">
+                        <div class="student-reference-filter-grid student-fee-card-filter-grid">
                             <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                             <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
                             <label><span>Tahun Pelajaran</span><select name="year_id">@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($studentYearId == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
-                            <label><span>Status Data</span><select name="status"><option value="">Semua Status</option><option value="active" @selected($studentStatus === 'active')>Aktif</option><option value="inactive" @selected($studentStatus === 'inactive')>Nonaktif</option></select></label>
                         </div>
-                        <label class="student-reference-search">
+                        <label class="student-reference-search student-fee-filter-search">
                             <span>Cari siswa</span>
                             {!! $icon('search') !!}
                             <input name="search" value="{{ request('search') }}" placeholder="Nama atau NIS..." aria-label="Cari nama atau NIS">
                         </label>
-                        <div class="student-filter-actions">
-                            <button class="button student-search-button" aria-label="Tampilkan data">Terapkan</button>
-                            <a href="{{ route('student-management.students.index') }}" class="button student-filter-reset">Reset</a>
+                        <div class="student-filter-actions student-fee-card-filter-actions fee-type-card-filter-actions">
+                            <button class="button student-fee-card-search-button fee-type-card-search-button" aria-label="Tampilkan data">Terapkan</button>
+                            <a href="{{ route('student-management.students.index') }}" class="button student-fee-card-reset-button fee-type-card-reset-button">Reset</a>
                         </div>
                     </form>
                 </section>
@@ -762,7 +851,7 @@
                 <div class="pagination-wrap">{{ $data->links() }}</div>
             </section>
             @else
-            <section class="card master-card student-data-card {{ $tab === 'students' ? 'student-list-table-card' : 'master-flat-card' }} {{ $tab === 'education-units' ? 'education-unit-table-card' : '' }} {{ $tab === 'classes' ? 'class-table-card' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table-card' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table-card' : '' }} {{ $tab === 'data-roles' ? 'data-role-table-card' : '' }} {{ $tab === 'data-users' ? 'data-user-table-card' : '' }}">
+            <section class="card master-card student-data-card {{ $tab === 'students' ? 'student-list-table-card student-reference-align-lock' : 'master-flat-card' }} {{ $tab === 'education-units' ? 'education-unit-table-card' : '' }} {{ $tab === 'classes' ? 'class-table-card' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table-card' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table-card' : '' }} {{ $tab === 'data-roles' ? 'data-role-table-card' : '' }} {{ $tab === 'data-users' ? 'data-user-table-card' : '' }}">
                 @if (! in_array($tab, ['students', 'academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users']))
                 <div class="master-tabs">
                     @foreach ($tabs as $key => $item)
@@ -790,7 +879,7 @@
                 @if($tab === 'students')
                     <div class="student-table-toolbar">
                         <form method="GET" action="{{ route('student-management.students.index') }}" class="student-table-length">
-                            @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                            @foreach(request()->except(['per_page', 'page', 'status']) as $key => $value)
                                 @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                             @endforeach
                             <label>Show
@@ -802,7 +891,7 @@
                             </label>
                         </form>
                         <form method="GET" action="{{ route('student-management.students.index') }}" class="student-table-search">
-                            @foreach(request()->except(['search', 'page']) as $key => $value)
+                            @foreach(request()->except(['search', 'page', 'status']) as $key => $value)
                                 @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                             @endforeach
                             <label>Search: <input name="search" value="{{ request('search') }}" aria-label="Cari siswa berdasarkan nama, NIS, atau NISN..."></label>
@@ -810,7 +899,7 @@
                     </div>
                     <div class="student-reference-card-count">
                         <form method="GET" action="{{ route('student-management.students.index') }}" class="student-reference-card-length">
-                            @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                            @foreach(request()->except(['per_page', 'page', 'status']) as $key => $value)
                                 @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                             @endforeach
                             <label>Tampilkan
@@ -828,7 +917,7 @@
                         </span>
                     </div>
 
-                    <div class="student-reference-card-list">
+                    <div class="student-reference-card-list" style="box-sizing: border-box !important; width: 100% !important; max-width: 100% !important;">
                         @forelse ($data as $row)
                             <article class="student-reference-card">
                                 <div class="student-reference-card-top">

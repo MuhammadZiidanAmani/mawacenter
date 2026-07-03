@@ -50,7 +50,7 @@ class MasterDataController extends Controller
         $perPage = $this->perPage($request);
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
         $studentYearId = $request->integer('year_id') ?: $activeAcademicYear?->id;
-        $studentStatus = $request->query('status', 'active');
+        $studentStatus = 'active';
         $classYearId = $tab === 'classes' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
         $classStatus = $tab === 'classes' ? $request->query('status', 'active') : null;
         $feeTypeClassId = $tab === 'fee-types' ? ($request->integer('class_id') ?: null) : null;
@@ -193,7 +193,7 @@ class MasterDataController extends Controller
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('students.name', 'like', "%{$search}%")->orWhere('students.nis', 'like', "%{$search}%")->orWhere('students.nisn', 'like', "%{$search}%")))
                 ->when($request->integer('class_id'), fn ($query, $classId) => $query->where('students.school_class_id', $classId))
                 ->when($request->integer('year_id'), fn ($query, $yearId) => $query->where('students.academic_year_id', $yearId))
-                ->when($studentStatus !== null && $studentStatus !== '', fn ($query) => $query->where('students.is_active', $studentStatus === 'active'))
+                ->where('students.is_active', true)
                 ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->whereHas('schoolClass', fn ($q) => $q->where('education_unit_id', $unitId)))
                 ->when(in_array($studentSort, ['unit', 'class'], true), fn ($query) => $query
                     ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id'))
@@ -414,11 +414,9 @@ class MasterDataController extends Controller
     {
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
         $selectedUnitId = $request->integer('unit_id') ?: null;
-        $selectedClassId = $request->integer('class_id') ?: null;
         $selectedYearId = $request->integer('year_id') ?: null;
-        $selectedReason = trim((string) $request->query('reason', ''));
         $search = trim((string) $request->query('search', ''));
-        $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'class', 'year', 'exit_date', 'reason'], true)
+        $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'year', 'exit_date'], true)
             ? $request->string('sort')->value()
             : 'name';
         $direction = $request->query('direction') === 'desc' ? 'desc' : 'asc';
@@ -429,9 +427,7 @@ class MasterDataController extends Controller
             ->with(['schoolClass.educationUnit', 'academicYear'])
             ->where('students.is_active', false)
             ->when($selectedUnitId, fn ($query, $unitId) => $query->whereHas('schoolClass', fn ($class) => $class->where('education_unit_id', $unitId)))
-            ->when($selectedClassId, fn ($query, $classId) => $query->where('students.school_class_id', $classId))
             ->when($selectedYearId, fn ($query, $yearId) => $query->where('students.academic_year_id', $yearId))
-            ->when($selectedReason !== '', fn ($query) => $query->where('students.inactive_reason', $selectedReason))
             ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
             ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
             ->leftJoin('academic_years', 'academic_years.id', '=', 'students.academic_year_id')
@@ -441,7 +437,6 @@ class MasterDataController extends Controller
                 ->orWhere('students.name', 'like', "%{$search}%")
                 ->orWhere('students.inactive_reason', 'like', "%{$search}%")
                 ->orWhere('education_units.code', 'like', "%{$search}%")
-                ->orWhere('school_classes.name', 'like', "%{$search}%")
                 ->orWhere('academic_years.name', 'like', "%{$search}%")));
 
         match ($sort) {
@@ -451,34 +446,23 @@ class MasterDataController extends Controller
             'unit' => $alumniQuery
                 ->orderByRaw(str_replace('code', 'education_units.code', $this->educationUnitOrderExpression())." {$direction}")
                 ->orderBy('education_units.name', $direction),
-            'class' => $alumniQuery->orderBy('school_classes.name', $direction),
             'year' => $alumniQuery->orderBy('academic_years.name', $direction),
             'exit_date' => $alumniQuery->orderBy('students.exit_date', $direction),
-            'reason' => $alumniQuery->orderBy('students.inactive_reason', $direction),
             default => $alumniQuery->orderBy('students.name'),
         };
 
-        $alumni = $alumniQuery->paginate($perPage === 'all' ? PHP_INT_MAX : (int) $perPage)->withQueryString();
-        $reasonOptions = Student::query()
-            ->where('is_active', false)
-            ->whereNotNull('inactive_reason')
-            ->where('inactive_reason', '!=', '')
-            ->distinct()
-            ->orderBy('inactive_reason')
-            ->pluck('inactive_reason');
+        $alumni = $alumniQuery
+            ->paginate($perPage === 'all' ? PHP_INT_MAX : (int) $perPage)
+            ->appends($request->except(['page', 'class_id', 'reason', 'sort', 'direction']));
 
         return view('student-management.alumni', [
             'activeAcademicYear' => $activeAcademicYear,
             'academicYears' => $this->academicYearOptions(),
             'educationUnits' => $this->educationUnitOptions(),
-            'classes' => $this->classOptions(),
             'alumni' => $alumni,
-            'reasonOptions' => $reasonOptions,
             'filters' => [
                 'unit_id' => $selectedUnitId,
-                'class_id' => $selectedClassId,
                 'year_id' => $selectedYearId,
-                'reason' => $selectedReason,
                 'search' => $search,
                 'per_page' => $perPage,
             ],
@@ -621,6 +605,7 @@ class MasterDataController extends Controller
             'status' => ['nullable', Rule::in(['active', 'inactive'])],
             'search' => ['nullable', 'string', 'max:120'],
         ]);
+        $validated['status'] ??= 'active';
         $yearId = $validated['year_id'] ?? AcademicYear::where('is_active', true)->value('id');
         $unit = isset($validated['unit_id']) ? EducationUnit::findOrFail($validated['unit_id']) : null;
         $students = Student::with('schoolClass.educationUnit')
@@ -1319,7 +1304,6 @@ class MasterDataController extends Controller
                 'unit_id',
                 'class_id',
                 'year_id',
-                'status',
                 'search',
                 'per_page',
                 'sort',
@@ -1355,7 +1339,6 @@ class MasterDataController extends Controller
         $selectedUnitId = $request->integer('unit_id') ?: null;
         $selectedClassId = $request->integer('class_id') ?: null;
         $search = trim((string) $request->input('search', ''));
-        $selectedStatus = $request->query('status', 'active');
         $isPromotion = $mode === 'promotion';
         $movementSort = in_array($request->string('sort')->value(), ['nis', 'name', 'unit', 'class', 'year'], true)
             ? $request->string('sort')->value()
@@ -1363,10 +1346,15 @@ class MasterDataController extends Controller
         $movementDirection = $request->query('direction') === 'desc' ? 'desc' : 'asc';
         $perPageInput = $request->query('per_page', 10);
         $perPage = in_array((string) $perPageInput, ['10', '25', '50', '100', '500', 'all'], true) ? (string) $perPageInput : '10';
+        $classOptions = $this->classOptions();
+        $targetUnitId = $selectedUnitId ?: ($selectedClassId ? SchoolClass::whereKey($selectedClassId)->value('education_unit_id') : null);
+        $targetClasses = $targetUnitId
+            ? $classOptions->where('education_unit_id', (int) $targetUnitId)->values()
+            : $classOptions;
 
         $studentsQuery = Student::select('students.*')
             ->with(['schoolClass.educationUnit', 'academicYear'])
-            ->when(in_array($selectedStatus, ['active', 'inactive'], true), fn ($query) => $query->where('students.is_active', $selectedStatus === 'active'))
+            ->where('students.is_active', true)
             ->when($selectedYearId, fn ($query) => $query->where('students.academic_year_id', $selectedYearId))
             ->when($selectedClassId, fn ($query) => $query->where('students.school_class_id', $selectedClassId))
             ->when($selectedUnitId, fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->where('education_unit_id', $selectedUnitId)))
@@ -1407,14 +1395,14 @@ class MasterDataController extends Controller
             'activeAcademicYear' => $activeAcademicYear,
             'academicYears' => $this->academicYearOptions(),
             'educationUnits' => $this->educationUnitOptions(),
-            'classes' => $this->classOptions(),
+            'classes' => $classOptions,
+            'targetClasses' => $targetClasses,
             'students' => $students,
             'filters' => [
                 'year_id' => $selectedYearId,
                 'unit_id' => $selectedUnitId,
                 'class_id' => $selectedClassId,
                 'search' => $search,
-                'status' => $selectedStatus,
                 'per_page' => $perPage,
             ],
             'targetYearId' => $isPromotion
@@ -1441,6 +1429,11 @@ class MasterDataController extends Controller
         $targetYearId = $isPromotion ? (int) $validated['target_year_id'] : (int) $validated['source_year_id'];
         $targetClassId = (int) $validated['target_class_id'];
         $targetClass = SchoolClass::findOrFail($targetClassId);
+        if (filled($validated['unit_id'] ?? null) && (int) $targetClass->education_unit_id !== (int) $validated['unit_id']) {
+            throw ValidationException::withMessages([
+                'target_class_id' => 'Kelas tujuan harus berada pada unit pendidikan yang sedang difilter.',
+            ]);
+        }
         $studentIds = collect($validated['student_ids'])->map(fn ($id) => (int) $id)->unique()->values();
         $students = Student::whereIn('id', $studentIds)
             ->where('is_active', true)
@@ -1509,7 +1502,6 @@ class MasterDataController extends Controller
             'unit_id' => $targetClass->education_unit_id,
             'class_id' => $targetClassId,
             'search' => $validated['search'] ?? null,
-            'status' => $validated['status'] ?? null,
         ], fn ($value) => filled($value)))->with('success', $message);
     }
 }

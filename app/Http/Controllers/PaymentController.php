@@ -131,19 +131,22 @@ class PaymentController extends Controller
             $plan = $sppPayments->paymentPlan($student);
             $monthCount = max(0, (int) ($plan['default_month_count'] ?: $plan['max_month_count']));
             $remainingAmount = 0;
+            $periods = [];
 
             if ($monthCount > 0) {
                 try {
                     $quote = $sppPayments->quoteByMonthCount($student, $monthCount);
                     $remainingAmount = (int) ($quote['remaining_amount'] ?? 0);
+                    $periods = $quote['items'] ?? [];
                 } catch (ValidationException) {
-                    $remainingAmount = (int) collect($plan['periods'] ?? [])->sum('remaining_amount');
+                    $periods = array_slice($plan['periods'] ?? [], 0, $monthCount);
+                    $remainingAmount = (int) collect($periods)->sum('remaining_amount');
                 }
             }
 
             return [
                 'amount_label' => $this->rupiah($remainingAmount),
-                'detail_label' => $monthCount > 0 ? $monthCount.' bulan' : 'Tidak ada tagihan',
+                'detail_label' => $monthCount > 0 ? $this->sppPeriodLabel($periods) : 'Tidak ada tagihan',
             ];
         }
 
@@ -191,6 +194,30 @@ class PaymentController extends Controller
     private function rupiah(int $amount): string
     {
         return 'Rp '.number_format(max(0, $amount), 0, ',', '.');
+    }
+
+    private function sppPeriodLabel(array $periods): string
+    {
+        $periods = collect($periods)
+            ->filter(fn (array $period) => isset($period['year'], $period['month']))
+            ->sortBy(fn (array $period) => ((int) $period['year'] * 100) + (int) $period['month'])
+            ->values();
+
+        if ($periods->isEmpty()) {
+            return 'Tidak ada tagihan';
+        }
+
+        $first = $periods->first();
+        $last = $periods->last();
+        $firstLabel = $this->monthName((int) $first['month']).' '.$first['year'];
+        $lastLabel = $this->monthName((int) $last['month']).' '.$last['year'];
+
+        return $firstLabel === $lastLabel ? $firstLabel : $firstLabel.' - '.$lastLabel;
+    }
+
+    private function monthName(int $month): string
+    {
+        return ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][$month] ?? 'Bulan';
     }
 
     private function matchedFeeTypes(Student $student, Collection $feeTypes): Collection

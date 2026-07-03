@@ -141,22 +141,36 @@
                                                             @else
                                                                 @foreach($mandatoryOptions as $option)
                                                                     @if($option['status'] === 'payable')
-                                                                        <a href="{{ $option['url'] }}" class="payment-one-stop-bill is-payable">
+                                                                        <a href="{{ $option['url'] }}" @class(['payment-one-stop-bill', 'is-payable', 'is-spp' => $option['key'] === 'spp'])>
                                                                             <span class="payment-one-stop-bill-top">
-                                                                                <strong>{{ $option['label'] === 'Lainnya' ? 'Lain-lain' : $option['label'] }}</strong>
+                                                                                <strong>
+                                                                                    {{ $option['label'] === 'Lainnya' ? 'Lain-lain' : $option['label'] }}
+                                                                                    @if($option['key'] === 'spp' && ! empty($option['detail_label']))
+                                                                                        <span class="payment-one-stop-bill-period">{{ $option['detail_label'] }}</span>
+                                                                                    @endif
+                                                                                </strong>
                                                                                 <small>Proses</small>
                                                                             </span>
                                                                             <span class="payment-one-stop-bill-amount">{{ $option['amount_label'] ?? 'Rp 0' }}</span>
-                                                                            <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
+                                                                            @if($option['key'] !== 'spp')
+                                                                                <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
+                                                                            @endif
                                                                         </a>
                                                                     @else
-                                                                        <span class="payment-one-stop-bill is-paid">
+                                                                        <span @class(['payment-one-stop-bill', 'is-paid', 'is-spp' => $option['key'] === 'spp'])>
                                                                             <span class="payment-one-stop-bill-top">
-                                                                                <strong>{{ $option['label'] === 'Lainnya' ? 'Lain-lain' : $option['label'] }}</strong>
+                                                                                <strong>
+                                                                                    {{ $option['label'] === 'Lainnya' ? 'Lain-lain' : $option['label'] }}
+                                                                                    @if($option['key'] === 'spp' && ! empty($option['detail_label']))
+                                                                                        <span class="payment-one-stop-bill-period">{{ $option['detail_label'] }}</span>
+                                                                                    @endif
+                                                                                </strong>
                                                                                 <small>Lunas</small>
                                                                             </span>
                                                                             <span class="payment-one-stop-bill-amount">{{ $option['amount_label'] ?? 'Rp 0' }}</span>
-                                                                            <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
+                                                                            @if($option['key'] !== 'spp')
+                                                                                <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
+                                                                            @endif
                                                                         </span>
                                                                     @endif
                                                                 @endforeach

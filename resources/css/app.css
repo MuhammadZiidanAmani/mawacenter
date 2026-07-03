@@ -705,6 +705,911 @@ html body .class-transfer-page .class-transfer-action-panel .class-movement-subm
     }
 }
 
+/* RAPIKAN IDENTITAS ABSOLUTE FINAL: same filter and display bar as Data Siswa. */
+html body .identity-cleanup-page .identity-cleanup-filter-card {
+    display: grid !important;
+    gap: 18px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter {
+    display: grid !important;
+    grid-template-columns: 190px 150px 150px 132px minmax(220px, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: end !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid {
+    display: contents !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search {
+    display: grid !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(1) { grid-column: 1 !important; grid-row: 1 !important; }
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(2) { grid-column: 2 !important; grid-row: 1 !important; }
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(3) { grid-column: 3 !important; grid-row: 1 !important; }
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(4) { grid-column: 4 !important; grid-row: 1 !important; }
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search {
+    position: relative !important;
+    grid-column: 5 !important;
+    grid-row: 1 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label > span,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search > span {
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter select,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter select {
+    padding: 0 10px !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search input {
+    padding: 0 12px 0 40px !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search .icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: calc(50% + 11px) !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #707971 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    display: inline-flex !important;
+    align-items: end !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    width: 190px !important;
+    min-width: 190px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-search-button,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-reset {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 90px !important;
+    min-width: 90px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-search-button {
+    color: #ffffff !important;
+    background: #157144 !important;
+    border: 1px solid #157144 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-reset {
+    color: #334155 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-canvas {
+    margin-top: 6px !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-count {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 14px !important;
+    margin: 0 0 12px !important;
+    padding: 0 !important;
+    color: #64748b !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-length,
+html body .identity-cleanup-page .identity-cleanup-card-length label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #64748b !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-length select {
+    box-sizing: border-box !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 34px !important;
+}
+
+@media (width <= 1180px) {
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(1),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(2),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(3),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(4),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search,
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+        grid-column: auto !important;
+        grid-row: auto !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+        width: auto !important;
+        min-width: 0 !important;
+    }
+}
+
+@media (width <= 640px) {
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        width: 100% !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-search-button,
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-reset {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
+/* DATA SISWA FILTER: match Kategori Pembayaran filter layout */
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter {
+    display: grid !important;
+    grid-template-columns: 160px 140px 140px 130px minmax(220px, 260px) !important;
+    align-items: end !important;
+    gap: 12px !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid {
+    display: contents !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid label {
+    display: grid !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    min-width: 0 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid label:nth-child(1) {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid label:nth-child(2) {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid label:nth-child(3) {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid label:nth-child(4) {
+    grid-column: 4 !important;
+    grid-row: 1 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid span {
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid select,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-filter-search input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid select {
+    padding: 0 12px !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-filter-search {
+    position: relative !important;
+    display: block !important;
+    grid-column: 5 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    align-self: end !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-filter-search > span {
+    display: none !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-filter-search .icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #4a5568 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-filter-search input {
+    padding: 0 12px 0 40px !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid select:focus,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-filter-search input:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-actions {
+    display: flex !important;
+    align-items: end !important;
+    gap: 10px !important;
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    justify-content: flex-start !important;
+    width: auto !important;
+    min-width: 0 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-search-button,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-reset-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 14px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-search-button {
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-search-button:hover {
+    color: #ffffff !important;
+    background: #1b5e3c !important;
+    border-color: #1b5e3c !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-reset-button {
+    color: #404942 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+@media (width <= 1180px) {
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid label:nth-child(1),
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid label:nth-child(2),
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid label:nth-child(3),
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-grid label:nth-child(4),
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-filter-search,
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-actions {
+        grid-column: auto !important;
+        grid-row: auto !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-filter-actions {
+        width: 100% !important;
+    }
+
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-search-button,
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-fee-card-reset-button {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
+/* RAPIKAN IDENTITAS SCREENSHOT MATCH: mirror Data Siswa filter/display layout. */
+html body .identity-cleanup-page .identity-cleanup-filter-card {
+    gap: 28px !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter {
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: minmax(260px, 285px) minmax(200px, 225px) minmax(200px, 225px) minmax(180px, 200px) minmax(300px, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: end !important;
+    gap: 18px !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid {
+    display: contents !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search {
+    display: grid !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(1) { grid-column: 1 !important; grid-row: 1 !important; }
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(2) { grid-column: 2 !important; grid-row: 1 !important; }
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(3) { grid-column: 3 !important; grid-row: 1 !important; }
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(4) { grid-column: 4 !important; grid-row: 1 !important; }
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search {
+    grid-column: 5 !important;
+    grid-row: 1 !important;
+    position: relative !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label > span,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search > span {
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter select,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    margin: 0 !important;
+    color: #020617 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 58px !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter select {
+    padding: 0 20px !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search input {
+    padding: 0 16px 0 52px !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search .icon {
+    position: absolute !important;
+    left: 20px !important;
+    top: calc(50% + 13px) !important;
+    width: 22px !important;
+    height: 22px !important;
+    color: #707971 !important;
+    transform: translateY(-50%) !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    display: grid !important;
+    grid-template-columns: 135px 135px !important;
+    align-items: center !important;
+    justify-content: start !important;
+    gap: 14px !important;
+    width: 285px !important;
+    min-width: 285px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-search-button,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-reset {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 135px !important;
+    min-width: 135px !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    margin: 0 !important;
+    padding: 0 18px !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-search-button {
+    color: #ffffff !important;
+    background: #157144 !important;
+    border: 1px solid #157144 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-reset {
+    color: #334155 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-canvas {
+    gap: 14px !important;
+    margin-top: 24px !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-count {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+    width: 100% !important;
+    margin: 0 0 12px !important;
+    padding: 0 !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-length,
+html body .identity-cleanup-page .identity-cleanup-card-length label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-length select {
+    width: 118px !important;
+    min-width: 118px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    padding: 0 18px !important;
+    color: #020617 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-count > span {
+    color: #5b6f92 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+@media (width <= 1180px) {
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(1),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(2),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(3),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(4),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search,
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+        grid-column: auto !important;
+        grid-row: auto !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+        width: auto !important;
+        min-width: 0 !important;
+    }
+}
+
+@media (width <= 640px) {
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+        grid-template-columns: 1fr 1fr !important;
+        width: 100% !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-search-button,
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-reset {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
+/* RAPIKAN IDENTITAS: match Data Siswa filter and display count. */
+html body .identity-cleanup-page .identity-cleanup-filter-card {
+    display: grid !important;
+    gap: 18px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter {
+    display: grid !important;
+    grid-template-columns: 190px 150px 150px 132px minmax(220px, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: end !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid {
+    display: contents !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid label,
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-search {
+    display: grid !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(1) {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(2) {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(3) {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(4) {
+    grid-column: 4 !important;
+    grid-row: 1 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-search {
+    position: relative !important;
+    grid-column: 5 !important;
+    grid-row: 1 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid label > span,
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-search > span {
+    margin: 0 !important;
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid select,
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-search input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid select {
+    padding: 0 10px !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-search input {
+    padding: 0 12px 0 40px !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-search .icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: calc(50% + 11px) !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #707971 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-filter-actions {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    display: inline-flex !important;
+    align-items: end !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    width: 190px !important;
+    min-width: 190px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-search-button,
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-filter-reset {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 90px !important;
+    min-width: 90px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-search-button {
+    color: #ffffff !important;
+    background: #157144 !important;
+    border: 1px solid #157144 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-reference-filter .student-filter-reset {
+    color: #334155 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-canvas {
+    margin-top: 6px !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-count {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 14px !important;
+    margin: 0 0 12px !important;
+    padding: 0 !important;
+    color: #64748b !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-length,
+html body .identity-cleanup-page .identity-cleanup-card-length label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #64748b !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-length select {
+    box-sizing: border-box !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 34px !important;
+}
+
+@media (width <= 1180px) {
+    html body .identity-cleanup-page .identity-cleanup-reference-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(1),
+    html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(2),
+    html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(3),
+    html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(4),
+    html body .identity-cleanup-page .identity-cleanup-reference-filter .student-reference-search,
+    html body .identity-cleanup-page .identity-cleanup-reference-filter .student-filter-actions {
+        grid-column: auto !important;
+        grid-row: auto !important;
+    }
+
+    html body .identity-cleanup-page .identity-cleanup-reference-filter .student-filter-actions {
+        width: auto !important;
+        min-width: 0 !important;
+    }
+}
+
+@media (width <= 640px) {
+    html body .identity-cleanup-page .identity-cleanup-reference-filter {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .identity-cleanup-page .identity-cleanup-reference-filter .student-filter-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        width: 100% !important;
+    }
+
+    html body .identity-cleanup-page .identity-cleanup-reference-filter .student-search-button,
+    html body .identity-cleanup-page .identity-cleanup-reference-filter .student-filter-reset {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
 /* NAIK KELAS ABSOLUTE FINAL LOCK */
 html body .class-promotion-page {
     display: grid !important;
@@ -6356,7 +7261,8 @@ html body .identity-cleanup-page form.student-filter-panel.identity-cleanup-filt
 /* DATA SISWA FILTER SIZE OVERRIDE */
 body .student-page:not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page) .student-list-filter-card > .student-filter-panel{
     grid-template-columns:150px 150px 100px 100px auto!important;
-    width:max-content!important;
+    box-sizing:border-box!important;
+    width:100%!important;
     max-width:100%!important;
 }
 body .student-page:not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page) .student-list-filter-card > .student-filter-panel .student-search-button,
@@ -12549,12 +13455,16 @@ html body .student-page:not(.student-create-page):not(.student-import-page):not(
 
 html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-list-filter-card,
 html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-list-table-card {
-    width: 100% !important;
+    width: min(100%, 1404px) !important;
+    max-width: 1404px !important;
     margin: 0 0 16px !important;
     padding: 0 !important;
     background: transparent !important;
     border: 0 !important;
     box-shadow: none !important;
+    justify-self: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
 }
 
 html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-flat-header {
@@ -15179,5 +16089,2676 @@ html body .class-transfer-page .class-transfer-action-panel .class-movement-subm
 
     html body .class-transfer-page .class-transfer-student-card {
         grid-template-columns: 24px minmax(0, 1fr) !important;
+    }
+}
+
+/* RAPIKAN IDENTITAS REAL FINAL: Data Siswa filter alignment. */
+html body .identity-cleanup-page .identity-cleanup-filter-card {
+    display: grid !important;
+    gap: 28px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter {
+    display: grid !important;
+    grid-template-columns: minmax(260px, 285px) minmax(200px, 225px) minmax(200px, 225px) minmax(180px, 200px) minmax(300px, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: end !important;
+    gap: 18px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid {
+    display: contents !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search {
+    display: grid !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(1) { grid-column: 1 !important; grid-row: 1 !important; }
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(2) { grid-column: 2 !important; grid-row: 1 !important; }
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(3) { grid-column: 3 !important; grid-row: 1 !important; }
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(4) { grid-column: 4 !important; grid-row: 1 !important; }
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search {
+    position: relative !important;
+    grid-column: 5 !important;
+    grid-row: 1 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label > span,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search > span {
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter select,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search input {
+    width: 100% !important;
+    height: 58px !important;
+    min-height: 58px !important;
+    margin: 0 !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 58px !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter select {
+    padding: 0 20px !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search input {
+    padding: 0 16px 0 52px !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search .icon {
+    position: absolute !important;
+    left: 20px !important;
+    top: calc(50% + 13px) !important;
+    width: 22px !important;
+    height: 22px !important;
+    color: #707971 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    display: grid !important;
+    grid-template-columns: 135px 135px !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 14px !important;
+    width: 285px !important;
+    min-width: 285px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-search-button,
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-reset {
+    width: 135px !important;
+    min-width: 135px !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    margin: 0 !important;
+    padding: 0 18px !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-search-button {
+    color: #ffffff !important;
+    background: #157144 !important;
+    border: 1px solid #157144 !important;
+}
+
+html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-reset {
+    color: #334155 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-canvas {
+    margin-top: 24px !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-count,
+html body .identity-cleanup-page .identity-cleanup-card-length,
+html body .identity-cleanup-page .identity-cleanup-card-length label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin: 0 0 12px !important;
+    padding: 0 !important;
+    color: #64748b !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-count {
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-length,
+html body .identity-cleanup-page .identity-cleanup-card-length label {
+    margin: 0 !important;
+}
+
+html body .identity-cleanup-page .identity-cleanup-card-length select {
+    width: 118px !important;
+    min-width: 118px !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    padding: 0 18px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+@media (width <= 1180px) {
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(1),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(2),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(3),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-filter-grid label:nth-child(4),
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-reference-search,
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+        grid-column: auto !important;
+        grid-row: auto !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+        width: auto !important;
+        min-width: 0 !important;
+    }
+}
+
+@media (width <= 640px) {
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        width: 100% !important;
+    }
+
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-search-button,
+    html body .identity-cleanup-page form.identity-cleanup-reference-filter .student-filter-reset {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
+/* DATA SISWA FILTER FINAL LOCK: same structure as Kategori Pembayaran. */
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter {
+    display: grid !important;
+    grid-template-columns: 160px 140px 140px 130px minmax(220px, 260px) !important;
+    align-items: end !important;
+    gap: 12px !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid {
+    display: contents !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid label {
+    display: grid !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1) { grid-column: 1 !important; grid-row: 1 !important; }
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2) { grid-column: 2 !important; grid-row: 1 !important; }
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3) { grid-column: 3 !important; grid-row: 1 !important; }
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(4) { grid-column: 4 !important; grid-row: 1 !important; }
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid span {
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid select,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-filter-search input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid select {
+    padding: 0 12px !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-filter-search {
+    position: relative !important;
+    display: block !important;
+    grid-column: 5 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    align-self: end !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-filter-search > span {
+    display: none !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-filter-search .icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #4a5568 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-filter-search input {
+    padding: 0 12px 0 40px !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid select:focus,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-filter-search input:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-actions {
+    display: flex !important;
+    align-items: end !important;
+    gap: 10px !important;
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    justify-content: flex-start !important;
+    width: auto !important;
+    min-width: 0 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-search-button,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-reset-button,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .fee-type-card-search-button,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .fee-type-card-reset-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 14px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-search-button,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .fee-type-card-search-button {
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-search-button:hover,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .fee-type-card-search-button:hover {
+    color: #ffffff !important;
+    background: #1b5e3c !important;
+    border-color: #1b5e3c !important;
+}
+
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-reset-button,
+html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .fee-type-card-reset-button {
+    color: #404942 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+@media (width <= 1180px) {
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3),
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(4),
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-filter-search,
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-actions {
+        grid-column: auto !important;
+        grid-row: auto !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-filter-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-search-button,
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .student-fee-card-reset-button,
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .fee-type-card-search-button,
+    html body .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) form.student-fee-card-filter .fee-type-card-reset-button {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+}
+
+/* PINDAH/NAIK KELAS FILTER FINAL LOCK: match Data Siswa and Rapikan Identitas. */
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter {
+    display: grid !important;
+    grid-template-columns: 160px 140px 120px 130px minmax(220px, 260px) !important;
+    grid-template-rows: auto auto !important;
+    align-items: end !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid {
+    display: contents !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid label {
+    display: grid !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1) { grid-column: 1 !important; grid-row: 1 !important; }
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2) { grid-column: 2 !important; grid-row: 1 !important; }
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3) { grid-column: 3 !important; grid-row: 1 !important; }
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(4) { grid-column: 4 !important; grid-row: 1 !important; }
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid span {
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid select,
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-filter-search input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid select {
+    padding: 0 12px !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-filter-search {
+    position: relative !important;
+    display: block !important;
+    grid-column: 5 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    align-self: end !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-filter-search > span {
+    display: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-filter-search .icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #4a5568 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-filter-search input {
+    padding: 0 12px 0 40px !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-actions {
+    display: flex !important;
+    align-items: end !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-search-button,
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-reset-button,
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .fee-type-card-search-button,
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .fee-type-card-reset-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    max-width: 96px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 14px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-search-button,
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .fee-type-card-search-button {
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-search-button:hover,
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .fee-type-card-search-button:hover {
+    color: #ffffff !important;
+    background: #1b5e3c !important;
+    border-color: #1b5e3c !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-reset-button,
+html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .fee-type-card-reset-button {
+    color: #404942 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+@media (width <= 1180px) {
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3),
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(4),
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-filter-search,
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-actions {
+        grid-column: auto !important;
+        grid-row: auto !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-filter-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-search-button,
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .student-fee-card-reset-button,
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .fee-type-card-search-button,
+    html body :is(.class-transfer-page, .class-promotion-page) form.class-movement-filter.student-fee-card-filter .fee-type-card-reset-button {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+}
+
+/* PINDAH/NAIK KELAS CONTENT FINAL LOCK: match Data Siswa lower layout. */
+html body :is(.class-transfer-page, .class-promotion-page) .class-movement-v6-card,
+html body :is(.class-transfer-page, .class-promotion-page) .class-transfer-card-mode {
+    display: grid !important;
+    gap: 14px !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) .class-movement-card-count {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 14px !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #64748b !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) .student-reference-card-length,
+html body :is(.class-transfer-page, .class-promotion-page) .student-reference-card-length label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #64748b !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) .student-reference-card-length select {
+    box-sizing: border-box !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 34px !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-list-head, .class-promotion-list-head) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin: 2px 0 0 !important;
+    padding: 0 !important;
+    color: #111c2c !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-list-head, .class-promotion-list-head) > strong {
+    margin: 0 !important;
+    color: #111c2c !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-check-all, .class-promotion-check-all) {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1 !important;
+    text-transform: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-local-search, .class-promotion-local-search) {
+    position: relative !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-local-search, .class-promotion-local-search) input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 12px 0 40px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-local-search, .class-promotion-local-search) .icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #4a5568 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-student-list, .class-promotion-student-list) {
+    display: grid !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-empty, .class-promotion-empty) {
+    display: grid !important;
+    place-items: center !important;
+    gap: 6px !important;
+    min-height: 128px !important;
+    margin: 0 !important;
+    padding: 30px 20px !important;
+    color: #64748b !important;
+    background: #ffffff !important;
+    border: 1px dashed #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    text-align: center !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-empty, .class-promotion-empty) strong {
+    color: #111c2c !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-empty, .class-promotion-empty) span {
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-action-panel, .class-promotion-action-panel) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 74px !important;
+    gap: 12px 16px !important;
+    align-items: end !important;
+    width: 100% !important;
+    margin: 14px 0 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .class-promotion-page .class-promotion-action-panel {
+    grid-template-columns: minmax(180px, 220px) minmax(0, 1fr) 74px !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-action-panel, .class-promotion-action-panel) label {
+    display: grid !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+    text-transform: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-action-panel, .class-promotion-action-panel) label > span {
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-action-panel, .class-promotion-action-panel) select {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-selected-count, .class-promotion-selected-count) {
+    display: grid !important;
+    place-items: center !important;
+    gap: 3px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    color: #64748b !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-selected-count, .class-promotion-selected-count) span {
+    color: #64748b !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-selected-count, .class-promotion-selected-count) output {
+    color: #004528 !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-action-panel, .class-promotion-action-panel) .class-movement-submit {
+    grid-column: 1 / -1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    margin: 0 !important;
+    padding: 0 18px !important;
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+}
+
+html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-action-panel, .class-promotion-action-panel) .class-movement-submit:disabled {
+    color: #94a3b8 !important;
+    background: #e5e7eb !important;
+    border-color: #e5e7eb !important;
+    box-shadow: none !important;
+}
+
+@media (width <= 760px) {
+    html body :is(.class-transfer-page, .class-promotion-page) .class-movement-card-count {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+    }
+
+    html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-list-head, .class-promotion-list-head) {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+    }
+
+    html body :is(.class-transfer-page, .class-promotion-page) :is(.class-transfer-action-panel, .class-promotion-action-panel),
+    html body .class-promotion-page .class-promotion-action-panel {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* PINDAH/NAIK KELAS CENTER LOCK */
+html body .app-shell .main-panel main.class-movement-page.class-transfer-screen,
+html body .app-shell .main-panel main.class-movement-page.class-promotion-page {
+    justify-items: center !important;
+}
+
+html body .app-shell .main-panel main.class-movement-page.class-transfer-screen > .student-list-filter-card,
+html body .app-shell .main-panel main.class-movement-page.class-transfer-screen > .class-movement-data-card,
+html body .app-shell .main-panel main.class-movement-page.class-promotion-page > .student-list-filter-card,
+html body .app-shell .main-panel main.class-movement-page.class-promotion-page > .class-movement-data-card {
+    width: min(100%, 912px) !important;
+    max-width: 912px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    justify-self: center !important;
+}
+
+html body .app-shell .main-panel main.class-movement-page.class-transfer-screen .class-movement-v6-card,
+html body .app-shell .main-panel main.class-movement-page.class-transfer-screen .class-transfer-card-mode,
+html body .app-shell .main-panel main.class-movement-page.class-promotion-page .class-movement-v6-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.class-movement-page.class-transfer-screen > .student-list-filter-card,
+    html body .app-shell .main-panel main.class-movement-page.class-transfer-screen > .class-movement-data-card,
+    html body .app-shell .main-panel main.class-movement-page.class-promotion-page > .student-list-filter-card,
+    html body .app-shell .main-panel main.class-movement-page.class-promotion-page > .class-movement-data-card {
+        width: 100% !important;
+        max-width: none !important;
+    }
+}
+
+/* Data Siswa alignment lock: header, filter, count row, and card grid share one width. */
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock {
+    box-sizing: border-box !important;
+    width: min(100%, 1404px) !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > .student-flat-header,
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > #student-data-filter,
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > .student-reference-card-count,
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > .student-reference-card-list {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > .student-flat-header {
+    padding-right: 0 !important;
+}
+
+html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
+    grid-template-columns: 160px 150px 120px minmax(220px, 300px) max-content !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > .student-reference-card-list {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 18px !important;
+    justify-content: stretch !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > .student-reference-card-list > .student-reference-card {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+@media (width <= 1180px) {
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > .student-reference-card-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock {
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > .student-reference-card-list {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+}
+
+/* TRANSAKSI BARU REFERENCE VIEW */
+html body .main-panel .payment-transaction-page.payment-flat-page {
+    --transaction-primary: #004528;
+    --transaction-primary-soft: #e6f4ea;
+    --transaction-secondary-soft: #deea95;
+    --transaction-text: #111c2c;
+    --transaction-muted: #404942;
+    --transaction-line: #d8e2ef;
+    box-sizing: border-box !important;
+    display: block !important;
+    min-height: calc(100vh - 64px) !important;
+    padding: 28px 48px 44px !important;
+    color: var(--transaction-text) !important;
+    background: #f9f9ff !important;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-page-heading,
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-transaction-workspace {
+    width: min(100%, 1120px) !important;
+    max-width: 1120px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-page-heading {
+    display: block !important;
+    margin-bottom: 18px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .student-master-heading {
+    display: grid !important;
+    gap: 2px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-responsive-breadcrumb {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 0 6px !important;
+    color: #707971 !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 16px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-responsive-breadcrumb strong {
+    color: var(--transaction-primary) !important;
+    font-weight: 700 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .student-master-heading h1 {
+    margin: 0 !important;
+    color: var(--transaction-text) !important;
+    font-family: Manrope, Inter, system-ui, sans-serif !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    line-height: 32px !important;
+    letter-spacing: 0 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .student-master-heading p {
+    margin: 0 !important;
+    color: var(--transaction-muted) !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 20px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-transaction-workspace {
+    margin-top: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-layout {
+    display: grid !important;
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr) !important;
+    gap: 18px !important;
+    align-items: start !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-main,
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-person,
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    margin: 0 !important;
+    background: rgba(255, 255, 255, .92) !important;
+    border: 1px solid var(--transaction-line) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-main {
+    display: grid !important;
+    gap: 16px !important;
+    padding: 18px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-card-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
+    color: var(--transaction-text) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 24px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-card-title > span {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    color: var(--transaction-primary) !important;
+    background: #d8e3fa !important;
+    border: 0 !important;
+    border-radius: 10px !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-search {
+    display: grid !important;
+    gap: 16px !important;
+    margin: 0 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-search label {
+    display: grid !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    color: #707971 !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 16px !important;
+    text-transform: uppercase !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-search input[type=search] {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    margin: 0 !important;
+    padding: 0 14px !important;
+    color: var(--transaction-text) !important;
+    background: #ffffff !important;
+    border: 1px solid #707971 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    line-height: 46px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-search input[type=search]:focus {
+    border-color: var(--transaction-primary) !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin: 0 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-actions .button {
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-actions .payment-one-stop-submit {
+    color: #ffffff !important;
+    background: var(--transaction-primary) !important;
+    border: 1px solid var(--transaction-primary) !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-actions .student-filter-reset {
+    color: var(--transaction-primary) !important;
+    background: #ffffff !important;
+    border: 1px solid #707971 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-student-list {
+    display: grid !important;
+    gap: 10px !important;
+    margin: 0 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-student-card {
+    display: grid !important;
+    grid-template-columns: 42px minmax(0, 1fr) max-content !important;
+    gap: 12px !important;
+    align-items: center !important;
+    min-height: 64px !important;
+    padding: 12px !important;
+    color: inherit !important;
+    background: #ffffff !important;
+    border: 1px solid var(--transaction-line) !important;
+    border-radius: 10px !important;
+    text-decoration: none !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-avatar,
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-responsive-avatar {
+    display: inline-grid !important;
+    place-items: center !important;
+    color: #ffffff !important;
+    background: var(--transaction-primary) !important;
+    border-radius: 12px !important;
+    font-weight: 700 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 16px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-student-copy strong,
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-person-head strong {
+    display: block !important;
+    color: var(--transaction-primary) !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-student-copy small,
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-person-head small {
+    display: block !important;
+    margin-top: 2px !important;
+    color: #707971 !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-unit-count,
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-responsive-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 28px !important;
+    padding: 0 12px !important;
+    color: #1b5e3c !important;
+    background: #e6f4ea !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-person {
+    overflow: hidden !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-person-head {
+    display: grid !important;
+    grid-template-columns: 56px minmax(0, 1fr) max-content !important;
+    gap: 14px !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 18px !important;
+    background: rgba(27, 94, 60, .05) !important;
+    border-bottom: 1px solid var(--transaction-line) !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-responsive-avatar {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 20px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-responsive-kicker {
+    display: block !important;
+    margin: 0 0 2px !important;
+    color: #707971 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 14px !important;
+    letter-spacing: .04em !important;
+    text-transform: uppercase !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-units {
+    display: grid !important;
+    gap: 14px !important;
+    padding: 16px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-unit-card {
+    display: grid !important;
+    gap: 14px !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid var(--transaction-line) !important;
+    border-left: 4px solid var(--transaction-primary) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-unit-meta {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-responsive-unit-mark {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    color: var(--transaction-primary) !important;
+    background: #d8e3fa !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-unit-meta strong {
+    display: block !important;
+    color: var(--transaction-text) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-unit-meta span {
+    color: #707971 !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 16px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill-section {
+    display: grid !important;
+    gap: 8px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid var(--transaction-line) !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-section-title {
+    color: #707971 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 14px !important;
+    text-transform: uppercase !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill-list {
+    display: grid !important;
+    gap: 8px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    gap: 4px 12px !important;
+    align-items: center !important;
+    min-height: 74px !important;
+    padding: 14px !important;
+    color: inherit !important;
+    background: #f0f3ff !important;
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill-top {
+    display: contents !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill-top strong {
+    grid-column: 1 !important;
+    color: var(--transaction-text) !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 24px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill-top small {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 28px !important;
+    padding: 0 12px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill-amount {
+    grid-column: 1 !important;
+    color: var(--transaction-primary) !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 28px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill-detail {
+    grid-column: 1 / -1 !important;
+    color: #707971 !important;
+    font-size: 12px !important;
+    line-height: 16px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill.is-payable small,
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill.is-optional small {
+    color: #606a23 !important;
+    background: var(--transaction-secondary-soft) !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill.is-paid small {
+    color: #1b5e3c !important;
+    background: #e6f4ea !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-empty,
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-detail {
+    display: none !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
+    display: grid !important;
+    place-items: center !important;
+    gap: 8px !important;
+    min-height: 220px !important;
+    padding: 24px !important;
+    text-align: center !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-empty-state strong {
+    color: var(--transaction-text) !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 24px !important;
+}
+
+html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-empty-state span {
+    max-width: 360px !important;
+    color: #707971 !important;
+    font-size: 14px !important;
+    line-height: 20px !important;
+}
+
+@media (width <= 1024px) {
+    html body .main-panel .payment-transaction-page.payment-flat-page {
+        padding: 24px 28px 40px !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-layout {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .main-panel .payment-transaction-page.payment-flat-page {
+        padding: 16px 14px 96px !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .payment-page-heading {
+        margin-bottom: 14px !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .student-master-heading h1 {
+        font-size: 24px !important;
+        line-height: 32px !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-main {
+        padding: 16px !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-person-head {
+        grid-template-columns: 48px minmax(0, 1fr) !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .payment-responsive-status {
+        grid-column: 2 !important;
+        justify-self: start !important;
+        margin-top: 4px !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .payment-responsive-avatar {
+        width: 48px !important;
+        height: 48px !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-student-card {
+        grid-template-columns: 40px minmax(0, 1fr) !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-unit-count {
+        grid-column: 2 !important;
+        justify-self: start !important;
+        margin-top: 4px !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .main-panel .payment-transaction-page.payment-flat-page .payment-one-stop-bill-top small {
+        grid-column: 1 !important;
+        grid-row: auto !important;
+        justify-self: start !important;
+    }
+}
+
+/* TRANSAKSI BARU SIMPLE STANDARD LOCK */
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page {
+    box-sizing: border-box !important;
+    display: grid !important;
+    gap: 18px !important;
+    align-content: start !important;
+    min-height: calc(100vh - 64px) !important;
+    padding: 28px 48px 44px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-page-heading,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-transaction-workspace {
+    box-sizing: border-box !important;
+    width: min(100%, 1120px) !important;
+    max-width: 1120px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-page-heading {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .student-master-heading {
+    display: grid !important;
+    gap: 2px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-breadcrumb {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .student-master-heading h1 {
+    margin: 0 !important;
+    color: #111c2c !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .student-master-heading p {
+    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-transaction-workspace {
+    overflow: visible !important;
+    margin-top: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-layout {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-main,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-side,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-main {
+    display: grid !important;
+    gap: 14px !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-card-title {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search {
+    display: grid !important;
+    grid-template-columns: minmax(260px, 1fr) 96px 96px !important;
+    align-items: end !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search label {
+    display: grid !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+    text-transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search label > span {
+    color: #4a5568 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+    text-transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search input[type=search] {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search input[type=search]:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .10) !important;
+    outline: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-actions {
+    display: contents !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-actions .button {
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 14px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-actions .payment-one-stop-submit {
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-actions .student-filter-reset {
+    color: #334155 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-card {
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    gap: 10px !important;
+    align-items: center !important;
+    min-height: 68px !important;
+    margin: 0 !important;
+    padding: 14px 16px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-card:hover,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-card.is-selected {
+    border-color: #004528 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-avatar {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy {
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy strong,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person-head strong {
+    display: block !important;
+    overflow: hidden !important;
+    color: #004528 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy small,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person-head small {
+    display: block !important;
+    overflow: hidden !important;
+    margin-top: 4px !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-count,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 28px !important;
+    padding: 0 12px !important;
+    color: #1b5e3c !important;
+    background: #e6f4ea !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person {
+    display: grid !important;
+    gap: 14px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    gap: 12px !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-avatar {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-profile-copy {
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-kicker {
+    display: block !important;
+    margin: 0 0 4px !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-units {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-card {
+    display: grid !important;
+    gap: 12px !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-meta {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-unit-mark {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    color: #004528 !important;
+    background: #e6f4ea !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-unit-copy {
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-meta strong {
+    display: block !important;
+    color: #111c2c !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-meta span {
+    display: block !important;
+    margin-top: 3px !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.3 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-section {
+    display: grid !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #e5e7eb !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-section-title {
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list {
+    display: grid !important;
+    gap: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    gap: 4px 12px !important;
+    align-items: center !important;
+    min-height: 64px !important;
+    padding: 12px !important;
+    color: #111c2c !important;
+    background: #f8fafc !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-top {
+    display: contents !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-top strong {
+    grid-column: 1 !important;
+    color: #111c2c !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-period {
+    display: block !important;
+    margin-top: 3px !important;
+    color: #64748b !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    line-height: 1.3 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-top small {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 28px !important;
+    padding: 0 12px !important;
+    color: #1b5e3c !important;
+    background: #e6f4ea !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-amount {
+    grid-column: 1 !important;
+    color: #004528 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-detail {
+    grid-column: 1 / -1 !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill.is-payable small,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill.is-optional small {
+    color: #604600 !important;
+    background: #fef3c7 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-empty {
+    display: block !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    color: #64748b !important;
+    background: #f8fafc !important;
+    border: 1px dashed #d1d5db !important;
+    border-radius: 10px !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-detail {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
+    display: grid !important;
+    place-items: center !important;
+    gap: 6px !important;
+    min-height: 128px !important;
+    padding: 30px 20px !important;
+    color: #64748b !important;
+    background: #ffffff !important;
+    border: 1px dashed #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+    text-align: center !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state strong {
+    color: #111c2c !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state span {
+    max-width: 420px !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+}
+
+@media (width <= 980px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-list,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-units {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page {
+        gap: 18px !important;
+        padding: 24px 20px 96px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-page-heading,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-transaction-workspace {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-layout {
+        gap: 18px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+        padding: 16px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search label {
+        grid-column: 1 / -1 !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-actions .button {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-card,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person-head,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-count,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-status,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-top small {
+        grid-column: 1 !important;
+        grid-row: auto !important;
+        justify-self: start !important;
+    }
+}
+
+/* TRANSAKSI BARU REFERENCE FINAL LOCK */
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page {
+    box-sizing: border-box !important;
+    display: grid !important;
+    align-content: start !important;
+    justify-items: center !important;
+    gap: 16px !important;
+    min-height: calc(100vh - 64px) !important;
+    padding: 24px 16px 96px !important;
+    color: #111c2c !important;
+    background: #f9f9ff !important;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-page-heading,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-transaction-workspace {
+    box-sizing: border-box !important;
+    width: min(100%, 760px) !important;
+    max-width: 760px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-page-heading {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin-bottom: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .student-master-heading {
+    display: grid !important;
+    gap: 4px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-breadcrumb {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin: 0 0 2px !important;
+    color: #404942 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 14px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-breadcrumb strong {
+    color: #004528 !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .student-master-heading h1 {
+    margin: 0 !important;
+    color: #111c2c !important;
+    font-family: Manrope, Inter, system-ui, sans-serif !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    line-height: 32px !important;
+    letter-spacing: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .student-master-heading p {
+    margin: 0 !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 20px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-transaction-workspace {
+    overflow: visible !important;
+    margin-top: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-layout {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-main,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-side,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-main {
+    display: grid !important;
+    gap: 12px !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-card-title {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 92px 92px !important;
+    align-items: end !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #bfc9c0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search label {
+    display: grid !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    color: #404942 !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 16px !important;
+    text-transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search label > span {
+    color: #404942 !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search input[type=search] {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    padding: 0 14px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #bfc9c0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    line-height: 42px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search input[type=search]:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-actions {
+    display: contents !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-actions .button {
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 92px !important;
+    min-width: 92px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    margin: 0 !important;
+    padding: 0 14px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-actions .payment-one-stop-submit {
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-actions .student-filter-reset {
+    color: #004528 !important;
+    background: #ffffff !important;
+    border: 1px solid #bfc9c0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-list {
+    display: grid !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-card {
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: 42px minmax(0, 1fr) max-content !important;
+    gap: 12px !important;
+    align-items: center !important;
+    min-height: 68px !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #bfc9c0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-avatar {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 42px !important;
+    height: 42px !important;
+    color: #ffffff !important;
+    background: #004528 !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy strong,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person-head strong {
+    display: block !important;
+    overflow: hidden !important;
+    color: #004528 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy small,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person-head small {
+    display: block !important;
+    overflow: hidden !important;
+    margin-top: 2px !important;
+    color: #404942 !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-count,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 28px !important;
+    padding: 0 12px !important;
+    color: #1b5e3c !important;
+    background: #e6f4ea !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person {
+    display: grid !important;
+    gap: 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person-head {
+    display: grid !important;
+    grid-template-columns: 56px minmax(0, 1fr) max-content !important;
+    gap: 14px !important;
+    align-items: center !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #bfc9c0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-avatar {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 56px !important;
+    height: 56px !important;
+    color: #ffffff !important;
+    background: #004528 !important;
+    border-radius: 12px !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-kicker {
+    display: block !important;
+    margin: 0 0 4px !important;
+    color: #404942 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 14px !important;
+    letter-spacing: .04em !important;
+    text-transform: uppercase !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-units {
+    display: grid !important;
+    gap: 16px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-card {
+    display: grid !important;
+    gap: 12px !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #bfc9c0 !important;
+    border-left: 4px solid #004528 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-meta {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-unit-mark {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    color: #004528 !important;
+    background: #d8e3fa !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-meta strong {
+    display: block !important;
+    color: #111c2c !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-meta span {
+    display: block !important;
+    margin-top: 2px !important;
+    color: #404942 !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-section {
+    display: grid !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #bfc9c0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-section-title {
+    color: #404942 !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 14px !important;
+    text-transform: uppercase !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list {
+    display: grid !important;
+    gap: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    gap: 4px 12px !important;
+    align-items: center !important;
+    min-height: 74px !important;
+    padding: 14px !important;
+    color: #111c2c !important;
+    background: #f0f3ff !important;
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-top {
+    display: contents !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-top strong {
+    grid-column: 1 !important;
+    color: #111c2c !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 24px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-period,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-detail {
+    grid-column: 1 / -1 !important;
+    display: block !important;
+    margin-top: 2px !important;
+    color: #404942 !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    line-height: 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-top small {
+    grid-column: 2 !important;
+    grid-row: 1 / span 2 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 28px !important;
+    padding: 0 12px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-amount {
+    grid-column: 1 !important;
+    color: #004528 !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 28px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill.is-payable small,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill.is-optional small {
+    color: #606a23 !important;
+    background: #deea95 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill.is-paid small {
+    color: #1b5e3c !important;
+    background: #e6f4ea !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-empty {
+    display: block !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    color: #404942 !important;
+    background: #f0f3ff !important;
+    border: 1px dashed #bfc9c0 !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    line-height: 20px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-detail {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
+    display: grid !important;
+    place-items: center !important;
+    gap: 8px !important;
+    min-height: 180px !important;
+    padding: 24px !important;
+    color: #404942 !important;
+    background: #ffffff !important;
+    border: 1px dashed #bfc9c0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
+    text-align: center !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state strong {
+    color: #111c2c !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 24px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state span {
+    max-width: 360px !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    line-height: 20px !important;
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page {
+        padding: 16px 14px 96px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-page-heading,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-transaction-workspace {
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-search label {
+        grid-column: 1 / -1 !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-actions .button {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-person-head {
+        grid-template-columns: 48px minmax(0, 1fr) !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-avatar {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 18px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-responsive-status,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-unit-count,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-top small {
+        grid-column: 1 !important;
+        grid-row: auto !important;
+        justify-self: start !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-student-card {
+        grid-template-columns: 42px minmax(0, 1fr) !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill {
+        grid-template-columns: 1fr !important;
     }
 }

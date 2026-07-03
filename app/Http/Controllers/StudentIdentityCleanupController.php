@@ -22,12 +22,16 @@ class StudentIdentityCleanupController extends Controller
 
         $students = $this->studentsForCleanup();
         $candidates = $this->duplicateCandidates($students, $filters);
+        $linkedGroups = $this->linkedIdentityGroups($students, $filters);
 
         return view('student-management.identity-cleanup', [
             ...$this->sharedViewData(),
-            'candidates' => $this->paginateCandidates($candidates, $request, $filters['per_page']),
+            'candidates' => $this->paginateCandidates(
+                $this->identityRows($candidates, $linkedGroups),
+                $request,
+                $filters['per_page']
+            ),
             'filters' => $filters,
-            'linkedGroups' => $this->linkedIdentityGroups($students, $filters),
         ]);
     }
 
@@ -159,7 +163,6 @@ class StudentIdentityCleanupController extends Controller
             'unit_id' => $request->query('unit_id'),
             'class_id' => $request->query('class_id'),
             'year_id' => $request->query('year_id'),
-            'status' => $request->query('status', 'active'),
             'search' => trim((string) $request->query('search', '')),
             'per_page' => (string) $request->query('per_page', '10'),
         ];
@@ -169,6 +172,7 @@ class StudentIdentityCleanupController extends Controller
     {
         return Student::query()
             ->with(['schoolClass.educationUnit', 'academicYear'])
+            ->where('is_active', true)
             ->orderBy('name')
             ->orderBy('nis')
             ->get();
@@ -249,6 +253,14 @@ class StudentIdentityCleanupController extends Controller
             ->values();
     }
 
+    private function identityRows(Collection $candidates, Collection $linkedGroups): Collection
+    {
+        return $candidates
+            ->map(fn (array $candidate) => [...$candidate, 'row_type' => 'candidate'])
+            ->concat($linkedGroups->map(fn (array $group) => [...$group, 'row_type' => 'linked']))
+            ->values();
+    }
+
     private function candidateMatchesSearch(array $candidate, string $needle): bool
     {
         $haystack = collect([
@@ -286,14 +298,6 @@ class StudentIdentityCleanupController extends Controller
                 return false;
             }
 
-            if (($filters['status'] ?? 'active') === 'active' && ! $student->is_active) {
-                return false;
-            }
-
-            if (($filters['status'] ?? 'active') === 'inactive' && $student->is_active) {
-                return false;
-            }
-
             return true;
         });
     }
@@ -310,7 +314,7 @@ class StudentIdentityCleanupController extends Controller
             $page,
             [
                 'path' => $request->url(),
-                'query' => $request->query(),
+                'query' => $request->except('status'),
             ],
         );
     }
