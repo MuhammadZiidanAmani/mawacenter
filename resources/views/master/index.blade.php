@@ -837,7 +837,7 @@
                                         <div class="student-reference-card-meta">
                                             <span>{!! $icon('card') !!}<b>{{ $row->nis ?: '-' }}</b></span>
                                             <span>{!! $icon('school') !!}<b>{{ $row->schoolClass?->educationUnit?->code ?? '-' }}</b></span>
-                                            <span>{!! $icon('users') !!}<b>Kelas {{ $row->schoolClass?->name ?? '-' }}</b></span>
+                                            <span>{!! $icon('users') !!}<b>{{ $row->schoolClass?->name ?? '-' }}</b></span>
                                             <span>{!! $icon('info') !!}<b>{{ $row->gender === 'L' ? 'Laki-Laki' : 'Perempuan' }}</b></span>
                                         </div>
                                     </div>

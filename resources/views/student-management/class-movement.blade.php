@@ -15,6 +15,8 @@
         'search' => '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
         'switch' => '<path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4-4m-4 4 4 4"/>',
         'arrow-up' => '<path d="M12 19V5m0 0-5 5m5-5 5 5"/>',
+        'filter' => '<path d="M4 5h16l-6 7v5l-4 2v-7Z"/>',
+        'chevron' => '<path d="m6 9 6 6 6-6"/>',
     ];
     $icon = fn ($name, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$icons[$name].'</svg>';
     $isPromotion = $mode === 'promotion';
@@ -75,7 +77,7 @@
                     @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}">@endif
                     @if(request('direction'))<input type="hidden" name="direction" value="{{ request('direction') }}">@endif
                     <div class="student-filter-actions">
-                        <button class="button student-search-button">Cari</button>
+                        <button class="button student-search-button">{{ $isPromotion ? 'Tampilkan Siswa' : 'Cari' }}</button>
                         <a href="{{ $isPromotion ? route('student-management.class-promotion.index') : route('student-management.class-transfer.index') }}" class="button student-filter-reset">Reset</a>
                     </div>
                 </form>
@@ -90,96 +92,130 @@
                 @if(request('direction'))<input type="hidden" name="direction" value="{{ request('direction') }}">@endif
             </form>
 
-            <form method="POST" action="{{ $actionRoute }}" class="card master-card student-data-card student-list-table-card class-movement-card class-movement-v6-card" data-class-movement-form data-class-movement-action-label="{{ $isPromotion ? 'naikkan kelas' : 'pindahkan kelas' }}">
+            <form method="POST" action="{{ $actionRoute }}" class="card master-card student-data-card student-list-table-card class-movement-card class-movement-v6-card {{ $isPromotion ? '' : 'class-transfer-card-mode' }}" data-class-movement-form data-class-movement-action-label="{{ $isPromotion ? 'naikkan kelas' : 'pindahkan kelas' }}">
                 @csrf
                 <input type="hidden" name="source_year_id" value="{{ $filters['year_id'] }}">
                 <input type="hidden" name="unit_id" value="{{ $filters['unit_id'] }}">
                 <input type="hidden" name="class_id" value="{{ $filters['class_id'] }}">
                 <input type="hidden" name="status" value="{{ $filters['status'] ?? 'active' }}">
 
-                <div class="student-table-toolbar class-movement-table-toolbar">
-                    <div class="student-table-length">
-                        <label>Show
-                            <select name="per_page" form="classMovementQueryForm" onchange="this.form.submit()">
-                                @foreach([10, 25, 50, 100, 500] as $size)<option value="{{ $size }}" @selected(($filters['per_page'] ?? '10') == (string) $size)>{{ $size }}</option>@endforeach
-                                <option value="all" @selected(($filters['per_page'] ?? '10') === 'all')>All</option>
-                            </select>
-                            entries
-                        </label>
-                    </div>
-                    <div class="student-table-search">
-                        <label>Search: <input name="search" form="classMovementQueryForm" value="{{ $filters['search'] }}" aria-label="Cari siswa berdasarkan nama, NIS, unit, kelas, atau tahun pelajaran"></label>
-                    </div>
+                @if (! $isPromotion)
+                <div class="class-transfer-list-head">
+                    <strong>Daftar Siswa</strong>
+                    <label class="class-transfer-check-all">
+                        <span>Pilih Semua</span>
+                        <input type="checkbox" aria-label="Pilih semua siswa" data-class-movement-check-all>
+                    </label>
                 </div>
 
-                <div class="class-movement-target">
-                    <label class="class-movement-selected-field">Siswa Dipilih
-                        <output data-class-movement-count aria-live="polite">0</output>
-                    </label>
-                    @if ($isPromotion)
-                        <label>Tahun Pelajaran
-                            <select name="target_year_id" required>
-                                @foreach ($academicYears as $year)
-                                    <option value="{{ $year->id }}" @selected(old('target_year_id', $targetYearId) == $year->id)>{{ $year->name }}</option>
-                                @endforeach
-                            </select>
+                <div class="class-transfer-local-search">
+                    {!! $icon('search') !!}
+                    <input type="search" placeholder="Cari siswa..." value="{{ $filters['search'] }}" data-class-movement-search aria-label="Cari siswa berdasarkan nama, NIS, unit, kelas, atau tahun pelajaran">
+                </div>
+
+                <div class="class-transfer-student-list">
+                    @forelse ($students as $student)
+                        <label class="class-transfer-student-card" data-class-movement-row data-search="{{ strtolower(implode(' ', [$student->nis, $student->name, $student->schoolClass?->educationUnit?->code ?? '-', $student->schoolClass?->name ?? '-', $student->academicYear?->name ?? '-'])) }}">
+                            <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" data-class-movement-student>
+                            <span class="class-transfer-student-main">
+                                <strong>{{ $student->name }}</strong>
+                                <span class="class-transfer-student-meta">
+                                    <span><small>Unit</small><b>{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</b></span>
+                                    <span><small>Kelas Saat Ini</small><b>{{ $student->schoolClass?->name ?? '-' }}</b></span>
+                                </span>
+                            </span>
+                            <span class="class-transfer-nis">NIS: {{ $student->nis }}</span>
                         </label>
-                    @else
-                        <input type="hidden" name="target_year_id" value="{{ $filters['year_id'] }}">
+                    @empty
+                        <div class="empty-state class-transfer-empty" data-class-movement-empty><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></div>
+                    @endforelse
+                    @if($students->isNotEmpty())
+                        <div class="empty-state class-transfer-empty" data-class-movement-empty hidden><strong>Tidak ada siswa</strong><span>Sesuaikan pencarian di daftar siswa.</span></div>
                     @endif
+                </div>
+
+                @if(method_exists($students, 'links'))
+                    <div class="pagination-wrap class-transfer-pagination">{{ $students->links() }}</div>
+                @endif
+
+                <div class="class-transfer-action-panel">
                     <label>Kelas Tujuan
                         <select name="target_class_id" required data-class-movement-target>
-                            <option value="">Pilih kelas tujuan</option>
+                            <option value="">Pilih kelas tujuan...</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" @selected(old('target_class_id') == $class->id)>{{ $class->educationUnit?->code }} - {{ $class->name }}</option>
                             @endforeach
                         </select>
                     </label>
-                    <button class="button button-primary class-movement-submit" data-class-movement-submit disabled>{!! $isPromotion ? $icon('arrow-up') : $icon('switch') !!} {{ $isPromotion ? 'Naikkan Kelas' : 'Pindahkan Kelas' }}</button>
+                    <div class="class-transfer-selected-count">
+                        <span>Terpilih</span>
+                        <output data-class-movement-count aria-live="polite">0</output>
+                    </div>
+                    <input type="hidden" name="target_year_id" value="{{ $filters['year_id'] }}">
+                    <button class="button button-primary class-movement-submit" data-class-movement-submit disabled>{!! $icon('switch') !!} Proses Pindah Kelas</button>
+                </div>
+                @else
+                <div class="class-promotion-list-head">
+                    <strong>Daftar Siswa</strong>
+                    <label class="class-promotion-check-all">
+                        <span>Pilih Semua</span>
+                        <input type="checkbox" aria-label="Pilih semua siswa" data-class-movement-check-all>
+                    </label>
                 </div>
 
-                <div class="table-wrap">
-                    <table class="data-table student-flat-table class-movement-table class-movement-v6-table" style="table-layout:fixed;width:100%;min-width:0;border-collapse:collapse;border-spacing:0;">
-                        <colgroup>
-                            <col class="class-movement-col-check" style="width:44px !important">
-                            <col class="class-movement-col-no" style="width:39px !important">
-                            <col class="class-movement-col-nis" style="width:90px !important">
-                            <col class="class-movement-col-name">
-                            <col class="class-movement-col-unit" style="width:110px !important">
-                            <col class="class-movement-col-class" style="width:160px !important">
-                            <col class="class-movement-col-year" style="width:116px !important">
-                        </colgroup>
-                        <thead><tr>
-                            <th class="cm-check-cell" style="font-size:14px!important;font-weight:600!important;line-height:1.25!important;text-align:center!important;text-transform:none!important;"><input type="checkbox" aria-label="Pilih semua siswa" data-class-movement-check-all></th>
-                            <th class="cm-no-cell" style="font-size:14px!important;font-weight:600!important;line-height:1.25!important;text-align:center!important;text-transform:none!important;">No</th>
-                            <th class="cm-nis-cell" style="font-size:14px!important;font-weight:600!important;line-height:1.25!important;text-align:center!important;text-transform:none!important;">@include('partials.class-movement-sort-heading', ['column' => 'nis', 'label' => 'NIS'])</th>
-                            <th class="cm-name-cell" style="font-size:14px!important;font-weight:600!important;line-height:1.25!important;text-align:center!important;text-transform:none!important;">@include('partials.class-movement-sort-heading', ['column' => 'name', 'label' => 'Nama'])</th>
-                            <th class="cm-unit-cell" style="font-size:14px!important;font-weight:600!important;line-height:1.25!important;text-align:center!important;text-transform:none!important;">@include('partials.class-movement-sort-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th>
-                            <th class="cm-class-cell" style="font-size:14px!important;font-weight:600!important;line-height:1.25!important;text-align:center!important;text-transform:none!important;">@include('partials.class-movement-sort-heading', ['column' => 'class', 'label' => 'Kelas'])</th>
-                            <th class="cm-year-cell" style="font-size:14px!important;font-weight:600!important;line-height:1.25!important;text-align:center!important;text-transform:none!important;">@include('partials.class-movement-sort-heading', ['column' => 'year', 'label' => 'Tahun Pelajaran'])</th>
-                        </tr></thead>
-                        <tbody>
-                            @forelse ($students as $student)
-                                <tr data-class-movement-row data-search="{{ strtolower(implode(' ', [$student->nis, $student->name, $student->schoolClass?->educationUnit?->code ?? '-', $student->schoolClass?->name ?? '-', $student->academicYear?->name ?? '-'])) }}">
-                                    <td class="cm-check-cell"><input type="checkbox" name="student_ids[]" value="{{ $student->id }}" data-class-movement-student></td>
-                                    <td class="cm-no-cell">{{ method_exists($students, 'firstItem') ? $students->firstItem() + $loop->index : $loop->iteration }}</td>
-                                    <td class="cm-nis-cell">{{ $student->nis }}</td>
-                                    <td class="cm-name-cell" style="text-align:left !important;white-space:normal !important;overflow-wrap:anywhere !important;"><strong>{{ $student->name }}</strong></td>
-                                    <td class="cm-unit-cell">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</td>
-                                    <td class="cm-class-cell">{{ $student->schoolClass?->name ?? '-' }}</td>
-                                    <td class="cm-year-cell">{{ $student->academicYear?->name ?? '-' }}</td>
-                                </tr>
-                            @empty
-                                <tr data-class-movement-empty><td colspan="7"><div class="empty-state"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></div></td></tr>
-                            @endforelse
-                            @if($students->isNotEmpty())
-                                <tr data-class-movement-empty hidden><td colspan="7"><div class="empty-state"><strong>Tidak ada siswa</strong><span>Sesuaikan pencarian di canvas tabel.</span></div></td></tr>
-                            @endif
-                        </tbody>
-                    </table>
+                <div class="class-promotion-local-search">
+                    {!! $icon('search') !!}
+                    <input type="search" placeholder="Cari siswa..." value="{{ $filters['search'] }}" data-class-movement-search aria-label="Cari siswa berdasarkan nama, NIS, unit, kelas, atau tahun pelajaran">
                 </div>
+
+                <div class="class-promotion-student-list">
+                    @forelse ($students as $student)
+                        <label class="class-promotion-student-card" data-class-movement-row data-search="{{ strtolower(implode(' ', [$student->nis, $student->name, $student->schoolClass?->educationUnit?->code ?? '-', $student->schoolClass?->name ?? '-', $student->academicYear?->name ?? '-'])) }}">
+                            <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" data-class-movement-student>
+                            <span class="class-promotion-student-main">
+                                <strong>{{ $student->name }}</strong>
+                                <span class="class-promotion-student-meta">
+                                    <span><small>Unit</small><b>{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</b></span>
+                                    <span><small>Kelas Saat Ini</small><b>{{ $student->schoolClass?->name ?? '-' }}</b></span>
+                                    <span><small>Tahun Pelajaran</small><b>{{ $student->academicYear?->name ?? '-' }}</b></span>
+                                </span>
+                            </span>
+                            <span class="class-promotion-nis">NIS: {{ $student->nis }}</span>
+                        </label>
+                    @empty
+                        <div class="empty-state class-promotion-empty" data-class-movement-empty><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></div>
+                    @endforelse
+                    @if($students->isNotEmpty())
+                        <div class="empty-state class-promotion-empty" data-class-movement-empty hidden><strong>Tidak ada siswa</strong><span>Sesuaikan pencarian di daftar siswa.</span></div>
+                    @endif
+                </div>
+
                 @if(method_exists($students, 'links'))
-                    <div class="pagination-wrap">{{ $students->links() }}</div>
+                    <div class="pagination-wrap class-promotion-pagination">{{ $students->links() }}</div>
+                @endif
+
+                <div class="class-promotion-action-panel">
+                    <label>Tahun Pelajaran Tujuan
+                        <select name="target_year_id" required>
+                            @foreach ($academicYears as $year)
+                                <option value="{{ $year->id }}" @selected(old('target_year_id', $targetYearId) == $year->id)>{{ $year->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label>Kelas Tujuan
+                        <select name="target_class_id" required data-class-movement-target>
+                            <option value="">Pilih kelas tujuan...</option>
+                            @foreach ($classes as $class)
+                                <option value="{{ $class->id }}" @selected(old('target_class_id') == $class->id)>{{ $class->educationUnit?->code }} - {{ $class->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <div class="class-promotion-selected-count">
+                        <span>Terpilih</span>
+                        <output data-class-movement-count aria-live="polite">0</output>
+                    </div>
+                    <button class="button button-primary class-movement-submit" data-class-movement-submit disabled>{!! $icon('arrow-up') !!} Proses Naik Kelas</button>
+                </div>
                 @endif
             </form>
         </main>

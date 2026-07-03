@@ -15,8 +15,16 @@
         'check' => '<path d="m20 6-11 11-5-5"/>',
         'merge' => '<path d="M8 7h8m0 0-3-3m3 3-3 3M8 17h8m-8 0 3-3m-3 3 3 3M4 7h2m12 0h2M4 17h2m12 0h2"/>',
         'split' => '<path d="M6 4v6a4 4 0 0 0 4 4h1m7 6v-6a4 4 0 0 0-4-4h-1m-2 4 3-3-3-3m2 12-3-3 3-3"/>',
+        'search' => '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
+        'filter' => '<path d="M4 6h16M7 12h10M10 18h4"/>',
+        'sort' => '<path d="M7 4v16m0 0-3-3m3 3 3-3M17 20V4m0 0-3 3m3-3 3 3"/>',
+        'chevron' => '<path d="m6 9 6 6 6-6"/>',
     ];
     $icon = fn ($name, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$icons[$name].'</svg>';
+    $hasActiveIdentityFilters = filled($filters['unit_id'] ?? null)
+        || filled($filters['class_id'] ?? null)
+        || filled($filters['year_id'] ?? null)
+        || ($filters['status'] ?? 'active') !== 'active';
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', [
@@ -63,9 +71,32 @@
                 </div>
             </section>
 
-            <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="student-filter-panel identity-cleanup-filter">
+            <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="identity-cleanup-search-form">
+                @if ($filters['per_page'] !== '10')
+                    <input type="hidden" name="per_page" value="{{ $filters['per_page'] }}">
+                @endif
+                @foreach (['unit_id', 'class_id', 'year_id', 'status'] as $filterKey)
+                    @if (filled($filters[$filterKey] ?? null))
+                        <input type="hidden" name="{{ $filterKey }}" value="{{ $filters[$filterKey] }}">
+                    @endif
+                @endforeach
+                <label>
+                    {!! $icon('search') !!}
+                    <input name="search" value="{{ $filters['search'] }}" placeholder="Cari nama siswa..." aria-label="Cari kandidat identitas">
+                </label>
+            </form>
+
+            <details class="identity-filter-disclosure" @if($hasActiveIdentityFilters) open @endif>
+                <summary>
+                    <span>{!! $icon('filter') !!} Filter Data</span>
+                    {!! $icon('chevron', 'identity-filter-chevron') !!}
+                </summary>
+                <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="student-filter-panel identity-cleanup-filter">
                 @if ($filters['search'] !== '')
                     <input type="hidden" name="search" value="{{ $filters['search'] }}">
+                @endif
+                @if ($filters['per_page'] !== '10')
+                    <input type="hidden" name="per_page" value="{{ $filters['per_page'] }}">
                 @endif
                 <label>
                     <span>Unit Pendidikan</span>
@@ -103,120 +134,64 @@
                     </select>
                 </label>
                 <div class="student-filter-actions">
-                    <button class="button student-search-button" type="submit">Cari</button>
+                    <button class="button student-search-button" type="submit">Terapkan</button>
                     <a href="{{ route('student-management.identity-cleanup.index') }}" class="button student-filter-reset">Reset</a>
                 </div>
-            </form>
+                </form>
+            </details>
 
-            <section class="card master-card student-data-card student-list-table-card identity-cleanup-canvas">
-                <div class="student-table-toolbar identity-cleanup-toolbar">
-                    <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="student-table-length">
-                        @if ($filters['search'] !== '')
-                            <input type="hidden" name="search" value="{{ $filters['search'] }}">
-                        @endif
-                        @foreach (['unit_id', 'class_id', 'year_id', 'status'] as $filterKey)
-                            @if (filled($filters[$filterKey] ?? null))
-                                <input type="hidden" name="{{ $filterKey }}" value="{{ $filters[$filterKey] }}">
-                            @endif
-                        @endforeach
-                        <label>
-                            <span>Show</span>
-                            <select name="per_page" onchange="this.form.submit()">
-                                @foreach ([10, 25, 50, 100] as $size)
-                                    <option value="{{ $size }}" @selected((string) $filters['per_page'] === (string) $size)>{{ $size }}</option>
-                                @endforeach
-                                <option value="all" @selected($filters['per_page'] === 'all')>All</option>
-                            </select>
-                            <span>entries</span>
-                        </label>
-                    </form>
-                    <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="student-table-search">
-                        @if ($filters['per_page'] !== '10')
-                            <input type="hidden" name="per_page" value="{{ $filters['per_page'] }}">
-                        @endif
-                        @foreach (['unit_id', 'class_id', 'year_id', 'status'] as $filterKey)
-                            @if (filled($filters[$filterKey] ?? null))
-                                <input type="hidden" name="{{ $filterKey }}" value="{{ $filters[$filterKey] }}">
-                            @endif
-                        @endforeach
-                        <label>
-                            <span>Search:</span>
-                            <input name="search" value="{{ $filters['search'] }}" aria-label="Cari kandidat identitas">
-                        </label>
-                    </form>
+            <section class="identity-cleanup-canvas">
+                @php
+                    $hasRows = $candidates->count() > 0 || $linkedGroups->isNotEmpty();
+                    $shownRows = $candidates->count() + $linkedGroups->count();
+                @endphp
+                <div class="identity-cleanup-list-head">
+                    <span>Menampilkan {{ number_format($shownRows, 0, ',', '.') }} siswa</span>
+                    <span class="identity-sort-label">Sortir {!! $icon('sort') !!}</span>
                 </div>
 
-                <div class="table-wrap identity-cleanup-table-wrap">
-                    <table class="data-table student-flat-table identity-cleanup-table">
-                        <colgroup>
-                            <col class="identity-col-no" style="width: 40px;">
-                            <col class="identity-col-name">
-                            <col class="identity-col-reason">
-                            <col class="identity-col-action">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>Nama</th>
-                                <th>Alasan</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <div class="identity-cleanup-card-list">
+                    @if ($hasRows)
+                        @foreach ($candidates as $candidate)
                             @php
-                                $hasRows = $candidates->count() > 0 || $linkedGroups->isNotEmpty();
+                                $rowNumber = $candidates->firstItem() + $loop->index;
+                                $detailUrl = route('student-management.identity-cleanup.show', [
+                                    'candidateKey' => $candidate['key'],
+                                    ...request()->query(),
+                                ]);
                             @endphp
-                            @if ($hasRows)
-                            @foreach ($candidates as $candidate)
-                                @php
-                                    $rowNumber = $candidates->firstItem() + $loop->index;
-                                    $detailUrl = route('student-management.identity-cleanup.show', [
-                                        'candidateKey' => $candidate['key'],
-                                        ...request()->query(),
-                                    ]);
-                                @endphp
-                                <tr>
-                                    <td class="identity-cell-center">{{ $rowNumber }}</td>
-                                    <td class="identity-cell-main">
-                                        {{ $candidate['name'] }}
-                                    </td>
-                                    <td class="identity-cell-center">{{ $candidate['reason'] }}</td>
-                                    <td class="identity-cell-center identity-action-cell">
-                                        <a class="button student-add-button identity-merge-button identity-icon-action" href="{{ $detailUrl }}" aria-label="Gabung" title="Gabung">{!! $icon('merge') !!}</a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            @foreach ($linkedGroups as $group)
-                                @php
-                                    $rowNumber = ($candidates->firstItem() ?? 1) + $candidates->count() + $loop->index;
-                                @endphp
-                                <tr>
-                                    <td class="identity-cell-center">{{ $rowNumber }}</td>
-                                    <td class="identity-cell-main">
-                                        {{ $group['name'] }}
-                                    </td>
-                                    <td class="identity-cell-center">{{ $group['reason'] }}</td>
-                                    <td class="identity-cell-center identity-action-cell">
-                                        <form method="POST" action="{{ route('student-management.identity-cleanup.split') }}" class="identity-inline-action">
-                                            @csrf
-                                            <input type="hidden" name="identity_root_id" value="{{ $group['identity_root_id'] }}">
-                                            <button class="button student-filter-reset identity-split-button identity-icon-action" type="submit" aria-label="Pisah" title="Pisah" onclick="return confirm('Pisahkan data identitas ini?')">{!! $icon('split') !!}</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                            @else
-                                <tr>
-                                    <td colspan="4">
-                                        <div class="empty-state identity-empty-state">
-                                            <strong>Belum ada kandidat duplikat</strong>
-                                            <span>Sistem belum menemukan nama, NISN, tanggal lahir, atau data orang tua yang perlu digabung.</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endif
-                        </tbody>
-                    </table>
+                            <article class="identity-cleanup-card">
+                                <span class="identity-card-number">{{ $rowNumber }}</span>
+                                <div class="identity-card-body">
+                                    <strong>{{ $candidate['name'] }}</strong>
+                                    <span><i></i>{{ $candidate['reason'] }}</span>
+                                </div>
+                                <a class="identity-card-action identity-card-merge" href="{{ $detailUrl }}" aria-label="Gabung" title="Gabung">{!! $icon('merge') !!}</a>
+                            </article>
+                        @endforeach
+                        @foreach ($linkedGroups as $group)
+                            @php
+                                $rowNumber = ($candidates->firstItem() ?? 1) + $candidates->count() + $loop->index;
+                            @endphp
+                            <article class="identity-cleanup-card identity-card-linked">
+                                <span class="identity-card-number">{{ $rowNumber }}</span>
+                                <div class="identity-card-body">
+                                    <strong>{{ $group['name'] }}</strong>
+                                    <span><i></i>{{ $group['reason'] }}</span>
+                                </div>
+                                <form method="POST" action="{{ route('student-management.identity-cleanup.split') }}" class="identity-inline-action">
+                                    @csrf
+                                    <input type="hidden" name="identity_root_id" value="{{ $group['identity_root_id'] }}">
+                                    <button class="identity-card-action identity-card-split" type="submit" aria-label="Pisah" title="Pisah" onclick="return confirm('Pisahkan data identitas ini?')">{!! $icon('split') !!}</button>
+                                </form>
+                            </article>
+                        @endforeach
+                    @else
+                        <div class="empty-state identity-empty-state">
+                            <strong>Belum ada kandidat duplikat</strong>
+                            <span>Sistem belum menemukan nama, NISN, tanggal lahir, atau data orang tua yang perlu digabung.</span>
+                        </div>
+                    @endif
                 </div>
                 <div class="pagination-wrap">{{ $candidates->links() }}</div>
             </section>
