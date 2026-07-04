@@ -295,7 +295,8 @@ class SppPaymentController extends Controller
     {
         $payments->updateMetadata($sppPayment, $request->validated());
 
-        return redirect()->route('finance.spp.index')->with('success', 'Transaksi pembayaran SPP berhasil diperbarui.');
+        return $this->redirectAfterMutation($request, route('finance.spp.index'))
+            ->with('success', 'Transaksi pembayaran SPP berhasil diperbarui.');
     }
 
     public function correct(CorrectSppPaymentRequest $request, SppPayment $sppPayment, SppPaymentService $payments): RedirectResponse
@@ -305,11 +306,23 @@ class SppPaymentController extends Controller
         return redirect()->route('finance.spp.index')->with('success', 'Koreksi nominal pembayaran berhasil disimpan dan tercatat dalam histori.');
     }
 
-    public function destroy(SppPayment $sppPayment, SppPaymentService $payments): RedirectResponse
+    public function destroy(Request $request, SppPayment $sppPayment, SppPaymentService $payments): RedirectResponse
     {
         $payments->delete($sppPayment);
 
-        return redirect()->route('finance.spp.index')->with('success', 'Transaksi pembayaran SPP berhasil dihapus.');
+        return $this->redirectAfterMutation($request, route('finance.spp.index'))
+            ->with('success', 'Transaksi pembayaran SPP berhasil dihapus.');
+    }
+
+    private function redirectAfterMutation(Request $request, string $fallbackUrl): RedirectResponse
+    {
+        $returnUrl = trim($request->string('return_url')->value());
+
+        if ($returnUrl !== '' && (str_starts_with($returnUrl, url('/')) || str_starts_with($returnUrl, '/'))) {
+            return redirect()->to($returnUrl);
+        }
+
+        return redirect()->to($fallbackUrl);
     }
 
     private function receiptNumber(SppPayment $payment): string

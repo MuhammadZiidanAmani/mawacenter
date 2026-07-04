@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#2e5119">
+    <meta name="theme-color" content="#157144">
     <title>Masuk - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -19,11 +19,6 @@
             </div>
             <h1>MA'WA <span>CENTER</span></h1>
             <p>Sistem Manajemen Keuangan</p>
-        </div>
-
-        <div class="login-form-heading">
-            <h2>Selamat Datang</h2>
-            <p>Silakan masuk akun petugas yang telah terdaftar.</p>
         </div>
 
         @if (session('status'))
@@ -48,21 +43,16 @@
                     {!! $icon('<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>') !!}
                     <input type="password" name="password" placeholder="Masukkan kata sandi" autocomplete="current-password" data-password required>
                     <button type="button" class="password-toggle" data-password-toggle aria-label="Tampilkan kata sandi" title="Tampilkan kata sandi">
-                        {!! $icon('<path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 5.2A11.8 11.8 0 0 1 12 5c6.5 0 10 7 10 7a16 16 0 0 1-2.1 3.2M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.8-.8"/>') !!}
+                        {!! $icon('<path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 5.2A11.8 11.8 0 0 1 12 5c6.5 0 10 7 10 7a16 16 0 0 1-2.1 3.2M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.8-.8"/>', 'password-icon-hidden') !!}
+                        {!! $icon('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>', 'password-icon-visible') !!}
                     </button>
                 </span>
-            </label>
-            <label class="login-remember">
-                <input type="checkbox" name="remember" value="1">
-                <span>Ingat saya di perangkat ini</span>
             </label>
             <button type="submit" class="login-submit">
                 <span>Masuk</span>
                 {!! $icon('<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5m5 5H3"/>') !!}
             </button>
         </form>
-
-        <p class="login-help">Mengalami kendala akses? <strong>Hubungi Admin</strong></p>
     </section>
 </main>
 </body>

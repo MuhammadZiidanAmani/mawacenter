@@ -89,6 +89,92 @@ document.querySelectorAll('form').forEach((form) => form.addEventListener('submi
     });
 }));
 
+document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
+    const formatter = new Intl.NumberFormat('id-ID');
+    const bills = Array.from(form.querySelectorAll('[data-payment-bill]'));
+    const totalOutput = form.querySelector('[data-payment-total]');
+    const paidInput = form.querySelector('[data-payment-paid-display]');
+    const submitButton = form.querySelector('[data-payment-submit]');
+    const method = form.querySelector('[data-payment-method]');
+    const transferPanel = form.querySelector('[data-payment-transfer-panel]');
+    const transferUpload = form.querySelector('[data-payment-transfer-upload]');
+    const transferFile = form.querySelector('[data-payment-transfer-file]');
+    const uploadName = form.querySelector('[data-payment-upload-name]');
+    let paidTouched = false;
+
+    const selectedTotal = () => bills
+        .filter((bill) => bill.checked)
+        .reduce((total, bill) => total + Number(bill.dataset.amount || 0), 0);
+
+    const renderTotal = (syncPaid = false) => {
+        const total = selectedTotal();
+        if (totalOutput) totalOutput.textContent = `${formatter.format(total)},-`;
+        if (submitButton) submitButton.disabled = total < 1;
+        if (paidInput && syncPaid && (!paidTouched || Number(digitsOnly(paidInput.value)) > total)) {
+            paidInput.value = total > 0 ? formatter.format(total) : '';
+            paidTouched = false;
+        }
+    };
+
+    const renderTransferFields = () => {
+        const isTransfer = method?.value === 'Transfer';
+        if (transferPanel) transferPanel.hidden = !isTransfer;
+        if (transferUpload) transferUpload.hidden = !isTransfer;
+    };
+
+    bills.forEach((bill) => {
+        bill.addEventListener('change', () => renderTotal(true));
+    });
+
+    paidInput?.addEventListener('input', () => {
+        paidTouched = true;
+    });
+
+    method?.addEventListener('change', renderTransferFields);
+
+    transferFile?.addEventListener('change', () => {
+        if (uploadName) uploadName.textContent = transferFile.files?.[0]?.name || 'Pilih file bukti transfer';
+    });
+
+    form.querySelector('[data-payment-copy-account]')?.addEventListener('click', async (event) => {
+        const button = event.currentTarget;
+        const number = button.dataset.accountNumber || '';
+        if (!number) return;
+        try {
+            await navigator.clipboard.writeText(number);
+            const label = button.querySelector('span');
+            const original = label?.textContent || 'Salin Rekening';
+            if (label) label.textContent = 'Tersalin';
+            window.setTimeout(() => {
+                if (label) label.textContent = original;
+            }, 1400);
+        } catch {
+            window.prompt('Salin nomor rekening:', number);
+        }
+    });
+
+    renderTransferFields();
+    renderTotal(false);
+});
+
+document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
+    const source = launcher.querySelector('[data-receipt-urls]');
+    let urls = [];
+    try {
+        urls = JSON.parse(source?.textContent || '[]');
+    } catch {
+        urls = [];
+    }
+    const openReceipts = () => {
+        urls.forEach((url) => {
+            window.open(url, '_blank', 'noopener');
+        });
+    };
+
+    launcher.querySelector('[data-open-receipts]')?.addEventListener('click', openReceipts);
+    if (urls.length) openReceipts();
+});
+
 document.querySelector('[data-spp-import-file]')?.addEventListener('change', (event) => {
     const file = event.target.files?.[0];
     const label = document.querySelector('[data-spp-import-filename]');

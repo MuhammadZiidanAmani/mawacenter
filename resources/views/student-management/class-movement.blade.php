@@ -100,7 +100,7 @@
             gap: 6px !important;
             min-width: 0 !important;
             margin: 0 !important;
-            color: #4a5568 !important;
+            color: #404942 !important;
             font-size: 14px !important;
             font-weight: 400 !important;
             line-height: 1.25 !important;
@@ -122,7 +122,7 @@
         }
 
         html body .class-movement-page .student-reference-filter-grid label > span {
-            color: #4a5568 !important;
+            color: #404942 !important;
             font-size: 14px !important;
             font-weight: 400 !important;
             line-height: 1.25 !important;
@@ -164,7 +164,7 @@
             top: 50% !important;
             width: 18px !important;
             height: 18px !important;
-            color: #4a5568 !important;
+            color: #404942 !important;
             transform: translateY(-50%) !important;
             pointer-events: none !important;
         }
@@ -215,8 +215,8 @@
         html body .class-movement-page .student-reference-filter .student-fee-card-search-button:hover,
         html body .class-movement-page .student-reference-filter .fee-type-card-search-button:hover {
             color: #ffffff !important;
-            background: #1b5e3c !important;
-            border-color: #1b5e3c !important;
+            background: #0d5f36 !important;
+            border-color: #0d5f36 !important;
         }
 
         html body .class-movement-page .student-reference-filter .student-fee-card-reset-button,
@@ -265,7 +265,7 @@
             width: 100% !important;
             margin: 0 0 12px !important;
             padding: 0 !important;
-            color: #64748b !important;
+            color: #707971 !important;
             background: transparent !important;
             border: 0 !important;
             border-radius: 0 !important;
@@ -282,7 +282,7 @@
             gap: 8px !important;
             margin: 0 !important;
             padding: 0 !important;
-            color: #64748b !important;
+            color: #707971 !important;
             background: transparent !important;
             border: 0 !important;
             box-shadow: none !important;
@@ -334,7 +334,7 @@
             align-items: center !important;
             gap: 8px !important;
             margin: 0 !important;
-            color: #64748b !important;
+            color: #707971 !important;
             font-size: 14px !important;
             font-weight: 400 !important;
             line-height: 1 !important;
@@ -364,7 +364,7 @@
             padding: 16px !important;
             color: #111c2c !important;
             background: #ffffff !important;
-            border: 1px solid #bfc9c0 !important;
+            border: 1px solid #d1d5db !important;
             border-radius: 12px !important;
             box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
             transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease !important;
@@ -374,7 +374,7 @@
         html body .class-movement-page .class-promotion-student-card:hover,
         html body .class-movement-page .class-transfer-student-card:has(input:checked),
         html body .class-movement-page .class-promotion-student-card:has(input:checked) {
-            border-color: #93a69b !important;
+            border-color: #157144 !important;
             box-shadow: 0 8px 18px rgba(17, 28, 44, .08) !important;
             transform: translateY(-1px) !important;
         }
@@ -451,7 +451,7 @@
             min-height: 128px !important;
             margin: 0 !important;
             padding: 30px 20px !important;
-            color: #64748b !important;
+            color: #707971 !important;
             background: #ffffff !important;
             border: 1px dashed #d1d5db !important;
             border-radius: 12px !important;
@@ -468,7 +468,7 @@
 
         html body .class-movement-page .class-transfer-empty span,
         html body .class-movement-page .class-promotion-empty span {
-            color: #64748b !important;
+            color: #707971 !important;
             font-size: 14px !important;
             font-weight: 400 !important;
         }
@@ -497,7 +497,7 @@
             display: grid !important;
             gap: 6px !important;
             margin: 0 !important;
-            color: #4a5568 !important;
+            color: #404942 !important;
             font-size: 14px !important;
             font-weight: 400 !important;
             line-height: 1.25 !important;
@@ -526,12 +526,12 @@
             gap: 3px !important;
             min-height: 40px !important;
             margin: 0 !important;
-            color: #64748b !important;
+            color: #707971 !important;
         }
 
         html body .class-movement-page .class-transfer-selected-count span,
         html body .class-movement-page .class-promotion-selected-count span {
-            color: #64748b !important;
+            color: #707971 !important;
             font-size: 12px !important;
             font-weight: 700 !important;
             line-height: 1 !important;

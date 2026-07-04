@@ -175,6 +175,7 @@ class SppPaymentService
                 'student_id' => $student->id,
                 'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
                 'payment_method' => $data['payment_method'],
+                'transfer_proof_path' => $data['transfer_proof_path'] ?? null,
                 'status' => $data['status'],
                 'operator_name' => $data['operator_name'] ?? null,
                 'import_source' => $data['import_source'] ?? null,

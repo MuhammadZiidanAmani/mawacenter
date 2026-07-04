@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SppPayment extends Model
 {
     protected $fillable = [
-        'student_id', 'transaction_at', 'payment_method', 'status', 'operator_name',
+        'student_id', 'transaction_at', 'payment_method', 'transfer_proof_path', 'status', 'operator_name',
         'import_source', 'import_key',
         'original_amount', 'discount_amount', 'total_amount', 'paid_amount',
         'remaining_amount', 'payment_status',

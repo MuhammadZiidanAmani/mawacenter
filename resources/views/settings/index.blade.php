@@ -16,6 +16,7 @@
         'user' => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
         'lock' => '<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
         'role' => '<path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/>',
+        'bank' => '<path d="M3 21h18M4 10h16M6 10v8M10 10v8M14 10v8M18 10v8M12 3 4 7v3h16V7l-8-4Z"/>',
     ];
     $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
 @endphp
@@ -70,6 +71,18 @@
                         </label>
                         <label class="wide">Konfirmasi Password Baru
                             <input type="password" name="password_confirmation" autocomplete="new-password" placeholder="Ulangi password baru">
+                        </label>
+                    </div>
+                    <div class="settings-form-head settings-transfer-head"><span>{!! $icon('bank') !!}</span><div><strong>Rekening Transfer</strong><small>Dipakai pada Informasi Rekening di Transaksi Baru.</small></div></div>
+                    <div class="settings-fields">
+                        <label>Nama Bank
+                            <input name="transfer_bank_name" value="{{ old('transfer_bank_name', $transferSettings['transfer_bank_name'] ?? '') }}" placeholder="Contoh: BSI">
+                        </label>
+                        <label>Nomor Rekening
+                            <input name="transfer_account_number" value="{{ old('transfer_account_number', $transferSettings['transfer_account_number'] ?? '') }}" inputmode="numeric" placeholder="Contoh: 1234567890">
+                        </label>
+                        <label class="wide">Atas Nama
+                            <input name="transfer_account_name" value="{{ old('transfer_account_name', $transferSettings['transfer_account_name'] ?? '') }}" placeholder="Contoh: MA'WA CENTER">
                         </label>
                     </div>
                     <div class="settings-save"><span>Username otomatis disimpan dalam huruf kecil tanpa spasi.</span><button class="button button-primary">Simpan Akun</button></div>

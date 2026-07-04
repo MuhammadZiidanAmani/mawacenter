@@ -22,46 +22,61 @@
         </header>
 
         <main @class(['payment-hub-page', 'payment-transaction-page' => $mode === 'payment', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
-            @if($mode === 'payment')
-                <div class="student-flat-header payment-page-heading">
-                    <div class="student-master-heading">
-                        <nav class="payment-responsive-breadcrumb" aria-label="Breadcrumb">
-                            <span>Transaksi</span>
-                            <span aria-hidden="true">/</span>
-                            <strong>Transaksi Baru</strong>
-                        </nav>
-                        <h1>Transaksi Baru</h1>
-                        <p>Cari siswa, pilih pembayaran, lalu proses transaksi sesuai kebutuhan.</p>
-                    </div>
-                </div>
-            @endif
-
             <section @class(['payment-hub-heading' => $mode === 'import', 'student-workspace payment-transaction-workspace' => $mode === 'payment', 'student-workspace payment-history-workspace' => $mode === 'history'])>
                 @if($mode === 'payment')
                     @php
                         $selectedStudentId = (int) ($selectedStudentId ?? 0);
                         $selectedRegistrations = $selectedStudentId
                             ? $people->first(fn ($registrations) => $registrations->contains('id', $selectedStudentId))
-                            : null;
+                            : ($people->count() === 1 ? $people->first() : null);
                         $selectedIdentity = $selectedRegistrations
                             ? ($selectedRegistrations->firstWhere('identity_student_id', null) ?? $selectedRegistrations->first())
                             : null;
+                        $icon = function (string $name) {
+                            return match ($name) {
+                                'search' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>',
+                                'x' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>',
+                                'check' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"></path></svg>',
+                                'upload' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 8 5-5 5 5"></path><path d="M5 19h14"></path></svg>',
+                                'copy' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+                                'receipt' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2v20l3-2 3 2 3-2 3 2 4-2V2z"></path><path d="M8 7h8"></path><path d="M8 11h8"></path><path d="M8 15h5"></path></svg>',
+                                'download' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>',
+                                'trash' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 15H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>',
+                                default => '',
+                            };
+                        };
+                        $createdReceipts = collect(session('payment_receipts', []));
                     @endphp
+                    @if(session('success') && $createdReceipts->isNotEmpty())
+                        <div hidden data-auto-receipts>
+                            <script type="application/json" data-receipt-urls>@json($createdReceipts->pluck('receipt_url')->filter()->values())</script>
+                        </div>
+                    @elseif(session('success'))
+                        <div class="result-modal-backdrop show" data-alert>
+                            <div class="result-modal success-result">
+                                <span class="result-icon">✓</span>
+                                <strong>Sukses!</strong>
+                                <p>{{ session('success') }}</p>
+                                <button type="button" class="button button-primary" data-alert-close>OK</button>
+                            </div>
+                        </div>
+                    @endif
                     <div class="payment-one-stop-layout">
                         <section class="payment-one-stop-main">
-                            <div class="payment-one-stop-card-title">
-                                <span aria-hidden="true">CS</span>
-                                <strong>Cari Siswa</strong>
+                            <div class="payment-one-stop-heading">
+                                <h1>Transaksi Baru</h1>
+                                <p>Cari siswa, pilih tagihan, lalu proses pembayaran dari satu halaman.</p>
                             </div>
                             <form method="GET" action="{{ route('finance.payments.index') }}" class="payment-one-stop-search">
                                 <label>
-                                    <span>Nama atau NIS Siswa</span>
-                                    <input type="search" name="search" value="{{ $search }}" placeholder="Ketik nama, NIS, atau NISN..." autofocus required>
+                                    <span class="payment-one-stop-search-field">
+                                        <span class="payment-one-stop-search-icon">{!! $icon('search') !!}</span>
+                                        <input type="search" name="search" value="{{ $search }}" placeholder="Ketik nama, NIS, atau NISN..." autofocus required>
+                                        @if($search !== '')
+                                            <a href="{{ route('finance.payments.index') }}" class="payment-one-stop-search-reset" aria-label="Reset pencarian">{!! $icon('x') !!}</a>
+                                        @endif
+                                    </span>
                                 </label>
-                                <div class="payment-one-stop-actions">
-                                    <button class="button payment-one-stop-submit">Cari</button>
-                                    <a href="{{ route('finance.payments.index') }}" class="button student-filter-reset">Reset</a>
-                                </div>
                             </form>
 
                             @if($search !== '' && $people->isNotEmpty() && ! $selectedRegistrations)
@@ -74,18 +89,18 @@
                                                 ->map(fn ($student) => trim(($student->schoolClass?->educationUnit?->code ?? '-') . ' ' . ($student->schoolClass?->name ?? '-')))
                                                 ->filter()
                                                 ->unique()
-                                                ->join(' · ');
+                                                ->join(' / ');
+                                            $statusLabel = 'Aktif';
                                         @endphp
                                         <a
                                             href="{{ route('finance.payments.index', ['search' => $identity->name, 'student_id' => $identity->id]) }}"
                                             @class(['payment-one-stop-student-card', 'is-selected' => $isSelected])
                                         >
-                                            <span class="payment-one-stop-avatar" aria-hidden="true">{{ strtoupper(substr($identity->name, 0, 1)) }}</span>
                                             <span class="payment-one-stop-student-copy">
                                                 <strong>{{ $identity->name }}</strong>
                                                 <small>NIS: {{ $identity->nis }}{{ $unitSummary ? ' · '.$unitSummary : '' }}</small>
                                             </span>
-                                            <span class="payment-one-stop-unit-count">{{ $registrations->count() }} unit</span>
+                                            <span class="payment-one-stop-unit-count">{{ $statusLabel }}</span>
                                         </a>
                                     @endforeach
                                 </div>
@@ -105,118 +120,251 @@
                                         <span>Pilih salah satu siswa dari hasil pencarian untuk melihat unit dan pilihan pembayaran.</span>
                                     </div>
                                 @else
+                                    @php
+                                        $nisSummary = $selectedRegistrations->pluck('nis')->filter()->unique()->join('/');
+                                        $unitNames = $selectedRegistrations
+                                            ->map(fn ($student) => $student->schoolClass?->educationUnit?->name ?? $student->schoolClass?->educationUnit?->code)
+                                            ->filter()
+                                            ->unique()
+                                            ->values();
+                                        $classSummary = $selectedRegistrations
+                                            ->map(fn ($student) => $student->schoolClass?->name)
+                                            ->filter()
+                                            ->unique()
+                                            ->join('/');
+                                        $studentStatusLabel = 'Aktif';
+                                        $mandatoryRows = collect();
+                                        $optionalRows = collect();
+
+                                        foreach ($selectedRegistrations as $student) {
+                                            $unitCode = $student->schoolClass?->educationUnit?->code ?? '-';
+                                            foreach (collect($student->payment_options ?? []) as $option) {
+                                                $label = $option['label'] === 'Lainnya' ? 'Lain-lain' : $option['label'];
+                                                $mandatoryRows->push([
+                                                    'name' => 'bill_keys[]',
+                                                    'key' => $option['bill_key'],
+                                                    'title' => $option['key'] === 'spp' ? trim('SPP '.$unitCode) : $label,
+                                                    'detail' => $option['detail_label'] ?? '',
+                                                    'amount' => (int) ($option['remaining_amount'] ?? 0),
+                                                    'url' => $option['url'] ?? '#',
+                                                ]);
+                                            }
+
+                                            foreach (collect($student->optional_payment_options ?? []) as $option) {
+                                                $optionalRows->push([
+                                                    'name' => 'optional_keys[]',
+                                                    'key' => $option['bill_key'],
+                                                    'title' => $option['label'] ?? $option['title'] ?? 'Pembayaran Opsional',
+                                                    'detail' => $option['detail_label'] ?? $option['detail'] ?? '',
+                                                    'amount' => (int) ($option['remaining_amount'] ?? $option['amount_value'] ?? 0),
+                                                    'url' => $option['url'] ?? '#',
+                                                ]);
+                                            }
+                                        }
+
+                                        $mandatoryBillRows = $mandatoryRows->filter(fn ($row) => $row['amount'] > 0)->values();
+                                        $optionalBillRows = $optionalRows->filter(fn ($row) => $row['amount'] > 0)->values();
+                                        $billRows = $mandatoryBillRows->concat($optionalBillRows)->values();
+                                        $hasOldSelection = old('bill_keys') !== null || old('optional_keys') !== null;
+                                        $oldBillKeys = collect(old('bill_keys', []));
+                                        $oldOptionalKeys = collect(old('optional_keys', []));
+                                        $defaultTotal = $billRows
+                                            ->filter(fn ($row) => $row['name'] === 'optional_keys[]'
+                                                ? ($hasOldSelection && $oldOptionalKeys->contains($row['key']))
+                                                : ($hasOldSelection ? $oldBillKeys->contains($row['key']) : true))
+                                            ->sum('amount');
+                                        $oldPaidDigits = preg_replace('/\D/', '', (string) old('paid_amount', $defaultTotal));
+                                        $oldPaidLabel = $oldPaidDigits !== '' ? number_format((int) $oldPaidDigits, 0, ',', '.') : '';
+                                        $oldPaymentMethod = old('payment_method', 'Cash');
+                                    @endphp
                                     <article class="payment-one-stop-person">
-                                        <div class="payment-one-stop-person-head">
-                                            <span class="payment-responsive-avatar" aria-hidden="true">{{ strtoupper(substr($selectedIdentity->name, 0, 1)) }}</span>
-                                            <span class="payment-responsive-profile-copy">
-                                                <span class="payment-responsive-kicker">Profil Siswa</span>
-                                                <strong>{{ $selectedIdentity->name }}</strong>
-                                                <small>NIS: {{ $selectedIdentity->nis }}{{ $selectedIdentity->nisn ? ' · NISN: '.$selectedIdentity->nisn : '' }}</small>
+                                        <div class="payment-one-stop-person-head payment-one-stop-profile-card">
+                                            <span class="payment-one-stop-student-icon" aria-hidden="true">
+                                                <svg class="icon" viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>
                                             </span>
-                                            <span class="payment-responsive-status">Aktif</span>
+                                            <div class="payment-one-stop-simple-profile">
+                                                <span class="payment-one-stop-simple-nis">{{ $nisSummary ?: '-' }}</span>
+                                                <strong>{{ strtoupper($selectedIdentity->name) }}</strong>
+                                                <span class="payment-one-stop-simple-class">{{ $classSummary ?: '-' }}</span>
+                                                <span class="payment-one-stop-simple-unit" aria-label="Unit pendidikan">
+                                                    @foreach($unitNames as $item)
+                                                        <span>{{ strtoupper($item) }}</span>
+                                                    @endforeach
+                                                </span>
+                                            </div>
                                         </div>
 
-                                        <div class="payment-one-stop-units">
-                                            @foreach($selectedRegistrations as $student)
-                                                @php
-                                                    $options = collect($student->payment_options ?? []);
-                                                    $mandatoryOptions = $options->whereIn('key', ['spp', 'daftar-ulang', 'lain-lain'])->values();
-                                                    $optionalOptions = $options->whereIn('key', ['laundry'])->values();
-                                                    $unitCode = $student->schoolClass?->educationUnit?->code ?? '-';
-                                                @endphp
-                                                <div class="payment-one-stop-unit-card">
-                                                    <div class="payment-one-stop-unit-meta">
-                                                        <span class="payment-responsive-unit-mark" aria-hidden="true">{{ strtoupper(substr($unitCode, 0, 2)) }}</span>
-                                                        <span class="payment-responsive-unit-copy">
-                                                            <strong>{{ $unitCode }}</strong>
-                                                            <span>{{ $student->schoolClass?->name ?? '-' }} · {{ $student->academicYear?->name ?? '-' }}</span>
-                                                        </span>
-                                                    </div>
+                                        <form method="POST" action="{{ route('finance.payments.store') }}" enctype="multipart/form-data" class="payment-one-stop-pay-form" data-payment-one-stop-form>
+                                            @csrf
+                                            <input type="hidden" name="student_id" value="{{ $selectedIdentity->id }}">
+                                            <input type="hidden" name="search" value="{{ $search }}">
 
-                                                    <div class="payment-one-stop-bill-section">
-                                                        <span class="payment-one-stop-section-title">Tagihan Wajib</span>
-                                                        <div class="payment-one-stop-bill-list">
-                                                            @if($mandatoryOptions->isEmpty())
-                                                                <span class="payment-one-stop-empty">Tidak ada tagihan wajib aktif.</span>
-                                                            @else
-                                                                @foreach($mandatoryOptions as $option)
-                                                                    @if($option['status'] === 'payable')
-                                                                        <a href="{{ $option['url'] }}" @class(['payment-one-stop-bill', 'is-payable', 'is-spp' => $option['key'] === 'spp'])>
-                                                                            <span class="payment-one-stop-bill-top">
-                                                                                <strong>
-                                                                                    {{ $option['label'] === 'Lainnya' ? 'Lain-lain' : $option['label'] }}
-                                                                                    @if($option['key'] === 'spp' && ! empty($option['detail_label']))
-                                                                                        <span class="payment-one-stop-bill-period">{{ $option['detail_label'] }}</span>
-                                                                                    @endif
-                                                                                </strong>
-                                                                                <small>Proses</small>
-                                                                            </span>
-                                                                            <span class="payment-one-stop-bill-amount">{{ $option['amount_label'] ?? 'Rp 0' }}</span>
-                                                                            @if($option['key'] !== 'spp')
-                                                                                <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
-                                                                            @endif
-                                                                        </a>
-                                                                    @else
-                                                                        <span @class(['payment-one-stop-bill', 'is-paid', 'is-spp' => $option['key'] === 'spp'])>
-                                                                            <span class="payment-one-stop-bill-top">
-                                                                                <strong>
-                                                                                    {{ $option['label'] === 'Lainnya' ? 'Lain-lain' : $option['label'] }}
-                                                                                    @if($option['key'] === 'spp' && ! empty($option['detail_label']))
-                                                                                        <span class="payment-one-stop-bill-period">{{ $option['detail_label'] }}</span>
-                                                                                    @endif
-                                                                                </strong>
-                                                                                <small>Lunas</small>
-                                                                            </span>
-                                                                            <span class="payment-one-stop-bill-amount">{{ $option['amount_label'] ?? 'Rp 0' }}</span>
-                                                                            @if($option['key'] !== 'spp')
-                                                                                <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
-                                                                            @endif
-                                                                        </span>
-                                                                    @endif
-                                                                @endforeach
-                                                            @endif
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="payment-one-stop-bill-section">
-                                                        <span class="payment-one-stop-section-title">Pembayaran Opsional</span>
-                                                        <div class="payment-one-stop-bill-list">
-                                                            @if($optionalOptions->isEmpty())
-                                                                <span class="payment-one-stop-empty">Laundry belum tersedia untuk siswa ini.</span>
-                                                            @else
-                                                                @foreach($optionalOptions as $option)
-                                                                    @if($option['status'] === 'payable')
-                                                                        <a href="{{ $option['url'] }}" class="payment-one-stop-bill is-optional">
-                                                                            <span class="payment-one-stop-bill-top">
-                                                                                <strong>{{ $option['label'] }}</strong>
-                                                                                <small>Proses</small>
-                                                                            </span>
-                                                                            <span class="payment-one-stop-bill-amount">{{ $option['amount_label'] ?? 'Rp 0' }}</span>
-                                                                            <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
-                                                                        </a>
-                                                                    @else
-                                                                        <span class="payment-one-stop-bill is-paid">
-                                                                            <span class="payment-one-stop-bill-top">
-                                                                                <strong>{{ $option['label'] }}</strong>
-                                                                                <small>Lunas</small>
-                                                                            </span>
-                                                                            <span class="payment-one-stop-bill-amount">{{ $option['amount_label'] ?? 'Rp 0' }}</span>
-                                                                            <span class="payment-one-stop-bill-detail">{{ $option['detail_label'] ?? '' }}</span>
-                                                                        </span>
-                                                                    @endif
-                                                                @endforeach
-                                                            @endif
-                                                        </div>
-                                                    </div>
+                                            <section class="payment-one-stop-bills-card">
+                                                <div class="payment-one-stop-bills-head">
+                                                    <h2>Daftar Tagihan</h2>
+                                                    <span>{{ $billRows->count() }} Tagihan</span>
                                                 </div>
-                                            @endforeach
-                                        </div>
 
-                                        <div class="payment-one-stop-detail">
-                                            <span>Rincian Pembayaran</span>
-                                            <strong>Pilih salah satu pembayaran</strong>
-                                            <small>Form transaksi dan rincian nominal akan terbuka sesuai jenis pembayaran yang dipilih.</small>
-                                        </div>
+                                                @if($errors->has('bill_keys'))
+                                                    <div class="payment-one-stop-form-error">{{ $errors->first('bill_keys') }}</div>
+                                                @endif
+
+                                                @if($billRows->isEmpty())
+                                                    <div class="payment-one-stop-empty">Tidak ada tagihan aktif untuk siswa ini.</div>
+                                                @else
+                                                    <div class="payment-one-stop-bill-list-reference">
+                                                        @foreach($mandatoryBillRows as $row)
+                                                            @php
+                                                                $checked = $hasOldSelection ? $oldBillKeys->contains($row['key']) : true;
+                                                            @endphp
+                                                            <label class="payment-one-stop-bill" data-payment-source-url="{{ $row['url'] }}">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    name="{{ $row['name'] }}"
+                                                                    value="{{ $row['key'] }}"
+                                                                    data-payment-bill
+                                                                    data-amount="{{ $row['amount'] }}"
+                                                                    @checked($checked)
+                                                                >
+                                                                <span class="payment-one-stop-check" aria-hidden="true">{!! $icon('check') !!}</span>
+                                                                <span class="payment-one-stop-bill-top">
+                                                                    <strong>{{ $row['title'] }}</strong>
+                                                                    <span class="payment-one-stop-bill-detail">{{ $row['detail'] ?: 'Tagihan aktif' }}</span>
+                                                                </span>
+                                                                <span class="payment-one-stop-bill-amount">
+                                                                    <span>Rp.</span>
+                                                                    <strong>{{ number_format($row['amount'], 0, ',', '.') }},-</strong>
+                                                                </span>
+                                                            </label>
+                                                        @endforeach
+
+                                                        @if($optionalBillRows->isNotEmpty())
+                                                            <div class="payment-one-stop-optional-section">
+                                                                <div class="payment-one-stop-optional-head">
+                                                                    <strong>Pembayaran Opsional</strong>
+                                                                    <span>{{ $optionalBillRows->count() }} Pilihan</span>
+                                                                </div>
+
+                                                                @foreach($optionalBillRows as $row)
+                                                                    @php
+                                                                        $checked = $hasOldSelection ? $oldOptionalKeys->contains($row['key']) : false;
+                                                                    @endphp
+                                                                    <label class="payment-one-stop-bill is-optional" data-payment-source-url="{{ $row['url'] }}">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            name="{{ $row['name'] }}"
+                                                                            value="{{ $row['key'] }}"
+                                                                            data-payment-bill
+                                                                            data-amount="{{ $row['amount'] }}"
+                                                                            @checked($checked)
+                                                                        >
+                                                                        <span class="payment-one-stop-check" aria-hidden="true">{!! $icon('check') !!}</span>
+                                                                        <span class="payment-one-stop-bill-top">
+                                                                            <strong>{{ $row['title'] }}</strong>
+                                                                            <span class="payment-one-stop-bill-detail">{{ $row['detail'] ?: 'Pembayaran opsional' }}</span>
+                                                                        </span>
+                                                                        <span class="payment-one-stop-bill-amount">
+                                                                            <span>Rp.</span>
+                                                                            <strong>{{ number_format($row['amount'], 0, ',', '.') }},-</strong>
+                                                                        </span>
+                                                                    </label>
+                                                                @endforeach
+                                                            </div>
+                                                        @endif
+
+                                                        <div class="payment-one-stop-bill-total">
+                                                            <span>Total Tagihan:</span>
+                                                            <span class="payment-one-stop-bill-total-amount">
+                                                                <span>Rp.</span>
+                                                                <b data-payment-total>{{ number_format($defaultTotal, 0, ',', '.') }},-</b>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </section>
+
+                                            <section class="payment-one-stop-payment-card">
+                                                @if($errors->has('paid_amount') || $errors->has('payment_method') || $errors->has('transfer_proof'))
+                                                    <div class="payment-one-stop-form-error">
+                                                        {{ $errors->first('paid_amount') ?: ($errors->first('payment_method') ?: $errors->first('transfer_proof')) }}
+                                                    </div>
+                                                @endif
+
+                                                <div class="payment-one-stop-form-controls">
+                                                    <label>
+                                                        <span>Pilih Metode Pembayaran</span>
+                                                        <select name="payment_method" data-payment-method>
+                                                            <option value="Cash" @selected($oldPaymentMethod === 'Cash')>Tunai</option>
+                                                            <option value="Transfer" @selected($oldPaymentMethod === 'Transfer')>Transfer Bank</option>
+                                                        </select>
+                                                    </label>
+
+                                                    <div class="payment-one-stop-transfer-card" data-payment-transfer-panel @hidden($oldPaymentMethod !== 'Transfer')>
+                                                        <div>
+                                                            <span>Rekening Tujuan</span>
+                                                            <strong>{{ $transferAccount['bank_name'] }} · {{ $transferAccount['account_number'] }}</strong>
+                                                            <small>a.n. {{ $transferAccount['account_name'] }}</small>
+                                                        </div>
+                                                        <button type="button" data-payment-copy-account data-account-number="{{ $transferAccount['account_number'] }}">
+                                                            {!! $icon('copy') !!}
+                                                            <span>Salin Rekening</span>
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="payment-one-stop-transfer-upload" data-payment-transfer-upload @hidden($oldPaymentMethod !== 'Transfer')>
+                                                        <span>Bukti Transfer</span>
+                                                        <label class="payment-one-stop-upload-field">
+                                                            <span class="payment-one-stop-upload-icon" aria-hidden="true">{!! $icon('upload') !!}</span>
+                                                            <span class="payment-one-stop-upload-copy">
+                                                                <strong data-payment-upload-name>Pilih file bukti transfer</strong>
+                                                                <small>JPG, PNG, atau PDF maksimal 2 MB</small>
+                                                            </span>
+                                                            <input type="file" name="transfer_proof" accept=".jpg,.jpeg,.png,.pdf" data-payment-transfer-file>
+                                                        </label>
+                                                    </div>
+
+                                                    <label>
+                                                        <span>Input Nominal Pembayaran (Rp)</span>
+                                                        <input type="text" name="paid_amount" value="{{ $oldPaidLabel }}" inputmode="numeric" data-currency-input data-payment-paid-display>
+                                                    </label>
+
+                                                    <button class="payment-one-stop-pay-button" data-payment-submit @disabled($billRows->isEmpty())>Bayar Sekarang</button>
+                                                </div>
+                                            </section>
+                                        </form>
+
+                                        @if($paymentHistory->isNotEmpty())
+                                            <section class="payment-one-stop-history-card">
+                                                <div class="payment-one-stop-history-head">
+                                                    <h2>Riwayat Terakhir</h2>
+                                                    <span>{{ $paymentHistory->count() }} transaksi</span>
+                                                </div>
+                                                <div class="payment-one-stop-history-list">
+                                                    @foreach($paymentHistory as $history)
+                                                        <div class="payment-one-stop-history-item">
+                                                            <span class="payment-one-stop-history-copy">
+                                                                <strong>{{ $history['title'] }}</strong>
+                                                                <span>{{ $history['detail'] }}</span>
+                                                                <small>{{ $history['date'] }} · {{ $history['method'] }}</small>
+                                                            </span>
+                                                            <span class="payment-one-stop-history-amount">
+                                                                <span>Rp.</span>
+                                                                <strong>{{ $history['amount_label'] }}</strong>
+                                                            </span>
+                                                            <span class="payment-one-stop-history-actions">
+                                                                <a class="payment-one-stop-history-action" href="{{ $history['receipt_url'] }}" target="_blank" rel="noopener" title="Cetak struk" aria-label="Cetak struk">{!! $icon('receipt') !!}</a>
+                                                                <a class="payment-one-stop-history-action" href="{{ $history['download_url'] }}" title="Download kwitansi" aria-label="Download kwitansi">{!! $icon('download') !!}</a>
+                                                                <form method="POST" action="{{ $history['delete_url'] }}" onsubmit="return confirm('Hapus transaksi ini?');">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button class="payment-one-stop-history-action danger" type="submit" title="Hapus transaksi" aria-label="Hapus transaksi">{!! $icon('trash') !!}</button>
+                                                                </form>
+                                                            </span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </section>
+                                        @endif
                                     </article>
                                 @endif
                             @else

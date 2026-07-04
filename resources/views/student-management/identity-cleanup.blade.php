@@ -38,7 +38,7 @@
 
         .identity-reset-heading p {
             margin: 0;
-            color: #5b6f92;
+            color: #707971;
             font-size: 14px;
             font-weight: 400;
             line-height: 1.35;
@@ -167,7 +167,7 @@
             flex-wrap: wrap;
             gap: 16px;
             width: 100%;
-            color: #5b6f92;
+            color: #707971;
             font-size: 14px;
             font-weight: 400;
             line-height: 1.35;
@@ -180,7 +180,7 @@
             gap: 12px;
             margin: 0;
             padding: 0;
-            color: #5b6f92;
+            color: #707971;
             font-size: 14px;
             font-weight: 400;
         }
@@ -223,7 +223,7 @@
             width: 40px;
             height: 40px;
             color: #157144;
-            background: #e6f4ea;
+            background: #e9f8ef;
             border-radius: 10px;
             font-size: 14px;
             font-weight: 800;
@@ -246,7 +246,7 @@
         }
 
         .identity-reset-card-body span {
-            color: #64748b;
+            color: #707971;
             font-size: 14px;
             line-height: 1.35;
         }
@@ -270,7 +270,7 @@
         }
 
         .identity-reset-action.danger {
-            color: #e11d48;
+            color: #ef1f2d;
         }
 
         .identity-reset-empty {
@@ -279,7 +279,7 @@
             gap: 4px;
             min-height: 140px;
             padding: 28px;
-            color: #64748b;
+            color: #707971;
             text-align: center;
             background: #ffffff;
             border: 1px dashed #d1d5db;

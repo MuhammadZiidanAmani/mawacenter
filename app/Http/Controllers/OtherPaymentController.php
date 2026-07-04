@@ -284,11 +284,11 @@ class OtherPaymentController extends Controller
     {
         $payments->updateMetadata($otherPayment, $request->validated());
 
-        return redirect()->route('finance.other.index', $this->paymentSectionParams($otherPayment))
+        return $this->redirectAfterMutation($request, route('finance.other.index', $this->paymentSectionParams($otherPayment)))
             ->with('success', 'Transaksi pembayaran berhasil diperbarui.');
     }
 
-    public function destroy(OtherPayment $otherPayment, OtherPaymentService $payments, LaundryPaymentService $laundryPayments): RedirectResponse
+    public function destroy(Request $request, OtherPayment $otherPayment, OtherPaymentService $payments, LaundryPaymentService $laundryPayments): RedirectResponse
     {
         $sectionParams = $this->paymentSectionParams($otherPayment);
         $otherPayment->loadMissing('feeType');
@@ -298,8 +298,19 @@ class OtherPaymentController extends Controller
             $payments->delete($otherPayment);
         }
 
-        return redirect()->route('finance.other.index', $sectionParams)
+        return $this->redirectAfterMutation($request, route('finance.other.index', $sectionParams))
             ->with('success', 'Transaksi pembayaran berhasil dihapus.');
+    }
+
+    private function redirectAfterMutation(Request $request, string $fallbackUrl): RedirectResponse
+    {
+        $returnUrl = trim($request->string('return_url')->value());
+
+        if ($returnUrl !== '' && (str_starts_with($returnUrl, url('/')) || str_starts_with($returnUrl, '/'))) {
+            return redirect()->to($returnUrl);
+        }
+
+        return redirect()->to($fallbackUrl);
     }
 
     public function previewImport(PreviewOtherPaymentImportRequest $request, OtherPaymentImportService $importer): View

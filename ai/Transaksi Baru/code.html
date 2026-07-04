@@ -1,196 +1,313 @@
 <!DOCTYPE html>
 
-<html class="light" lang="id"><head>
+<html lang="id"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Transaksi Baru - Ma'wa Center</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<title>Detail Tagihan Siswa - Ma'wa Center</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "surface-container-high": "#dee8ff",
-                        "surface-container-highest": "#d8e3fa",
-                        "primary-container": "#1b5e3c",
-                        "inverse-primary": "#92d5aa",
-                        "surface-container": "#e7eeff",
-                        "surface": "#f9f9ff",
-                        "tertiary-fixed-dim": "#c1c9be",
-                        "on-secondary": "#ffffff",
-                        "on-background": "#111c2c",
-                        "error": "#ba1a1a",
-                        "tertiary-container": "#4d554d",
-                        "surface-bright": "#f9f9ff",
-                        "surface-container-lowest": "#ffffff",
-                        "primary": "#004528",
-                        "secondary-fixed": "#deea95",
-                        "on-tertiary-fixed-variant": "#414941",
-                        "on-secondary-fixed-variant": "#424b05",
-                        "surface-variant": "#d8e3fa",
-                        "on-error-container": "#93000a",
-                        "outline": "#707971",
-                        "on-primary-fixed-variant": "#085231",
-                        "on-tertiary": "#ffffff",
-                        "on-secondary-fixed": "#191e00",
-                        "surface-container-low": "#f0f3ff",
-                        "primary-fixed-dim": "#92d5aa",
-                        "on-surface": "#111c2c",
-                        "on-surface-variant": "#404942",
-                        "inverse-surface": "#263142",
-                        "inverse-on-surface": "#ebf1ff",
-                        "on-secondary-container": "#606a23",
-                        "secondary-container": "#deea95",
-                        "outline-variant": "#bfc9c0",
-                        "secondary-fixed-dim": "#c2cd7b",
-                        "on-tertiary-container": "#c1c9bf",
-                        "on-error": "#ffffff",
-                        "tertiary-fixed": "#dde5da",
-                        "tertiary": "#363e36",
-                        "error-container": "#ffdad6",
-                        "background": "#f9f9ff",
-                        "primary-fixed": "#aef2c5",
-                        "on-primary-fixed": "#002110",
-                        "secondary": "#5a631e",
-                        "surface-dim": "#cfdaf1",
-                        "on-tertiary-fixed": "#161d17",
-                        "on-primary-container": "#93d5aa",
-                        "surface-tint": "#296a47",
-                        "on-primary": "#ffffff"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "lg": "24px",
-                        "sm": "8px",
-                        "xl": "32px",
-                        "xs": "4px",
-                        "md": "16px",
-                        "container-padding": "16px",
-                        "gutter": "12px",
-                        "base": "4px"
-                    },
-                    "fontFamily": {
-                        "headline-md": ["Manrope"],
-                        "headline-lg": ["Manrope"],
-                        "title-md": ["Inter"],
-                        "headline-lg-mobile": ["Manrope"],
-                        "body-md": ["Inter"],
-                        "label-sm": ["Inter"],
-                        "body-lg": ["Inter"],
-                        "label-md": ["Inter"]
-                    },
-                    "fontSize": {
-                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
-                        "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                        "title-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
-                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
-                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
-                        "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
-                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
-                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}]
-                    }
-                },
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#ffffff",
+                    "primary-fixed-dim": "#92d5aa",
+                    "error-container": "#ffdad6",
+                    "background": "#f9f9ff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f0f3ff",
+                    "on-surface": "#111c2c",
+                    "surface-dim": "#cfdaf1",
+                    "secondary-container": "#deea95",
+                    "outline-variant": "#bfc9c0",
+                    "secondary-fixed-dim": "#c2cd7b",
+                    "surface": "#f9f9ff",
+                    "inverse-surface": "#263142",
+                    "tertiary-fixed": "#dde5da",
+                    "secondary-fixed": "#deea95",
+                    "surface-container-highest": "#d8e3fa",
+                    "error": "#ba1a1a",
+                    "on-error-container": "#93000a",
+                    "outline": "#707971",
+                    "surface-bright": "#f9f9ff",
+                    "on-tertiary-fixed-variant": "#414941",
+                    "on-primary-fixed-variant": "#085231",
+                    "tertiary": "#363e36",
+                    "on-secondary-fixed-variant": "#424b05",
+                    "on-primary-container": "#93d5aa",
+                    "inverse-on-surface": "#ebf1ff",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#111c2c",
+                    "on-tertiary-fixed": "#161d17",
+                    "tertiary-fixed-dim": "#c1c9be",
+                    "surface-variant": "#d8e3fa",
+                    "surface-container": "#e7eeff",
+                    "primary-fixed": "#aef2c5",
+                    "on-tertiary-container": "#c1c9bf",
+                    "primary-container": "#1b5e3c",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed": "#191e00",
+                    "surface-tint": "#296a47",
+                    "primary": "#004528",
+                    "inverse-primary": "#92d5aa",
+                    "secondary": "#5a631e",
+                    "surface-container-high": "#dee8ff",
+                    "on-secondary-container": "#606a23",
+                    "on-surface-variant": "#404942",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#4d554d",
+                    "on-primary-fixed": "#002110"
             },
-        }
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sm": "8px",
+                    "xl": "32px",
+                    "lg": "24px",
+                    "xs": "4px",
+                    "container-padding": "16px",
+                    "md": "16px",
+                    "gutter": "12px",
+                    "base": "4px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Manrope"],
+                    "headline-lg": ["Manrope"],
+                    "label-sm": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Manrope"],
+                    "title-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "600"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "title-md": ["16px", {"lineHeight": "24px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
     </script>
 <style>
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            display: inline-block;
-            line-height: 1;
-            text-transform: none;
-            letter-spacing: normal;
-            word-wrap: normal;
-            white-space: nowrap;
-            direction: ltr;
         }
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(8px);
-            border: 1px solid #E2E8F0;
+        body {
+            background-color: #f9f9ff;
+            font-family: 'Inter', sans-serif;
         }
-        .custom-scroll::-webkit-scrollbar {
-            height: 4px;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #bfc9c0;
-            border-radius: 4px;
+        .bento-grid {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(4, 1fr);
         }
     </style>
-</head>
-<body class="bg-background text-on-background min-h-screen pb-24">
-<!-- TopAppBar -->
-<header class="flex justify-between items-center px-container-padding h-16 w-full sticky top-0 z-50 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline">
-<div class="flex items-center gap-4">
-<button class="material-symbols-outlined text-primary dark:text-inverse-primary hover:bg-surface-container-low p-2 rounded-full transition-colors active:scale-95">menu</button>
-<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-inverse-primary">Transaksi Baru</h1>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface">
+<!-- Top AppBar -->
+<header class="bg-surface dark:bg-surface w-full top-0 sticky z-50 border-b border-outline-variant dark:border-outline flex items-center justify-between px-md h-16 w-full">
+<div class="flex items-center gap-sm">
+<button class="hover:bg-surface-container-low transition-colors rounded-full p-2 active:scale-95 duration-150">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-primary dark:text-inverse-primary">Detail Tagihan Siswa</h1>
 </div>
-<button class="material-symbols-outlined text-primary dark:text-inverse-primary hover:bg-surface-container-low p-2 rounded-full transition-colors active:scale-95">notifications</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional circular profile avatar of an administrator for an Islamic educational institution. The image features a clean, soft-lit background with a friendly, professional demeanor. High-quality lighting highlights the features of a well-groomed person in modest, corporate attire, fitting the 'Islamic Financial Excellence' theme with a palette of deep greens and soft whites." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs1VZgsrctMBCMU1MpWt5XCHVh-4uQ5_rWH98c197IilePQGHgugyDnd2lrFxW_Uad78fgmc83wJbcv0skpY_GAEcHWWBLJAGSmTTY1vfi3a19RnVyElwjROBtBRLG_Jd7XavHuHtkmeIYz5HJj4qknn7i-ouYewKmsn0SYeiyBZ2Hk8weaYZtAMMo2vm1pbJstkWFVUgbdEtyPEeO6imkt0bu6jXyQAN-tTqrridbLNSQukfJkZmcmGRkaeJoZ7ECzy90vC-ItJix"/>
+</div>
 </header>
-<main class="px-container-padding py-4 space-y-4">
-<!-- Search Section -->
-<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 shadow-sm">
-<label class="text-label-md font-label-md text-on-surface-variant block mb-2">Nama atau NIS Siswa</label>
-<div class="flex gap-2">
-<input class="flex-grow bg-white border border-outline-variant rounded-lg px-4 py-2 text-body-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all" placeholder="Cari siswa..." type="text" value="AHMAD ISA"/>
-<button class="bg-primary text-white px-6 py-2 rounded-lg font-title-md hover:bg-opacity-90 active:scale-95 transition-transform">Cari</button>
+<main class="px-container-padding pt-md pb-32 max-w-md mx-auto">
+<!-- Search Focus Area (Subtle) -->
+<div class="mb-lg">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-xl text-body-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all" placeholder="Cari NIS atau Nama Siswa..." type="text"/>
+</div>
+</div>
+<!-- Student Profile Bento Card -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md mb-gutter shadow-sm">
+<div class="flex items-start gap-md">
+<div class="w-20 h-20 rounded-xl bg-surface-container-low flex items-center justify-center overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a student named Ahmad Isa, appearing neat and focused. He is wearing a clean school uniform consistent with a modern Islamic boarding school (Ponpes). The lighting is bright and even, casting soft shadows, set against a minimal light-grey studio background. The overall mood is academic, disciplined, and trustworthy, reflecting the institution's values." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdT_0cL4ohzUuwvlO16vtCvtjEVbg2FNnmzI-xPaOoFB0bJDPuqpTlk8NJmFcr8rajeqB6LL_SDkBU7BBOMHiktrHImhCUb21mV47yDhXKMh9YDW9X8Vo1vausXcQWub_4-A_Cmg8NFNF8ZuKdI09-ROcCyj3K6aV9SwuEFsHXycrlF1AlHdoNc4pIbBX6qwS4FfAvZPGfnacurO8dwOYohN3HcqlRdih8kXdCpLTO0V3qUm6Osfa0W5hFHYzWfREfTI-GHcwBoEph"/>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface uppercase tracking-tight">AHMAD ISA</h2>
+<p class="font-label-md text-label-md text-on-surface-variant">250003/220006</p>
+</div>
+<span class="bg-[#E6F4EA] text-[#1B5E3C] px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-1">
+<span class="w-2 h-2 bg-[#1B5E3C] rounded-full"></span>
+                            AKTIF
+                        </span>
+</div>
+<div class="mt-sm grid grid-cols-2 gap-2">
+<div>
+<p class="text-[10px] uppercase text-outline font-bold tracking-widest">Unit</p>
+<p class="font-title-md text-body-md text-on-surface">MA/PONPES</p>
+</div>
+<div>
+<p class="text-[10px] uppercase text-outline font-bold tracking-widest">Kelas</p>
+<p class="font-title-md text-body-md text-on-surface">10A</p>
+</div>
+</div>
+</div>
 </div>
 </section>
-<!-- Profile Card -->
-<section class="bg-white border border-outline-variant rounded-xl p-4 flex justify-between items-center relative overflow-hidden"><div class="flex items-center gap-4"><div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-white font-bold text-headline-md">A</div><div><h2 class="text-title-md font-headline-md text-primary">AHMAD ISA</h2><p class="text-body-md text-on-surface-variant">NIS: 250003 • 10A • 2025/2026</p><p class="text-label-sm text-primary font-bold">MA &amp; PONPES</p></div></div><span class="bg-[#E6F4EA] text-[#1B5E3C] text-label-sm px-3 py-1 rounded-full font-bold">Aktif</span></section>
-<!-- Bill Sections (Vertical Stacking for Mobile) -->
-<div class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm"><div class="bg-surface-container-low p-4 border-b border-outline-variant"><h3 class="text-title-md font-headline-md">Daftar Tagihan</h3></div><div class="p-4 space-y-4"><div class="bg-white border border-outline-variant rounded-lg p-3 flex justify-between items-center"><div class="space-y-1"><p class="font-bold text-on-surface">SPP MA</p><p class="text-primary font-headline-md">Rp 660.000</p><p class="text-label-sm text-on-surface-variant">Agustus 2025 - Juni 2026</p></div><button class="bg-[#deea95] text-[#424b05] px-4 py-2 rounded-lg font-bold text-label-md hover:brightness-95 active:scale-95 transition-all">Proses</button></div><div class="bg-white border border-outline-variant rounded-lg p-3 flex justify-between items-center"><div class="space-y-1"><p class="font-bold text-on-surface">SPP PONDOK</p><p class="text-primary font-headline-md">Rp 16.500.000</p><p class="text-label-sm text-on-surface-variant">Maret 2024 - Juli 2026</p></div><button class="bg-[#deea95] text-[#424b05] px-4 py-2 rounded-lg font-bold text-label-md hover:brightness-95 active:scale-95 transition-all">Proses</button></div><div class="bg-white border border-outline-variant rounded-lg p-3 flex justify-between items-center"><div class="space-y-1"><p class="font-bold text-on-surface">DAFTAR ULANG PONDOK</p><p class="text-primary font-headline-md">Rp 600.000</p><p class="text-label-sm text-on-surface-variant">Tagihan tahunan</p></div><button class="bg-[#deea95] text-[#424b05] px-4 py-2 rounded-lg font-bold text-label-md hover:brightness-95 active:scale-95 transition-all">Proses</button></div><div class="bg-white border border-outline-variant rounded-lg p-3 flex justify-between items-center"><div class="space-y-1"><p class="font-bold text-on-surface">LAIN-LAIN PONDOK</p><p class="text-primary font-headline-md">Rp 200.000</p><p class="text-label-sm text-on-surface-variant">Tagihan wajib</p></div><button class="bg-[#deea95] text-[#424b05] px-4 py-2 rounded-lg font-bold text-label-md hover:brightness-95 active:scale-95 transition-all">Proses</button></div></div></div>
-</main>
-<!-- BottomNavBar -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 pb-safe bg-surface dark:bg-surface-dim border-t border-outline-variant dark:border-outline">
-<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 hover:text-primary dark:hover:text-inverse-primary transition-all" href="#">
-<span class="material-symbols-outlined">dashboard</span>
-<span class="text-label-sm font-label-sm">Beranda</span>
-</a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 hover:text-primary dark:hover:text-inverse-primary transition-all" href="#">
-<span class="material-symbols-outlined">group</span>
-<span class="text-label-sm font-label-sm">Siswa</span>
-</a>
-<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-4 py-1 scale-90 transition-all duration-150" href="#">
+<!-- Bill List Section -->
+<section class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm mb-gutter">
+<div class="px-md py-4 flex justify-between items-center bg-surface-container-lowest">
+<h3 class="font-headline-md text-headline-md text-on-surface">Daftar Tagihan</h3>
+<span class="bg-error-container text-on-error-container px-3 py-1 rounded-lg font-label-md text-label-md">5 Tagihan</span>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Bill Item 1 -->
+<div class="p-md flex items-center gap-md hover:bg-surface-container-low transition-colors group">
+<div class="relative flex items-center">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary-container cursor-pointer" type="checkbox"/>
+</div>
+<div class="flex-1">
+<p class="font-title-md text-title-md text-on-surface">SPP MA</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Januari 2026 - Juni 2026</p>
+</div>
+<div class="text-right">
+<span class="text-label-md text-on-surface-variant mr-1">Rp.</span>
+<span class="font-title-md text-title-md text-on-surface">360.000,-</span>
+</div>
+</div>
+<!-- Bill Item 2 -->
+<div class="p-md flex items-center gap-md hover:bg-surface-container-low transition-colors">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary-container cursor-pointer" type="checkbox"/>
+<div class="flex-1">
+<p class="font-title-md text-title-md text-on-surface">SPP PONPES</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Maret 2024 - Juli 2026</p>
+</div>
+<div class="text-right">
+<span class="text-label-md text-on-surface-variant mr-1">Rp.</span>
+<span class="font-title-md text-title-md text-on-surface">16.500.000,-</span>
+</div>
+</div>
+<!-- Bill Item 3 -->
+<div class="p-md flex items-center gap-md hover:bg-surface-container-low transition-colors">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary-container cursor-pointer" type="checkbox"/>
+<div class="flex-1">
+<p class="font-title-md text-title-md text-on-surface">Daftar Ulang</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Tagihan tahunan</p>
+</div>
+<div class="text-right">
+<span class="text-label-md text-on-surface-variant mr-1">Rp.</span>
+<span class="font-title-md text-title-md text-on-surface">600.000,-</span>
+</div>
+</div>
+<!-- Bill Item 4 -->
+<div class="p-md flex items-center gap-md hover:bg-surface-container-low transition-colors">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary-container cursor-pointer" type="checkbox"/>
+<div class="flex-1">
+<p class="font-title-md text-title-md text-on-surface">Laundry</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Januari 2026</p>
+</div>
+<div class="text-right">
+<span class="text-label-md text-on-surface-variant mr-1">Rp.</span>
+<span class="font-title-md text-title-md text-on-surface">110.000,-</span>
+</div>
+</div>
+<!-- Bill Item 5 -->
+<div class="p-md flex items-center gap-md hover:bg-surface-container-low transition-colors">
+<input checked="" class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary-container cursor-pointer" type="checkbox"/>
+<div class="flex-1">
+<p class="font-title-md text-title-md text-on-surface">Lain-lain</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Tagihan wajib</p>
+</div>
+<div class="text-right">
+<span class="text-label-md text-on-surface-variant mr-1">Rp.</span>
+<span class="font-title-md text-title-md text-on-surface">200.000,-</span>
+</div>
+</div>
+</div>
+<!-- Summary -->
+<div class="p-md bg-surface-container-low border-t border-dashed border-outline">
+<div class="flex justify-between items-center">
+<p class="font-body-lg text-body-lg text-on-surface">Total Tagihan:</p>
+<div class="text-right">
+<span class="font-headline-md text-headline-md text-primary mr-1">Rp.</span>
+<span class="font-headline-lg text-headline-lg text-on-surface">17.770.000,-</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Payment Selection Card -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-md shadow-sm">
+<div class="space-y-4">
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1.5 ml-1">Pilih Metode Pembayaran</label>
+<div class="relative">
+<select class="w-full pl-md pr-10 py-3 bg-surface border border-outline-variant rounded-lg text-body-md appearance-none focus:ring-2 focus:ring-primary focus:border-transparent outline-none cursor-pointer">
+<option>Transfer Bank (VA)</option>
+<option>E-Wallet (OVO/Dana)</option>
+<option>Tunai di Kantor</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-outline">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-1.5 ml-1">Input Nominal Pembayaran (Rp)</label>
+<div class="relative">
+<input class="w-full px-md py-3 bg-surface border border-outline-variant rounded-lg font-headline-md text-headline-md text-on-surface focus:ring-2 focus:ring-primary outline-none" type="text" value="17.770.000"/>
+</div>
+</div>
+<button class="w-full bg-primary py-4 rounded-xl text-white font-headline-md text-headline-md hover:bg-primary-container transition-all active:scale-95 duration-150 flex items-center justify-center gap-2 shadow-lg shadow-primary/10">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
-<span class="text-label-sm font-label-sm">Transaksi</span>
+                    Bayar Sekarang
+                </button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 h-20 bg-surface border-t border-outline-variant dark:border-outline flex justify-around items-center px-container-padding">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all p-2 rounded-xl active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
 </a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 hover:text-primary dark:hover:text-inverse-primary transition-all" href="#">
-<span class="material-symbols-outlined">history</span>
-<span class="text-label-sm font-label-sm">Riwayat</span>
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-md text-label-md">Students</span>
 </a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant p-2 hover:text-primary dark:hover:text-inverse-primary transition-all" href="#">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all p-2 rounded-xl active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Payment</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-all p-2 rounded-xl active:scale-90 duration-200" href="#">
 <span class="material-symbols-outlined">assessment</span>
-<span class="text-label-sm font-label-sm">Laporan</span>
+<span class="font-label-md text-label-md">Reports</span>
 </a>
 </nav>
 <script>
-        // Simple ripple-like effect for process buttons
-        document.querySelectorAll('button').forEach(button => {
-            button.addEventListener('mousedown', function(e) {
-                this.classList.add('scale-95');
-            });
-            button.addEventListener('mouseup', function() {
-                this.classList.remove('scale-95');
-            });
-            button.addEventListener('mouseleave', function() {
-                this.classList.remove('scale-95');
+        // Micro-interaction for checkboxes to update total (simulated)
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', () => {
+                // In a real app, this would recalculate the total based on checked values
+                console.log('Selection changed');
             });
         });
-
-        // Initialize active state logic (based on page purpose 'Transaksi')
-        // Transaksi is index 2 (0-indexed) or label "Transaksi"
-        // This is handled in the static HTML by applying style_active_navigation to the 3rd nav item
     </script>
 </body></html>
