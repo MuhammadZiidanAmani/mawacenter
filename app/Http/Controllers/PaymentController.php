@@ -25,6 +25,12 @@ class PaymentController extends Controller
     {
         $search = trim($request->string('search')->value());
         $selectedStudentId = (int) $request->integer('student_id');
+        $historyPeriod = trim($request->string('history_period')->value());
+        if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $historyPeriod)) {
+            $historyPeriod = now()->format('Y-m');
+        }
+        [$historyYear, $historyMonth] = array_map('intval', explode('-', $historyPeriod));
+        $historyPeriodLabel = $this->monthName($historyMonth).' '.$historyYear;
         $people = collect();
         $paymentHistory = collect();
 
@@ -62,6 +68,12 @@ class PaymentController extends Controller
             }
         }
 
+        if ($selectedStudentId < 1 && $people->count() === 1) {
+            $registrations = $people->first();
+            $identity = $registrations->firstWhere('identity_student_id', null) ?? $registrations->first();
+            $selectedStudentId = (int) $identity->id;
+        }
+
         if ($selectedStudentId > 0) {
             $selectedStudent = Student::where('is_active', true)->find($selectedStudentId);
             if ($selectedStudent) {
@@ -74,8 +86,9 @@ class PaymentController extends Controller
 
                 $sppHistory = SppPayment::with(['student.schoolClass.educationUnit', 'items'])
                     ->whereIn('student_id', $studentIds)
+                    ->whereYear('transaction_at', $historyYear)
+                    ->whereMonth('transaction_at', $historyMonth)
                     ->latest('transaction_at')
-                    ->limit(10)
                     ->get()
                     ->map(fn (SppPayment $payment) => [
                         'type' => 'spp',
@@ -96,8 +109,9 @@ class PaymentController extends Controller
 
                 $otherHistory = OtherPayment::with(['student.schoolClass.educationUnit', 'feeType', 'items'])
                     ->whereIn('student_id', $studentIds)
+                    ->whereYear('transaction_at', $historyYear)
+                    ->whereMonth('transaction_at', $historyMonth)
                     ->latest('transaction_at')
-                    ->limit(10)
                     ->get()
                     ->map(fn (OtherPayment $payment) => [
                         'type' => 'other',
@@ -119,7 +133,6 @@ class PaymentController extends Controller
                 $paymentHistory = $sppHistory
                     ->concat($otherHistory)
                     ->sortByDesc('timestamp')
-                    ->take(10)
                     ->values();
             }
         }
@@ -130,6 +143,8 @@ class PaymentController extends Controller
             'selectedStudentId' => $selectedStudentId,
             'people' => $people,
             'paymentHistory' => $paymentHistory,
+            'historyPeriod' => $historyPeriod,
+            'historyPeriodLabel' => $historyPeriodLabel,
             'transferAccount' => $this->transferAccount(),
             'mode' => 'payment',
         ]);
@@ -144,9 +159,13 @@ class PaymentController extends Controller
             'bill_keys.*' => ['string'],
             'optional_keys' => ['nullable', 'array'],
             'optional_keys.*' => ['string'],
+            'payment_month_counts' => ['nullable', 'array'],
+            'payment_month_counts.*' => ['integer', 'min:1', 'max:12'],
             'payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
             'paid_amount' => ['required', 'integer', 'min:1'],
-            'transfer_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'transfer_proof' => ['required_if:payment_method,Transfer', 'nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+        ], [
+            'transfer_proof.required_if' => 'Bukti transfer wajib diunggah untuk metode pembayaran Transfer.',
         ]);
 
         $selectedStudent = Student::with(['academicYear', 'schoolClass.educationUnit'])
@@ -165,12 +184,13 @@ class PaymentController extends Controller
             ->concat($validated['optional_keys'] ?? [])
             ->unique()
             ->values();
+        $paymentMonthCounts = collect($validated['payment_month_counts'] ?? []);
         if ($selectedKeys->isEmpty()) {
             return back()
                 ->withInput()
                 ->withErrors(['bill_keys' => 'Pilih minimal satu tagihan atau pembayaran opsional.']);
         }
-        $selectedTotal = $this->selectedBillTotal($selectedKeys, $registrations, $feeTypes, $sppPayments, $otherPayments, $laundryPayments);
+        $selectedTotal = $this->selectedBillTotal($selectedKeys, $paymentMonthCounts, $registrations, $feeTypes, $sppPayments, $otherPayments, $laundryPayments);
         if ($selectedTotal < 1) {
             return back()
                 ->withInput()
@@ -203,6 +223,7 @@ class PaymentController extends Controller
             }
 
             [$studentId, $group, $feeTypeId] = array_pad(explode(':', (string) $billKey, 3), 3, null);
+            $selectedMonthCount = (int) $paymentMonthCounts->get($this->paymentModeKey((string) $billKey), 0);
             $student = $registrations->get((int) $studentId);
             if (! $student || ! $group) {
                 continue;
@@ -214,7 +235,7 @@ class PaymentController extends Controller
                     continue;
                 }
 
-                $payment = $this->recordOptionalPayment($student, $feeType, $baseData, $remainingPayment, $otherPayments, $laundryPayments);
+                $payment = $this->recordOptionalPayment($student, $feeType, $baseData, $remainingPayment, $selectedMonthCount, $otherPayments, $laundryPayments);
                 if (! $payment) {
                     continue;
                 }
@@ -232,6 +253,29 @@ class PaymentController extends Controller
             }
 
             if ($group === 'spp') {
+                if ($selectedMonthCount > 0) {
+                    $quote = $sppPayments->quoteNextMonths($student, $selectedMonthCount);
+                    $paidAmount = min($remainingPayment, (int) $quote['remaining_amount']);
+                    if ($paidAmount < 1) {
+                        continue;
+                    }
+
+                    $payment = $sppPayments->record($student, $baseData + [
+                        'advance_month_count' => $selectedMonthCount,
+                        'paid_amount' => $paidAmount,
+                    ]);
+                    $createdPayments->push([
+                        'type' => 'spp',
+                        'id' => $payment->id,
+                        'label' => 'SPP '.$student->schoolClass?->educationUnit?->code,
+                        'receipt_url' => route('finance.spp.receipt', $payment),
+                        'download_url' => route('finance.spp.receipt.download', $payment),
+                    ]);
+                    $remainingPayment -= $paidAmount;
+
+                    continue;
+                }
+
                 $plan = $sppPayments->paymentPlan($student);
                 $monthCount = max(0, (int) ($plan['default_month_count'] ?: $plan['max_month_count']));
                 if ($monthCount < 1) {
@@ -270,16 +314,15 @@ class PaymentController extends Controller
                 }
 
                 if ($group === 'laundry') {
-                    $statuses = $laundryPayments->monthStatuses($student, $feeType, (int) $now->year);
-                    $firstPayable = collect($statuses['months'] ?? [])->first(fn (array $item) => ($item['remaining_amount'] ?? 0) > 0);
-                    if (! $firstPayable) {
+                    $currentLaundry = $this->currentLaundryItem($student, $feeType, $laundryPayments);
+                    if (! $currentLaundry) {
                         continue;
                     }
 
-                    $paidAmount = min($remainingPayment, (int) $firstPayable['remaining_amount']);
+                    $paidAmount = min($remainingPayment, (int) $currentLaundry['remaining_amount']);
                     $payment = $laundryPayments->record($student, $feeType, $baseData + [
-                        'year' => (int) $firstPayable['year'],
-                        'months' => [(int) $firstPayable['month']],
+                        'year' => (int) $currentLaundry['year'],
+                        'months' => [(int) $currentLaundry['month']],
                         'paid_amount' => $paidAmount,
                     ]);
                 } else {
@@ -398,12 +441,13 @@ class PaymentController extends Controller
         ]);
     }
 
-    private function selectedBillTotal(Collection $selectedKeys, Collection $registrations, Collection $feeTypes, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): int
+    private function selectedBillTotal(Collection $selectedKeys, Collection $paymentMonthCounts, Collection $registrations, Collection $feeTypes, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): int
     {
         $total = 0;
 
         foreach ($selectedKeys as $billKey) {
             [$studentId, $group, $feeTypeId] = array_pad(explode(':', (string) $billKey, 3), 3, null);
+            $selectedMonthCount = (int) $paymentMonthCounts->get($this->paymentModeKey((string) $billKey), 0);
             $student = $registrations->get((int) $studentId);
             if (! $student || ! $group) {
                 continue;
@@ -415,12 +459,20 @@ class PaymentController extends Controller
                     continue;
                 }
 
-                $total += $this->optionalPaymentTotal($student, $feeType, $otherPayments, $laundryPayments);
+                $total += $selectedMonthCount > 0 && $this->paymentGroup($feeType) === 'laundry'
+                    ? (int) $laundryPayments->quoteByMonthCount($student, $feeType, $selectedMonthCount)['remaining_amount']
+                    : $this->optionalPaymentTotal($student, $feeType, $otherPayments, $laundryPayments);
 
                 continue;
             }
 
             if ($group === 'spp') {
+                if ($selectedMonthCount > 0) {
+                    $total += (int) $sppPayments->quoteNextMonths($student, $selectedMonthCount)['remaining_amount'];
+
+                    continue;
+                }
+
                 $plan = $sppPayments->paymentPlan($student);
                 $monthCount = max(0, (int) ($plan['default_month_count'] ?: $plan['max_month_count']));
                 if ($monthCount > 0) {
@@ -436,9 +488,8 @@ class PaymentController extends Controller
 
             foreach ($matchedFeeTypes as $feeType) {
                 if ($group === 'laundry') {
-                    $statuses = $laundryPayments->monthStatuses($student, $feeType, (int) now()->year);
-                    $firstPayable = collect($statuses['months'] ?? [])->first(fn (array $item) => ($item['remaining_amount'] ?? 0) > 0);
-                    $total += (int) ($firstPayable['remaining_amount'] ?? 0);
+                    $currentLaundry = $this->currentLaundryItem($student, $feeType, $laundryPayments);
+                    $total += (int) ($currentLaundry['remaining_amount'] ?? 0);
                 } else {
                     $total += (int) $otherPayments->quote($student, $feeType, now())['remaining_amount'];
                 }
@@ -540,9 +591,10 @@ class PaymentController extends Controller
                     'amount_label' => $summary['amount_label'],
                     'remaining_amount' => $summary['remaining_amount'],
                     'detail_label' => $summary['detail_label'],
+                    'period_options' => $summary['period_options'] ?? [],
                 ];
             })
-            ->filter(fn (array $option) => (int) $option['remaining_amount'] > 0)
+            ->filter(fn (array $option) => (int) $option['remaining_amount'] > 0 || $option['period_options'] !== [])
             ->values()
             ->all();
     }
@@ -566,10 +618,25 @@ class PaymentController extends Controller
                 }
             }
 
+            $periodOptions = [];
+            for ($count = 1; $count <= 12; $count++) {
+                try {
+                    $forwardQuote = $sppPayments->quoteNextMonths($student, $count);
+                    $periodOptions[] = $this->periodOption($count, $forwardQuote);
+                } catch (ValidationException) {
+                    break;
+                }
+            }
+            if ($periodOptions !== []) {
+                $remainingAmount = (int) $periodOptions[0]['amount'];
+                $periods = $sppPayments->quoteNextMonths($student, 1)['items'] ?? [];
+            }
+
             return [
                 'amount_label' => $this->rupiah($remainingAmount),
                 'remaining_amount' => $remainingAmount,
-                'detail_label' => $monthCount > 0 ? $this->sppPeriodLabel($periods) : 'Tidak ada tagihan',
+                'detail_label' => $periods !== [] ? $this->sppPeriodLabel($periods) : 'Tidak ada tagihan',
+                'period_options' => count($periodOptions) > 1 ? $periodOptions : [],
             ];
         }
 
@@ -579,11 +646,10 @@ class PaymentController extends Controller
 
             foreach ($feeTypes as $feeType) {
                 try {
-                    $statuses = $laundryPayments->monthStatuses($student, $feeType, now()->year);
-                    $firstPayable = collect($statuses['months'] ?? [])->first(fn (array $item) => ($item['remaining_amount'] ?? 0) > 0);
-                    if ($firstPayable) {
-                        $remainingAmount += (int) $firstPayable['remaining_amount'];
-                        $detailLabel = ($firstPayable['month_name'] ?? 'Bulan ini').' '.$firstPayable['year'];
+                    $currentLaundry = $this->currentLaundryItem($student, $feeType, $laundryPayments);
+                    if ($currentLaundry) {
+                        $remainingAmount += (int) $currentLaundry['remaining_amount'];
+                        $detailLabel = ($currentLaundry['month_name'] ?? 'Bulan ini').' '.$currentLaundry['year'];
                     }
                 } catch (ValidationException) {
                     continue;
@@ -692,6 +758,23 @@ class PaymentController extends Controller
             ->filter(fn (FeeType $feeType) => ! $feeType->creates_bill || $this->paymentGroup($feeType) === 'laundry')
             ->map(function (FeeType $feeType) use ($student, $otherPayments, $laundryPayments) {
                 $amount = $this->optionalPaymentTotal($student, $feeType, $otherPayments, $laundryPayments);
+                $detail = $this->optionalPaymentDetail($student, $feeType, $laundryPayments);
+                $periodOptions = [];
+                if ($this->paymentGroup($feeType) === 'laundry') {
+                    for ($count = 1; $count <= 12; $count++) {
+                        try {
+                            $periodOptions[] = $this->periodOption($count, $laundryPayments->quoteByMonthCount($student, $feeType, $count));
+                        } catch (ValidationException) {
+                            break;
+                        }
+                    }
+                }
+
+                if ($periodOptions !== []) {
+                    $amount = (int) $periodOptions[0]['amount'];
+                    $detail = (string) $periodOptions[0]['detail'];
+                }
+
                 if ($amount < 1) {
                     return null;
                 }
@@ -709,11 +792,12 @@ class PaymentController extends Controller
                         'fee_type_id' => $feeType->id,
                     ]),
                     'amount_label' => $this->rupiah($amount),
-                    'detail' => $this->optionalPaymentDetail($student, $feeType, $laundryPayments),
-                    'detail_label' => $this->optionalPaymentDetail($student, $feeType, $laundryPayments),
+                    'detail' => $detail,
+                    'detail_label' => $detail,
                     'amount_value' => $amount,
                     'remaining_amount' => $amount,
                     'amount_number' => number_format($amount, 0, ',', '.').',-',
+                    'period_options' => count($periodOptions) > 1 ? $periodOptions : [],
                 ];
             })
             ->filter()
@@ -721,14 +805,24 @@ class PaymentController extends Controller
             ->all();
     }
 
+    private function currentLaundryItem(Student $student, FeeType $feeType, LaundryPaymentService $laundryPayments): ?array
+    {
+        $current = now();
+        $statuses = $laundryPayments->monthStatuses($student, $feeType, (int) $current->year);
+
+        return collect($statuses['months'] ?? [])->first(fn (array $item) => (int) ($item['year'] ?? 0) === (int) $current->year
+            && (int) ($item['month'] ?? 0) === (int) $current->month
+            && (int) ($item['remaining_amount'] ?? 0) > 0
+        );
+    }
+
     private function optionalPaymentTotal(Student $student, FeeType $feeType, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): int
     {
         try {
             if ($this->paymentGroup($feeType) === 'laundry') {
-                $statuses = $laundryPayments->monthStatuses($student, $feeType, (int) now()->year);
-                $firstPayable = collect($statuses['months'] ?? [])->first(fn (array $item) => ($item['remaining_amount'] ?? 0) > 0);
+                $currentLaundry = $this->currentLaundryItem($student, $feeType, $laundryPayments);
 
-                return (int) ($firstPayable['remaining_amount'] ?? 0);
+                return (int) ($currentLaundry['remaining_amount'] ?? 0);
             }
 
             return (int) ($otherPayments->quote($student, $feeType, now())['remaining_amount'] ?? 0);
@@ -744,32 +838,39 @@ class PaymentController extends Controller
         }
 
         try {
-            $statuses = $laundryPayments->monthStatuses($student, $feeType, (int) now()->year);
-            $firstPayable = collect($statuses['months'] ?? [])->first(fn (array $item) => ($item['remaining_amount'] ?? 0) > 0);
+            $currentLaundry = $this->currentLaundryItem($student, $feeType, $laundryPayments);
         } catch (ValidationException) {
-            $firstPayable = null;
+            $currentLaundry = null;
         }
 
-        return $firstPayable
-            ? ($firstPayable['month_name'] ?? $this->monthName((int) $firstPayable['month'])).' '.$firstPayable['year']
+        return $currentLaundry
+            ? ($currentLaundry['month_name'] ?? $this->monthName((int) $currentLaundry['month'])).' '.$currentLaundry['year']
             : 'Pembayaran opsional';
     }
 
-    private function recordOptionalPayment(Student $student, FeeType $feeType, array $baseData, int $remainingPayment, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): ?OtherPayment
+    private function recordOptionalPayment(Student $student, FeeType $feeType, array $baseData, int $remainingPayment, int $selectedMonthCount, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): ?OtherPayment
     {
         $group = $this->paymentGroup($feeType);
 
         if ($group === 'laundry') {
-            $statuses = $laundryPayments->monthStatuses($student, $feeType, (int) now()->year);
-            $firstPayable = collect($statuses['months'] ?? [])->first(fn (array $item) => ($item['remaining_amount'] ?? 0) > 0);
-            if (! $firstPayable) {
+            if ($selectedMonthCount > 0) {
+                $quote = $laundryPayments->quoteByMonthCount($student, $feeType, $selectedMonthCount);
+
+                return $laundryPayments->record($student, $feeType, $baseData + [
+                    'month_count' => $selectedMonthCount,
+                    'paid_amount' => min($remainingPayment, (int) $quote['remaining_amount']),
+                ]);
+            }
+
+            $currentLaundry = $this->currentLaundryItem($student, $feeType, $laundryPayments);
+            if (! $currentLaundry) {
                 return null;
             }
 
             return $laundryPayments->record($student, $feeType, $baseData + [
-                'year' => (int) $firstPayable['year'],
-                'months' => [(int) $firstPayable['month']],
-                'paid_amount' => min($remainingPayment, (int) $firstPayable['remaining_amount']),
+                'year' => (int) $currentLaundry['year'],
+                'months' => [(int) $currentLaundry['month']],
+                'paid_amount' => min($remainingPayment, (int) $currentLaundry['remaining_amount']),
             ]);
         }
 
@@ -782,6 +883,34 @@ class PaymentController extends Controller
         return $otherPayments->record($student, $feeType, $baseData + [
             'paid_amount' => $paidAmount,
         ]);
+    }
+
+    private function paymentModeKey(string $billKey): string
+    {
+        return str_replace(':', '_', $billKey);
+    }
+
+    private function periodOption(int $count, array $quote): array
+    {
+        return [
+            'count' => $count,
+            'amount' => (int) ($quote['remaining_amount'] ?? 0),
+            'detail' => $this->periodRangeLabel($quote),
+        ];
+    }
+
+    private function periodRangeLabel(array $quote): string
+    {
+        $start = $quote['period_start'] ?? null;
+        $end = $quote['period_end'] ?? null;
+        if (! $start || ! $end) {
+            return $this->sppPeriodLabel($quote['items'] ?? []);
+        }
+
+        $startLabel = $this->monthName((int) $start['month']).' '.$start['year'];
+        $endLabel = $this->monthName((int) $end['month']).' '.$end['year'];
+
+        return $startLabel === $endLabel ? $startLabel : $startLabel.' - '.$endLabel;
     }
 
     private function transferAccount(): array

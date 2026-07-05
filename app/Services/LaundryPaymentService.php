@@ -21,10 +21,39 @@ class LaundryPaymentService
         return $this->calculateSelection($student, $feeType, $year, $months);
     }
 
+    public function quoteByMonthCount(Student $student, FeeType $feeType, int $monthCount = 12): array
+    {
+        $start = CarbonImmutable::instance(now())->startOfMonth();
+        while ($start->lt(CarbonImmutable::instance(now())->startOfMonth()->addMonths(24))) {
+            $item = $this->calculatePeriodSelection($student, $feeType, [[
+                'year' => $start->year,
+                'month' => $start->month,
+            ]])['items'][0] ?? null;
+            if ($item && $item['remaining_amount'] > 0) {
+                break;
+            }
+            $start = $start->addMonth();
+        }
+
+        $periods = [];
+        for ($period = $start; $period->lt($start->addMonths($monthCount)); $period = $period->addMonth()) {
+            $periods[] = ['year' => $period->year, 'month' => $period->month];
+        }
+
+        $quote = $this->calculatePeriodSelection($student, $feeType, $periods);
+        $quote['period_start'] = $periods[0];
+        $quote['period_end'] = $periods[array_key_last($periods)];
+
+        return $quote;
+    }
+
     public function monthStatuses(Student $student, FeeType $feeType, int $year): array
     {
         $selection = $this->calculateSelection($student, $feeType, $year, range(1, 12));
-        $firstPayable = collect($selection['items'])->firstWhere('remaining_amount', '>', 0);
+        $currentPeriod = (now()->year * 100) + now()->month;
+        $firstPayable = collect($selection['items'])->first(fn (array $item) => (($item['year'] * 100) + $item['month']) >= $currentPeriod
+            && $item['remaining_amount'] > 0
+        );
 
         return [
             'first_payable_month' => $firstPayable['month'] ?? null,
@@ -36,9 +65,13 @@ class LaundryPaymentService
     {
         return DB::transaction(function () use ($student, $feeType, $data) {
             $student = Student::query()->lockForUpdate()->findOrFail($student->id);
-            $year = (int) $data['year'];
-            $this->ensureSequentialMonths($student, $feeType, $year, $data['months']);
-            $quote = $this->calculateSelection($student, $feeType, $year, $data['months']);
+            if (isset($data['month_count'])) {
+                $quote = $this->quoteByMonthCount($student, $feeType, (int) $data['month_count']);
+            } else {
+                $year = (int) $data['year'];
+                $this->ensureSequentialMonths($student, $feeType, $year, $data['months']);
+                $quote = $this->calculateSelection($student, $feeType, $year, $data['months']);
+            }
 
             if ($data['paid_amount'] > $quote['remaining_amount']) {
                 throw ValidationException::withMessages([
@@ -146,10 +179,72 @@ class LaundryPaymentService
         ];
     }
 
+    private function calculatePeriodSelection(Student $student, FeeType $feeType, array $periods): array
+    {
+        $items = [];
+        foreach ($periods as $period) {
+            $year = (int) $period['year'];
+            $month = (int) $period['month'];
+            $charge = $this->calculator->calculate(
+                $student,
+                'fee_type',
+                $feeType,
+                CarbonImmutable::create($year, $month, 1),
+            );
+            if ($charge['original_amount'] < 1) {
+                throw ValidationException::withMessages([
+                    'fee_type_id' => 'Set Laundry aktif untuk unit dan kelas siswa belum tersedia.',
+                ]);
+            }
+
+            $paidAmount = (int) OtherPaymentItem::where('student_id', $student->id)
+                ->where('fee_type_id', $feeType->id)
+                ->where('year', $year)
+                ->where('month', $month)
+                ->sum('paid_amount');
+            $remainingAmount = max(0, $charge['final_amount'] - $paidAmount);
+            if ($remainingAmount < 1) {
+                continue;
+            }
+
+            $items[] = [
+                'year' => $year,
+                'month' => $month,
+                'month_name' => $this->monthName($month),
+                'original_amount' => $charge['original_amount'],
+                'discount_amount' => $charge['discount_amount'],
+                'total_amount' => $charge['final_amount'],
+                'paid_amount' => $paidAmount,
+                'remaining_amount' => $remainingAmount,
+                'payment_status' => $paidAmount > 0 ? 'Belum Lunas' : 'Belum Dibayar',
+            ];
+        }
+
+        return [
+            'original_amount' => array_sum(array_column($items, 'original_amount')),
+            'discount_amount' => array_sum(array_column($items, 'discount_amount')),
+            'total_amount' => array_sum(array_column($items, 'total_amount')),
+            'paid_amount' => array_sum(array_column($items, 'paid_amount')),
+            'remaining_amount' => array_sum(array_column($items, 'remaining_amount')),
+            'payment_status' => array_sum(array_column($items, 'remaining_amount')) === 0 ? 'Lunas' : 'Belum Lunas',
+            'items' => $items,
+        ];
+    }
+
     private function ensureSequentialMonths(Student $student, FeeType $feeType, int $year, array $months): void
     {
         $selectedMonths = array_values(array_unique(array_map('intval', $months)));
         sort($selectedMonths);
+        $currentPeriod = (now()->year * 100) + now()->month;
+        $containsPastMonth = collect($selectedMonths)->contains(
+            fn (int $month) => (($year * 100) + $month) < $currentPeriod,
+        );
+        if ($containsPastMonth) {
+            throw ValidationException::withMessages([
+                'months' => 'Pembayaran Laundry untuk bulan sebelumnya sudah ditutup. Pilih bulan berjalan atau bulan berikutnya.',
+            ]);
+        }
+
         $yearSelection = $this->calculateSelection($student, $feeType, $year, range(1, 12));
         $selectedItems = array_filter(
             $yearSelection['items'],
@@ -165,7 +260,9 @@ class LaundryPaymentService
 
         $payableMonths = array_values(array_map(
             fn (array $item) => $item['month'],
-            array_filter($yearSelection['items'], fn (array $item) => $item['remaining_amount'] > 0),
+            array_filter($yearSelection['items'], fn (array $item) => (($item['year'] * 100) + $item['month']) >= $currentPeriod
+                && $item['remaining_amount'] > 0
+            ),
         ));
         $expectedMonths = array_slice($payableMonths, 0, count($selectedMonths));
 

@@ -22393,6 +22393,91 @@ html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page
     display: grid !important;
 }
 
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter {
+    padding: 16px !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    grid-template-rows: 40px !important;
+    align-items: center !important;
+    gap: 12px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter label {
+    display: contents !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter label > span {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter input,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter button {
+    box-sizing: border-box !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter input {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 12px !important;
+    color: #020617 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter button {
+    grid-column: 3 !important;
+    grid-row: 1 !important;
+    align-self: stretch !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    color: #ffffff !important;
+    background: #157144 !important;
+    border: 1px solid #157144 !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter button:hover {
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+    box-shadow: 0 4px 10px rgba(21, 113, 68, 0.18) !important;
+    transform: translateY(-1px) !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter button:active {
+    box-shadow: none !important;
+    transform: translateY(0) !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter button:focus-visible {
+    outline: 0 !important;
+    box-shadow: 0 0 0 3px rgba(21, 113, 68, 0.10) !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-empty {
+    min-height: 64px !important;
+    padding: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    color: #707971 !important;
+    background: #fbfdf8 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+}
+
 html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-item {
     min-height: 64px !important;
     padding: 12px 16px !important;
@@ -22785,6 +22870,18 @@ html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page
     border-top: 1px solid #e5e7eb !important;
 }
 
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-optional-section.is-only-optional {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head span.is-administration-paid {
+    color: #157144 !important;
+    background: #e9f8ef !important;
+    border: 1px solid #dfe5dc !important;
+}
+
 html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-optional-head {
     min-height: 36px !important;
     padding: 0 16px !important;
@@ -23036,7 +23133,7 @@ html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page
 
 /* Transaksi Baru final spacing and action compactness per app standard. */
 html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-transaction-workspace {
-    padding: 24px 32px 32px !important;
+    padding: 0 32px 32px !important;
 }
 
 html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-layout {
@@ -23174,7 +23271,7 @@ html body .payment-receipt-result .payment-result-actions .button {
 
 @media (width <= 760px) {
     html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-transaction-workspace {
-        padding: 16px !important;
+        padding: 0 16px 16px !important;
     }
 
     html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-layout,
@@ -23189,10 +23286,382 @@ html body .payment-receipt-result .payment-result-actions .button {
     html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls {
         padding: 12px !important;
     }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-heading h1 {
+        font-size: 22px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter {
+        grid-template-columns: auto minmax(0, 1fr) auto !important;
+        padding: 12px !important;
+        gap: 8px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter button {
+        padding: 0 12px !important;
+    }
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-upload-field {
+    justify-content: center !important;
+    text-align: center !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-upload-copy {
+    justify-items: center !important;
+    text-align: center !important;
 }
 
 @media (width <= 520px) {
     html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference .payment-one-stop-bill {
         grid-template-columns: 12px minmax(0, 1fr) minmax(116px, auto) !important;
     }
+}
+
+/* Transaksi Baru: bill and history sections use padded cards without table dividers. */
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bills-card,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-card {
+    padding: 16px !important;
+    display: grid !important;
+    gap: 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-list {
+    display: grid !important;
+    gap: 12px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference .payment-one-stop-bill,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-item {
+    padding: 12px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference .payment-one-stop-bill:last-of-type,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-item:last-child {
+    border-bottom: 1px solid #d1d5db !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-optional-section,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-optional-section.is-only-optional {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: grid !important;
+    gap: 12px !important;
+    border: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-optional-head {
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-total {
+    padding: 12px 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-filter {
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-empty {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bills-card,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-card {
+        padding: 12px !important;
+        gap: 12px !important;
+    }
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference .payment-one-stop-bill input[type="checkbox"] {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    appearance: auto !important;
+    accent-color: auto !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference .payment-one-stop-bill {
+    grid-template-columns: auto minmax(0, 1fr) minmax(126px, auto) !important;
+}
+
+@media (width <= 520px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference .payment-one-stop-bill {
+        grid-template-columns: auto minmax(0, 1fr) minmax(116px, auto) !important;
+    }
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference .payment-one-stop-bill {
+    grid-template-columns: auto minmax(0, 1fr) max-content !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference .payment-one-stop-bill-amount,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-total-amount {
+    display: inline-flex !important;
+    flex: 0 0 auto !important;
+    grid-template-columns: none !important;
+    align-items: baseline !important;
+    justify-content: flex-end !important;
+    justify-self: end !important;
+    gap: 6px !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin-left: auto !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference .payment-one-stop-bill-amount > span,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-total-amount > span {
+    display: inline !important;
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    text-align: left !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-total {
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-total > span:first-child {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+@media (width <= 520px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-list-reference .payment-one-stop-bill {
+        grid-template-columns: auto minmax(0, 1fr) max-content !important;
+    }
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head h2 {
+    min-width: 0 !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head .payment-one-stop-history-filter {
+    display: grid !important;
+    grid-template-columns: 150px !important;
+    grid-template-rows: 40px !important;
+    align-items: center !important;
+    justify-self: end !important;
+    gap: 12px !important;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head .payment-one-stop-history-filter input[type="month"] {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 150px !important;
+    min-width: 0 !important;
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        align-items: center !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head .payment-one-stop-history-filter {
+        grid-template-columns: 150px !important;
+        justify-self: end !important;
+        width: auto !important;
+        gap: 12px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head .payment-one-stop-history-filter input[type="month"] {
+        width: 150px !important;
+    }
+}
+
+@media (width <= 430px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
+        grid-template-columns: 1fr !important;
+        align-items: stretch !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head h2 {
+        grid-column: 1 !important;
+        grid-row: 2 !important;
+        width: 90px !important;
+        max-width: 90px !important;
+        white-space: normal !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head .payment-one-stop-history-filter {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        justify-self: end !important;
+    }
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-period-select {
+    display: grid !important;
+    grid-template-columns: auto minmax(150px, 1fr) !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: min(100%, 310px) !important;
+    margin-top: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-period-select > span {
+    color: #475569 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-period-select select {
+    width: 100% !important;
+    min-height: 34px !important;
+    padding: 5px 30px 5px 9px !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+@media (width <= 520px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-period-select {
+        grid-template-columns: 1fr !important;
+        gap: 4px !important;
+        width: min(100%, 210px) !important;
+    }
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-item {
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    grid-template-rows: auto auto !important;
+    align-items: start !important;
+    column-gap: 12px !important;
+    row-gap: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-copy {
+    grid-column: 1 !important;
+    grid-row: 1 / 3 !important;
+    overflow-wrap: anywhere !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-amount {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    justify-self: end !important;
+    justify-content: flex-end !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-actions {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    justify-self: end !important;
+    justify-content: flex-end !important;
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-item {
+        grid-template-columns: minmax(0, 1fr) max-content !important;
+        grid-template-rows: auto auto !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-amount,
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-actions {
+        justify-content: flex-end !important;
+    }
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head h2,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-optional-head > strong,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-bill-total > span:first-child,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls > label > span,
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head h2 {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+}
+
+@media (width <= 430px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head h2 {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        width: auto !important;
+        max-width: none !important;
+        white-space: normal !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head .payment-one-stop-history-filter {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        grid-template-columns: 90px !important;
+        gap: 0 !important;
+        justify-self: end !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-history-head .payment-one-stop-history-filter input[type="month"] {
+        width: 90px !important;
+    }
+
 }

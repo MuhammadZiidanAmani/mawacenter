@@ -120,10 +120,31 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         const isTransfer = method?.value === 'Transfer';
         if (transferPanel) transferPanel.hidden = !isTransfer;
         if (transferUpload) transferUpload.hidden = !isTransfer;
+        if (transferFile) {
+            transferFile.required = isTransfer;
+            if (!isTransfer) transferFile.setCustomValidity('');
+        }
     };
 
     bills.forEach((bill) => {
         bill.addEventListener('change', () => renderTotal(true));
+    });
+
+    form.querySelectorAll('[data-payment-period-select]').forEach((select) => {
+        select.addEventListener('change', () => {
+            const row = select.closest('[data-payment-bill-row]');
+            const bill = row?.querySelector('[data-payment-bill]');
+            const detail = row?.querySelector('[data-payment-bill-detail]');
+            const amount = row?.querySelector('[data-payment-bill-amount]');
+            const option = select.selectedOptions?.[0];
+            if (!row || !bill || !option) return;
+
+            bill.dataset.amount = option.dataset.amount || '0';
+            bill.checked = true;
+            if (detail) detail.textContent = option.dataset.detail || '';
+            if (amount) amount.textContent = `${formatter.format(Number(option.dataset.amount || 0))},-`;
+            renderTotal(true);
+        });
     });
 
     paidInput?.addEventListener('input', () => {
@@ -133,7 +154,14 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     method?.addEventListener('change', renderTransferFields);
 
     transferFile?.addEventListener('change', () => {
+        transferFile.setCustomValidity('');
         if (uploadName) uploadName.textContent = transferFile.files?.[0]?.name || 'Pilih file bukti transfer';
+    });
+
+    transferFile?.addEventListener('invalid', () => {
+        if (method?.value === 'Transfer' && !transferFile.files?.length) {
+            transferFile.setCustomValidity('Bukti transfer wajib diunggah untuk metode pembayaran Transfer.');
+        }
     });
 
     form.querySelector('[data-payment-copy-account]')?.addEventListener('click', async (event) => {
@@ -155,6 +183,12 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
 
     renderTransferFields();
     renderTotal(false);
+});
+
+document.querySelectorAll('[data-payment-history-period]').forEach((input) => {
+    input.addEventListener('change', () => {
+        if (input.value) input.form?.requestSubmit();
+    });
 });
 
 document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {

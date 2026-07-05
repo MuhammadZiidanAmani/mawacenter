@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -60,11 +61,147 @@ class PaymentMenuTest extends TestCase
             ->get('/keuangan/pembayaran')
             ->assertOk()
             ->assertSee('Transaksi Baru')
-            ->assertSee('Cari Siswa')
+            ->assertSee('Cari siswa')
             ->assertDontSee('Riwayat SPP')
             ->assertDontSee('Riwayat Daftar Ulang')
             ->assertDontSee('Riwayat Laundry')
             ->assertDontSee('Riwayat Lain-lain');
+    }
+
+    public function test_transfer_payment_requires_transfer_proof(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        $student = Student::create([
+            'nis' => '3000', 'name' => 'Siswa Transfer', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->from(route('finance.payments.index'))
+            ->post(route('finance.payments.store'), [
+                'student_id' => $student->id,
+                'search' => $student->name,
+                'payment_method' => 'Transfer',
+                'paid_amount' => 100000,
+            ])
+            ->assertRedirect(route('finance.payments.index'))
+            ->assertSessionHasErrors([
+                'transfer_proof' => 'Bukti transfer wajib diunggah untuk metode pembayaran Transfer.',
+            ]);
+
+        $this->assertDatabaseCount('spp_payments', 0);
+        $this->assertDatabaseCount('other_payments', 0);
+    }
+
+    public function test_selecting_a_student_shows_their_payment_history_for_the_selected_month_below_the_form(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        $selectedStudent = Student::create([
+            'nis' => '3001', 'name' => 'Siswa Terpilih', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true,
+        ]);
+        $otherStudent = Student::create([
+            'nis' => '3002', 'name' => 'Siswa Lain', 'gender' => 'P',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true,
+        ]);
+        $feeType = FeeType::create([
+            'education_unit_id' => $unit->id, 'school_class_id' => $class->id,
+            'academic_year_id' => $year->id, 'payment_group' => 'lain-lain', 'code' => 'BUKU',
+            'name' => 'Pembayaran Buku', 'amount' => 200000, 'period' => 'Sekali Bayar', 'is_active' => true,
+        ]);
+        $selectedPayment = OtherPayment::create([
+            'student_id' => $selectedStudent->id, 'fee_type_id' => $feeType->id,
+            'transaction_at' => '2026-07-05 09:00:00', 'payment_method' => 'Cash', 'status' => 'Diterima',
+            'original_amount' => 200000, 'total_amount' => 200000, 'paid_amount' => 200000,
+            'remaining_amount' => 0, 'payment_status' => 'Lunas',
+        ]);
+        foreach (range(1, 10) as $minute) {
+            OtherPayment::create([
+                'student_id' => $selectedStudent->id, 'fee_type_id' => $feeType->id,
+                'transaction_at' => sprintf('2026-07-05 09:%02d:00', $minute),
+                'payment_method' => 'Cash', 'status' => 'Diterima',
+                'original_amount' => 200000, 'total_amount' => 200000, 'paid_amount' => 200000,
+                'remaining_amount' => 0, 'payment_status' => 'Lunas',
+            ]);
+        }
+        $olderPayment = OtherPayment::create([
+            'student_id' => $selectedStudent->id, 'fee_type_id' => $feeType->id,
+            'transaction_at' => '2026-06-30 09:00:00', 'payment_method' => 'Cash', 'status' => 'Diterima',
+            'original_amount' => 200000, 'total_amount' => 200000, 'paid_amount' => 200000,
+            'remaining_amount' => 0, 'payment_status' => 'Lunas',
+        ]);
+        $otherPayment = OtherPayment::create([
+            'student_id' => $otherStudent->id, 'fee_type_id' => $feeType->id,
+            'transaction_at' => '2026-07-05 10:00:00', 'payment_method' => 'Transfer', 'status' => 'Diterima',
+            'original_amount' => 200000, 'total_amount' => 200000, 'paid_amount' => 200000,
+            'remaining_amount' => 0, 'payment_status' => 'Lunas',
+        ]);
+
+        $returnUrl = route('finance.payments.index', [
+            'search' => $selectedStudent->name,
+            'student_id' => $selectedStudent->id,
+            'history_period' => '2026-07',
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.index', [
+                'search' => $selectedStudent->name,
+                'history_period' => '2026-07',
+            ]))
+            ->assertOk()
+            ->assertSeeInOrder([
+                'payment-one-stop-profile-card',
+                'payment-one-stop-pay-form',
+                'payment-one-stop-history-card',
+            ], false)
+            ->assertSee('Riwayat Pembayaran')
+            ->assertDontSee('11 transaksi')
+            ->assertDontSee('>Periode<', false)
+            ->assertSee('name="history_period" value="2026-07"', false)
+            ->assertSee(route('finance.other.receipt', $selectedPayment), false)
+            ->assertSee('name="return_url" value="'.e($returnUrl).'"', false)
+            ->assertDontSee(route('finance.other.receipt', $olderPayment), false)
+            ->assertDontSee(route('finance.other.receipt', $otherPayment), false);
+
+        $this->delete(route('finance.other.destroy', $selectedPayment), ['return_url' => $returnUrl])
+            ->assertRedirect($returnUrl);
+        $this->assertDatabaseMissing('other_payments', ['id' => $selectedPayment->id]);
+    }
+
+    public function test_optional_only_bills_show_paid_administration_without_a_second_divider(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-07-05 10:00:00'));
+
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Pondok Pesantren', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'Asrama A', 'level' => 'Asrama']);
+        $student = Student::create([
+            'nis' => '4001', 'name' => 'Siswa Opsional', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id, 'school_class_id' => $class->id,
+            'academic_year_id' => $year->id, 'payment_group' => 'laundry', 'code' => 'LAUNDRY-OPSIONAL',
+            'name' => 'Laundry Bulanan', 'amount' => 110000, 'period' => 'Bulanan',
+            'creates_bill' => false, 'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.index', [
+                'search' => $student->name,
+                'history_period' => '2026-07',
+            ]))
+            ->assertOk()
+            ->assertSee('Lunas Administrasi')
+            ->assertDontSee('1 Tagihan')
+            ->assertSee('payment-one-stop-optional-section is-only-optional', false)
+            ->assertSee('1 Pilihan')
+            ->assertSee('Juli 2026')
+            ->assertDontSee('Januari 2026');
     }
 
     public function test_transaction_hub_groups_one_student_across_education_units(): void
@@ -97,7 +234,7 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get('/keuangan/pembayaran?search=Ahmad')
             ->assertOk()
-            ->assertSee('Ahmad Fauzan')
+            ->assertSee('AHMAD FAUZAN')
             ->assertDontSee('2 unit')
             ->assertSee('MTS-001')
             ->assertSee('PP-099')
@@ -172,6 +309,8 @@ class PaymentMenuTest extends TestCase
 
     public function test_laundry_payment_uses_monthly_flow_like_spp(): void
     {
+        $this->travelTo(CarbonImmutable::parse('2026-01-16 09:00:00'));
+
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Pondok Pesantren', 'is_active' => true]);
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7A', 'level' => 'Kelas 7']);
@@ -199,8 +338,8 @@ class PaymentMenuTest extends TestCase
         $this->get('/keuangan/pembayaran/lain-lain/create?category=laundry')
             ->assertOk()
             ->assertSee('data-laundry-form', false)
-            ->assertSee('name="months[]"', false)
-            ->assertSee('Biaya Laundry / Bulan');
+            ->assertSee('data-laundry-month-values', false)
+            ->assertSee('Biaya / Bulan');
 
         $this->getJson('/keuangan/pembayaran/lain-lain/months?category=laundry&student_id='.$student->id.'&fee_type_id='.$laundry->id.'&year=2026')
             ->assertOk()
@@ -245,6 +384,113 @@ class PaymentMenuTest extends TestCase
             ->assertSee('Januari 2026, Februari 2026')
             ->assertSee('data-other-edit-url="'.route('finance.other.show', $payment).'"', false)
             ->assertSee('data-other-delete-url="'.route('finance.other.destroy', $payment).'"', false);
+
+        $this->travelTo(CarbonImmutable::parse('2026-03-01 09:00:00'));
+        $this->getJson('/keuangan/pembayaran/lain-lain/quote?category=laundry&student_id='.$student->id.'&fee_type_id='.$laundry->id.'&year=2026&months[]=2')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('months')
+            ->assertJsonPath('errors.months.0', 'Pembayaran Laundry untuk bulan sebelumnya sudah ditutup. Pilih bulan berjalan atau bulan berikutnya.');
+    }
+
+    public function test_transaction_hub_can_pay_spp_through_a_selected_future_month(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-07-05 10:00:00'));
+
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Pondok Pesantren', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7A', 'level' => 'Kelas 7']);
+        $student = Student::create([
+            'nis' => 'SPP-12',
+            'name' => 'Siswa SPP Tahunan',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01',
+            'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id,
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'spp',
+            'code' => 'SPP-7A',
+            'name' => 'SPP 7A',
+            'amount' => 300000,
+            'period' => 'Bulanan',
+            'creates_bill' => true,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create());
+        $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
+            ->assertOk()
+            ->assertSee('Bayar sampai')
+            ->assertSee('Juli 2026 - Desember 2026');
+
+        $this->post('/keuangan/pembayaran', [
+            'student_id' => $student->id,
+            'search' => $student->name,
+            'bill_keys' => [$student->id.':spp'],
+            'payment_month_counts' => [$student->id.'_spp' => 6],
+            'payment_method' => 'Cash',
+            'paid_amount' => 1800000,
+        ])
+            ->assertRedirect();
+
+        $this->assertDatabaseCount('spp_payments', 1);
+        $this->assertDatabaseCount('spp_payment_items', 6);
+        $this->assertDatabaseHas('spp_payment_items', ['year' => 2026, 'month' => 7, 'paid_amount' => 300000]);
+        $this->assertDatabaseHas('spp_payment_items', ['year' => 2026, 'month' => 12, 'paid_amount' => 300000]);
+    }
+
+    public function test_transaction_hub_can_pay_laundry_for_two_consecutive_months(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-07-05 10:00:00'));
+
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Pondok Pesantren', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7A', 'level' => 'Kelas 7']);
+        $student = Student::create([
+            'nis' => 'LD-12',
+            'name' => 'Siswa Laundry Tahunan',
+            'gender' => 'P',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        $laundry = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'laundry',
+            'code' => 'LAUNDRY-7A',
+            'name' => 'Laundry 7A',
+            'amount' => 100000,
+            'period' => 'Bulanan',
+            'creates_bill' => false,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create());
+        $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
+            ->assertOk()
+            ->assertSee('Bayar sampai')
+            ->assertSee('Juli 2026 - Agustus 2026');
+
+        $this->post('/keuangan/pembayaran', [
+            'student_id' => $student->id,
+            'search' => $student->name,
+            'optional_keys' => [$student->id.':optional:'.$laundry->id],
+            'payment_month_counts' => [$student->id.'_optional_'.$laundry->id => 2],
+            'payment_method' => 'Cash',
+            'paid_amount' => 200000,
+        ])
+            ->assertRedirect();
+
+        $this->assertDatabaseCount('other_payments', 1);
+        $this->assertDatabaseCount('other_payment_items', 2);
+        $this->assertDatabaseHas('other_payment_items', ['year' => 2026, 'month' => 7, 'paid_amount' => 100000]);
+        $this->assertDatabaseHas('other_payment_items', ['year' => 2026, 'month' => 8, 'paid_amount' => 100000]);
     }
 
     public function test_registration_payment_pending_does_not_reduce_the_remaining_charge(): void

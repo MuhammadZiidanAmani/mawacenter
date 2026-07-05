@@ -46,6 +46,7 @@ Larangan warna:
 - Jangan pakai #d8e2ef atau #dfe7f1 sebagai border default.
 - Jangan memakai palet slate/blue Tailwind seperti slate-50, slate-500, blue-50, blue-600 sebagai warna dominan halaman.
 - Warna biru hanya boleh dipakai sangat terbatas untuk info, chart, atau tautan bantuan.
+- Checkbox native boleh memakai aksen biru bawaan browser seperti checkbox "Pilih Semua" pada menu Pindah Kelas.
 
 Standar Tipografi
 
@@ -102,8 +103,11 @@ Kanvas dan area kerja:
 
 Heading halaman:
 - Jarak judul ke deskripsi: 4px
-- Jarak heading ke filter/search: 16px
-- Jarak heading ke konten langsung tanpa filter: 20px
+- Jarak deskripsi ke filter/search: 16px
+- Jarak deskripsi ke card/konten utama langsung tanpa filter: 16px
+- Jika halaman tidak memiliki deskripsi, jarak judul ke filter/search: 16px
+- Jika halaman tidak memiliki deskripsi dan filter, jarak judul ke card/konten utama: 16px
+- Jarak setelah blok heading selalu dihitung dari elemen terakhir: dari deskripsi jika tersedia, atau dari judul jika tidak ada deskripsi
 - Jarak heading ke tombol aksi kanan: minimal 12px
 - Judul dan deskripsi tidak perlu dibungkus card jika hanya menjadi pengantar halaman
 
@@ -200,6 +204,12 @@ Form pembayaran dan master data boleh memakai bantuan otomatis:
 - Format tanggal Indonesia
 - Filter kelas berdasarkan unit
 - Tombol submit disabled sampai pilihan valid
+
+Checkbox:
+- Gunakan checkbox native browser seperti checkbox "Pilih Semua" pada menu Pindah Kelas
+- Jangan menetapkan width, height, radius, atau membuat kotak centang pengganti jika tidak dibutuhkan
+- Gunakan accent-color: auto agar kondisi terpilih memakai aksen biru native browser, bukan aksen hijau
+- Posisi checkbox harus sejajar vertikal dengan label atau isi baris
 
 Tombol dan Aksi
 

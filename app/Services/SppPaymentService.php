@@ -13,6 +13,7 @@ use Illuminate\Validation\ValidationException;
 class SppPaymentService
 {
     private const DEFAULT_BILLING_START_DATE = '2025-08-01';
+
     private const JULY_INCLUDED_IN_REGISTRATION_UNITS = ['MTS', 'MA'];
 
     public function __construct(
@@ -38,6 +39,55 @@ class SppPaymentService
         }
 
         return $this->calculatePeriodSelection($student, $periods);
+    }
+
+    public function quoteNextMonths(Student $student, int $monthCount = 12): array
+    {
+        $current = CarbonImmutable::instance(now())->startOfMonth();
+        $arrears = collect($this->outstandingPeriods($student))
+            ->first(fn (array $period) => CarbonImmutable::create($period['year'], $period['month'], 1)->lt($current));
+
+        if ($arrears) {
+            throw ValidationException::withMessages([
+                'payment_modes' => 'Pembayaran SPP 12 bulan tersedia setelah tunggakan sebelum bulan berjalan dilunasi.',
+            ]);
+        }
+
+        $start = $current;
+        while ($start->lt($current->addMonths(24))) {
+            if ($this->periodIsPayable($student, $start->year, $start->month)) {
+                $charge = $this->calculator->calculateSppMonth($student, $start->year, $start->month);
+                $paid = (int) SppPaymentItem::where('student_id', $student->id)
+                    ->where('year', $start->year)
+                    ->where('month', $start->month)
+                    ->sum('paid_amount');
+                if ($charge['final_amount'] > $paid) {
+                    break;
+                }
+            }
+
+            $start = $start->addMonth();
+        }
+
+        $periods = [];
+        for ($period = $start; $period->lt($start->addMonths($monthCount)); $period = $period->addMonth()) {
+            if ($this->periodIsPayable($student, $period->year, $period->month)) {
+                $periods[] = ['year' => $period->year, 'month' => $period->month];
+            }
+        }
+
+        if ($periods === []) {
+            throw ValidationException::withMessages([
+                'payment_modes' => 'Tagihan SPP 12 bulan belum tersedia untuk siswa ini.',
+            ]);
+        }
+
+        $quote = $this->calculatePeriodSelection($student, $periods);
+        $quote['period_start'] = ['year' => $start->year, 'month' => $start->month];
+        $end = $start->addMonths($monthCount - 1);
+        $quote['period_end'] = ['year' => $end->year, 'month' => $end->month];
+
+        return $quote;
     }
 
     public function paymentPlan(Student $student): array
@@ -155,7 +205,9 @@ class SppPaymentService
     {
         return DB::transaction(function () use ($data, $student) {
             $student = Student::query()->lockForUpdate()->findOrFail($student->id);
-            if (isset($data['month_count'])) {
+            if (isset($data['advance_month_count'])) {
+                $quote = $this->quoteNextMonths($student, (int) $data['advance_month_count']);
+            } elseif (isset($data['month_count'])) {
                 $quote = $this->quoteByMonthCount($student, (int) $data['month_count']);
             } else {
                 $year = (int) $data['year'];
