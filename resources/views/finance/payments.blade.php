@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $mode === 'import' ? 'Import Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Transaksi Baru') }} - MA'WA CENTER</title>
+    <title>{{ $mode === 'import' ? 'Import Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Pembayaran') }} - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
 <div class="app-shell">
     @include('partials.sidebar', [
-        'activeMenu' => 'payment',
-        'activePaymentMenu' => $mode === 'history' ? 'history' : ($mode === 'import' ? 'import' : 'transaction'),
+        'activeMenu' => $mode === 'history' ? 'reports' : 'payment',
+        'activeReportMenu' => $mode === 'history' ? 'history' : '',
     ])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
 
@@ -21,8 +21,24 @@
             <div class="topbar-spacer"></div>
         </header>
 
-        <main @class(['payment-hub-page', 'payment-transaction-page' => $mode === 'payment', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
-            <section @class(['payment-hub-heading' => $mode === 'import', 'student-workspace payment-transaction-workspace' => $mode === 'payment', 'student-workspace payment-history-workspace' => $mode === 'history'])>
+        <main @class(['payment-hub-page', 'payment-import-page' => $mode === 'import', 'payment-transaction-page' => $mode === 'payment', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
+            <section @class(['payment-hub-heading payment-import-page-heading' => $mode === 'import', 'student-workspace payment-transaction-workspace' => $mode === 'payment', 'student-workspace payment-history-workspace' => $mode === 'history'])>
+                @php
+                    $icon = function (string $name) {
+                        return match ($name) {
+                            'search' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>',
+                            'x' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>',
+                            'check' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"></path></svg>',
+                            'upload' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 8 5-5 5 5"></path><path d="M5 19h14"></path></svg>',
+                            'arrow-left' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path><path d="M9 12h10"></path></svg>',
+                            'copy' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
+                            'receipt' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2v20l3-2 3 2 3-2 3 2 4-2V2z"></path><path d="M8 7h8"></path><path d="M8 11h8"></path><path d="M8 15h5"></path></svg>',
+                            'download' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>',
+                            'trash' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 15H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>',
+                            default => '',
+                        };
+                    };
+                @endphp
                 @if($mode === 'payment')
                     @php
                         $selectedStudentId = (int) ($selectedStudentId ?? 0);
@@ -32,19 +48,6 @@
                         $selectedIdentity = $selectedRegistrations
                             ? ($selectedRegistrations->firstWhere('identity_student_id', null) ?? $selectedRegistrations->first())
                             : null;
-                        $icon = function (string $name) {
-                            return match ($name) {
-                                'search' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>',
-                                'x' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>',
-                                'check' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"></path></svg>',
-                                'upload' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 8 5-5 5 5"></path><path d="M5 19h14"></path></svg>',
-                                'copy' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
-                                'receipt' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2v20l3-2 3 2 3-2 3 2 4-2V2z"></path><path d="M8 7h8"></path><path d="M8 11h8"></path><path d="M8 15h5"></path></svg>',
-                                'download' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>',
-                                'trash' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 15H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>',
-                                default => '',
-                            };
-                        };
                         $createdReceipts = collect(session('payment_receipts', []));
                     @endphp
                     @if(session('success') && $createdReceipts->isNotEmpty())
@@ -64,8 +67,11 @@
                     <div class="payment-one-stop-layout">
                         <section class="payment-one-stop-main">
                             <div class="payment-one-stop-heading">
-                                <h1>Transaksi Baru</h1>
-                                <p>Cari siswa, pilih tagihan, lalu proses pembayaran dari satu halaman.</p>
+                                <div>
+                                    <h1>Pembayaran</h1>
+                                    <p>Cari siswa, pilih tagihan, lalu proses pembayaran.</p>
+                                </div>
+                                <a href="{{ route('finance.payments.import') }}" class="button payment-import-action">{!! $icon('upload') !!}<span>Import</span></a>
                             </div>
                             <form method="GET" action="{{ route('finance.payments.index') }}" class="payment-one-stop-search">
                                 <label>
@@ -148,6 +154,7 @@
                                                     'amount' => (int) ($option['remaining_amount'] ?? 0),
                                                     'mode_key' => str_replace(':', '_', $option['bill_key']),
                                                     'period_options' => $option['period_options'] ?? [],
+                                                    'default_period_count' => (int) ($option['default_period_count'] ?? 1),
                                                     'url' => $option['url'] ?? '#',
                                                 ]);
                                             }
@@ -161,6 +168,7 @@
                                                     'amount' => (int) ($option['remaining_amount'] ?? $option['amount_value'] ?? 0),
                                                     'mode_key' => str_replace(':', '_', $option['bill_key']),
                                                     'period_options' => $option['period_options'] ?? [],
+                                                    'default_period_count' => (int) ($option['default_period_count'] ?? 1),
                                                     'url' => $option['url'] ?? '#',
                                                 ]);
                                             }
@@ -178,7 +186,7 @@
                                                 ? ($hasOldSelection && $oldOptionalKeys->contains($row['key']))
                                                 : ($hasOldSelection ? $oldBillKeys->contains($row['key']) : true))
                                             ->sum(function ($row) use ($oldPaymentMonthCounts) {
-                                                $count = (int) $oldPaymentMonthCounts->get($row['mode_key'], 1);
+                                                $count = (int) $oldPaymentMonthCounts->get($row['mode_key'], $row['default_period_count']);
                                                 $option = collect($row['period_options'])->firstWhere('count', $count);
                                                 return (int) ($option['amount'] ?? $row['amount']);
                                             });
@@ -227,10 +235,10 @@
                                                         @foreach($mandatoryBillRows as $row)
                                                             @php
                                                                 $checked = $hasOldSelection ? $oldBillKeys->contains($row['key']) : true;
-                                                                $selectedMonthCount = (int) $oldPaymentMonthCounts->get($row['mode_key'], 1);
+                                                                $selectedMonthCount = (int) $oldPaymentMonthCounts->get($row['mode_key'], $row['default_period_count']);
                                                                 $selectedPeriodOption = collect($row['period_options'])->firstWhere('count', $selectedMonthCount);
                                                                 $displayAmount = (int) ($selectedPeriodOption['amount'] ?? $row['amount']);
-                                                                $displayDetail = $selectedPeriodOption['detail'] ?? $row['detail'];
+                                                                $displayDetail = $selectedPeriodOption['card_detail'] ?? $selectedPeriodOption['detail'] ?? $row['detail'];
                                                             @endphp
                                                             <div class="payment-one-stop-bill" data-payment-source-url="{{ $row['url'] }}" data-payment-bill-row>
                                                                 <input
@@ -249,7 +257,7 @@
                                                                             <span>Bayar sampai</span>
                                                                             <select name="payment_month_counts[{{ $row['mode_key'] }}]" data-payment-period-select>
                                                                                 @foreach($row['period_options'] as $periodOption)
-                                                                                    <option value="{{ $periodOption['count'] }}" data-amount="{{ $periodOption['amount'] }}" data-detail="{{ $periodOption['detail'] }}" @selected($selectedMonthCount === $periodOption['count'])>{{ $periodOption['detail'] }}</option>
+                                                                                    <option value="{{ $periodOption['count'] }}" data-amount="{{ $periodOption['amount'] }}" data-detail="{{ $periodOption['card_detail'] ?? $periodOption['detail'] }}" @selected($selectedMonthCount === $periodOption['count'])>{{ $periodOption['detail'] }}</option>
                                                                                 @endforeach
                                                                             </select>
                                                                         </label>
@@ -272,10 +280,10 @@
                                                                 @foreach($optionalBillRows as $row)
                                                                         @php
                                                                             $checked = $hasOldSelection ? $oldOptionalKeys->contains($row['key']) : false;
-                                                                            $selectedMonthCount = (int) $oldPaymentMonthCounts->get($row['mode_key'], 1);
+                                                                            $selectedMonthCount = (int) $oldPaymentMonthCounts->get($row['mode_key'], $row['default_period_count']);
                                                                             $selectedPeriodOption = collect($row['period_options'])->firstWhere('count', $selectedMonthCount);
                                                                             $displayAmount = (int) ($selectedPeriodOption['amount'] ?? $row['amount']);
-                                                                            $displayDetail = $selectedPeriodOption['detail'] ?? $row['detail'];
+                                                                            $displayDetail = $selectedPeriodOption['card_detail'] ?? $selectedPeriodOption['detail'] ?? $row['detail'];
                                                                         @endphp
                                                                         <div class="payment-one-stop-bill is-optional" data-payment-source-url="{{ $row['url'] }}" data-payment-bill-row>
                                                                         <input
@@ -294,7 +302,7 @@
                                                                                     <span>Bayar sampai</span>
                                                                                     <select name="payment_month_counts[{{ $row['mode_key'] }}]" data-payment-period-select>
                                                                                         @foreach($row['period_options'] as $periodOption)
-                                                                                            <option value="{{ $periodOption['count'] }}" data-amount="{{ $periodOption['amount'] }}" data-detail="{{ $periodOption['detail'] }}" @selected($selectedMonthCount === $periodOption['count'])>{{ $periodOption['detail'] }}</option>
+                                                                                            <option value="{{ $periodOption['count'] }}" data-amount="{{ $periodOption['amount'] }}" data-detail="{{ $periodOption['card_detail'] ?? $periodOption['detail'] }}" @selected($selectedMonthCount === $periodOption['count'])>{{ $periodOption['detail'] }}</option>
                                                                                         @endforeach
                                                                                     </select>
                                                                                 </label>
@@ -429,7 +437,7 @@
                             <p>Pilih jenis riwayat untuk melihat transaksi yang sudah tercatat.</p>
                         </div>
                         <div class="student-action-bar">
-                            <a class="button student-add-button" href="{{ route('finance.payments.index') }}">Transaksi Baru</a>
+                            <a class="button student-add-button" href="{{ route('finance.payments.index') }}">Pembayaran</a>
                         </div>
                     </div>
                     <div class="payment-history-grid">
@@ -447,40 +455,70 @@
                         @endforeach
                     </div>
                 @else
-                    <div>
-                        <p class="eyebrow">Pembayaran</p>
+                    <div class="payment-import-heading-copy">
                         <h1>Import Pembayaran</h1>
-                        <p>Pilih jenis pembayaran, lalu unggah file Excel lama untuk diperiksa.</p>
+                        <p>Unggah data pembayaran dari file Excel untuk diperiksa sebelum disimpan.</p>
                     </div>
                     <div class="payment-hub-heading-actions">
-                        <a class="button button-secondary" href="{{ route('finance.payments.index') }}">Transaksi Baru</a>
+                        <a class="button button-secondary" href="{{ route('finance.payments.index') }}">{!! $icon('arrow-left') !!}<span>Pembayaran</span></a>
                     </div>
                 @endif
             </section>
 
             @if($mode === 'import')
-                <section class="payment-import-grid">
-                    @foreach([
-                        ['spp', 'SPP', 'Pembayaran bulanan SPP.', route('finance.spp.import.preview')],
-                        ['daftar-ulang', 'Daftar Ulang', 'Pembayaran daftar ulang siswa.', route('finance.other.import.preview', ['category' => 'daftar-ulang'])],
-                        ['laundry', 'Laundry', 'Hanya transaksi bulan yang benar-benar diikuti.', route('finance.other.import.preview', ['category' => 'laundry'])],
-                        ['lain-lain', 'Pembayaran Lain', 'Kategori pembayaran selain SPP, daftar ulang, dan laundry.', route('finance.other.import.preview')],
-                    ] as [$key, $title, $description, $action])
-                        <article class="card payment-import-card" data-import-category="{{ $key }}">
-                            <div class="payment-import-icon">{{ strtoupper(substr($title, 0, 1)) }}</div>
-                            <div><h2>{{ $title }}</h2><p>{{ $description }}</p></div>
-                            <form method="POST" action="{{ $action }}" enctype="multipart/form-data">
-                                @csrf
-                                <label>
-                                    <span>Pilih file Excel</span>
-                                    <input type="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
-                                </label>
-                                <button class="button button-primary">Upload dan Preview</button>
-                            </form>
-                        </article>
-                    @endforeach
-                </section>
-                <div class="payment-import-note"><strong>Sebelum data disimpan</strong><span>Sistem tetap menampilkan preview Valid, Duplikat, dan Gagal. Kolom Unit Pendidikan dan NIS digunakan untuk menemukan siswa yang tepat.</span></div>
+                @php
+                    $importTypes = [
+                        ['spp', 'SPP', 'SPP', 'Pembayaran bulanan siswa.', route('finance.spp.import.preview')],
+                        ['daftar-ulang', 'DU', 'Daftar Ulang', 'Pembayaran daftar ulang siswa.', route('finance.other.import.preview', ['category' => 'daftar-ulang'])],
+                        ['laundry', 'LD', 'Laundry', 'Pembayaran laundry per bulan.', route('finance.other.import.preview', ['category' => 'laundry'])],
+                        ['lain-lain', 'LL', 'Pembayaran Lain', 'Kategori pembayaran lainnya.', route('finance.other.import.preview')],
+                    ];
+                @endphp
+
+                @if($errors->any())
+                    <div class="payment-import-alert" role="alert">
+                        <strong>File belum dapat diproses.</strong>
+                        <span>{{ $errors->first() }}</span>
+                    </div>
+                @endif
+
+                <form
+                    method="POST"
+                    action="{{ $importTypes[0][4] }}"
+                    enctype="multipart/form-data"
+                    class="payment-import-simple-form"
+                    data-payment-import
+                >
+                    @csrf
+                    <label class="payment-import-simple-field">
+                        <span>Jenis Pembayaran</span>
+                        <select data-payment-import-category>
+                            @foreach($importTypes as [$key, $code, $title, $description, $action])
+                                <option value="{{ $key }}" data-action="{{ $action }}">{{ $title }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+
+                    <label class="payment-import-simple-field">
+                        <span>File Excel</span>
+                        <input
+                            type="file"
+                            name="file"
+                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            required
+                            data-payment-import-file
+                        >
+                        <small>Format XLSX, maksimal 10 MB.</small>
+                    </label>
+
+                    <div class="payment-import-simple-actions">
+                        <button type="submit" class="button button-primary" disabled data-payment-import-submit>
+                            <span class="payment-import-spinner" aria-hidden="true"></span>
+                            {!! $icon('upload') !!}
+                            <span data-payment-import-submit-label>Preview Data</span>
+                        </button>
+                    </div>
+                </form>
             @endif
         </main>
     </div>

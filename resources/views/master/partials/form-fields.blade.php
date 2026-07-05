@@ -111,8 +111,8 @@
         <div class="fee-type-simple-field fee-billing-choice" data-fee-billing-choice hidden>
             <span>Pencatatan Pembayaran</span>
             <div class="fee-type-simple-scope">
-                <label><input type="radio" name="creates_bill" value="1" @checked(old('creates_bill', '1') === '1')><span>Dijadikan Tagihan</span></label>
-                <label><input type="radio" name="creates_bill" value="0" @checked(old('creates_bill') === '0')><span>Transaksi Langsung</span></label>
+                <label><input type="radio" name="creates_bill" value="1" @checked(old('creates_bill', '1') === '1')><span>Dijadikan Tagihan Wajib</span></label>
+                <label><input type="radio" name="creates_bill" value="0" @checked(old('creates_bill') === '0')><span>Pembayaran Opsional</span></label>
             </div>
         </div>
 
@@ -122,7 +122,7 @@
         </label>
 
         <div class="fee-type-simple-note" data-fee-behavior-summary>
-            <strong data-fee-behavior-title>Tagihan bulanan</strong>
+            <strong data-fee-behavior-title>Tagihan Wajib</strong>
             <span data-fee-behavior-description>SPP akan masuk ke tagihan siswa setiap bulan.</span>
         </div>
 

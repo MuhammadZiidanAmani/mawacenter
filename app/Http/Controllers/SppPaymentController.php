@@ -81,7 +81,7 @@ class SppPaymentController extends Controller
     {
         if (! $request->filled('student_id')) {
             return redirect()->route('finance.payments.index')
-                ->withErrors(['student_id' => 'Pilih siswa terlebih dahulu dari Transaksi Baru.']);
+                ->withErrors(['student_id' => 'Pilih siswa terlebih dahulu dari Pembayaran.']);
         }
 
         $selectedStudent = Student::with('schoolClass.educationUnit')->findOrFail($request->integer('student_id'));

@@ -160,7 +160,7 @@ class PaymentController extends Controller
             'optional_keys' => ['nullable', 'array'],
             'optional_keys.*' => ['string'],
             'payment_month_counts' => ['nullable', 'array'],
-            'payment_month_counts.*' => ['integer', 'min:1', 'max:12'],
+            'payment_month_counts.*' => ['integer', 'min:1', 'max:120'],
             'payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
             'paid_amount' => ['required', 'integer', 'min:1'],
             'transfer_proof' => ['required_if:payment_method,Transfer', 'nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
@@ -592,6 +592,7 @@ class PaymentController extends Controller
                     'remaining_amount' => $summary['remaining_amount'],
                     'detail_label' => $summary['detail_label'],
                     'period_options' => $summary['period_options'] ?? [],
+                    'default_period_count' => (int) ($summary['default_period_count'] ?? 1),
                 ];
             })
             ->filter(fn (array $option) => (int) $option['remaining_amount'] > 0 || $option['period_options'] !== [])
@@ -619,17 +620,26 @@ class PaymentController extends Controller
             }
 
             $periodOptions = [];
-            for ($count = 1; $count <= 12; $count++) {
-                try {
-                    $forwardQuote = $sppPayments->quoteNextMonths($student, $count);
-                    $periodOptions[] = $this->periodOption($count, $forwardQuote);
-                } catch (ValidationException) {
-                    break;
+            $defaultPeriodCount = 1;
+            try {
+                $window = $sppPayments->paymentWindow($student);
+                $defaultPeriodCount = (int) $window['default_month_count'];
+                $runningAmount = 0;
+                foreach ($window['items'] as $index => $item) {
+                    $runningAmount += (int) $item['remaining_amount'];
+                    $periodOptions[] = $this->periodOption($index + 1, [
+                        'remaining_amount' => $runningAmount,
+                        'period_start' => $window['period_start'],
+                        'period_end' => ['year' => $item['year'], 'month' => $item['month']],
+                    ], true);
                 }
+            } catch (ValidationException) {
+                // Tidak ada periode SPP yang dapat ditagihkan.
             }
             if ($periodOptions !== []) {
-                $remainingAmount = (int) $periodOptions[0]['amount'];
-                $periods = $sppPayments->quoteNextMonths($student, 1)['items'] ?? [];
+                $defaultOption = $periodOptions[$defaultPeriodCount - 1] ?? $periodOptions[0];
+                $remainingAmount = (int) $defaultOption['amount'];
+                $periods = array_slice($window['items'], 0, $defaultPeriodCount);
             }
 
             return [
@@ -637,6 +647,7 @@ class PaymentController extends Controller
                 'remaining_amount' => $remainingAmount,
                 'detail_label' => $periods !== [] ? $this->sppPeriodLabel($periods) : 'Tidak ada tagihan',
                 'period_options' => count($periodOptions) > 1 ? $periodOptions : [],
+                'default_period_count' => $defaultPeriodCount,
             ];
         }
 
@@ -700,10 +711,8 @@ class PaymentController extends Controller
 
         $first = $periods->first();
         $last = $periods->last();
-        $firstLabel = $this->monthName((int) $first['month']).' '.$first['year'];
-        $lastLabel = $this->monthName((int) $last['month']).' '.$last['year'];
 
-        return $firstLabel === $lastLabel ? $firstLabel : $firstLabel.' - '.$lastLabel;
+        return $this->formatPeriodRange($first, $last);
     }
 
     private function monthName(int $month): string
@@ -798,6 +807,7 @@ class PaymentController extends Controller
                     'remaining_amount' => $amount,
                     'amount_number' => number_format($amount, 0, ',', '.').',-',
                     'period_options' => count($periodOptions) > 1 ? $periodOptions : [],
+                    'default_period_count' => 1,
                 ];
             })
             ->filter()
@@ -890,12 +900,19 @@ class PaymentController extends Controller
         return str_replace(':', '_', $billKey);
     }
 
-    private function periodOption(int $count, array $quote): array
+    private function periodOption(int $count, array $quote, bool $showFullRangeOnCard = false): array
     {
+        $end = $quote['period_end'] ?? collect($quote['items'] ?? [])->last();
+
         return [
             'count' => $count,
             'amount' => (int) ($quote['remaining_amount'] ?? 0),
-            'detail' => $this->periodRangeLabel($quote),
+            'detail' => $end
+                ? $this->monthName((int) $end['month']).' '.$end['year']
+                : $this->periodRangeLabel($quote),
+            'card_detail' => $showFullRangeOnCard
+                ? $this->periodRangeLabel($quote)
+                : ($end ? $this->monthName((int) $end['month']).' '.$end['year'] : $this->periodRangeLabel($quote)),
         ];
     }
 
@@ -907,10 +924,25 @@ class PaymentController extends Controller
             return $this->sppPeriodLabel($quote['items'] ?? []);
         }
 
-        $startLabel = $this->monthName((int) $start['month']).' '.$start['year'];
-        $endLabel = $this->monthName((int) $end['month']).' '.$end['year'];
+        return $this->formatPeriodRange($start, $end);
+    }
 
-        return $startLabel === $endLabel ? $startLabel : $startLabel.' - '.$endLabel;
+    private function formatPeriodRange(array $start, array $end): string
+    {
+        $startMonth = $this->monthName((int) $start['month']);
+        $endMonth = $this->monthName((int) $end['month']);
+        $startYear = (int) $start['year'];
+        $endYear = (int) $end['year'];
+
+        if ($startMonth === $endMonth && $startYear === $endYear) {
+            return $startMonth.' '.$startYear;
+        }
+
+        if ($startYear === $endYear) {
+            return $startMonth.' - '.$endMonth.' '.$endYear;
+        }
+
+        return $startMonth.' '.$startYear.' - '.$endMonth.' '.$endYear;
     }
 
     private function transferAccount(): array

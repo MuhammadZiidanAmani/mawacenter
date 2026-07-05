@@ -36,101 +36,127 @@ class SppPaymentImportService
         $result = ['total' => count($rows), 'valid' => 0, 'imported' => 0, 'duplicates' => 0, 'failures' => [], 'rows' => []];
         $prepared = [];
 
-        if (! $persist) {
-            DB::beginTransaction();
-        }
+        DB::beginTransaction();
 
         try {
-        foreach ($rows as $row) {
-            $parsed = $this->prepareRow($row['line'], $row['values'], $headers);
-            if (isset($parsed['error'])) {
-                $result['failures'][] = $parsed;
-                $result['rows'][] = $parsed;
-                continue;
-            }
-            $prepared[] = $parsed;
-        }
-
-        usort($prepared, fn (array $left, array $right) => [
-            $left['nis'], $left['year'], $left['month'], $left['transaction_at'],
-        ] <=> [
-            $right['nis'], $right['year'], $right['month'], $right['transaction_at'],
-        ]);
-
-        foreach ($prepared as $row) {
-            if (SppPayment::whereIn('import_key', [$row['import_key'], $row['legacy_import_key']])->exists()) {
-                $row['status'] = 'Duplikat';
-                $row['message'] = 'Transaksi ini sudah pernah diimpor.';
-                $result['duplicates']++;
-                $result['rows'][] = $row;
-                continue;
+            foreach ($rows as $row) {
+                $parsed = $this->prepareRow($row['line'], $row['values'], $headers);
+                if (isset($parsed['error'])) {
+                    $result['failures'][] = $parsed;
+                    $result['rows'][] = $parsed;
+                    continue;
+                }
+                $prepared[] = $parsed;
             }
 
-            $student = Student::with('schoolClass.educationUnit')
-                ->where('nis', $row['nis'])
+            usort($prepared, fn (array $left, array $right) => [
+                $left['nis'], $left['year'], $left['month'], $left['transaction_at'],
+            ] <=> [
+                $right['nis'], $right['year'], $right['month'], $right['transaction_at'],
+            ]);
+
+            $existingImportKeys = $this->existingImportKeys($prepared);
+            $studentsByNis = Student::with(['schoolClass.educationUnit', 'academicYear'])
+                ->whereIn('nis', array_values(array_unique(array_column($prepared, 'nis'))))
                 ->get()
-                ->first(fn (Student $candidate) => $this->matchesUnit($candidate, $row['unit']));
-            if (! $student) {
-                $row['status'] = 'Gagal';
-                $row['message'] = "NIS {$row['nis']} tidak ditemukan. Unit: {$row['unit']}.";
-                $result['failures'][] = $row;
-                $result['rows'][] = $row;
-                continue;
-            }
+                ->groupBy(fn (Student $student) => (string) $student->nis);
 
-            if ($this->normalizeLookup($student->name) !== $this->normalizeLookup($row['name'])) {
-                $row['status'] = 'Gagal';
-                $row['message'] = "Nama pada Excel tidak cocok dengan siswa NIS {$row['nis']}.";
-                $result['failures'][] = $row;
-                $result['rows'][] = $row;
-                continue;
-            }
-
-            try {
-                $data = [
-                    'transaction_date' => substr($row['transaction_at'], 0, 10),
-                    'transaction_time' => substr($row['transaction_at'], 11, 8),
-                    'year' => $row['year'],
-                    'months' => [$row['month']],
-                    'payment_method' => $row['payment_method'],
-                    'status' => 'Diterima',
-                    'paid_amount' => $row['nominal'],
-                    'operator_name' => $row['operator_name'],
-                    'import_source' => $sourceName ?? basename($path),
-                    'import_key' => $row['import_key'],
-                ];
-
-                $this->payments->quote($student, $row['year'], [$row['month']]);
-                $this->payments->record($student, $data);
-                if ($persist) {
-                    $result['imported']++;
+            foreach ($prepared as $row) {
+                if (isset($existingImportKeys[$row['import_key']]) || isset($existingImportKeys[$row['legacy_import_key']])) {
+                    $row['status'] = 'Duplikat';
+                    $row['message'] = 'Transaksi ini sudah pernah diimpor.';
+                    $result['duplicates']++;
+                    $result['rows'][] = $row;
+                    continue;
                 }
 
-                $row['status'] = 'Valid';
-                $row['message'] = $persist ? 'Berhasil diimpor.' : 'Siap diimpor.';
-                $result['valid']++;
-                $result['rows'][] = $row;
-            } catch (ValidationException $exception) {
-                $row['status'] = 'Gagal';
-                $row['message'] = collect($exception->errors())->flatten()->first() ?? $exception->getMessage();
-                $result['failures'][] = $row;
-                $result['rows'][] = $row;
-            } catch (Throwable $exception) {
-                $row['status'] = 'Gagal';
-                $row['message'] = 'Transaksi tidak dapat diproses: '.$exception->getMessage();
-                $result['failures'][] = $row;
-                $result['rows'][] = $row;
+                $student = $studentsByNis->get($row['nis'], collect())
+                    ->first(fn (Student $candidate) => $this->matchesUnit($candidate, $row['unit']));
+                if (! $student) {
+                    $row['status'] = 'Gagal';
+                    $row['message'] = "NIS {$row['nis']} tidak ditemukan. Unit: {$row['unit']}.";
+                    $result['failures'][] = $row;
+                    $result['rows'][] = $row;
+                    continue;
+                }
+
+                if ($this->normalizeLookup($student->name) !== $this->normalizeLookup($row['name'])) {
+                    $row['status'] = 'Gagal';
+                    $row['message'] = "Nama pada Excel tidak cocok dengan siswa NIS {$row['nis']}.";
+                    $result['failures'][] = $row;
+                    $result['rows'][] = $row;
+                    continue;
+                }
+
+                try {
+                    $data = [
+                        'transaction_date' => substr($row['transaction_at'], 0, 10),
+                        'transaction_time' => substr($row['transaction_at'], 11, 8),
+                        'year' => $row['year'],
+                        'months' => [$row['month']],
+                        'payment_method' => $row['payment_method'],
+                        'status' => 'Diterima',
+                        'paid_amount' => $row['nominal'],
+                        'operator_name' => $row['operator_name'],
+                        'import_source' => $sourceName ?? basename($path),
+                        'import_key' => $row['import_key'],
+                    ];
+
+                    $this->payments->recordImportedMonth($student, $data, $persist);
+                    $existingImportKeys[$row['import_key']] = true;
+                    if ($persist) {
+                        $result['imported']++;
+                    }
+
+                    $row['status'] = 'Valid';
+                    $row['message'] = $persist ? 'Berhasil diimpor.' : 'Siap diimpor.';
+                    $result['valid']++;
+                    $result['rows'][] = $row;
+                } catch (ValidationException $exception) {
+                    $row['status'] = 'Gagal';
+                    $row['message'] = collect($exception->errors())->flatten()->first() ?? $exception->getMessage();
+                    $result['failures'][] = $row;
+                    $result['rows'][] = $row;
+                } catch (Throwable $exception) {
+                    $row['status'] = 'Gagal';
+                    $row['message'] = 'Transaksi tidak dapat diproses: '.$exception->getMessage();
+                    $result['failures'][] = $row;
+                    $result['rows'][] = $row;
+                }
             }
-        }
 
-        usort($result['rows'], fn (array $left, array $right) => $left['line'] <=> $right['line']);
+            usort($result['rows'], fn (array $left, array $right) => $left['line'] <=> $right['line']);
 
-        return $result;
+            if ($persist) {
+                DB::commit();
+            }
+
+            return $result;
+        } catch (Throwable $exception) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            throw $exception;
         } finally {
             if (! $persist && DB::transactionLevel() > 0) {
                 DB::rollBack();
             }
         }
+    }
+
+    private function existingImportKeys(array $rows): array
+    {
+        $keys = collect($rows)
+            ->flatMap(fn (array $row) => [$row['import_key'], $row['legacy_import_key']])
+            ->unique()
+            ->values();
+
+        return $keys
+            ->chunk(500)
+            ->flatMap(fn ($chunk) => SppPayment::whereIn('import_key', $chunk)->pluck('import_key'))
+            ->flip()
+            ->all();
     }
 
     private function readRows(string $path): array

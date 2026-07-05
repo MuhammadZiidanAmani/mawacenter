@@ -213,31 +213,62 @@ Checkbox:
 
 Tombol dan Aksi
 
+Ukuran dasar semua tombol:
+- Tinggi tombol standar 40px
+- Tinggi tombol compact untuk toolbar atau tabel padat 32px
+- Padding horizontal tombol teks 16px; tombol compact 12px
+- Radius 8px
+- Font 14px sampai 16px, weight 600 atau 700, line-height 1
+- Jarak ikon ke teks 8px
+- Ukuran ikon 16px sampai 18px; jangan membesarkan ikon melebihi teks tombol
+- Tombol teks desktop memiliki min-width 88px agar ukuran aksi utama stabil, kecuali ruangnya memang terbatas
+- Jangan memakai shadow pada tombol
+- Label tombol harus singkat dan memakai kata kerja yang jelas, misalnya Tambah, Simpan, Cari, Tampilkan, Impor, atau Hapus
+
 Tombol primer:
 - Background #157144
 - Teks #ffffff
 - Hover #0d5f36
-- Tinggi standar 40px
-- Radius 8px
-- Font 14px sampai 16px
-- Weight 600 atau 700
+- Border 1px solid #157144 agar ukuran tidak berubah saat dibandingkan dengan tombol sekunder
+- Dipakai untuk satu aksi utama pada satu halaman, section, form, atau modal
 
 Tombol sekunder:
 - Background #ffffff
 - Teks #334155
-- Border #d1d5db
+- Border 1px solid #d1d5db
 - Hover #fbfdf8
+- Dipakai untuk Batal, Kembali, filter tambahan, atau aksi pendamping
 
 Tombol bahaya:
 - Background #ef1f2d
 - Teks #ffffff
 - Hover #c91724
+- Border 1px solid #ef1f2d
+- Tombol bahaya solid hanya dipakai sebagai aksi konfirmasi utama di modal hapus atau tindakan berisiko
 
 Tombol ikon:
 - Background #ffffff
-- Border #d1d5db
+- Border 1px solid #d1d5db
 - Ikon #334155
 - Hover hijau hanya untuk aksi positif
+- Ukuran standar 40px x 40px; ukuran compact pada tabel atau kartu padat 32px x 32px
+- Padding 0 dan ikon harus berada tepat di tengah
+- Aksi hapus memakai ikon merah #ef1f2d dengan hover background #fff4f4, bukan hover hijau
+- Gunakan ikon yang sudah umum; tombol ikon tanpa teks wajib memiliki tooltip dan aria-label
+
+Keadaan tombol:
+- Focus-visible memakai outline/ring 2px #157144 dengan offset 2px; focus tidak boleh hanya ditandai perubahan warna
+- Disabled memakai opacity 0.55, cursor not-allowed, dan warna hover tidak berubah
+- Loading mempertahankan lebar tombol, menampilkan spinner 16px, dan menonaktifkan klik berulang
+- Tombol aktif/pressed harus tetap terbaca dan tidak mengubah tinggi, padding, atau posisi elemen lain
+
+Susunan dan prioritas aksi:
+- Maksimal satu tombol primer dalam satu kelompok aksi
+- Tombol primer ditempatkan paling kanan pada kelompok tombol horizontal
+- Jarak antar tombol 8px dan jarak heading ke kelompok tombol minimal 12px
+- Tombol aksi halaman sejajar dengan heading jika ruang cukup; jika turun pada mobile, beri jarak 12px
+- Tombol filter atau submit pada mobile boleh selebar container jika field dan tombol ditumpuk
+- Jika field dan tombol masih muat dalam satu baris mobile, pertahankan tinggi 40px dan jarak 12px tanpa memaksa tombol full-width
 
 Edit dan hapus memakai tombol ikon, bukan tombol teks panjang. Aksi berisiko wajib memakai confirm/modal.
 

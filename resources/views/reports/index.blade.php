@@ -26,7 +26,7 @@
         ->all();
 @endphp
 <div class="app-shell">
-    @include('partials.sidebar', ['activeMenu' => 'reports'])
+    @include('partials.sidebar', ['activeMenu' => 'reports', 'activeReportMenu' => 'report'])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar">

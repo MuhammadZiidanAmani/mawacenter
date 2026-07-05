@@ -73,7 +73,7 @@
                             <input type="password" name="password_confirmation" autocomplete="new-password" placeholder="Ulangi password baru">
                         </label>
                     </div>
-                    <div class="settings-form-head settings-transfer-head"><span>{!! $icon('bank') !!}</span><div><strong>Rekening Transfer</strong><small>Dipakai pada Informasi Rekening di Transaksi Baru.</small></div></div>
+                    <div class="settings-form-head settings-transfer-head"><span>{!! $icon('bank') !!}</span><div><strong>Rekening Transfer</strong><small>Dipakai pada Informasi Rekening di Pembayaran.</small></div></div>
                     <div class="settings-fields">
                         <label>Nama Bank
                             <input name="transfer_bank_name" value="{{ old('transfer_bank_name', $transferSettings['transfer_bank_name'] ?? '') }}" placeholder="Contoh: BSI">

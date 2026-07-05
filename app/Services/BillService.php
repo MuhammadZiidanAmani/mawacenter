@@ -15,7 +15,7 @@ use Illuminate\Validation\ValidationException;
 
 class BillService
 {
-    private const DEFAULT_BILLING_START_DATE = '2025-08-01';
+    private const DEFAULT_BILLING_START_DATE = '2025-07-01';
 
     private const JULY_INCLUDED_IN_REGISTRATION_UNITS = ['MTS', 'MA'];
 
@@ -390,10 +390,6 @@ class BillService
             ? CarbonImmutable::parse($student->entry_date)->startOfMonth()
             : null;
 
-        if ($entryStart && $entryStart->lessThan($academicStart) && $entryStart->year < $academicStart->year) {
-            return CarbonImmutable::create($academicStart->year, 1, 1)->startOfMonth();
-        }
-
         if ($entryStart && $entryStart->greaterThan($academicStart)) {
             return $entryStart;
         }
@@ -404,11 +400,11 @@ class BillService
     private function sppStartForAcademicYear(?AcademicYear $academicYear): CarbonImmutable
     {
         if ($academicYear && preg_match('/^(\d{4})\/\d{4}$/', (string) $academicYear->name, $matches)) {
-            return CarbonImmutable::create((int) $matches[1], 8, 1)->startOfMonth();
+            return CarbonImmutable::create((int) $matches[1], 7, 1)->startOfMonth();
         }
 
         if ($academicYear?->start_date) {
-            return CarbonImmutable::parse($academicYear->start_date)->startOfMonth()->addMonth();
+            return CarbonImmutable::parse($academicYear->start_date)->startOfMonth();
         }
 
         return CarbonImmutable::parse(self::DEFAULT_BILLING_START_DATE)->startOfMonth();

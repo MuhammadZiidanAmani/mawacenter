@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 class SppPaymentService
 {
-    private const DEFAULT_BILLING_START_DATE = '2025-08-01';
+    private const DEFAULT_BILLING_START_DATE = '2025-07-01';
 
     private const JULY_INCLUDED_IN_REGISTRATION_UNITS = ['MTS', 'MA'];
 
@@ -44,50 +44,50 @@ class SppPaymentService
     public function quoteNextMonths(Student $student, int $monthCount = 12): array
     {
         $current = CarbonImmutable::instance(now())->startOfMonth();
-        $arrears = collect($this->outstandingPeriods($student))
-            ->first(fn (array $period) => CarbonImmutable::create($period['year'], $period['month'], 1)->lt($current));
-
-        if ($arrears) {
-            throw ValidationException::withMessages([
-                'payment_modes' => 'Pembayaran SPP 12 bulan tersedia setelah tunggakan sebelum bulan berjalan dilunasi.',
-            ]);
-        }
-
-        $start = $current;
-        while ($start->lt($current->addMonths(24))) {
-            if ($this->periodIsPayable($student, $start->year, $start->month)) {
-                $charge = $this->calculator->calculateSppMonth($student, $start->year, $start->month);
-                $paid = (int) SppPaymentItem::where('student_id', $student->id)
-                    ->where('year', $start->year)
-                    ->where('month', $start->month)
-                    ->sum('paid_amount');
-                if ($charge['final_amount'] > $paid) {
-                    break;
-                }
-            }
-
-            $start = $start->addMonth();
-        }
+        $oldestOutstanding = $this->outstandingPeriods($student, 1)[0] ?? null;
+        $start = $oldestOutstanding
+            ? CarbonImmutable::create($oldestOutstanding['year'], $oldestOutstanding['month'], 1)
+            : $current;
 
         $periods = [];
-        for ($period = $start; $period->lt($start->addMonths($monthCount)); $period = $period->addMonth()) {
-            if ($this->periodIsPayable($student, $period->year, $period->month)) {
-                $periods[] = ['year' => $period->year, 'month' => $period->month];
+        $scanMonths = max(36, $monthCount + 24);
+        for ($period = $start; $period->lt($start->addMonths($scanMonths)) && count($periods) < $monthCount; $period = $period->addMonth()) {
+            if (! $this->periodIsPayable($student, $period->year, $period->month)) {
+                continue;
             }
+
+            $charge = $this->calculator->calculateSppMonth($student, $period->year, $period->month);
+            $paid = (int) SppPaymentItem::where('student_id', $student->id)
+                ->where('year', $period->year)
+                ->where('month', $period->month)
+                ->sum('paid_amount');
+            if ($charge['final_amount'] <= $paid) {
+                continue;
+            }
+
+            $periods[] = ['year' => $period->year, 'month' => $period->month];
         }
 
-        if ($periods === []) {
+        if (count($periods) < $monthCount) {
             throw ValidationException::withMessages([
-                'payment_modes' => 'Tagihan SPP 12 bulan belum tersedia untuk siswa ini.',
+                'payment_month_counts' => 'Periode SPP yang dipilih belum tersedia untuk siswa ini.',
             ]);
         }
 
         $quote = $this->calculatePeriodSelection($student, $periods);
-        $quote['period_start'] = ['year' => $start->year, 'month' => $start->month];
-        $end = $start->addMonths($monthCount - 1);
-        $quote['period_end'] = ['year' => $end->year, 'month' => $end->month];
+        $quote['period_start'] = $periods[0];
+        $quote['period_end'] = $periods[array_key_last($periods)];
 
         return $quote;
+    }
+
+    public function paymentWindow(Student $student, int $futureMonthCount = 12): array
+    {
+        $outstandingCount = count($this->outstandingPeriods($student));
+        $defaultMonthCount = max(1, $outstandingCount);
+        $quote = $this->quoteNextMonths($student, $defaultMonthCount + $futureMonthCount);
+
+        return $quote + ['default_month_count' => $defaultMonthCount];
     }
 
     public function paymentPlan(Student $student): array
@@ -265,6 +265,102 @@ class SppPaymentService
 
             return $payment;
         });
+    }
+
+    public function recordImportedMonth(Student $student, array $data, bool $syncBills = true): SppPayment
+    {
+        return DB::transaction(function () use ($data, $student, $syncBills) {
+            $student = Student::query()
+                ->with(['academicYear', 'schoolClass.educationUnit'])
+                ->lockForUpdate()
+                ->findOrFail($student->id);
+            $year = (int) $data['year'];
+            $month = (int) ($data['months'][0] ?? 0);
+            $quote = $this->quoteImportedMonth($student, $year, $month);
+
+            if ($data['paid_amount'] > $quote['remaining_amount']) {
+                throw ValidationException::withMessages([
+                    'paid_amount' => 'Nominal dibayar tidak boleh melebihi sisa tagihan Rp '.number_format($quote['remaining_amount'], 0, ',', '.').'.',
+                ]);
+            }
+
+            $remainingAfter = $quote['remaining_amount'] - (int) $data['paid_amount'];
+            $payment = SppPayment::create([
+                'student_id' => $student->id,
+                'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
+                'payment_method' => $data['payment_method'],
+                'transfer_proof_path' => $data['transfer_proof_path'] ?? null,
+                'status' => $data['status'],
+                'operator_name' => $data['operator_name'] ?? null,
+                'import_source' => $data['import_source'] ?? null,
+                'import_key' => $data['import_key'] ?? null,
+                'original_amount' => $quote['original_amount'],
+                'discount_amount' => $quote['discount_amount'],
+                'total_amount' => $quote['total_amount'],
+                'paid_amount' => $data['paid_amount'],
+                'remaining_amount' => $remainingAfter,
+                'payment_status' => $remainingAfter === 0 ? 'Lunas' : 'Belum Lunas',
+            ]);
+
+            $payment->items()->create([
+                'student_id' => $student->id,
+                'year' => $year,
+                'month' => $month,
+                'original_amount' => $quote['original_amount'],
+                'discount_amount' => $quote['discount_amount'],
+                'total_amount' => $quote['total_amount'],
+                'paid_amount' => $data['paid_amount'],
+                'remaining_amount' => $remainingAfter,
+                'payment_status' => $remainingAfter === 0 ? 'Lunas' : 'Belum Lunas',
+            ]);
+
+            if ($syncBills) {
+                $this->bills->syncSppPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'items']));
+            }
+
+            return $payment;
+        });
+    }
+
+    private function quoteImportedMonth(Student $student, int $year, int $month): array
+    {
+        if ($month < 1 || $month > 12 || ! $this->periodIsPayable($student, $year, $month)) {
+            $message = $this->sppIsIncludedInRegistration($student, $year, $month)
+                ? 'SPP bulan Juli '.$year.' untuk unit MTs/MA sudah termasuk Daftar Ulang.'
+                : 'SPP bulan '.$this->monthName($month).' '.$year.' belum termasuk periode tagihan siswa.';
+            throw ValidationException::withMessages(['months' => $message]);
+        }
+
+        $oldestOutstanding = $this->oldestOutstandingPeriod($student);
+        if ($oldestOutstanding && ($oldestOutstanding['year'] !== $year || $oldestOutstanding['month'] !== $month)) {
+            throw ValidationException::withMessages([
+                'months' => 'Pembayaran harus dimulai dari bulan '.$oldestOutstanding['month_name'].' '.$oldestOutstanding['year'].'.',
+            ]);
+        }
+
+        $charge = $this->calculator->calculateSppMonth($student, $year, $month);
+        if ($charge['original_amount'] < 1) {
+            throw ValidationException::withMessages(['student_id' => 'Kategori pembayaran SPP aktif untuk siswa belum tersedia.']);
+        }
+
+        $paidAmount = (int) SppPaymentItem::where('student_id', $student->id)
+            ->where('year', $year)
+            ->where('month', $month)
+            ->sum('paid_amount');
+        $remainingAmount = max(0, $charge['final_amount'] - $paidAmount);
+        if ($remainingAmount < 1) {
+            throw ValidationException::withMessages([
+                'months' => 'SPP bulan '.$this->monthName($month).' '.$year.' sudah lunas dan tidak dapat dibayar kembali.',
+            ]);
+        }
+
+        return [
+            'original_amount' => $charge['original_amount'],
+            'discount_amount' => $charge['discount_amount'],
+            'total_amount' => $charge['final_amount'],
+            'paid_amount' => $paidAmount,
+            'remaining_amount' => $remainingAmount,
+        ];
     }
 
     public function updateMetadata(SppPayment $payment, array $data): SppPayment
@@ -571,10 +667,6 @@ class SppPaymentService
             ? CarbonImmutable::parse($student->entry_date)->startOfMonth()
             : null;
 
-        if ($entryStart && $entryStart->lessThan($academicStart) && $entryStart->year < $academicStart->year) {
-            return CarbonImmutable::create($academicStart->year, 1, 1)->startOfMonth();
-        }
-
         if ($entryStart && $entryStart->greaterThan($academicStart)) {
             return $entryStart;
         }
@@ -585,11 +677,11 @@ class SppPaymentService
     private function sppStartForAcademicYear(?AcademicYear $academicYear): CarbonImmutable
     {
         if ($academicYear && preg_match('/^(\d{4})\/\d{4}$/', (string) $academicYear->name, $matches)) {
-            return CarbonImmutable::create((int) $matches[1], 8, 1)->startOfMonth();
+            return CarbonImmutable::create((int) $matches[1], 7, 1)->startOfMonth();
         }
 
         if ($academicYear?->start_date) {
-            return CarbonImmutable::parse($academicYear->start_date)->startOfMonth()->addMonth();
+            return CarbonImmutable::parse($academicYear->start_date)->startOfMonth();
         }
 
         return CarbonImmutable::parse(self::DEFAULT_BILLING_START_DATE)->startOfMonth();

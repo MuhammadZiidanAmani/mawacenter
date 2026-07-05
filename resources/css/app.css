@@ -23579,6 +23579,67 @@ html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page
     font-weight: 600 !important;
 }
 
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-heading {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: start !important;
+    column-gap: 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-heading > div {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-import-action {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: auto !important;
+    min-width: 88px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 16px !important;
+    border: 1px solid #157144 !important;
+    border-radius: 8px !important;
+    background: #157144 !important;
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-import-action:hover {
+    border-color: #0d5f36 !important;
+    background: #0d5f36 !important;
+    color: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-import-action:focus-visible {
+    outline: 2px solid #157144 !important;
+    outline-offset: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-import-action .icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+@media (width <= 520px) {
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-heading {
+        grid-template-columns: 1fr !important;
+        row-gap: 12px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-import-action {
+        justify-self: start !important;
+    }
+}
+
 @media (width <= 520px) {
     html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page .payment-one-stop-period-select {
         grid-template-columns: 1fr !important;
@@ -23664,4 +23725,603 @@ html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page
         width: 90px !important;
     }
 
+}
+
+/* Central payment import workspace aligned with ai/standar aplikasi.md. */
+html body .app-shell .main-panel main.payment-hub-page.payment-import-page {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 24px 32px 32px !important;
+    background: #ffffff !important;
+    color: #020617 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-page-heading {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: start !important;
+    gap: 12px !important;
+    margin: 0 0 16px !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-heading-copy {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-heading-copy h1 {
+    margin: 0 !important;
+    color: #020617 !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-heading-copy p {
+    max-width: 640px !important;
+    margin: 0 !important;
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-hub-heading-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-hub-heading-actions .button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    min-width: 88px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 16px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-hub-heading-actions .button:hover {
+    background: #fbfdf8 !important;
+    color: #334155 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-hub-heading-actions .icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-alert {
+    display: grid !important;
+    gap: 4px !important;
+    margin: 0 0 16px !important;
+    padding: 12px 16px !important;
+    border: 1px solid #ef1f2d !important;
+    border-radius: 8px !important;
+    background: #fff4f4 !important;
+    color: #020617 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-alert strong {
+    color: #ef1f2d !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-shell {
+    display: block !important;
+    width: 100% !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    overflow: hidden !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-types,
+html body .app-shell .main-panel main.payment-import-page .payment-import-workspace {
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-types {
+    padding: 16px !important;
+    border-bottom: 1px solid #d1d5db !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-types-heading {
+    display: grid !important;
+    gap: 4px !important;
+    margin: 0 0 12px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-types-heading h2,
+html body .app-shell .main-panel main.payment-import-page .payment-import-form-heading h2 {
+    margin: 0 !important;
+    color: #020617 !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-type-list {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-type {
+    display: grid !important;
+    grid-template-columns: 32px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-height: 48px !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #020617 !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-type:hover {
+    border-color: #d1d5db !important;
+    background: #fbfdf8 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-type.is-active {
+    border-color: #157144 !important;
+    background: #e9f8ef !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-type-code {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-type > strong {
+    min-width: 0 !important;
+    color: #020617 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-type.is-active .payment-import-type-code {
+    border-color: #157144 !important;
+    background: #157144 !important;
+    color: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-workspace {
+    padding: 20px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-form {
+    display: grid !important;
+    gap: 16px !important;
+    margin: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-form[hidden] {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-form-heading {
+    display: block !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-upload-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    background: #e9f8ef !important;
+    color: #157144 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-upload-icon .icon {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-upload {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: 48px minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 16px !important;
+    min-height: 104px !important;
+    padding: 20px !important;
+    border: 1px dashed #b8c1ba !important;
+    border-radius: 8px !important;
+    background: #fbfdf8 !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-upload:hover,
+html body .app-shell .main-panel main.payment-import-page .payment-import-form.has-file .payment-import-upload {
+    border-color: #157144 !important;
+    background: #f4fbf6 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-upload input[type="file"] {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-upload-copy {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-upload-copy strong {
+    overflow: hidden !important;
+    color: #020617 !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-upload-copy small {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-browse {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 88px !important;
+    height: 40px !important;
+    padding: 0 16px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-actions {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-actions > p {
+    margin: 0 !important;
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-actions .button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    min-width: 132px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 16px !important;
+    border: 1px solid #157144 !important;
+    border-radius: 8px !important;
+    background: #157144 !important;
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-actions .button:hover:not(:disabled) {
+    border-color: #0d5f36 !important;
+    background: #0d5f36 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-actions .button:disabled {
+    opacity: 0.55 !important;
+    cursor: not-allowed !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-actions .icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-spinner {
+    display: none !important;
+    width: 16px !important;
+    height: 16px !important;
+    border: 2px solid rgba(255, 255, 255, 0.45) !important;
+    border-top-color: #ffffff !important;
+    border-radius: 50% !important;
+    animation: payment-import-spin 0.75s linear infinite !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-actions .button.is-loading .payment-import-spinner {
+    display: inline-block !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-actions .button.is-loading > .icon {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-type:focus-visible,
+html body .app-shell .main-panel main.payment-import-page .payment-import-upload:focus-within,
+html body .app-shell .main-panel main.payment-import-page .payment-import-actions .button:focus-visible,
+html body .app-shell .main-panel main.payment-import-page .payment-hub-heading-actions .button:focus-visible {
+    outline: 2px solid #157144 !important;
+    outline-offset: 2px !important;
+}
+
+@keyframes payment-import-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (width <= 900px) {
+    html body .app-shell .main-panel main.payment-import-page .payment-import-type-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (width <= 600px) {
+    html body .app-shell .main-panel main.payment-hub-page.payment-import-page {
+        padding: 16px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-page-heading {
+        grid-template-columns: minmax(0, 1fr) auto !important;
+        margin-bottom: 16px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-heading-copy h1 {
+        font-size: 20px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-hub-heading-actions .button {
+        min-width: 40px !important;
+        width: 40px !important;
+        padding: 0 !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-hub-heading-actions .button span {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        overflow: hidden !important;
+        clip: rect(0 0 0 0) !important;
+        white-space: nowrap !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-types,
+    html body .app-shell .main-panel main.payment-import-page .payment-import-workspace {
+        padding: 16px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-type {
+        grid-template-columns: 32px minmax(0, 1fr) !important;
+        min-height: 48px !important;
+        gap: 8px !important;
+        padding: 8px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-type-code {
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-upload {
+        grid-template-columns: 40px minmax(0, 1fr) !important;
+        gap: 12px !important;
+        min-height: 0 !important;
+        padding: 16px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-browse {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-actions .button {
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-actions {
+        flex-wrap: wrap !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-actions > p {
+        width: 100% !important;
+    }
+}
+
+/* Simplified payment import form. */
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-form {
+    box-sizing: border-box !important;
+    display: grid !important;
+    gap: 16px !important;
+    width: 100% !important;
+    max-width: 720px !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-field {
+    display: grid !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    color: #334155 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-field > span {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-field select,
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-field input[type="file"] {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #020617 !important;
+    font: inherit !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-field select {
+    padding: 0 12px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-field input[type="file"] {
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-field input[type="file"]::file-selector-button {
+    height: 38px !important;
+    margin: 0 12px 0 0 !important;
+    padding: 0 14px !important;
+    border: 0 !important;
+    border-right: 1px solid #d1d5db !important;
+    background: #fbfdf8 !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-field select:focus,
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-field input[type="file"]:focus {
+    border-color: #157144 !important;
+    outline: 2px solid rgba(21, 113, 68, 0.1) !important;
+    outline-offset: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-field small {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    margin-top: 4px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-actions .button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    min-width: 132px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 16px !important;
+    border: 1px solid #157144 !important;
+    border-radius: 8px !important;
+    background: #157144 !important;
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-actions .button:hover:not(:disabled) {
+    border-color: #0d5f36 !important;
+    background: #0d5f36 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-actions .button:disabled {
+    opacity: 0.55 !important;
+    cursor: not-allowed !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-actions .button.is-loading .payment-import-spinner {
+    display: inline-block !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-actions .button.is-loading > .icon {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page .payment-import-simple-actions .icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+@media (width <= 600px) {
+    html body .app-shell .main-panel main.payment-import-page .payment-import-simple-form {
+        padding: 16px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page .payment-import-simple-actions .button {
+        width: 100% !important;
+    }
 }

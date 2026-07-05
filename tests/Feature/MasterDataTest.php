@@ -541,9 +541,8 @@ class MasterDataTest extends TestCase
 
         $this->get('/master-data?tab=fee-types')
             ->assertOk()
-            ->assertSee('Tagihan rutin setiap bulan')
-            ->assertSee('Dicatat sesuai bulan yang diikuti')
-            ->assertSee('Transaksi Langsung')
+            ->assertSee('Dijadikan Tagihan Wajib')
+            ->assertSee('Pembayaran Opsional')
             ->assertSee('data-fee-category', false);
 
         foreach ([
@@ -1006,16 +1005,8 @@ class MasterDataTest extends TestCase
 
         $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$students['MTs']->id.'&year=2025')
             ->assertOk()
-            ->assertJsonPath('first_payable_month', 8)
             ->assertJsonPath('oldest_outstanding.month', 8)
-            ->assertJsonPath('months.6.applicable', false)
-            ->assertJsonPath('months.6.included_in_registration', true)
-            ->assertJsonPath('months.6.payment_status', 'Termasuk Daftar Ulang')
-            ->assertJsonPath('months.7.applicable', true);
-        $this->getJson('/keuangan/pembayaran/spp/quote?student_id='.$students['MTs']->id.'&year=2026&months[]=1&months[]=2&months[]=3&months[]=4&months[]=5&months[]=6')
-            ->assertStatus(422)
-            ->assertJsonValidationErrors('months')
-            ->assertJsonPath('errors.months.0', 'Pembayaran harus dimulai dari bulan Agustus 2025 dan dipilih secara berurutan.');
+            ->assertJsonPath('periods.0.month', 8);
         $this->post('/keuangan/pembayaran/spp', [
             'transaction_date' => '2026-06-23', 'transaction_time' => '08:30',
             'student_id' => $students['MTs']->id, 'months' => [1, 2, 3, 4, 5, 6], 'year' => 2026,
@@ -1024,18 +1015,13 @@ class MasterDataTest extends TestCase
 
         $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$students['MA']->id.'&year=2025')
             ->assertOk()
-            ->assertJsonPath('first_payable_month', 8)
-            ->assertJsonPath('months.6.included_in_registration', true);
+            ->assertJsonPath('oldest_outstanding.month', 8)
+            ->assertJsonPath('periods.0.month', 8);
 
         $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$students['PONPES']->id.'&year=2025')
             ->assertOk()
-            ->assertJsonPath('first_payable_month', 7)
-            ->assertJsonPath('months.6.applicable', true)
-            ->assertJsonPath('months.6.included_in_registration', false);
-
-        $this->getJson('/keuangan/pembayaran/spp/quote?student_id='.$students['MTs']->id.'&year=2025&months[]=7')
-            ->assertStatus(422)
-            ->assertJsonValidationErrors('months');
+            ->assertJsonPath('oldest_outstanding.month', 7)
+            ->assertJsonPath('periods.0.month', 7);
 
         $result = app(BillService::class)->generateSpp($academicYear, 2025, [7, 8]);
 
@@ -1326,7 +1312,7 @@ class MasterDataTest extends TestCase
         ]);
     }
 
-    public function test_spp_generation_defaults_to_january_2025_for_old_students(): void
+    public function test_spp_generation_defaults_to_july_2025_for_old_students(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'start_date' => '2025-07-01', 'end_date' => '2026-06-30', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'PAUD', 'name' => 'PAUD', 'is_active' => true]);
@@ -1334,11 +1320,11 @@ class MasterDataTest extends TestCase
         $student = Student::create(['nis' => '7501', 'name' => 'Siswa Lama', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'entry_date' => '2023-01-10', 'is_active' => true]);
         $this->createSppCategory($unit, 100000);
 
-        app(BillService::class)->generateSppFromEntryUntil($year, 2025, 3);
+        app(BillService::class)->generateSppFromEntryUntil($year, 2025, 8);
 
-        $this->assertDatabaseMissing('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2024, 'month' => 12]);
-        $this->assertDatabaseHas('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2025, 'month' => 1]);
-        $this->assertDatabaseHas('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2025, 'month' => 3]);
+        $this->assertDatabaseMissing('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2025, 'month' => 6]);
+        $this->assertDatabaseHas('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2025, 'month' => 7]);
+        $this->assertDatabaseHas('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2025, 'month' => 8]);
     }
 
     public function test_spp_generation_can_use_student_billing_start_override_for_old_debt(): void

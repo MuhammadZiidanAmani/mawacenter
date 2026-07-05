@@ -29,14 +29,15 @@ class PaymentMenuTest extends TestCase
         ]);
     }
 
-    public function test_payment_menu_has_transaction_history_and_import_submenus(): void
+    public function test_payment_is_direct_menu_and_history_moves_under_reports(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']))->get('/')
             ->assertOk()
-            ->assertSee('Pembayaran')
-            ->assertSee('Transaksi Baru')
-            ->assertSee('Riwayat Pembayaran')
-            ->assertSee('Import Pembayaran');
+            ->assertSee('<a href="'.route('finance.payments.index').'" class="nav-item ">', false)
+            ->assertDontSee('<span>Transaksi Baru</span>', false)
+            ->assertDontSee('<span>Import Pembayaran</span>', false)
+            ->assertSee('<span>Laporan Pembayaran</span>', false)
+            ->assertSee('<span>Riwayat Pembayaran</span>', false);
     }
 
     public function test_payment_history_page_has_clear_links_for_each_payment_group(): void
@@ -45,6 +46,7 @@ class PaymentMenuTest extends TestCase
             ->get('/keuangan/pembayaran/riwayat')
             ->assertOk()
             ->assertSee('Riwayat Pembayaran')
+            ->assertSee('href="'.route('finance.payments.history').'" class="active"', false)
             ->assertSee('Riwayat SPP')
             ->assertSee('Riwayat Daftar Ulang')
             ->assertSee('Riwayat Laundry')
@@ -60,7 +62,10 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get('/keuangan/pembayaran')
             ->assertOk()
-            ->assertSee('Transaksi Baru')
+            ->assertSee('<h1>Pembayaran</h1>', false)
+            ->assertSee('href="'.route('finance.payments.import').'"', false)
+            ->assertSee('<span>Import</span>', false)
+            ->assertDontSee('<h1>Transaksi Baru</h1>', false)
             ->assertSee('Cari siswa')
             ->assertDontSee('Riwayat SPP')
             ->assertDontSee('Riwayat Daftar Ulang')
@@ -259,7 +264,9 @@ class PaymentMenuTest extends TestCase
             ->assertSee(route('finance.spp.import.preview'), false)
             ->assertSee(route('finance.other.import.preview', ['category' => 'daftar-ulang']), false)
             ->assertSee(route('finance.other.import.preview', ['category' => 'laundry']), false)
-            ->assertSee('Upload dan Preview');
+            ->assertSee('Jenis Pembayaran')
+            ->assertSee('Preview Data')
+            ->assertSee('data-payment-import', false);
     }
 
     public function test_registration_and_laundry_payment_sections_are_accessible(): void
@@ -425,7 +432,8 @@ class PaymentMenuTest extends TestCase
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
             ->assertSee('Bayar sampai')
-            ->assertSee('Juli 2026 - Desember 2026');
+            ->assertSee('Juli - Desember 2026')
+            ->assertSee('>Desember 2026</option>', false);
 
         $this->post('/keuangan/pembayaran', [
             'student_id' => $student->id,
@@ -475,7 +483,8 @@ class PaymentMenuTest extends TestCase
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
             ->assertSee('Bayar sampai')
-            ->assertSee('Juli 2026 - Agustus 2026');
+            ->assertSee('Agustus 2026')
+            ->assertDontSee('Juli 2026 - Agustus 2026');
 
         $this->post('/keuangan/pembayaran', [
             'student_id' => $student->id,
@@ -491,6 +500,61 @@ class PaymentMenuTest extends TestCase
         $this->assertDatabaseCount('other_payment_items', 2);
         $this->assertDatabaseHas('other_payment_items', ['year' => 2026, 'month' => 7, 'paid_amount' => 100000]);
         $this->assertDatabaseHas('other_payment_items', ['year' => 2026, 'month' => 8, 'paid_amount' => 100000]);
+    }
+
+    public function test_transaction_hub_can_pay_part_of_old_spp_arrears(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-06-05 10:00:00'));
+
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Pondok Pesantren', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7A', 'level' => 'Kelas 7']);
+        $student = Student::create([
+            'nis' => 'SPP-TUNGGAKAN',
+            'name' => 'Siswa Tunggakan SPP',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'billing_start_date' => '2025-09-01',
+            'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id,
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'spp',
+            'code' => 'SPP-TUNGGAKAN',
+            'name' => 'SPP Tunggakan',
+            'amount' => 100000,
+            'period' => 'Bulanan',
+            'creates_bill' => true,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create());
+        $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
+            ->assertOk()
+            ->assertSee('Bayar sampai')
+            ->assertSee('September 2025 - Juni 2026')
+            ->assertSee('value="10" data-amount="1000000"', false)
+            ->assertSee('selected>Juni 2026</option>', false)
+            ->assertSee('<b data-payment-total>1.000.000,-</b>', false)
+            ->assertSee('September - Oktober 2025')
+            ->assertSee('September 2025 - Agustus 2026')
+            ->assertSee('>Oktober 2025</option>', false);
+
+        $this->post('/keuangan/pembayaran', [
+            'student_id' => $student->id,
+            'search' => $student->name,
+            'bill_keys' => [$student->id.':spp'],
+            'payment_month_counts' => [$student->id.'_spp' => 2],
+            'payment_method' => 'Cash',
+            'paid_amount' => 200000,
+        ])->assertRedirect();
+
+        $this->assertDatabaseCount('spp_payment_items', 2);
+        $this->assertDatabaseHas('spp_payment_items', ['year' => 2025, 'month' => 9, 'paid_amount' => 100000]);
+        $this->assertDatabaseHas('spp_payment_items', ['year' => 2025, 'month' => 10, 'paid_amount' => 100000]);
     }
 
     public function test_registration_payment_pending_does_not_reduce_the_remaining_charge(): void

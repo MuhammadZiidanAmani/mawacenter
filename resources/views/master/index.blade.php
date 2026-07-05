@@ -549,7 +549,7 @@
                 <div class="fee-type-card-list">
                     @forelse ($data as $row)
                         @php
-                            $behaviorLabel = $row->creates_bill ? 'Tagihan '.$row->period : 'Transaksi Langsung';
+                            $behaviorLabel = $row->creates_bill ? 'Tagihan Wajib' : 'Pembayaran Opsional';
                         @endphp
                         <article class="fee-type-card-item {{ $row->is_active ? 'is-active' : 'is-inactive' }}">
                             <div class="fee-type-card-top">
@@ -1011,7 +1011,7 @@
                             <col class="fee-type-col-actions">
                         </colgroup>
                         <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Kategori Pembayaran'])</th><th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'amount', 'label' => 'Nominal'])</th><th>Aksi</th></tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong><small>{{ $row->creates_bill ? 'Tagihan '.$row->period : 'Transaksi Langsung' }}</small></td><td><strong>{{ $row->educationUnit?->code ?? '-' }}</strong></td><td><strong>{{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong><small>{{ $row->creates_bill ? 'Tagihan Wajib' : 'Pembayaran Opsional' }}</small></td><td><strong>{{ $row->educationUnit?->code ?? '-' }}</strong></td><td><strong>{{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'data-roles')
                         <colgroup>
                             <col class="data-role-col-no">

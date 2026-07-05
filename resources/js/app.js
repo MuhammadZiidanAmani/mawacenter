@@ -216,6 +216,31 @@ document.querySelector('[data-spp-import-file]')?.addEventListener('change', (ev
     event.target.closest('.spp-import-dropzone')?.classList.toggle('has-file', Boolean(file));
 });
 
+const paymentImport = document.querySelector('[data-payment-import]');
+if (paymentImport) {
+    const category = paymentImport.querySelector('[data-payment-import-category]');
+    const fileInput = paymentImport.querySelector('[data-payment-import-file]');
+    const submitButton = paymentImport.querySelector('[data-payment-import-submit]');
+    const submitLabel = paymentImport.querySelector('[data-payment-import-submit-label]');
+
+    category?.addEventListener('change', () => {
+        const action = category.selectedOptions?.[0]?.dataset.action;
+        if (action) paymentImport.action = action;
+    });
+
+    fileInput?.addEventListener('change', () => {
+        if (submitButton) submitButton.disabled = !fileInput.files?.length;
+    });
+
+    paymentImport.addEventListener('submit', () => {
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.classList.add('is-loading');
+        }
+        if (submitLabel) submitLabel.textContent = 'Memproses...';
+    });
+}
+
 const sppImportToggle = document.querySelector('[data-spp-import-toggle]');
 const sppImportPanel = document.querySelector('[data-spp-import-panel]');
 const setSppImportPanel = (open) => {
@@ -609,15 +634,15 @@ const syncFeeCategory = () => {
     const group = groupControl?.value ?? 'spp';
     const createsBill = masterForm?.querySelector('input[name="creates_bill"]:checked')?.value ?? '1';
     const settings = {
-        spp: ['Bulanan', 'Tagihan bulanan', 'SPP akan masuk ke tagihan siswa setiap bulan.'],
-        'daftar-ulang': ['Sekali Bayar', 'Tagihan satu kali', 'Daftar ulang akan muncul satu kali sebagai kewajiban siswa.'],
-        laundry: ['Bulanan', 'Transaksi sesuai keikutsertaan', 'Laundry tidak membuat tagihan otomatis; pembayaran dicatat hanya pada bulan yang diikuti.'],
+        spp: ['Bulanan', 'Tagihan Wajib', 'SPP akan masuk ke tagihan siswa setiap bulan.'],
+        'daftar-ulang': ['Sekali Bayar', 'Tagihan Wajib', 'Daftar ulang akan muncul satu kali sebagai kewajiban siswa.'],
+        laundry: ['Bulanan', 'Pembayaran Opsional', 'Laundry tidak membuat tagihan otomatis; pembayaran dicatat hanya pada bulan yang diikuti.'],
     };
 
     feeBillingChoice.hidden = group !== 'lain-lain';
     if (group === 'lain-lain') {
         feePeriodField.hidden = createsBill !== '1';
-        feeBehaviorTitle.textContent = createsBill === '1' ? 'Tagihan sesuai periode' : 'Transaksi langsung';
+        feeBehaviorTitle.textContent = createsBill === '1' ? 'Tagihan Wajib' : 'Pembayaran Opsional';
         feeBehaviorDescription.textContent = createsBill === '1'
             ? 'Pembayaran akan muncul sebagai kewajiban siswa sesuai periode yang dipilih.'
             : 'Pembayaran dicatat saat diterima dan tidak membuat tagihan otomatis.';

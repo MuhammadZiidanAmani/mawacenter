@@ -103,7 +103,7 @@
 </head>
 <body>
 <div class="receipt-actions">
-    <a href="{{ route('finance.payments.index') }}">Transaksi Baru</a>
+    <a href="{{ route('finance.payments.index') }}">Pembayaran</a>
     <button type="button" class="print" onclick="window.print()">Cetak Struk</button>
 </div>
 <main class="page">
