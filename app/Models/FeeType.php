@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Support\ClassLevel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FeeType extends Model
 {
-    protected $fillable = ['education_unit_id', 'school_class_id', 'academic_year_id', 'payment_group', 'code', 'name', 'amount', 'period', 'creates_bill', 'is_active'];
+    protected $fillable = ['education_unit_id', 'school_class_id', 'class_level', 'academic_year_id', 'payment_group', 'code', 'name', 'amount', 'period', 'creates_bill', 'is_active'];
 
     protected function casts(): array
     {
@@ -28,6 +29,20 @@ class FeeType extends Model
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function matchesSchoolClass(?SchoolClass $schoolClass): bool
+    {
+        if (! $schoolClass || $this->education_unit_id !== $schoolClass->education_unit_id) {
+            return false;
+        }
+
+        if ($this->school_class_id !== null) {
+            return $this->school_class_id === $schoolClass->id;
+        }
+
+        return $this->class_level === null
+            || $this->class_level === ClassLevel::key($schoolClass->level ?: $schoolClass->name);
     }
 
     public function scopePaymentGroup(Builder $query, string $group): Builder

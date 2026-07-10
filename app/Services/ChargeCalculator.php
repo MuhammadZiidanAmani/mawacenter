@@ -18,15 +18,18 @@ class ChargeCalculator
         if ($sourceType === 'spp') {
             $student->loadMissing('academicYear');
 
-            return (int) (FeeType::query()
+            $feeType = FeeType::query()
                 ->paymentGroup('spp')
                 ->where('is_active', true)
                 ->where('education_unit_id', $student->schoolClass?->education_unit_id)
                 ->where(fn ($query) => $query->whereNull('academic_year_id')->orWhere('academic_year_id', $student->academic_year_id))
-                ->where(fn ($query) => $query->whereNull('school_class_id')->orWhere('school_class_id', $student->school_class_id))
-                ->orderByRaw('CASE WHEN school_class_id IS NULL THEN 1 ELSE 0 END')
-                ->orderByRaw('CASE WHEN academic_year_id IS NULL THEN 1 ELSE 0 END')
-                ->value('amount') ?? 0);
+                ->get()
+                ->filter(fn (FeeType $candidate) => $candidate->matchesSchoolClass($student->schoolClass))
+                ->sortBy(fn (FeeType $candidate) => ($candidate->school_class_id !== null ? 0 : ($candidate->class_level !== null ? 10 : 20))
+                    + ($candidate->academic_year_id !== null ? 0 : 1))
+                ->first();
+
+            return (int) ($feeType?->amount ?? 0);
         }
 
         $student->loadMissing('academicYear');
@@ -35,9 +38,9 @@ class ChargeCalculator
             && ($feeType->payment_group === 'daftar-ulang' || $feeType->code === 'DAFTAR-ULANG' || str_starts_with($feeType->code, 'DAFTAR-ULANG-'));
 
         if (! $feeType || ! $feeType->is_active
-            || $feeType->education_unit_id !== $student->schoolClass?->education_unit_id
+            || ! $feeType->matchesSchoolClass($student->schoolClass)
             || (! $isRegistrationFee && $feeType->academic_year_id !== null && $feeType->academic_year_id !== $student->academic_year_id)
-            || ($feeType->school_class_id !== null && $feeType->school_class_id !== $student->school_class_id)) {
+        ) {
             return 0;
         }
 

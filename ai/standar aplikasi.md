@@ -54,28 +54,37 @@ Jenis font utama memakai system sans: Inter jika tersedia, lalu ui-sans-serif, s
 
 Gunakan satu keluarga font utama saja untuk seluruh aplikasi agar tampilan konsisten dan operasional.
 
-Ukuran font maksimal 22px dan minimal 14px untuk UI aplikasi. Jangan memakai font di bawah 14px untuk label, metadata, tabel, tombol, placeholder, teks bantuan, badge, chip, atau detail kecil.
+UI aplikasi hanya memakai 3 ukuran font utama dan 3 ketebalan font utama agar tampilan rapi, konsisten, dan mudah dirawat.
 
-Skala tipografi:
-- Judul halaman utama: 22px, font-weight 700, line-height 1.25
-- Judul section/card/modal: 18px sampai 20px, font-weight 600 atau 700, line-height 1.25
-- Judul item penting seperti nama siswa, nama tagihan, nama menu aktif: 16px sampai 18px, font-weight 600 atau 700, line-height 1.3
-- Teks isi, metadata penting, tabel, form input, select, textarea, placeholder: 14px sampai 16px, font-weight 400 atau 500, line-height 1.35 sampai 1.5
-- Label form dan label tabel: 14px, font-weight 500 atau 600, line-height 1.3
-- Tombol: 14px sampai 16px, font-weight 600 atau 700, line-height 1
-- Nominal uang biasa: 14px sampai 16px, font-weight 600, gunakan tabular-nums jika tersedia
-- Nominal uang penting atau total: 18px sampai 22px, font-weight 700 atau 800, gunakan tabular-nums jika tersedia
-- Badge/chip/status: 14px, font-weight 600 atau 700, line-height 1
-- Teks kosong/empty state: 14px sampai 16px, font-weight 400 atau 500, line-height 1.45
+Ukuran font UI:
+- 14px sebagai teks dasar. Dipakai untuk teks isi, tabel, form input, select, textarea, placeholder, label, metadata, badge, chip, tombol, teks bantuan, deskripsi, empty state, dan header tabel.
+- 16px sebagai teks penting. Dipakai untuk nama siswa, nama tagihan, nama item penting, judul card kecil, judul item list, menu aktif yang perlu menonjol, dan nominal biasa yang perlu lebih terbaca.
+- 20px sebagai teks utama. Dipakai untuk judul halaman utama, angka total utama, nominal total penting, dan informasi utama yang menjadi fokus halaman.
 
-Aturan tebal tipis:
-- 400 untuk teks normal dan deskripsi ringan
-- 500 untuk metadata yang perlu terbaca
-- 600 untuk label, tombol sekunder, dan judul kecil
-- 700 untuk judul utama, nama item penting, dan aksi penting
-- 800 hanya untuk angka total atau nama utama yang perlu sangat menonjol
+Ketebalan font UI:
+- 400 sebagai normal. Dipakai untuk teks isi, deskripsi, placeholder, teks bantuan, metadata ringan, dan keterangan tambahan.
+- 500 sebagai medium. Dipakai untuk label form, label tabel, isi tabel penting, isi form, metadata penting, nominal biasa, dan teks yang perlu lebih mudah dipindai.
+- 700 sebagai bold. Dipakai untuk judul halaman, judul section/card/modal, nama siswa atau tagihan penting, tombol, badge/status, menu aktif, dan nominal total penting.
 
-Letter spacing default 0. Jangan memakai letter-spacing negatif. Huruf kapital boleh dipakai untuk nama siswa, kode unit, status pendek, atau header tabel, tetapi tetap jaga ukuran maksimal 22px.
+Kombinasi penggunaan:
+- 14px / 400 untuk deskripsi, teks bantuan, placeholder, metadata ringan, empty state, dan catatan kecil.
+- 14px / 500 untuk isi tabel, input, select, textarea, label form, label tabel, filter, dan metadata penting.
+- 14px / 700 untuk tombol, badge, status, chip, header tabel, dan aksi kecil yang harus jelas.
+- 16px / 500 untuk item penting yang masih bersifat isi, misalnya nama pada list, nominal biasa, atau ringkasan penting.
+- 16px / 700 untuk nama siswa, nama tagihan, judul card kecil, judul item, dan teks utama di dalam komponen.
+- 20px / 700 untuk judul halaman utama, total besar, nominal utama, dan angka ringkasan yang menjadi fokus.
+
+Aturan pembatas:
+- Jangan memakai font di bawah 14px pada UI aplikasi.
+- Jangan memakai font di atas 20px pada UI aplikasi.
+- Jangan memakai font-weight 300, 600, atau 800 pada UI aplikasi baru.
+- Jika menemukan font-weight 600, ubah ke 500 atau 700 sesuai konteks.
+- Jika menemukan font-weight 800, ubah ke 700.
+- Jika menemukan 12px atau 13px pada UI aplikasi, ubah ke 14px.
+- Jika menemukan 18px untuk judul section, boleh dipertahankan hanya sementara pada halaman lama, tetapi standar baru mengarah ke 16px / 700 untuk section dan 20px / 700 untuk halaman.
+- Struk, kwitansi, PDF cetak, dan dokumen print boleh memakai ukuran khusus seperti 11.5px, 12.5px, 14px, dan 18px karena kebutuhan cetak berbeda dari UI aplikasi.
+
+Letter spacing default 0. Jangan memakai letter-spacing negatif. Huruf kapital boleh dipakai untuk nama siswa, kode unit, status pendek, atau header tabel, tetapi tetap jaga ukuran maksimal 20px.
 
 Jangan memakai ukuran hero atau display besar di dashboard, card, tabel, sidebar, modal, atau form transaksi.
 
@@ -92,8 +101,12 @@ Standar Spacing
 Gunakan skala jarak 4px: 4, 8, 12, 16, 20, 24, 32. Hindari angka acak seperti 7px, 13px, 19px, atau 27px kecuali untuk penyesuaian ikon yang sangat spesifik.
 
 Kanvas dan area kerja:
-- Jarak topbar ke konten halaman desktop: 24px
-- Jarak topbar ke konten halaman mobile: 16px
+- Seluruh konten halaman harus berada di tengah area kerja dengan container `width: 100%` dan `margin-inline: auto`
+- Heading, deskripsi, filter, canvas, tabel, dan form utama pada satu halaman harus memakai batas kiri-kanan container yang sama
+- Halaman form atau tool sederhana boleh memakai max-width 720px; halaman tabel/data maksimal 1200px; dashboard padat maksimal 1440px
+- Jika halaman turunan diminta mengikuti halaman induk, gunakan `max-width` kanvas halaman induk secara konsisten pada judul dan konten utama; contoh keluarga Pembayaran memakai kanvas ringkas 560px dan tetap rata tengah
+- Rata tengah yang dimaksud adalah posisi container, bukan `text-align: center`; judul, deskripsi, label, dan isi tetap rata kiri kecuali komponen memang membutuhkan perataan lain
+- Jarak topbar ke konten halaman desktop dan mobile: 16px
 - Padding halaman desktop: 24px 32px
 - Padding halaman tablet: 20px 24px
 - Padding halaman mobile: 16px
@@ -102,6 +115,7 @@ Kanvas dan area kerja:
 - Padding card kecil atau list item: 12px sampai 16px
 
 Heading halaman:
+- Pola heading default memakai 16px untuk jarak antar blok utama, kecuali judul ke deskripsi tetap 4px karena masih satu pasangan informasi
 - Jarak judul ke deskripsi: 4px
 - Jarak deskripsi ke filter/search: 16px
 - Jarak deskripsi ke card/konten utama langsung tanpa filter: 16px
@@ -233,10 +247,12 @@ Tombol primer:
 - Dipakai untuk satu aksi utama pada satu halaman, section, form, atau modal
 
 Tombol sekunder:
-- Background #ffffff
-- Teks #334155
-- Border 1px solid #d1d5db
-- Hover #fbfdf8
+- Background #f3fbf6
+- Teks #0d5f36
+- Border 1px solid #b9dcc7
+- Hover background #e9f8ef
+- Hover teks #004528
+- Hover border #157144
 - Dipakai untuk Batal, Kembali, filter tambahan, atau aksi pendamping
 
 Tombol bahaya:
@@ -286,7 +302,7 @@ Nominal dan Keuangan
 
 Nominal biasa memakai #020617, ukuran 14px sampai 16px, weight 600.
 
-Nominal penting atau total boleh memakai #004528 atau #020617, ukuran 18px sampai 22px, weight 700 atau 800.
+Nominal penting atau total boleh memakai #004528 atau #020617, ukuran 20px, weight 700.
 
 Gunakan tabular-nums jika tersedia agar angka sejajar dan mudah dipindai.
 
@@ -366,7 +382,7 @@ Gunakan:
 - Hover aksi utama: #0d5f36
 - Brand/nominal penting: #004528
 - Font utama: Inter/system sans
-- Ukuran font: 14px sampai 22px
+- Ukuran font: 14px, 16px, dan 20px
 - Field form: 40px
 - Radius umum: 8px
 

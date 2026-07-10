@@ -5,55 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Data Alumni - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter {
-            grid-template-columns: 160px 150px minmax(220px, 260px) max-content !important;
-            grid-template-rows: auto !important;
-        }
-
-        html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1) {
-            grid-column: 1 !important;
-            grid-row: 1 !important;
-        }
-
-        html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2) {
-            grid-column: 2 !important;
-            grid-row: 1 !important;
-        }
-
-        html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
-            grid-column: 3 !important;
-            grid-row: 1 !important;
-        }
-
-        html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-            grid-column: 4 !important;
-            grid-row: 1 !important;
-            align-self: end !important;
-            width: auto !important;
-            min-width: 0 !important;
-        }
-
-        @media (width <= 760px) {
-            html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter {
-                grid-template-columns: 1fr !important;
-            }
-
-            html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
-            html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
-            html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search,
-            html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-                grid-column: auto !important;
-                grid-row: auto !important;
-            }
-
-            html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                width: 100% !important;
-            }
-        }
-    </style>
 </head>
 <body>
 @php

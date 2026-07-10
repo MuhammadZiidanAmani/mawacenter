@@ -50,16 +50,16 @@
     </div>
     <div class="table-wrap spp-import-table-wrap"><table class="data-table student-flat-table spp-import-table student-import-preview-table student-import-preview-table-v3">
         <colgroup>
-            <col class="student-col-no" style="width:38px !important;">
-            <col class="student-col-nis" style="width:80px !important;">
-            <col class="student-col-name" style="width:38% !important;">
-            <col class="student-import-col-status" style="width:82px !important;">
+            <col class="student-col-no">
+            <col class="student-col-nis">
+            <col class="student-col-name">
+            <col class="student-import-col-status">
             <col class="student-import-col-message">
         </colgroup>
         <thead><tr>
             <th>No</th>
             <th>NIS</th>
-            <th style="text-align:center !important;">Nama</th>
+            <th class="student-import-name-heading">Nama</th>
             <th>Status</th>
             <th>Keterangan</th>
         </tr></thead><tbody>
@@ -74,8 +74,8 @@
         <tr class="spp-import-row {{ strtolower($row['status']) }}" data-student-import-row data-status="{{ strtolower($row['status']) }}" data-search="{{ strtolower(implode(' ', [$row['nis'], $row['name'], $row['unit'], $row['class'], $row['status'], $studentImportMessage])) }}">
             <td>{{ $loop->iteration }}</td>
             <td><strong class="spp-import-nis">{{ $row['nis'] ?: '-' }}</strong></td>
-            <td style="text-align:left !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important;">
-                <strong class="student-import-name" style="display:block !important; max-width:100% !important; overflow:hidden !important; text-overflow:ellipsis !important; white-space:nowrap !important; word-break:normal !important; overflow-wrap:normal !important; font-weight:400 !important;">{{ $row['name'] ?: '-' }}</strong>
+            <td class="student-import-name-cell">
+                <strong class="student-import-name">{{ $row['name'] ?: '-' }}</strong>
             </td>
             <td><span class="student-import-status-badge {{ strtolower($row['status']) }}">{{ $row['status'] }}</span></td>
             <td><span class="student-import-message">{{ $studentImportMessage }}</span></td>

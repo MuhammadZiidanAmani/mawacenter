@@ -90,23 +90,22 @@
         <div class="fee-type-simple-field">
             <span>Berlaku untuk</span>
             <select name="class_scope" data-registration-scope-select>
-                <option value="all" @selected(old('class_scope', old('school_class_id') === 'all' ? 'all' : 'all') === 'all')>Semua Kelas</option>
-                <option value="selected" @selected(old('class_scope') === 'selected')>Kelas Tertentu</option>
+                <option value="all" @selected(old('class_scope', 'all') === 'all')>Semua Tingkat</option>
+                <option value="level" @selected(old('class_scope') === 'level')>Tingkat Tertentu</option>
             </select>
-            <input type="radio" name="class_scope_shadow" value="all" @checked(old('class_scope', old('school_class_id') === 'all' ? 'all' : 'all') === 'all') data-registration-all-classes hidden>
-            <input type="radio" name="class_scope_shadow" value="selected" @checked(old('class_scope') === 'selected') data-registration-selected-classes hidden>
-            <input type="hidden" name="school_class_id" value="{{ old('class_scope', 'all') === 'all' ? 'all' : '' }}" data-registration-scope-value>
-            <small data-fee-scope-help>Kategori akan berlaku untuk seluruh kelas pada unit yang dipilih.</small>
-            <div class="registration-class-list fee-selected-classes" data-registration-class-list hidden>
-                @foreach($classes as $class)
-                    <label data-unit-id="{{ $class->education_unit_id }}" @if(old('education_unit_id') != $class->education_unit_id) hidden @endif>
-                        <input type="checkbox" name="school_class_ids[]" value="{{ $class->id }}" @checked(in_array($class->id, old('school_class_ids', [])))>
-                        <span>{{ $class->educationUnit?->code }} - {{ $class->name }}</span>
-                    </label>
-                @endforeach
-                <p data-registration-class-empty>Pilih unit pendidikan terlebih dahulu.</p>
-            </div>
+            <small data-fee-scope-help>Kategori akan berlaku untuk seluruh tingkat pada unit yang dipilih.</small>
         </div>
+
+        <label class="fee-type-simple-field fee-type-simple-short" data-registration-level-field hidden>
+            <span>Tingkat</span>
+            <select name="class_level" data-registration-level-select>
+                <option value="">Pilih Tingkat</option>
+                @foreach($classLevels as $level)
+                    <option value="{{ $level['key'] }}" data-unit-id="{{ $level['education_unit_id'] }}" @selected(old('class_level') === $level['key'])>{{ $level['label'] }}</option>
+                @endforeach
+            </select>
+            <small>Pilih tingkat, bukan rombel.</small>
+        </label>
 
         <div class="fee-type-simple-field fee-billing-choice" data-fee-billing-choice hidden>
             <span>Pencatatan Pembayaran</span>

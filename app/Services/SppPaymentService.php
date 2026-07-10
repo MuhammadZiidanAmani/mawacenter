@@ -324,18 +324,11 @@ class SppPaymentService
 
     private function quoteImportedMonth(Student $student, int $year, int $month): array
     {
-        if ($month < 1 || $month > 12 || ! $this->periodIsPayable($student, $year, $month)) {
+        if ($month < 1 || $month > 12 || ! $this->periodIsImportable($student, $year, $month)) {
             $message = $this->sppIsIncludedInRegistration($student, $year, $month)
                 ? 'SPP bulan Juli '.$year.' untuk unit MTs/MA sudah termasuk Daftar Ulang.'
                 : 'SPP bulan '.$this->monthName($month).' '.$year.' belum termasuk periode tagihan siswa.';
             throw ValidationException::withMessages(['months' => $message]);
-        }
-
-        $oldestOutstanding = $this->oldestOutstandingPeriod($student);
-        if ($oldestOutstanding && ($oldestOutstanding['year'] !== $year || $oldestOutstanding['month'] !== $month)) {
-            throw ValidationException::withMessages([
-                'months' => 'Pembayaran harus dimulai dari bulan '.$oldestOutstanding['month_name'].' '.$oldestOutstanding['year'].'.',
-            ]);
         }
 
         $charge = $this->calculator->calculateSppMonth($student, $year, $month);
@@ -698,6 +691,18 @@ class SppPaymentService
     private function periodIsPayable(Student $student, int $year, int $month): bool
     {
         return $this->periodIsApplicable($student, $year, $month)
+            && ! $this->sppIsIncludedInRegistration($student, $year, $month);
+    }
+
+    private function periodIsImportable(Student $student, int $year, int $month): bool
+    {
+        $period = CarbonImmutable::create($year, $month, 1);
+        $start = $student->billing_start_date
+            ? CarbonImmutable::parse($student->billing_start_date)->startOfMonth()
+            : $this->sppStartForAcademicYear($student->academicYear);
+
+        return $start->lte($period)
+            && (! $student->exit_date || $student->exit_date->gte($period->startOfMonth()))
             && ! $this->sppIsIncludedInRegistration($student, $year, $month);
     }
 

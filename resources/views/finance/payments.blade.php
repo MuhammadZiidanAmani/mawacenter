@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $mode === 'import' ? 'Import Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Pembayaran') }} - MA'WA CENTER</title>
+    <title>{{ $mode === 'import-preview' ? 'Preview Import Pembayaran' : ($mode === 'import' ? 'Import Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Pembayaran')) }} - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
@@ -21,8 +21,8 @@
             <div class="topbar-spacer"></div>
         </header>
 
-        <main @class(['payment-hub-page', 'payment-import-page' => $mode === 'import', 'payment-transaction-page' => $mode === 'payment', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
-            <section @class(['payment-hub-heading payment-import-page-heading' => $mode === 'import', 'student-workspace payment-transaction-workspace' => $mode === 'payment', 'student-workspace payment-history-workspace' => $mode === 'history'])>
+        <main @class(['payment-hub-page', 'payment-import-page' => in_array($mode, ['import', 'import-preview'], true), 'payment-import-preview-page' => $mode === 'import-preview', 'payment-transaction-page' => $mode === 'payment', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
+            <section @class(['payment-hub-heading payment-import-page-heading' => in_array($mode, ['import', 'import-preview'], true), 'student-workspace payment-transaction-workspace' => $mode === 'payment', 'student-workspace payment-history-workspace' => $mode === 'history'])>
                 @php
                     $icon = function (string $name) {
                         return match ($name) {
@@ -456,11 +456,11 @@
                     </div>
                 @else
                     <div class="payment-import-heading-copy">
-                        <h1>Import Pembayaran</h1>
-                        <p>Unggah data pembayaran dari file Excel untuk diperiksa sebelum disimpan.</p>
+                        <h1>{{ $mode === 'import-preview' ? 'Preview Import Pembayaran' : 'Import Pembayaran' }}</h1>
+                        <p>{{ $mode === 'import-preview' ? 'Periksa data gagal sebelum mengimpor transaksi valid.' : 'Unggah data pembayaran dari file Excel untuk diperiksa sebelum disimpan.' }}</p>
                     </div>
                     <div class="payment-hub-heading-actions">
-                        <a class="button button-secondary" href="{{ route('finance.payments.index') }}">{!! $icon('arrow-left') !!}<span>Pembayaran</span></a>
+                        <a class="button button-secondary" href="{{ $mode === 'import-preview' ? route('finance.payments.import') : route('finance.payments.index') }}">{!! $icon('arrow-left') !!}<span>{{ $mode === 'import-preview' ? 'Kembali' : 'Pembayaran' }}</span></a>
                     </div>
                 @endif
             </section>
@@ -474,6 +474,12 @@
                         ['lain-lain', 'LL', 'Pembayaran Lain', 'Kategori pembayaran lainnya.', route('finance.other.import.preview')],
                     ];
                 @endphp
+
+                @if(session('success'))
+                    <div class="payment-import-success" role="status">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
                 @if($errors->any())
                     <div class="payment-import-alert" role="alert">
@@ -491,7 +497,7 @@
                 >
                     @csrf
                     <label class="payment-import-simple-field">
-                        <span>Jenis Pembayaran</span>
+                        <span>Kategori Pembayaran</span>
                         <select data-payment-import-category>
                             @foreach($importTypes as [$key, $code, $title, $description, $action])
                                 <option value="{{ $key }}" data-action="{{ $action }}">{{ $title }}</option>
@@ -519,6 +525,94 @@
                         </button>
                     </div>
                 </form>
+            @elseif($mode === 'import-preview')
+                @php
+                    $previewType = $importPreviewType ?? 'spp';
+                    $sectionTitle = $importSection['title'] ?? 'SPP';
+                    $unresolvedSources = collect($importUnresolvedSources ?? []);
+                    $previewImportAction = $importAction ?? route('finance.spp.import');
+                    $canImport = $importPreview['valid'] > 0;
+                @endphp
+                <section class="payment-import-preview-panel">
+                    @if($unresolvedSources->isNotEmpty())
+                        <form method="POST" action="{{ $importMappingAction }}" class="payment-import-mapping">
+                            @csrf
+                            <input type="hidden" name="token" value="{{ $importToken }}">
+                            <div class="payment-import-mapping-heading">
+                                <strong>Pemetaan Kategori</strong>
+                                <span>Pilih kategori pembayaran untuk data yang belum dikenali.</span>
+                            </div>
+                            <div class="payment-import-mapping-fields">
+                                @foreach($unresolvedSources as $source)
+                                    <label>
+                                        <span>{{ $source['category'] }} · {{ $source['unit'] }}{{ $source['class_level'] ? ' · '.\App\Support\ClassLevel::label($source['class_level']) : '' }}</span>
+                                        <select name="mappings[{{ $source['key'] }}]" required>
+                                            <option value="">Pilih kategori</option>
+                                            @foreach($importFeeTypes as $feeType)
+                                                @php
+                                                    $feeTypeScope = $feeType->schoolClass?->name
+                                                        ?? ($feeType->class_level ? \App\Support\ClassLevel::label($feeType->class_level) : 'Semua Kelas');
+                                                    $feeTypeYear = $feeType->academicYear?->name;
+                                                @endphp
+                                                <option value="{{ $feeType->id }}">{{ $feeType->name }} · {{ $feeType->educationUnit?->code ?? '-' }} · {{ $feeTypeScope }}{{ $feeTypeYear ? ' · '.$feeTypeYear : '' }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <div class="payment-import-mapping-actions">
+                                <button type="submit" class="button button-primary">Terapkan</button>
+                            </div>
+                        </form>
+                    @endif
+
+                    <div class="payment-import-preview-top">
+                        <div>
+                            <strong>{{ number_format($importPreview['valid'], 0, ',', '.') }} transaksi siap diimpor</strong>
+                            <span>{{ $sectionTitle }} · {{ number_format(count($importPreview['failures']), 0, ',', '.') }} gagal · {{ number_format($importPreview['duplicates'], 0, ',', '.') }} duplikat</span>
+                        </div>
+                        <form method="POST" action="{{ $previewImportAction }}">
+                            @csrf
+                            <input type="hidden" name="token" value="{{ $importToken }}">
+                            <button class="button button-primary" @disabled(! $canImport)>
+                                {!! $icon('check') !!}
+                                Import {{ number_format($importPreview['valid'], 0, ',', '.') }} Transaksi
+                            </button>
+                        </form>
+                    </div>
+
+                    @if(count($importPreview['failures']) > 0)
+                        <div class="payment-import-preview-table-head">
+                            <strong>Data Gagal</strong>
+                            <span>{{ number_format(count($importPreview['failures']), 0, ',', '.') }} baris</span>
+                        </div>
+                        <div class="table-wrap payment-import-preview-table-wrap">
+                            <table class="data-table payment-import-preview-table">
+                                <thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>{{ $previewType === 'spp' ? 'Periode' : 'Kategori' }}</th><th>Nominal</th><th>Keterangan</th></tr></thead>
+                                <tbody>
+                                    @foreach($importPreview['failures'] as $row)
+                                        <tr>
+                                            <td>{{ $row['line'] }}</td>
+                                            <td>{{ $row['nis'] }}</td>
+                                            <td>{{ $row['name'] }}</td>
+                                            <td>
+                                                @if($previewType === 'spp')
+                                                    {{ ucfirst($row['month_name']) }} {{ $row['year'] }}
+                                                @else
+                                                    {{ $row['category'] ?: '-' }}
+                                                @endif
+                                            </td>
+                                            <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
+                                            <td>{{ $row['message'] }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="payment-import-preview-empty">Tidak ada data gagal.</div>
+                    @endif
+                </section>
             @endif
         </main>
     </div>

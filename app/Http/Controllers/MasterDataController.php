@@ -20,6 +20,7 @@ use App\Models\Student;
 use App\Models\User;
 use App\Services\ChargeCalculator;
 use App\Services\StudentImportService;
+use App\Support\ClassLevel;
 use App\Support\StudentXlsx;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
@@ -54,7 +55,9 @@ class MasterDataController extends Controller
         $classYearId = $tab === 'classes' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
         $classStatus = $tab === 'classes' ? $request->query('status', 'active') : null;
         $feeTypeClassId = $tab === 'fee-types' ? ($request->integer('class_id') ?: null) : null;
-        $feeTypeClassUnitId = $feeTypeClassId ? SchoolClass::whereKey($feeTypeClassId)->value('education_unit_id') : null;
+        $feeTypeClass = $feeTypeClassId ? SchoolClass::find($feeTypeClassId) : null;
+        $feeTypeClassUnitId = $feeTypeClass?->education_unit_id;
+        $feeTypeClassLevel = $feeTypeClass ? ClassLevel::key($feeTypeClass->level ?: $feeTypeClass->name) : null;
         $feeTypeYearId = $tab === 'fee-types' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
         $feeTypeStatus = $tab === 'fee-types' ? $request->query('status', 'active') : null;
         $feeDiscountYearId = $tab === 'fee-discounts' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
@@ -108,7 +111,7 @@ class MasterDataController extends Controller
 
                 return $query->paginate($classPerPage)->withQueryString();
             })(),
-            'fee-types' => (function () use ($request, $search, $feeTypeClassId, $feeTypeClassUnitId, $feeTypeYearId, $feeTypeStatus, $listSort, $listDirection, $perPage) {
+            'fee-types' => (function () use ($request, $search, $feeTypeClassId, $feeTypeClassUnitId, $feeTypeClassLevel, $feeTypeYearId, $feeTypeStatus, $listSort, $listDirection, $perPage) {
                 $query = FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
                     ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
                     ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->where('education_unit_id', $unitId))
@@ -116,14 +119,15 @@ class MasterDataController extends Controller
                         ->where('education_unit_id', $feeTypeClassUnitId)
                         ->where(fn ($feeType) => $feeType
                             ->where('school_class_id', $feeTypeClassId)
-                            ->orWhereNull('school_class_id')))
+                            ->orWhere('class_level', $feeTypeClassLevel)
+                            ->orWhere(fn ($scope) => $scope->whereNull('school_class_id')->whereNull('class_level'))))
                     ->when($feeTypeYearId, fn ($query, $yearId) => $query
                         ->where(fn ($feeType) => $feeType
                             ->where('academic_year_id', $yearId)
                             ->orWhereNull('academic_year_id')))
                     ->when($feeTypeStatus !== null && $feeTypeStatus !== '', fn ($query) => $query->where('is_active', $feeTypeStatus === 'active'))
                     ->orderBy(match ($listSort) {
-                        'name' => 'name', 'unit' => 'education_unit_id', 'class' => 'school_class_id',
+                        'name' => 'name', 'unit' => 'education_unit_id', 'class' => 'class_level',
                         'year' => 'academic_year_id', 'amount' => 'amount', 'is_active' => 'is_active',
                         default => 'education_unit_id',
                     }, $listSort ? $listDirection : 'asc')
@@ -246,6 +250,7 @@ class MasterDataController extends Controller
             'tab' => $tab,
             'data' => $data,
             'classes' => $this->classOptions(),
+            'classLevels' => $this->classLevelOptions(),
             'educationUnits' => $this->educationUnitOptions(),
             'academicYears' => $this->academicYearOptions(),
             'activeAcademicYear' => $activeAcademicYear,
@@ -1059,11 +1064,27 @@ class MasterDataController extends Controller
 
     private function classOptions()
     {
-        return SchoolClass::select(['id', 'education_unit_id', 'name'])
+        return SchoolClass::select(['id', 'education_unit_id', 'name', 'level'])
             ->with('educationUnit:id,code')
             ->orderBy('education_unit_id')
             ->orderBy('name')
             ->get();
+    }
+
+    private function classLevelOptions()
+    {
+        return SchoolClass::select(['education_unit_id', 'name', 'level'])
+            ->orderBy('education_unit_id')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (SchoolClass $class) => [
+                'education_unit_id' => $class->education_unit_id,
+                'key' => ClassLevel::key($class->level ?: $class->name),
+            ])
+            ->filter(fn (array $level) => $level['key'] !== null)
+            ->unique(fn (array $level) => $level['education_unit_id'].'|'.$level['key'])
+            ->map(fn (array $level) => $level + ['label' => ClassLevel::label($level['key'])])
+            ->values();
     }
 
     private function academicYearOptions()
@@ -1145,12 +1166,6 @@ class MasterDataController extends Controller
 
     private function validateFeeType(Request $request, ?FeeType $feeType = null): array
     {
-        $allClasses = $request->input('class_scope') === 'all' || $request->input('school_class_id') === 'all';
-        $classIds = collect($request->input('school_class_ids', []))->filter()->map(fn ($id) => (int) $id)->values();
-        if ($classIds->isEmpty() && ! $allClasses && $request->filled('school_class_id')) {
-            $classIds = collect([(int) $request->input('school_class_id')]);
-        }
-
         $validated = $request->validate([
             'name' => ['required', 'max:120'],
             'payment_group' => ['nullable', Rule::in(['spp', 'daftar-ulang', 'laundry', 'lain-lain'])],
@@ -1159,7 +1174,8 @@ class MasterDataController extends Controller
             'school_class_id' => ['nullable'],
             'school_class_ids' => ['nullable', 'array'],
             'school_class_ids.*' => ['integer', Rule::exists('school_classes', 'id')->where('education_unit_id', $request->education_unit_id)],
-            'class_scope' => ['nullable', Rule::in(['all', 'selected'])],
+            'class_scope' => ['nullable', Rule::in(['all', 'level', 'selected'])],
+            'class_level' => ['nullable', 'string', 'max:50'],
             'amount' => ['required', 'integer', 'min:0'],
             'period' => ['nullable', Rule::in(['Bulanan', 'Tahunan', 'Sekali Bayar'])],
             'creates_bill' => ['nullable', 'boolean'],
@@ -1176,29 +1192,45 @@ class MasterDataController extends Controller
         $validated['creates_bill'] = $fixedBehavior['creates_bill']
             ?? ($request->has('creates_bill') ? $request->boolean('creates_bill') : ($feeType?->creates_bill ?? true));
 
-        if ($validated['payment_group'] === 'spp' && $classIds->isEmpty()) {
-            $allClasses = true;
+        $legacyClassIds = collect($request->input('school_class_ids', []))->filter()->map(fn ($id) => (int) $id);
+        if ($legacyClassIds->isEmpty() && is_numeric($request->input('school_class_id'))) {
+            $legacyClassIds = collect([(int) $request->input('school_class_id')]);
         }
-        if (! $allClasses && $classIds->isEmpty()) {
-            throw ValidationException::withMessages(['school_class_ids' => 'Pilih minimal satu kelas.']);
-        }
-        if (
-            ! $allClasses
-            && $request->filled('school_class_id')
-            && ! SchoolClass::whereKey($request->integer('school_class_id'))
-                ->where('education_unit_id', $validated['education_unit_id'])
-                ->exists()
-        ) {
-            throw ValidationException::withMessages(['school_class_id' => 'Kelas tidak sesuai dengan unit pendidikan.']);
+        $legacyLevels = SchoolClass::where('education_unit_id', $validated['education_unit_id'])
+            ->whereIn('id', $legacyClassIds)
+            ->get(['name', 'level'])
+            ->map(fn (SchoolClass $class) => ClassLevel::key($class->level ?: $class->name))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $scope = $validated['class_scope'] ?? null;
+        $requestedLevel = ClassLevel::key($validated['class_level'] ?? null);
+        $levels = match (true) {
+            $scope === 'all' || $request->input('school_class_id') === 'all' => collect([null]),
+            $requestedLevel !== null => collect([$requestedLevel]),
+            $legacyLevels->isNotEmpty() => $legacyLevels,
+            default => collect([null]),
+        };
+
+        $availableLevels = SchoolClass::where('education_unit_id', $validated['education_unit_id'])
+            ->get(['name', 'level'])
+            ->map(fn (SchoolClass $class) => ClassLevel::key($class->level ?: $class->name))
+            ->filter()
+            ->unique();
+        foreach ($levels->filter() as $level) {
+            if (! $availableLevels->contains($level)) {
+                throw ValidationException::withMessages(['class_level' => 'Tingkat tidak sesuai dengan unit pendidikan.']);
+            }
         }
 
-        $classIds = $allClasses ? collect([null]) : $classIds;
         if ($validated['payment_group'] === 'spp') {
-            foreach ($classIds as $classId) {
+            foreach ($levels as $level) {
                 $duplicate = FeeType::query()
                     ->paymentGroup('spp')
                     ->where('education_unit_id', $validated['education_unit_id'])
-                    ->where('school_class_id', $classId)
+                    ->whereNull('school_class_id')
+                    ->when($level, fn ($query, $value) => $query->where('class_level', $value), fn ($query) => $query->whereNull('class_level'))
                     ->when(
                         $validated['academic_year_id'] ?? null,
                         fn ($query, $yearId) => $query->where('academic_year_id', $yearId),
@@ -1208,7 +1240,7 @@ class MasterDataController extends Controller
                     ->exists();
                 if ($duplicate) {
                     throw ValidationException::withMessages([
-                        'payment_group' => 'Kategori SPP untuk unit, kelas, dan tahun pelajaran tersebut sudah tersedia.',
+                        'payment_group' => 'Kategori SPP untuk unit, tingkat, dan tahun pelajaran tersebut sudah tersedia.',
                     ]);
                 }
             }
@@ -1218,7 +1250,7 @@ class MasterDataController extends Controller
 
         $reservedCodes = [];
 
-        return $classIds->map(function ($classId, int $index) use ($baseCode, $feeType, $request, $validated, &$reservedCodes) {
+        return $levels->map(function ($level, int $index) use ($baseCode, $feeType, $request, $validated, &$reservedCodes) {
             $code = $baseCode;
             $suffix = 2;
             while (
@@ -1236,7 +1268,8 @@ class MasterDataController extends Controller
                 'name' => $validated['name'],
                 'payment_group' => $validated['payment_group'],
                 'education_unit_id' => $validated['education_unit_id'],
-                'school_class_id' => $classId,
+                'school_class_id' => null,
+                'class_level' => $level,
                 'academic_year_id' => $validated['academic_year_id'] ?? $feeType?->academic_year_id,
                 'amount' => $validated['amount'],
                 'period' => $validated['period'],

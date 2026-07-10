@@ -17,6 +17,7 @@ use App\Models\Student;
 use App\Models\User;
 use App\Services\BillService;
 use App\Services\ChargeCalculator;
+use App\Services\SppPaymentImportService;
 use App\Support\StudentXlsx;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -588,24 +589,24 @@ class MasterDataTest extends TestCase
             'is_active' => 1,
         ])->assertRedirect('/master-data?tab=fee-types');
 
-        $this->assertDatabaseCount('fee_types', 2);
-        $setting = FeeType::where('name', 'Daftar Ulang')->where('school_class_id', $firstClass->id)->firstOrFail();
+        $this->assertDatabaseCount('fee_types', 1);
+        $setting = FeeType::where('name', 'Daftar Ulang')->where('class_level', '7')->firstOrFail();
         $this->assertSame('daftar-ulang', $setting->payment_group);
         $this->assertSame('Sekali Bayar', $setting->period);
         $this->assertSame($year->id, $setting->academic_year_id);
-        $this->assertSame($firstClass->id, $setting->school_class_id);
+        $this->assertNull($setting->school_class_id);
+        $this->assertSame('7', $setting->class_level);
         $this->assertSame(1250000, $setting->amount);
-        $this->assertSame(2, FeeType::where('name', 'Daftar Ulang')->pluck('code')->unique()->count());
+        $this->assertSame(1, FeeType::where('name', 'Daftar Ulang')->pluck('code')->unique()->count());
 
         $this->get('/master-data?tab=fee-types')
             ->assertOk()
             ->assertSee('Kategori Pembayaran')
             ->assertSee('Daftar Ulang')
             ->assertSee('MTs')
-            ->assertSee('VII A')
+            ->assertSee('Kelas 7')
             ->assertSee('2025/2026')
             ->assertSee('Rp 1.250.000')
-            ->assertSee('sort=amount&amp;direction=asc', false)
             ->assertDontSee('<th>Tahun Pelajaran</th>', false)
             ->assertDontSee('<th>Status</th>', false)
             ->assertDontSee('<th>Kelompok</th>', false)
@@ -1063,12 +1064,20 @@ class MasterDataTest extends TestCase
             'file' => UploadedFile::fake()->createWithContent('laporan-spp.xlsx', $workbook),
         ]);
 
-        $preview->assertOk()->assertSee('Preview Import Pembayaran')->assertSee('NIS 999999 tidak ditemukan.');
+        $preview->assertOk()
+            ->assertSee('Preview Import Pembayaran')
+            ->assertSee('payment-import-preview-panel', false)
+            ->assertDontSee('Pembayaran SPP')
+            ->assertSee('Import 2 Transaksi')
+            ->assertSee('Data Gagal')
+            ->assertDontSee('Hasil Validasi')
+            ->assertDontSee('Siap diimpor.')
+            ->assertSee('NIS 999999 tidak ditemukan.');
         $this->assertDatabaseCount('spp_payments', 0);
         $token = $preview->viewData('importToken');
 
         $this->post('/keuangan/pembayaran/spp/import', ['token' => $token])
-            ->assertRedirect('/keuangan/pembayaran/spp')
+            ->assertRedirect('/keuangan/pembayaran/import')
             ->assertSessionHas('success');
 
         $this->assertDatabaseCount('spp_payments', 2);
@@ -1078,21 +1087,19 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseHas('spp_payment_items', ['student_id' => $student->id, 'month' => 1, 'paid_amount' => 350000, 'remaining_amount' => 0]);
         $this->assertDatabaseMissing('spp_payment_items', ['student_id' => $otherStudent->id]);
 
-        $this->get('/keuangan/pembayaran/spp?search=ABDILLAH')
+        $this->get('/keuangan/pembayaran/spp?search=ABDILLAH&date_from=2026-01-01&date_to=2026-01-31')
             ->assertOk()
+            ->assertSee('<h1>Riwayat SPP</h1>', false)
+            ->assertDontSee('data-spp-import-toggle', false)
             ->assertSee('Januari 2026');
-        $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$student->id.'&year=2026')
+        $monthResponse = $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$student->id.'&year=2026');
+        $monthResponse
             ->assertOk()
-            ->assertJson([
-                'first_payable_month' => 2,
-                'months' => [
-                    [
-                        'year' => 2026,
-                        'month' => 1,
-                        'payment_status' => 'Lunas',
-                    ],
-                ],
-            ]);
+            ->assertJsonPath('oldest_outstanding.month', 7)
+            ->assertJsonPath('periods.6.month', 2);
+        $this->assertFalse(collect($monthResponse->json('periods'))->contains(
+            fn (array $period) => $period['year'] === 2026 && $period['month'] === 1,
+        ));
 
         $this->post('/keuangan/pembayaran/spp', [
             'transaction_date' => '2026-01-09',
@@ -1115,6 +1122,41 @@ class MasterDataTest extends TestCase
         $duplicatePreview->assertOk();
         $this->assertSame(2, $duplicatePreview->viewData('importPreview')['duplicates']);
         $this->assertDatabaseCount('spp_payments', 2);
+    }
+
+    public function test_spp_import_accepts_august_archive_for_late_created_mts_registration(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'MTs MAMBAUL HIKMAH', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7A', 'level' => 'Kelas 7']);
+        Student::create([
+            'nis' => '250010',
+            'name' => 'KENZEI IBRA RAMBU RABBANI',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'entry_date' => '2026-06-23',
+            'is_active' => true,
+        ]);
+        $this->createSppCategory($unit, 60000);
+
+        $path = tempnam(sys_get_temp_dir(), 'spp-import-mts-');
+        StudentXlsx::write($path, [
+            ['Data Laporan SPP'],
+            ['No', 'NIS', 'Nama', 'Jenis Pendidikan', 'Kelas', 'Petugas', 'Cara bayar', 'Bulan', 'Tahun', 'Waktu', 'Nominal'],
+            [1, '250010', 'KENZEI IBRA RAMBU RABBANI', 'MTs MAMBAUL HIKMAH', '7A', 'Ziidan Amani', 'cash', 'agustus', 2025, '2025-08-11 13:18:00', 60000],
+        ]);
+
+        try {
+            $preview = app(SppPaymentImportService::class)->preview($path, 'laporan-spp-mts.xlsx');
+        } finally {
+            @unlink($path);
+        }
+
+        $this->assertSame(1, $preview['total']);
+        $this->assertSame(1, $preview['valid']);
+        $this->assertSame([], $preview['failures']);
+        $this->assertDatabaseCount('spp_payments', 0);
     }
 
     public function test_spp_receipt_opens_as_direct_print_html(): void
@@ -1224,13 +1266,13 @@ class MasterDataTest extends TestCase
         $this->assertSame(500000, OtherPayment::sum('paid_amount'));
     }
 
-    public function test_other_payments_can_be_mapped_previewed_and_imported_from_xlsx(): void
+    public function test_registration_payments_use_central_preview_and_import_from_xlsx(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'PONPES MAMBAUL HIKMAH', 'is_active' => true]);
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7', 'level' => 'Kelas 7']);
         Student::create(['nis' => '260001', 'name' => 'ABDU ARIQIN HALIM', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]);
-        $feeType = FeeType::create(['education_unit_id' => $unit->id, 'code' => 'PONDOK-1447', 'name' => 'Pendaftaran Pondok 1447/1448 H', 'amount' => 6500000, 'period' => 'Sekali Bayar', 'is_active' => true]);
+        $feeType = FeeType::create(['education_unit_id' => $unit->id, 'payment_group' => 'daftar-ulang', 'code' => 'DAFTAR-ULANG-PONDOK-1447', 'name' => 'Pendaftaran Pondok 1447/1448 H', 'amount' => 6500000, 'period' => 'Sekali Bayar', 'is_active' => true]);
 
         $path = tempnam(sys_get_temp_dir(), 'other-import-test-');
         StudentXlsx::write($path, [
@@ -1242,19 +1284,237 @@ class MasterDataTest extends TestCase
         $workbook = file_get_contents($path);
         unlink($path);
 
-        $preview = $this->post('/keuangan/pembayaran/lain-lain/import/preview', [
+        $preview = $this->post('/keuangan/pembayaran/lain-lain/import/preview?category=daftar-ulang', [
             'file' => UploadedFile::fake()->createWithContent('transaksi.xlsx', $workbook),
         ]);
-        $preview->assertOk()->assertSee('Pemetaan Kategori Pembayaran')->assertSee('NIS 999999 tidak ditemukan.');
+        $preview->assertOk()
+            ->assertViewIs('finance.payments')
+            ->assertSee('Preview Import Pembayaran')
+            ->assertSee('Data Gagal')
+            ->assertSee('NIS 999999 tidak ditemukan.')
+            ->assertDontSee('Pemetaan Kategori');
         $this->assertSame($feeType->id, (int) collect($preview->viewData('importMappings'))->first());
+        $this->assertSame([], $preview->viewData('importUnresolvedSources'));
         $this->assertDatabaseCount('other_payments', 0);
 
-        $this->post('/keuangan/pembayaran/lain-lain/import', ['token' => $preview->viewData('importToken')])
-            ->assertRedirect('/keuangan/pembayaran/lain-lain')->assertSessionHas('success');
+        $this->post('/keuangan/pembayaran/lain-lain/import?category=daftar-ulang', ['token' => $preview->viewData('importToken')])
+            ->assertRedirect('/keuangan/pembayaran/import')->assertSessionHas('success');
 
         $this->assertDatabaseCount('other_payments', 2);
         $this->assertSame(6500000, OtherPayment::sum('paid_amount'));
         $this->assertDatabaseHas('other_payments', ['paid_amount' => 4500000, 'remaining_amount' => 0, 'payment_status' => 'Lunas', 'operator_name' => 'Ziidan Amani']);
+    }
+
+    public function test_registration_import_auto_matches_year_label_to_legacy_class_categories(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'MTs MAMBAUL HIKMAH', 'is_active' => true]);
+        $classA = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7A', 'level' => 'Kelas 7']);
+        $classB = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7B', 'level' => 'Kelas 7']);
+        $studentA = Student::create(['nis' => '250042', 'name' => 'AHMAD AFFAN ARSALAN', 'gender' => 'L', 'school_class_id' => $classA->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        $studentB = Student::create(['nis' => '250041', 'name' => 'AHMAD LABIB MUSHOFFA', 'gender' => 'L', 'school_class_id' => $classB->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        $feeTypeA = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'school_class_id' => $classA->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'daftar-ulang',
+            'code' => 'DAFTAR-ULANG-KELAS-8-7A',
+            'name' => 'DAFTAR ULANG KELAS 8',
+            'amount' => 475000,
+            'period' => 'Sekali Bayar',
+            'is_active' => true,
+        ]);
+        $feeTypeB = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'school_class_id' => $classB->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'daftar-ulang',
+            'code' => 'DAFTAR-ULANG-KELAS-8-7B',
+            'name' => 'DAFTAR ULANG KELAS 8',
+            'amount' => 475000,
+            'period' => 'Sekali Bayar',
+            'is_active' => true,
+        ]);
+
+        $path = tempnam(sys_get_temp_dir(), 'registration-legacy-class-test-');
+        StudentXlsx::write($path, [
+            ['Data Laporan Transaksi 08072026'],
+            ['No', 'NIS', 'Nama', 'Petugas', 'Kategori Pembayaran', 'Jenis Pendidikan', 'Kelas', 'Cara bayar', 'Nominal', 'Waktu'],
+            [1, '250042', 'AHMAD AFFAN ARSALAN', 'Muzaki', 'DAFTAR ULANG KELAS 8 TA. 2026/2027', 'MTs MAMBAUL HIKMAH', '7A', 'cash', 475000, '2026-06-20 08:59:00'],
+            [2, '250041', 'AHMAD LABIB MUSHOFFA', 'Admin', 'DAFTAR ULANG KELAS 8 TA. 2026/2027', 'MTs MAMBAUL HIKMAH', '7B', 'cash', 100000, '2026-06-20 11:00:00'],
+        ]);
+        $workbook = file_get_contents($path);
+        unlink($path);
+
+        $preview = $this->post('/keuangan/pembayaran/lain-lain/import/preview?category=daftar-ulang', [
+            'file' => UploadedFile::fake()->createWithContent('daftar-ulang-kelas-8.xlsx', $workbook),
+        ]);
+
+        $preview->assertOk()
+            ->assertViewIs('finance.payments')
+            ->assertDontSee('Pemetaan Kategori');
+        $this->assertSame([], $preview->viewData('importUnresolvedSources'));
+        $this->assertSame(2, $preview->viewData('importPreview')['valid']);
+
+        $this->post('/keuangan/pembayaran/lain-lain/import?category=daftar-ulang', [
+            'token' => $preview->viewData('importToken'),
+        ])->assertRedirect('/keuangan/pembayaran/import');
+
+        $this->assertDatabaseHas('other_payments', [
+            'student_id' => $studentA->id,
+            'fee_type_id' => $feeTypeA->id,
+            'paid_amount' => 475000,
+        ]);
+        $this->assertDatabaseHas('other_payments', [
+            'student_id' => $studentB->id,
+            'fee_type_id' => $feeTypeB->id,
+            'paid_amount' => 100000,
+        ]);
+    }
+
+    public function test_registration_import_ignores_hijri_year_suffix_in_category_name(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'PONPES MAMBAUL HIKMAH', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '9E', 'level' => 'Kelas 9']);
+        $student = Student::create(['nis' => '200004', 'name' => 'REGITA KHIYAROTUL FIDA', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        $feeType = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'daftar-ulang',
+            'code' => 'DAFTAR-ULANG-PONDOK',
+            'name' => 'DAFTAR ULANG PONDOK',
+            'amount' => 600000,
+            'period' => 'Sekali Bayar',
+            'is_active' => true,
+        ]);
+
+        $path = tempnam(sys_get_temp_dir(), 'registration-hijri-year-test-');
+        StudentXlsx::write($path, [
+            ['No', 'NIS', 'Nama', 'Petugas', 'Kategori Pembayaran', 'Jenis Pendidikan', 'Kelas', 'Cara bayar', 'Nominal', 'Waktu'],
+            [1, '200004', 'REGITA KHIYAROTUL FIDA', 'Ziidan Amani', 'DAFTAR ULANG PONDOK 1447 H', 'PONPES MAMBAUL HIKMAH', '9E', 'transfer', 600000, '2026-04-08 12:33:00'],
+        ]);
+        $workbook = file_get_contents($path);
+        unlink($path);
+
+        $preview = $this->post('/keuangan/pembayaran/lain-lain/import/preview?category=daftar-ulang', [
+            'file' => UploadedFile::fake()->createWithContent('daftar-ulang-pondok.xlsx', $workbook),
+        ]);
+
+        $preview->assertOk()
+            ->assertViewIs('finance.payments')
+            ->assertDontSee('Pemetaan Kategori')
+            ->assertSee('Import 1 Transaksi');
+        $this->assertSame(1, $preview->viewData('importPreview')['valid']);
+
+        $this->post('/keuangan/pembayaran/lain-lain/import?category=daftar-ulang', [
+            'token' => $preview->viewData('importToken'),
+        ])->assertRedirect('/keuangan/pembayaran/import');
+
+        $this->assertDatabaseHas('other_payments', [
+            'student_id' => $student->id,
+            'fee_type_id' => $feeType->id,
+            'paid_amount' => 600000,
+        ]);
+    }
+
+    public function test_registration_import_ignores_plain_academic_year_suffix_in_category_name(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'PONPES MAMBAUL HIKMAH', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '12A', 'level' => 'Kelas 12']);
+        $student = Student::create(['nis' => '202009', 'name' => 'MOKHAMMAD TAJUDIN MIFTAKHUL RIFQI', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        $feeType = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'daftar-ulang',
+            'code' => 'DAFTAR-ULANG-PONDOK',
+            'name' => 'DAFTAR ULANG PONDOK',
+            'amount' => 600000,
+            'period' => 'Sekali Bayar',
+            'is_active' => true,
+        ]);
+
+        $path = tempnam(sys_get_temp_dir(), 'registration-plain-year-test-');
+        StudentXlsx::write($path, [
+            ['No', 'NIS', 'Nama', 'Petugas', 'Kategori Pembayaran', 'Jenis Pendidikan', 'Kelas', 'Cara bayar', 'Nominal', 'Waktu'],
+            [1, '202009', 'MOKHAMMAD TAJUDIN MIFTAKHUL RIFQI', 'Ziidan Amani', 'DAFTAR ULANG PONDOK 2026/2027', 'PONPES MAMBAUL HIKMAH', '12A', 'cash', 600000, '2026-05-30 10:07:00'],
+        ]);
+        $workbook = file_get_contents($path);
+        unlink($path);
+
+        $preview = $this->post('/keuangan/pembayaran/lain-lain/import/preview?category=daftar-ulang', [
+            'file' => UploadedFile::fake()->createWithContent('daftar-ulang-pondok.xlsx', $workbook),
+        ]);
+
+        $preview->assertOk()
+            ->assertViewIs('finance.payments')
+            ->assertDontSee('Pemetaan Kategori')
+            ->assertSee('Import 1 Transaksi');
+        $this->assertSame(1, $preview->viewData('importPreview')['valid']);
+
+        $this->post('/keuangan/pembayaran/lain-lain/import?category=daftar-ulang', [
+            'token' => $preview->viewData('importToken'),
+        ])->assertRedirect('/keuangan/pembayaran/import');
+
+        $this->assertDatabaseHas('other_payments', [
+            'student_id' => $student->id,
+            'fee_type_id' => $feeType->id,
+            'paid_amount' => 600000,
+        ]);
+    }
+
+    public function test_registration_import_only_requests_unresolved_category_mapping(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        Student::create(['nis' => '7001', 'name' => 'SISWA DAFTAR ULANG', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        $feeType = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'payment_group' => 'daftar-ulang',
+            'code' => 'DAFTAR-ULANG-MTS',
+            'name' => 'Daftar Ulang MTs',
+            'amount' => 500000,
+            'period' => 'Sekali Bayar',
+            'is_active' => true,
+        ]);
+
+        $path = tempnam(sys_get_temp_dir(), 'registration-mapping-test-');
+        StudentXlsx::write($path, [
+            ['NIS', 'Nama', 'Petugas', 'Kategori Pembayaran', 'Unit Pendidikan', 'Kelas', 'Cara bayar', 'Nominal', 'Waktu'],
+            ['7001', 'SISWA DAFTAR ULANG', 'Admin', 'BIAYA MASUK KHUSUS', 'MTs', 'VII A', 'cash', 500000, '2026-06-10 09:00:00'],
+        ]);
+        $workbook = file_get_contents($path);
+        unlink($path);
+
+        $preview = $this->post('/keuangan/pembayaran/lain-lain/import/preview?category=daftar-ulang', [
+            'file' => UploadedFile::fake()->createWithContent('daftar-ulang.xlsx', $workbook),
+        ]);
+        $preview->assertOk()->assertViewIs('finance.payments')->assertSee('Pemetaan Kategori');
+        $source = collect($preview->viewData('importUnresolvedSources'))->first();
+
+        $mappedPreview = $this->post('/keuangan/pembayaran/lain-lain/import/preview?category=daftar-ulang', [
+            'token' => $preview->viewData('importToken'),
+            'mappings' => [$source['key'] => $feeType->id],
+        ]);
+        $mappedPreview->assertOk()->assertViewIs('finance.payments')->assertDontSee('Pemetaan Kategori');
+        $this->assertSame(
+            1,
+            $mappedPreview->viewData('importPreview')['valid'],
+            json_encode($mappedPreview->viewData('importPreview'), JSON_PRETTY_PRINT),
+        );
+        $this->assertDatabaseCount('other_payments', 0);
+
+        $this->post('/keuangan/pembayaran/lain-lain/import?category=daftar-ulang', [
+            'token' => $mappedPreview->viewData('importToken'),
+        ])->assertRedirect('/keuangan/pembayaran/import');
+
+        $this->assertDatabaseHas('other_payments', [
+            'student_id' => Student::where('nis', '7001')->value('id'),
+            'fee_type_id' => $feeType->id,
+            'paid_amount' => 500000,
+        ]);
     }
 
     public function test_outstanding_bills_are_shown_from_synced_bills(): void

@@ -79,10 +79,9 @@
             <div>
                 <section class="student-workspace payment-workspace payment-single-canvas">
                     <div class="student-flat-header">
-                        <h1>Pembayaran SPP</h1>
+                        <h1>Riwayat SPP</h1>
                         <div class="student-title-actions">
-                            <a href="{{ route('finance.spp.create') }}" class="button student-add-button">{!! $icon('plus') !!} Tambah</a>
-                            <button type="button" class="button action-purple spp-import-toggle {{ $importPreview || $errors->any() ? 'active' : '' }}" data-spp-import-toggle aria-expanded="{{ $errors->any() ? 'true' : 'false' }}">{!! $icon('upload') !!} Import</button>
+                            <a href="{{ route('finance.payments.history') }}" class="button button-secondary">Kembali</a>
                         </div>
                     </div>
                     <form method="GET" action="{{ route('finance.spp.index') }}" class="student-filter-panel payment-filter-panel payment-filter-compact">
@@ -109,62 +108,6 @@
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
                     </form>
-                <div class="spp-import-modal-backdrop {{ $errors->any() ? 'show' : '' }}" data-spp-import-panel @if(! $errors->any()) hidden @endif>
-                    <section class="spp-import-modal" role="dialog" aria-modal="true" aria-labelledby="spp-import-title">
-                        <header class="spp-import-modal-head">
-                            <div><span class="spp-import-kicker">Pembayaran · SPP</span><h2 id="spp-import-title">Import Pembayaran SPP Bulanan</h2><p>Unggah laporan pembayaran untuk memproses transaksi massal.</p></div>
-                            <button type="button" class="spp-import-close" data-spp-import-close aria-label="Tutup modal import">×</button>
-                        </header>
-                        <div class="spp-import-progress">
-                            <div class="active"><b>1</b><span>Pilih file</span></div>
-                            <div><b>2</b><span>Preview data</span></div>
-                            <div><b>3</b><span>Konfirmasi</span></div>
-                        </div>
-                        <div class="spp-import-info">
-                            <span><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg></span>
-                            <div><strong>Validasi Sistem</strong><p>Sistem akan memeriksa <b>NIS, periode, nominal, dan duplikasi</b> secara otomatis sebelum data disimpan.</p></div>
-                        </div>
-                        <form method="POST" action="{{ route('finance.spp.import.preview') }}" enctype="multipart/form-data" class="spp-import-modal-form">
-                            @csrf
-                            <label class="spp-import-dropzone">
-                                <input type="file" name="file" accept=".xlsx" required data-spp-import-file>
-                                <span class="spp-import-drop-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M12 18V10m0 0-3 3m3-3 3 3M14 2v6h6"/></svg></span>
-                                <strong data-spp-import-filename>Ketuk untuk pilih berkas</strong>
-                                <small>Format XLSX · Maksimal 10 MB</small>
-                                <span class="spp-import-browse">Cari di Dokumen Saya</span>
-                            </label>
-                            <div class="spp-import-modal-actions">
-                                <button class="button button-primary spp-preview-button">{!! $icon('upload') !!} Preview Data</button>
-                                <button type="button" class="button button-secondary" data-spp-import-close>Batal</button>
-                            </div>
-                        </form>
-                    </section>
-                </div>
-                @if($importPreview)
-                <section class="card spp-import-preview">
-                    <div class="spp-preview-header">
-                        <div class="spp-preview-title">
-                            <span class="spp-preview-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12a9 9 0 1 1-5.3-8.2"/></svg></span>
-                            <div><span class="spp-import-kicker">Hasil Validasi</span><strong>Preview Import Pembayaran</strong><span>{{ $importPreview['valid'] > 0 ? 'Data valid siap disimpan. Periksa baris gagal sebelum melanjutkan.' : 'Belum ada transaksi yang dapat diimpor. Periksa keterangan pada tabel.' }}</span></div>
-                        </div>
-                        <form method="POST" action="{{ route('finance.spp.import') }}">@csrf<input type="hidden" name="token" value="{{ $importToken }}"><button class="button button-primary spp-confirm-button" @disabled($importPreview['valid'] < 1)><svg class="icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span>Konfirmasi Import</span><b>{{ $importPreview['valid'] }} Transaksi</b></button></form>
-                    </div>
-                    <div class="spp-import-stats">
-                        <div class="total"><span class="spp-stat-icon">Σ</span><p><span>Total Baris</span><strong>{{ number_format($importPreview['total'], 0, ',', '.') }}</strong><small>data diperiksa</small></p></div>
-                        <div class="valid"><span class="spp-stat-icon">✓</span><p><span>Valid</span><strong>{{ number_format($importPreview['valid'], 0, ',', '.') }}</strong><small>siap diimpor</small></p></div>
-                        <div class="duplicate"><span class="spp-stat-icon">↻</span><p><span>Duplikat</span><strong>{{ number_format($importPreview['duplicates'], 0, ',', '.') }}</strong><small>akan dilewati</small></p></div>
-                        <div class="failed"><span class="spp-stat-icon">!</span><p><span>Gagal</span><strong>{{ number_format(count($importPreview['failures']), 0, ',', '.') }}</strong><small>perlu diperiksa</small></p></div>
-                    </div>
-                    <div class="spp-validation-bar"><span style="width: {{ $importPreview['total'] > 0 ? ($importPreview['valid'] / $importPreview['total']) * 100 : 0 }}%"></span></div>
-                    <div class="spp-preview-table-head"><div><strong>Rincian Hasil Pemeriksaan</strong><span>Menampilkan maksimal 100 baris pertama</span></div><span class="spp-preview-count">{{ count($importPreview['rows']) }} baris</span></div>
-                    <div class="table-wrap spp-import-table-wrap"><table class="data-table spp-import-table"><thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>Periode</th><th>Nominal</th><th>Status</th><th>Keterangan</th></tr></thead><tbody>
-                        @foreach(array_slice($importPreview['rows'], 0, 100) as $row)
-                        <tr class="spp-import-row {{ strtolower($row['status']) }}"><td><span class="spp-line-number">{{ $row['line'] }}</span></td><td><strong class="spp-import-nis">{{ $row['nis'] }}</strong></td><td><strong>{{ $row['name'] }}</strong></td><td><span class="spp-period">{{ ucfirst($row['month_name']) }} <b>{{ $row['year'] }}</b></span></td><td><strong class="spp-import-amount">Rp {{ number_format($row['nominal'], 0, ',', '.') }}</strong></td><td><span class="status {{ $row['status']==='Valid'?'success':($row['status']==='Duplikat'?'warning':'danger') }}">{{ $row['status'] }}</span></td><td><span class="spp-import-message">{{ $row['message'] }}</span></td></tr>
-                        @endforeach
-                    </tbody></table></div>
-                    @if(count($importPreview['rows']) > 100)<p class="spp-import-note"><span>i</span> Menampilkan 100 dari {{ count($importPreview['rows']) }} baris hasil validasi.</p>@endif
-                </section>
-                @endif
                 <div class="student-data-card payment-data-card spp-history">
                     @include('partials.list-toolbar', ['action' => route('finance.spp.index'), 'searchLabel' => 'Cari pembayaran SPP'])
                     <div class="table-wrap"><table class="data-table student-flat-table payment-flat-table spp-list-table registration-payment-table"><thead><tr><th>No</th><th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'method', 'label' => 'Cara Bayar'])</th><th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th><th>Rincian</th></tr></thead><tbody>

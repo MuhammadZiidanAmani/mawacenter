@@ -349,14 +349,10 @@ const modalTitle = document.querySelector('[data-modal-title]');
 const studentUnit = document.querySelector('[data-student-unit]');
 const studentClass = document.querySelector('[data-student-class]');
 const studentClassOptions = studentClass ? Array.from(studentClass.options) : [];
-const registrationClassList = document.querySelector('[data-registration-class-list]');
-const registrationClassRows = registrationClassList ? Array.from(registrationClassList.querySelectorAll('label[data-unit-id]')) : [];
-const registrationClassEmpty = document.querySelector('[data-registration-class-empty]');
-const registrationAllClasses = document.querySelector('[data-registration-all-classes]');
-const registrationSelectedClasses = document.querySelector('[data-registration-selected-classes]');
-const registrationScopeValue = document.querySelector('[data-registration-scope-value]');
 const registrationScopeSelect = document.querySelector('[data-registration-scope-select]');
-const registrationAllClassesRow = document.querySelector('[data-registration-all-row]');
+const registrationLevelField = document.querySelector('[data-registration-level-field]');
+const registrationLevelSelect = document.querySelector('[data-registration-level-select]');
+const registrationLevelOptions = registrationLevelSelect ? Array.from(registrationLevelSelect.options) : [];
 const feeScopeHelp = document.querySelector('[data-fee-scope-help]');
 const feeCategories = Array.from(document.querySelectorAll('[data-fee-category]'));
 const feeBillingChoice = document.querySelector('[data-fee-billing-choice]');
@@ -558,40 +554,11 @@ const toggleDiscountValueFormat = () => {
 };
 
 const filterStudentClasses = (selectedClass = '') => {
-    if (!studentUnit || (!studentClass && !registrationClassList)) return;
+    if (!studentUnit || !studentClass) return;
     const unitId = studentUnit.value;
     const selectedClasses = Array.isArray(selectedClass)
         ? selectedClass.map(String)
-        : (selectedClass ? [String(selectedClass)] : (registrationAllClasses?.checked ? ['all'] : []));
-    if (registrationClassList) {
-        let visibleCount = 0;
-        const allClassesSelected = selectedClasses.includes('all');
-        registrationClassRows.forEach((row) => {
-            const input = row.querySelector('input[type="checkbox"]');
-            const visible = Boolean(unitId) && row.dataset.unitId === unitId;
-            row.hidden = !visible;
-            if (input) {
-                input.disabled = !visible || allClassesSelected;
-                input.checked = visible && !allClassesSelected && selectedClasses.includes(input.value);
-            }
-            if (visible) visibleCount += 1;
-        });
-        if (registrationAllClasses && registrationAllClassesRow) {
-            const available = Boolean(unitId) && visibleCount > 0;
-            registrationAllClassesRow.hidden = !available;
-            registrationAllClasses.disabled = !available;
-            registrationAllClasses.checked = available && allClassesSelected;
-        }
-        if (registrationAllClasses && !registrationAllClassesRow) {
-            registrationAllClasses.checked = allClassesSelected;
-            if (registrationSelectedClasses) registrationSelectedClasses.checked = !allClassesSelected;
-        }
-        if (registrationClassEmpty) {
-            registrationClassEmpty.hidden = visibleCount > 0;
-            registrationClassEmpty.textContent = unitId ? 'Belum ada kelas untuk unit pendidikan ini.' : 'Pilih unit pendidikan terlebih dahulu.';
-        }
-    }
-    if (!studentClass) return;
+        : (selectedClass ? [String(selectedClass)] : []);
     studentClassOptions.forEach((option) => {
         option.hidden = Boolean(option.value) && !option.hasAttribute('data-all-classes') && option.dataset.unitId !== unitId;
         option.disabled = option.hidden;
@@ -609,23 +576,31 @@ const filterStudentClasses = (selectedClass = '') => {
     }
 };
 
-const syncRegistrationScope = () => {
-    if (!registrationAllClasses || !registrationClassList) return;
-    const allClasses = registrationAllClasses.checked;
-    const classScopeField = registrationClassList.closest('.fee-type-simple-field');
-    if (registrationScopeSelect) registrationScopeSelect.value = allClasses ? 'all' : 'selected';
-    registrationClassList.hidden = allClasses;
-    classScopeField?.classList.toggle('is-class-specific', !allClasses);
-    if (registrationScopeValue) registrationScopeValue.value = allClasses ? 'all' : '';
-    if (feeScopeHelp) {
-        feeScopeHelp.textContent = allClasses
-            ? 'Kategori akan berlaku untuk seluruh kelas pada unit yang dipilih.'
-            : 'Pilih satu atau beberapa kelas pada unit pendidikan ini.';
-    }
-    registrationClassRows.forEach((row) => {
-        const input = row.querySelector('input[type="checkbox"]');
-        if (input) input.disabled = allClasses || row.hidden;
+const filterRegistrationLevels = (selectedLevel = '') => {
+    if (!studentUnit || !registrationLevelSelect) return;
+    const unitId = studentUnit.value;
+    registrationLevelOptions.forEach((option) => {
+        if (!option.value) return;
+        option.hidden = option.dataset.unitId !== unitId;
+        option.disabled = option.hidden;
     });
+    registrationLevelSelect.value = selectedLevel
+        && registrationLevelOptions.some((option) => option.value === String(selectedLevel) && !option.hidden)
+        ? String(selectedLevel)
+        : '';
+};
+
+const syncRegistrationScope = () => {
+    if (!registrationScopeSelect || !registrationLevelField || !registrationLevelSelect) return;
+    const allLevels = registrationScopeSelect.value === 'all';
+    registrationLevelField.hidden = allLevels;
+    registrationLevelSelect.disabled = allLevels;
+    registrationLevelSelect.required = !allLevels;
+    if (feeScopeHelp) {
+        feeScopeHelp.textContent = allLevels
+            ? 'Kategori akan berlaku untuk seluruh tingkat pada unit yang dipilih.'
+            : 'Kategori berlaku untuk semua rombel pada tingkat yang dipilih.';
+    }
 };
 
 const syncFeeCategory = () => {
@@ -657,33 +632,13 @@ const syncFeeCategory = () => {
     feeBehaviorDescription.textContent = description;
 };
 
-registrationAllClasses?.addEventListener('change', () => {
-    registrationClassRows.forEach((row) => {
-        const input = row.querySelector('input[type="checkbox"]');
-        if (!input || row.hidden) return;
-        input.checked = false;
-        input.disabled = registrationAllClasses.checked;
-    });
-    syncRegistrationScope();
+registrationScopeSelect?.addEventListener('change', syncRegistrationScope);
+studentUnit?.addEventListener('change', () => {
+    filterStudentClasses();
+    filterRegistrationLevels();
 });
-registrationSelectedClasses?.addEventListener('change', syncRegistrationScope);
-registrationScopeSelect?.addEventListener('change', () => {
-    if (registrationAllClasses) registrationAllClasses.checked = registrationScopeSelect.value === 'all';
-    if (registrationSelectedClasses) registrationSelectedClasses.checked = registrationScopeSelect.value === 'selected';
-    syncRegistrationScope();
-});
-registrationClassRows.forEach((row) => {
-    row.querySelector('input[type="checkbox"]')?.addEventListener('change', (event) => {
-        if (event.currentTarget.checked && registrationAllClasses) registrationAllClasses.checked = false;
-    });
-});
-studentUnit?.addEventListener('change', () => filterStudentClasses());
-if (registrationClassList) {
-    const selectedRegistrationClasses = registrationClassRows
-            .map((row) => row.querySelector('input[type="checkbox"]'))
-            .filter((input) => input?.checked)
-            .map((input) => input.value);
-    filterStudentClasses(registrationAllClasses?.checked ? 'all' : selectedRegistrationClasses);
+if (registrationLevelSelect) {
+    filterRegistrationLevels(registrationLevelSelect.value);
     syncRegistrationScope();
 }
 feeCategories.forEach((input) => input.addEventListener('change', syncFeeCategory));
@@ -883,6 +838,7 @@ document.querySelector('[data-modal-open]')?.addEventListener('click', () => {
     formMethod.value = 'POST';
     modalTitle.textContent = document.querySelector('[data-modal-open]').textContent.trim();
     filterStudentClasses();
+    filterRegistrationLevels();
     syncRegistrationScope();
     syncFeeCategory();
     toggleInactiveFields();
@@ -904,7 +860,9 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
         const allClasses = studentClassOptions.find((option) => option.hasAttribute('data-all-classes'));
         if (studentUnit && record.education_unit_id) studentUnit.value = String(record.education_unit_id);
         else if (studentUnit && selectedClass) studentUnit.value = selectedClass.dataset.unitId;
-        filterStudentClasses(record.school_class_id ? [record.school_class_id] : (registrationAllClasses ? 'all' : allClasses?.value));
+        filterStudentClasses(record.school_class_id ? [record.school_class_id] : allClasses?.value);
+        if (registrationScopeSelect) registrationScopeSelect.value = record.class_level ? 'level' : 'all';
+        filterRegistrationLevels(record.class_level ?? '');
         const permissionValues = Array.isArray(record.permissions) ? record.permissions.map(String) : [];
         masterForm.querySelectorAll('input[name="permissions[]"]').forEach((input) => {
             input.checked = permissionValues.includes(input.value);
@@ -913,10 +871,6 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
             if (key === 'permissions') return;
             const field = masterForm.elements.namedItem(key);
             if (!field) return;
-            if (key === 'school_class_id' && value === null && registrationAllClasses) {
-                registrationAllClasses.checked = true;
-                return;
-            }
             if (key === 'school_class_id' && value === null && allClasses) {
                 field.value = allClasses.value;
                 return;
@@ -925,7 +879,6 @@ document.querySelectorAll('[data-edit-record]').forEach((button) => {
             else if (field.type === 'date') field.value = value ? String(value).slice(0, 10) : '';
             else field.value = value ?? '';
         });
-        if (registrationClassList) filterStudentClasses(record.school_class_id ? [record.school_class_id] : 'all');
         syncRegistrationScope();
         syncFeeCategory();
         toggleInactiveFields();

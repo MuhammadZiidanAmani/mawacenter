@@ -328,7 +328,10 @@ class OtherPaymentController extends Controller
 
         try {
             $sources = $importer->sources(Storage::path($stored['path']), $section['key']);
-            $mappings = $request->input('mappings', $stored['mappings'] ?? []);
+            $mappings = array_replace(
+                $stored['mappings'] ?? [],
+                is_array($request->input('mappings')) ? $request->input('mappings') : [],
+            );
             foreach ($sources as $source) {
                 if (! array_key_exists($source['key'], $mappings) && $source['suggested_fee_type_id']) {
                     $mappings[$source['key']] = $source['suggested_fee_type_id'];
@@ -337,19 +340,26 @@ class OtherPaymentController extends Controller
             $stored['mappings'] = $mappings;
             $request->session()->put("other_payment_imports.{$token}", $stored);
 
-            return view('finance.other', [
+            $feeTypes = $this->feeTypes($section);
+            $feeTypeIds = $feeTypes->modelKeys();
+            $unresolvedSources = collect($sources)
+                ->filter(fn (array $source) => ! in_array((int) ($mappings[$source['key']] ?? 0), $feeTypeIds, true))
+                ->values()
+                ->all();
+
+            return view('finance.payments', [
                 'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
-                'payments' => OtherPayment::with(['student.schoolClass.educationUnit', 'feeType', 'items'])
-                    ->when($section['key'] !== 'all', fn ($query) => $this->filterPayments($query, $section['key']))
-                    ->latest('transaction_at')->paginate(10),
-                'showCreate' => false,
+                'mode' => 'import-preview',
                 'importPreview' => $importer->preview(Storage::path($stored['path']), $mappings, $stored['name'], $section['key']),
                 'importSources' => $sources,
                 'importMappings' => $mappings,
                 'importToken' => $token,
-                'feeTypes' => $this->feeTypes($section),
-                'paymentSection' => $section,
-                ...$this->filterOptions($section),
+                'importFeeTypes' => $feeTypes,
+                'importUnresolvedSources' => $unresolvedSources,
+                'importSection' => $section,
+                'importMappingAction' => route('finance.other.import.preview', $this->sectionParams($section)),
+                'importAction' => route('finance.other.import', $this->sectionParams($section)),
+                'importPreviewType' => 'other',
             ]);
         } catch (\Throwable $exception) {
             if (! $request->string('token')->value()) {
@@ -368,7 +378,7 @@ class OtherPaymentController extends Controller
         $stored = $request->session()->pull("other_payment_imports.{$validated['token']}");
 
         if (! $stored || ! Storage::exists($stored['path'])) {
-            return redirect()->route('finance.other.index', $this->sectionParams($section))->withErrors(['file' => 'File preview sudah tidak tersedia. Silakan unggah ulang.']);
+            return redirect()->route('finance.payments.import')->withErrors(['file' => 'File preview sudah tidak tersedia. Silakan unggah ulang.']);
         }
 
         try {
@@ -385,7 +395,7 @@ class OtherPaymentController extends Controller
             $message .= ' '.count($result['failures']).' transaksi gagal: '.collect($result['failures'])->pluck('message')->take(3)->implode(' ');
         }
 
-        return redirect()->route('finance.other.index', $this->sectionParams($section))->with('success', $message);
+        return redirect()->route('finance.payments.import')->with('success', $message);
     }
 
     private function section(Request $request): array
@@ -416,10 +426,7 @@ class OtherPaymentController extends Controller
 
     private function matchedFeeTypesForStudent(Student $student, $feeTypes, array $section)
     {
-        $unitId = $student->schoolClass?->education_unit_id;
-
-        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->education_unit_id === $unitId
-            && (! $feeType->school_class_id || $feeType->school_class_id === $student->school_class_id)
+        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->matchesSchoolClass($student->schoolClass)
             && ($section['key'] === 'daftar-ulang' || ! $feeType->academic_year_id || $feeType->academic_year_id === $student->academic_year_id));
     }
 

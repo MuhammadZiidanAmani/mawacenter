@@ -722,10 +722,7 @@ class PaymentController extends Controller
 
     private function matchedFeeTypes(Student $student, Collection $feeTypes): Collection
     {
-        $unitId = $student->schoolClass?->education_unit_id;
-
-        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->education_unit_id === $unitId
-            && (! $feeType->school_class_id || $feeType->school_class_id === $student->school_class_id)
+        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->matchesSchoolClass($student->schoolClass)
             && ($this->paymentGroup($feeType) === 'daftar-ulang' || ! $feeType->academic_year_id || $feeType->academic_year_id === $student->academic_year_id));
     }
 

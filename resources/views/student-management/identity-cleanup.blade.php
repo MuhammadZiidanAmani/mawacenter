@@ -8,9 +8,9 @@
     <style>
         .identity-reset-page {
             display: grid;
-            gap: 24px;
+            gap:20px;
             min-height: calc(100vh - 64px);
-            padding: 44px 48px 56px;
+            padding:24px 32px;
             background: #ffffff;
             color: #020617;
         }
@@ -19,25 +19,25 @@
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            gap: 24px;
+            gap:24px;
         }
 
         .identity-reset-heading {
             display: grid;
-            gap: 2px;
+            gap:4px;
         }
 
         .identity-reset-heading h1 {
-            margin: 0;
+            margin:0;
             color: #020617;
-            font-size: 22px;
-            font-weight: 800;
+            font-size: 20px;
+            font-weight: 700;
             line-height: 1.25;
             letter-spacing: 0;
         }
 
         .identity-reset-heading p {
-            margin: 0;
+            margin:0;
             color: #707971;
             font-size: 14px;
             font-weight: 400;
@@ -49,12 +49,12 @@
             grid-template-columns: minmax(260px, 285px) minmax(200px, 225px) minmax(200px, 225px) minmax(180px, 200px) minmax(300px, 1fr);
             grid-template-rows: auto auto;
             align-items: end;
-            gap: 18px;
+            gap:16px;
             width: 100%;
-            padding: 24px;
+            padding:16px;
             background: #ffffff;
             border: 1px solid #d1d5db;
-            border-radius: 16px;
+            border-radius: 8px;
             box-shadow: none;
         }
 
@@ -64,9 +64,9 @@
 
         .identity-reset-filter label {
             display: grid;
-            gap: 8px;
+            gap:8px;
             min-width: 0;
-            margin: 0;
+            margin:0;
             color: #334155;
             font-size: 14px;
             font-weight: 400;
@@ -88,34 +88,34 @@
         .identity-reset-filter input {
             box-sizing: border-box;
             width: 100%;
-            height: 58px;
-            min-height: 58px;
-            margin: 0;
+            height: 40px;
+            min-height: 40px;
+            margin:0;
             color: #020617;
             background: #ffffff;
             border: 1px solid #d1d5db;
-            border-radius: 10px;
+            border-radius: 8px;
             box-shadow: none;
             font-size: 14px;
             font-weight: 400;
-            line-height: 58px;
+            line-height: 40px;
             outline: 0;
         }
 
         .identity-reset-filter select {
-            padding: 0 20px;
+            padding:0 12px;
         }
 
         .identity-reset-filter input {
-            padding: 0 16px 0 52px;
+            padding:0 12px 0 32px;
         }
 
         .identity-reset-search .icon {
             position: absolute;
-            left: 20px;
-            top: calc(50% + 13px);
-            width: 22px;
-            height: 22px;
+            left: 12px;
+            top: 50%;
+            width: 18px;
+            height: 18px;
             color: #707971;
             transform: translateY(-50%);
             pointer-events: none;
@@ -125,9 +125,9 @@
             grid-column: 1;
             grid-row: 2;
             display: grid;
-            grid-template-columns: 135px 135px;
-            gap: 14px;
-            width: 285px;
+            grid-template-columns: 120px 120px;
+            gap:8px;
+            width: 248px;
         }
 
         .identity-reset-button,
@@ -135,12 +135,12 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 135px;
-            height: 60px;
-            min-height: 60px;
-            margin: 0;
-            padding: 0 18px;
-            border-radius: 10px;
+            width: 120px;
+            height: 40px;
+            min-height: 40px;
+            margin:0;
+            padding:0 16px;
+            border-radius: 8px;
             box-shadow: none;
             font-size: 14px;
             font-weight: 700;
@@ -165,7 +165,7 @@
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
-            gap: 16px;
+            gap:16px;
             width: 100%;
             color: #707971;
             font-size: 14px;
@@ -177,43 +177,43 @@
         .identity-reset-length label {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
-            margin: 0;
-            padding: 0;
+            gap:12px;
+            margin:0;
+            padding:0;
             color: #707971;
             font-size: 14px;
             font-weight: 400;
         }
 
         .identity-reset-length select {
-            width: 118px;
-            min-width: 118px;
-            height: 52px;
-            min-height: 52px;
-            padding: 0 18px;
+            width: 88px;
+            min-width: 88px;
+            height: 40px;
+            min-height: 40px;
+            padding:0 12px;
             color: #020617;
             background: #ffffff;
             border: 1px solid #d1d5db;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .identity-reset-list {
             display: grid;
-            gap: 12px;
+            gap:12px;
         }
 
         .identity-reset-card {
             display: grid;
             grid-template-columns: 40px minmax(0, 1fr) 48px;
             align-items: center;
-            gap: 14px;
+            gap:14px;
             min-height: 78px;
-            padding: 16px;
+            padding:16px;
             background: #ffffff;
             border: 1px solid #d1d5db;
-            border-radius: 14px;
+            border-radius: 8px;
         }
 
         .identity-reset-number {
@@ -224,14 +224,14 @@
             height: 40px;
             color: #157144;
             background: #e9f8ef;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 14px;
-            font-weight: 800;
+            font-weight: 700;
         }
 
         .identity-reset-card-body {
             display: grid;
-            gap: 4px;
+            gap:4px;
             min-width: 0;
         }
 
@@ -239,7 +239,7 @@
             overflow: hidden;
             color: #004528;
             font-size: 16px;
-            font-weight: 800;
+            font-weight: 700;
             line-height: 1.25;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -257,11 +257,11 @@
             justify-content: center;
             width: 44px;
             height: 44px;
-            padding: 0;
+            padding:0;
             color: #157144;
             background: #ffffff;
             border: 1px solid #d1d5db;
-            border-radius: 10px;
+            border-radius: 8px;
         }
 
         .identity-reset-action .icon {
@@ -276,31 +276,31 @@
         .identity-reset-empty {
             display: grid;
             place-items: center;
-            gap: 4px;
+            gap:4px;
             min-height: 140px;
-            padding: 28px;
+            padding:24px;
             color: #707971;
             text-align: center;
             background: #ffffff;
             border: 1px dashed #d1d5db;
-            border-radius: 14px;
+            border-radius: 8px;
         }
 
         .identity-reset-empty strong {
             color: #020617;
             font-size: 16px;
-            font-weight: 800;
+            font-weight: 700;
         }
 
         .identity-reset-pagination {
             display: flex;
             justify-content: center;
-            margin-top: 4px;
+            margin-top:4px;
         }
 
         @media (width <= 1180px) {
             .identity-reset-page {
-                padding: 32px 24px 44px;
+                padding:20px 24px;
             }
 
             .identity-reset-filter {
@@ -320,12 +320,12 @@
 
         @media (width <= 640px) {
             .identity-reset-page {
-                padding: 24px 18px 36px;
+                padding:16px;
             }
 
             .identity-reset-filter {
                 grid-template-columns: 1fr;
-                padding: 18px;
+                padding:16px;
             }
 
             .identity-reset-actions {
@@ -340,8 +340,8 @@
 
             .identity-reset-card {
                 grid-template-columns: 36px minmax(0, 1fr) 44px;
-                gap: 10px;
-                padding: 14px;
+                gap:10px;
+                padding:12px;
             }
         }
 
@@ -360,8 +360,43 @@
         }
 
         html body .identity-standard-page .identity-reset-list {
-            gap: 18px !important;
-            margin: 0 !important;
+            gap:12px !important;
+            margin:0 !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page {
+            display: grid !important;
+            gap:16px !important;
+            padding:24px 32px 32px !important;
+            background: #ffffff !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page > .student-list-filter-card,
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page > .identity-cleanup-table-card {
+            width: min(100%, 1200px) !important;
+            max-width: 1200px !important;
+            margin:0 auto !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page > .student-list-filter-card {
+            display: grid !important;
+            gap:16px !important;
+            padding:0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .identity-cleanup-header {
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .student-master-heading {
+            display: grid !important;
+            gap:4px !important;
+            margin:0 !important;
+            padding:0 !important;
         }
 
         html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
@@ -398,6 +433,16 @@
         }
 
         @media (width <= 760px) {
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page {
+                padding:16px !important;
+            }
+
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page > .student-list-filter-card,
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page > .identity-cleanup-table-card {
+                width: 100% !important;
+                max-width: none !important;
+            }
+
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
                 grid-template-columns: 1fr !important;
             }

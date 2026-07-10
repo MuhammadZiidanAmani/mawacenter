@@ -71,8 +71,6 @@ class SppPaymentController extends Controller
                 ->when($sort === 'date', fn ($query) => $query->orderBy('spp_payments.transaction_at', $direction))
                 ->paginate($perPage)->withQueryString(),
             'showCreate' => false,
-            'importPreview' => null,
-            'importToken' => null,
             ...$this->filterOptions(),
         ]);
     }
@@ -149,14 +147,11 @@ class SppPaymentController extends Controller
         ]);
 
         try {
-            return view('finance.spp', [
+            return view('finance.payments', [
                 'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
-                'payments' => SppPayment::with(['student.schoolClass.educationUnit', 'items', 'corrections'])
-                    ->latest('transaction_at')->paginate(10),
-                'showCreate' => false,
+                'mode' => 'import-preview',
                 'importPreview' => $importer->preview(Storage::path($path), $file->getClientOriginalName()),
                 'importToken' => $token,
-                ...$this->filterOptions(),
             ]);
         } catch (\Throwable $exception) {
             $request->session()->forget("spp_imports.{$token}");
@@ -172,7 +167,7 @@ class SppPaymentController extends Controller
         $stored = $request->session()->pull("spp_imports.{$validated['token']}");
 
         if (! $stored || ! Storage::exists($stored['path'])) {
-            return redirect()->route('finance.spp.index')->withErrors(['file' => 'File preview sudah tidak tersedia. Silakan unggah ulang.']);
+            return redirect()->route('finance.payments.import')->withErrors(['file' => 'File preview sudah tidak tersedia. Silakan unggah ulang.']);
         }
 
         try {
@@ -189,7 +184,7 @@ class SppPaymentController extends Controller
             $message .= ' '.count($result['failures']).' transaksi gagal: '.collect($result['failures'])->pluck('message')->take(3)->implode(' ');
         }
 
-        return redirect()->route('finance.spp.index')->with('success', $message);
+        return redirect()->route('finance.payments.import')->with('success', $message);
     }
 
     public function show(SppPayment $sppPayment): JsonResponse

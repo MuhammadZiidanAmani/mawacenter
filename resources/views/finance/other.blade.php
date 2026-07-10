@@ -142,7 +142,20 @@
                     <div class="spp-preview-table-head"><div><strong>Pemetaan Kategori Pembayaran</strong><span>Pastikan kategori Excel diarahkan ke kategori pembayaran aplikasi yang benar untuk setiap unit.</span></div><span class="spp-preview-count">{{ count($importSources) }} pemetaan</span></div>
                     <form method="POST" action="{{ route('finance.other.import.preview', ['category' => $paymentSection['key']]) }}" class="other-mapping-form">@csrf<input type="hidden" name="token" value="{{ $importToken }}">
                         @foreach($importSources as $source)
-                        <label><span><strong>{{ $source['category'] }}</strong><small>{{ $source['unit'] }} · {{ $source['rows'] }} transaksi</small></span><select name="mappings[{{ $source['key'] }}]"><option value="">Belum dipetakan</option>@foreach($feeTypes as $feeType)<option value="{{ $feeType->id }}" @selected(($importMappings[$source['key']] ?? null)==$feeType->id)>{{ $feeType->name }} · {{ $feeType->educationUnit?->name }} · {{ $feeType->schoolClass?->name ?? 'Semua Kelas' }}</option>@endforeach</select></label>
+                        <label>
+                            <span><strong>{{ $source['category'] }}</strong><small>{{ $source['unit'] }} · {{ $source['rows'] }} transaksi</small></span>
+                            <select name="mappings[{{ $source['key'] }}]">
+                                <option value="">Belum dipetakan</option>
+                                @foreach($feeTypes as $feeType)
+                                    @php
+                                        $feeTypeScope = $feeType->schoolClass?->name
+                                            ?? ($feeType->class_level ? \App\Support\ClassLevel::label($feeType->class_level) : 'Semua Kelas');
+                                        $feeTypeYear = $feeType->academicYear?->name;
+                                    @endphp
+                                    <option value="{{ $feeType->id }}" @selected(($importMappings[$source['key']] ?? null)==$feeType->id)>{{ $feeType->name }} · {{ $feeType->educationUnit?->name }} · {{ $feeTypeScope }}{{ $feeTypeYear ? ' · '.$feeTypeYear : '' }}</option>
+                                @endforeach
+                            </select>
+                        </label>
                         @endforeach
                         <button class="button button-secondary">Terapkan Pemetaan & Periksa Ulang</button>
                     </form>
@@ -155,7 +168,7 @@
                         <div class="duplicate"><span class="spp-stat-icon">↻</span><p><span>Duplikat</span><strong>{{ $importPreview['duplicates'] }}</strong><small>akan dilewati</small></p></div>
                         <div class="failed"><span class="spp-stat-icon">!</span><p><span>Gagal</span><strong>{{ count($importPreview['failures']) }}</strong><small>perlu diperiksa</small></p></div>
                     </div>
-                    <div class="spp-validation-bar"><span style="width: {{ $importPreview['total'] > 0 ? ($importPreview['valid'] / $importPreview['total']) * 100 : 0 }}%"></span></div>
+                    <div class="spp-validation-bar"><progress class="spp-validation-progress" max="{{ max(1, $importPreview['total']) }}" value="{{ $importPreview['valid'] }}" aria-label="Persentase transaksi valid"></progress></div>
                     <div class="table-wrap spp-import-table-wrap"><table class="data-table spp-import-table other-import-preview-table"><thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>Kategori Excel</th><th>Nominal</th><th>Status</th><th>Keterangan</th></tr></thead><tbody>@foreach(array_slice($importPreview['rows'],0,100) as $row)<tr class="spp-import-row {{ strtolower($row['status']) }}"><td><span class="spp-line-number">{{ $row['line'] }}</span></td><td><strong class="spp-import-nis">{{ $row['nis'] }}</strong></td><td><strong>{{ $row['name'] }}</strong></td><td><span class="other-import-category">{{ $row['category'] }}</span><small>{{ $row['unit'] }}</small></td><td><strong class="spp-import-amount">Rp {{ number_format($row['nominal'],0,',','.') }}</strong></td><td><span class="status {{ $row['status']==='Valid'?'success':($row['status']==='Duplikat'?'warning':'danger') }}">{{ $row['status'] }}</span></td><td><span class="spp-import-message">{{ $row['message'] }}</span></td></tr>@endforeach</tbody></table></div>
                 </section>
                 @endif

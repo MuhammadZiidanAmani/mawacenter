@@ -5,97 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Master Data - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>
-        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock {
-            box-sizing: border-box !important;
-            width: min(100%, 1404px) !important;
-            max-width: min(1404px, calc(100vw - 96px)) !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-        }
-
-        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-flat-header,
-        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > #student-data-filter,
-        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-count,
-        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-list {
-            box-sizing: border-box !important;
-            width: 100% !important;
-            max-width: 100% !important;
-        }
-
-        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-list {
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-            gap: 18px !important;
-        }
-
-        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
-            grid-template-columns: 160px 150px 120px minmax(220px, 300px) max-content !important;
-            grid-template-rows: auto !important;
-            justify-content: stretch !important;
-        }
-
-        html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-flat-header {
-            padding-right: 0 !important;
-        }
-
-        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1) {
-            grid-column: 1 !important;
-            grid-row: 1 !important;
-        }
-
-        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2) {
-            grid-column: 2 !important;
-            grid-row: 1 !important;
-        }
-
-        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3) {
-            grid-column: 3 !important;
-            grid-row: 1 !important;
-        }
-
-        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
-            grid-column: 4 !important;
-            grid-row: 1 !important;
-        }
-
-        html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-            grid-column: 5 !important;
-            grid-row: 1 !important;
-            align-self: end !important;
-            width: auto !important;
-            min-width: 0 !important;
-        }
-
-        @media (width <= 760px) {
-            html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock {
-                width: 100% !important;
-                max-width: none !important;
-            }
-
-            html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-list {
-                grid-template-columns: 1fr !important;
-            }
-
-            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
-                grid-template-columns: 1fr !important;
-            }
-
-            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
-            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
-            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3),
-            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search,
-            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-                grid-column: auto !important;
-                grid-row: auto !important;
-            }
-
-            html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                width: 100% !important;
-            }
-        }
-    </style>
 </head>
 <body>
 @php
@@ -308,7 +217,7 @@
                         </div>
                     </div>
 
-                    <form id="student-data-filter" method="GET" action="{{ route('student-management.students.index') }}" class="student-filter-panel student-reference-filter student-fee-card-filter" style="box-sizing: border-box !important; width: 100% !important; max-width: 100% !important;" data-student-filter-panel>
+                    <form id="student-data-filter" method="GET" action="{{ route('student-management.students.index') }}" class="student-filter-panel student-reference-filter student-fee-card-filter" data-student-filter-panel>
                         <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">
                         <div class="student-reference-filter-grid student-fee-card-filter-grid">
                             <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
@@ -569,8 +478,8 @@
                                     <strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong>
                                 </div>
                                 <div class="fee-type-card-unit">
-                                    <span>Unit / Kelas</span>
-                                    <strong>{{ $row->educationUnit?->code ?? '-' }} · {{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong>
+                                    <span>Unit / Tingkat</span>
+                                    <strong>{{ $row->educationUnit?->code ?? '-' }} · {{ $row->class_level ? \App\Support\ClassLevel::label($row->class_level) : ($row->schoolClass?->name ?? 'Semua Tingkat') }}</strong>
                                 </div>
                                 <div class="fee-type-card-actions">
                                     @include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])
@@ -917,7 +826,7 @@
                         </span>
                     </div>
 
-                    <div class="student-reference-card-list" style="box-sizing: border-box !important; width: 100% !important; max-width: 100% !important;">
+                    <div class="student-reference-card-list">
                         @forelse ($data as $row)
                             <article class="student-reference-card">
                                 <div class="student-reference-card-top">
@@ -952,16 +861,16 @@
                         'unitFilter' => null,
                     ])
                 @endif
-                <div class="table-wrap"><table class="data-table {{ $tab === 'students' ? 'student-flat-table' : '' }} {{ $tab === 'academic-years' ? 'academic-year-table' : '' }} {{ $tab === 'education-units' ? 'education-unit-table' : '' }} {{ $tab === 'classes' ? 'class-table' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table' : '' }} {{ $tab === 'data-roles' ? 'data-role-table' : '' }} {{ $tab === 'data-users' ? 'data-user-table' : '' }}" @if ($tab === 'students') style="table-layout:fixed;width:100%;min-width:1080px;border-collapse:collapse;border-spacing:0;" @endif>
+                <div class="table-wrap"><table class="data-table {{ $tab === 'students' ? 'student-flat-table student-master-table' : '' }} {{ $tab === 'academic-years' ? 'academic-year-table' : '' }} {{ $tab === 'education-units' ? 'education-unit-table' : '' }} {{ $tab === 'classes' ? 'class-table' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table' : '' }} {{ $tab === 'data-roles' ? 'data-role-table' : '' }} {{ $tab === 'data-users' ? 'data-user-table' : '' }}">
                     @if ($tab === 'students')
                         <colgroup>
-                            <col class="student-col-no" style="width:39px !important">
-                            <col class="student-col-nis" style="width:77px !important">
+                            <col class="student-col-no">
+                            <col class="student-col-nis">
                             <col class="student-col-name">
-                            <col class="student-col-gender" style="width:103px !important">
-                            <col class="student-col-unit" style="width:110px !important">
-                            <col class="student-col-class" style="width:190px !important">
-                            <col class="student-col-actions" style="width:52px !important">
+                            <col class="student-col-gender">
+                            <col class="student-col-unit">
+                            <col class="student-col-class">
+                            <col class="student-col-actions">
                         </colgroup>
                         <thead><tr>
                             <th>No</th>
@@ -972,13 +881,13 @@
                                 'unit' => 'Unit Pendidikan',
                                 'class' => 'Kelas',
                             ] as $sortColumn => $sortLabel)
-                                <th class="{{ $sortColumn === 'class' ? 'student-class-column' : '' }}" @if ($sortColumn === 'class') style="width:190px !important;min-width:190px !important;max-width:190px !important;text-align:center !important;white-space:normal !important;word-break:normal !important;overflow-wrap:normal !important;" @endif>
+                                <th class="{{ $sortColumn === 'class' ? 'student-class-column' : '' }}">
                                     @include('partials.sortable-heading', ['column' => $sortColumn, 'label' => $sortLabel])
                                 </th>
                             @endforeach
                             <th class="student-action-column">Aksi</th>
                         </tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td>{{ $row->nis }}</td><td>{{ $row->name }}</td><td>{{ $row->gender === 'L' ? 'Laki-Laki' : 'Perempuan' }}</td><td>{{ $row->schoolClass->educationUnit?->code ?? '-' }}</td><td class="student-class-cell" style="width:190px !important;min-width:190px !important;max-width:190px !important;text-align:center !important;white-space:normal !important;word-break:normal !important;overflow-wrap:normal !important;">{{ $row->schoolClass->name }}</td><td class="student-actions-cell" style="width:52px !important;min-width:52px !important;max-width:52px !important;padding:0 !important;text-align:center !important;white-space:nowrap !important;">@include('master.partials.actions', ['type' => 'students', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td>{{ $row->nis }}</td><td>{{ $row->name }}</td><td>{{ $row->gender === 'L' ? 'Laki-Laki' : 'Perempuan' }}</td><td>{{ $row->schoolClass->educationUnit?->code ?? '-' }}</td><td class="student-class-cell">{{ $row->schoolClass->name }}</td><td class="student-actions-cell">@include('master.partials.actions', ['type' => 'students', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'education-units')
                         <colgroup>
                             <col class="education-unit-col-no">
@@ -1010,8 +919,8 @@
                             <col class="fee-type-col-amount">
                             <col class="fee-type-col-actions">
                         </colgroup>
-                        <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Kategori Pembayaran'])</th><th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'amount', 'label' => 'Nominal'])</th><th>Aksi</th></tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong><small>{{ $row->creates_bill ? 'Tagihan Wajib' : 'Pembayaran Opsional' }}</small></td><td><strong>{{ $row->educationUnit?->code ?? '-' }}</strong></td><td><strong>{{ $row->schoolClass?->name ?? 'Semua Kelas' }}</strong></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                        <thead><tr><th>No.</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Kategori Pembayaran'])</th><th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit Pendidikan'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Tingkat'])</th><th>@include('partials.sortable-heading', ['column' => 'amount', 'label' => 'Nominal'])</th><th>Aksi</th></tr></thead>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong><small>{{ $row->creates_bill ? 'Tagihan Wajib' : 'Pembayaran Opsional' }}</small></td><td><strong>{{ $row->educationUnit?->code ?? '-' }}</strong></td><td><strong>{{ $row->class_level ? \App\Support\ClassLevel::label($row->class_level) : ($row->schoolClass?->name ?? 'Semua Tingkat') }}</strong></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'data-roles')
                         <colgroup>
                             <col class="data-role-col-no">
