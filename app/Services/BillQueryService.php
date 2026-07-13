@@ -45,7 +45,11 @@ class BillQueryService
             ])
             ->selectRaw("SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END) as spp_remaining")
             ->selectRaw("SUM(CASE WHEN bills.source_type <> 'spp' THEN bills.remaining_amount ELSE 0 END) as other_remaining")
+            ->selectRaw('SUM(bills.total_amount) as total_billed')
+            ->selectRaw('SUM(bills.paid_amount) as total_paid')
             ->selectRaw('SUM(bills.remaining_amount) as total_remaining')
+            ->selectRaw('COUNT(*) as bill_count')
+            ->selectRaw('SUM(CASE WHEN bills.remaining_amount > 0 AND bills.due_date IS NOT NULL AND bills.due_date < ? THEN 1 ELSE 0 END) as overdue_count', [now()->toDateString()])
             ->groupBy(
                 'students.id',
                 'students.nis',
@@ -74,7 +78,12 @@ class BillQueryService
                 'other' => $studentDetails['other']->values()->all(),
                 'spp_remaining' => (int) $row->spp_remaining,
                 'other_remaining' => (int) $row->other_remaining,
+                'total_billed' => (int) $row->total_billed,
+                'total_paid' => (int) $row->total_paid,
                 'total_remaining' => (int) $row->total_remaining,
+                'bill_count' => (int) $row->bill_count,
+                'overdue_count' => (int) $row->overdue_count,
+                'status' => $this->summaryStatus((int) $row->total_remaining, (int) $row->total_paid, (int) $row->overdue_count),
             ];
         }));
 
@@ -92,14 +101,22 @@ class BillQueryService
                     ->selectRaw('COUNT(DISTINCT bills.student_id) as students')
                     ->selectRaw("SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END) as spp")
                     ->selectRaw("SUM(CASE WHEN bills.source_type <> 'spp' THEN bills.remaining_amount ELSE 0 END) as other")
+                    ->selectRaw('SUM(bills.total_amount) as billed')
+                    ->selectRaw('SUM(bills.paid_amount) as paid')
                     ->selectRaw('SUM(bills.remaining_amount) as remaining')
+                    ->selectRaw('COUNT(DISTINCT CASE WHEN bills.remaining_amount > 0 AND bills.due_date IS NOT NULL AND bills.due_date < ? THEN bills.student_id END) as overdue_students', [now()->toDateString()])
+                    ->selectRaw('SUM(CASE WHEN bills.remaining_amount > 0 AND bills.due_date IS NOT NULL AND bills.due_date < ? THEN bills.remaining_amount ELSE 0 END) as overdue', [now()->toDateString()])
                     ->first();
 
                 return [
                     'students' => (int) ($row->students ?? 0),
                     'spp' => (int) ($row->spp ?? 0),
                     'other' => (int) ($row->other ?? 0),
+                    'billed' => (int) ($row->billed ?? 0),
+                    'paid' => (int) ($row->paid ?? 0),
                     'remaining' => (int) ($row->remaining ?? 0),
+                    'overdue_students' => (int) ($row->overdue_students ?? 0),
+                    'overdue' => (int) ($row->overdue ?? 0),
                 ];
             },
         );
@@ -112,12 +129,13 @@ class BillQueryService
             ->leftJoin('school_classes', 'school_classes.id', '=', 'students.school_class_id')
             ->leftJoin('education_units', 'education_units.id', '=', 'school_classes.education_unit_id');
 
-        $this->applyOutstandingScope($query, $year, $untilMonth, 'bills');
+        $this->applyBillScope($query, $year, $untilMonth, 'bills', $filters['status'] ?? 'outstanding');
 
         return $query
             ->when($filters['unit_id'] ?? null, fn ($query, $id) => $query->where('school_classes.education_unit_id', $id))
             ->when($filters['class_id'] ?? null, fn ($query, $id) => $query->where('students.school_class_id', $id))
             ->when($filters['student_id'] ?? null, fn ($query, $id) => $query->where('students.id', $id))
+            ->when($filters['fee_type_id'] ?? null, fn ($query, $id) => $query->where('bills.fee_type_id', $id))
             ->when(($filters['student_search'] ?? null) && ! ($filters['student_id'] ?? null), function ($query) use ($filters) {
                 $search = trim((string) $filters['student_search']);
                 $query->where(function ($query) use ($search) {
@@ -153,7 +171,7 @@ class BillQueryService
             ->orderBy('year')
             ->orderBy('month')
             ->orderBy('title');
-        $this->applyOutstandingScope($query, $year, $untilMonth, 'bills');
+        $this->applyBillScope($query, $year, $untilMonth, 'bills', 'all');
 
         return $query->get()
             ->groupBy('student_id')
@@ -166,21 +184,22 @@ class BillQueryService
                         'total' => (int) $bill->total_amount,
                         'paid' => (int) $bill->paid_amount,
                         'remaining' => (int) $bill->remaining_amount,
+                        'status' => $bill->displayStatus(),
                     ]),
                     'other' => $bills->where('source_type', '!=', 'spp')->map(fn (Bill $bill) => [
                         'name' => $bill->title,
                         'total' => (int) $bill->total_amount,
                         'paid' => (int) $bill->paid_amount,
                         'remaining' => (int) $bill->remaining_amount,
+                        'status' => $bill->displayStatus(),
                     ]),
                 ];
             });
     }
 
-    private function applyOutstandingScope($query, int $year, int $untilMonth, string $table): void
+    private function applyBillScope($query, int $year, int $untilMonth, string $table, string $status = 'outstanding'): void
     {
         $query
-            ->where($table.'.remaining_amount', '>', 0)
             ->where($table.'.status', '!=', 'Dibatalkan')
             ->where(function ($query) use ($table, $year, $untilMonth) {
                 $query->where(function ($query) use ($table, $year, $untilMonth) {
@@ -215,6 +234,8 @@ class BillQueryService
                             });
                     });
             });
+
+        $this->applyStatusFilter($query, $table, $status);
     }
 
     private function applySorting($query, string $sort, string $direction): void
@@ -226,5 +247,31 @@ class BillQueryService
             'total' => $query->orderBy('total_remaining', $direction)->orderBy('students.name'),
             default => $query->orderBy('students.name', $direction),
         };
+    }
+
+    private function applyStatusFilter($query, string $table, string $status): void
+    {
+        match ($status) {
+            'all' => null,
+            'paid' => $query->where($table.'.remaining_amount', '<=', 0),
+            'partial' => $query->where($table.'.remaining_amount', '>', 0)->where($table.'.paid_amount', '>', 0),
+            'overdue' => $query->where($table.'.remaining_amount', '>', 0)
+                ->whereNotNull($table.'.due_date')
+                ->where($table.'.due_date', '<', now()->toDateString()),
+            default => $query->where($table.'.remaining_amount', '>', 0),
+        };
+    }
+
+    private function summaryStatus(int $remaining, int $paid, int $overdue): string
+    {
+        if ($remaining <= 0) {
+            return 'Lunas';
+        }
+
+        if ($overdue > 0) {
+            return 'Jatuh Tempo';
+        }
+
+        return $paid > 0 ? 'Sebagian' : 'Belum Bayar';
     }
 }

@@ -10,19 +10,21 @@
 @php
     $svg = fn ($path, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$path.'</svg>';
     $icons = [
-        'receipt' => '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/>',
-        'wallet' => '<path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/>',
         'menu' => '<path d="M4 6h16M4 12h16M4 18h16"/>',
         'bell' => '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
         'logout' => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/>',
         'search' => '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
-        'check' => '<path d="m5 12 4 4L19 6"/>',
+        'refresh' => '<path d="M21 12a9 9 0 0 1-15.5 6.2M3 12A9 9 0 0 1 18.5 5.8"/><path d="M21 4v6h-6M3 20v-6h6"/>',
+        'eye' => '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/>',
+        'wallet' => '<path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/>',
     ];
     $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
     $rupiah = fn ($amount) => 'Rp '.number_format($amount, 0, ',', '.');
     $billQuery = fn (array $except = []) => collect(request()->except(array_merge($except, ['page'])))
         ->filter(fn ($value) => is_scalar($value))
         ->all();
+    $showingFrom = $studentsWithBills->total() > 0 ? $studentsWithBills->firstItem() : 0;
+    $showingTo = $studentsWithBills->total() > 0 ? $studentsWithBills->lastItem() : 0;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'bills'])
@@ -41,122 +43,176 @@
                 <div class="result-modal-backdrop show" data-alert><div class="result-modal success-result"><span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>
             @endif
 
-            <section class="student-workspace student-list-filter-card bills-filter-card">
-                <div class="student-flat-header">
-                    <h1>Tagihan Siswa</h1>
-                    <div class="student-title-actions student-action-bar">
-                        <form method="POST" action="{{ route('finance.bills.sync') }}" class="bill-sync-form-flat">
-                            @csrf
-                            @foreach($billQuery(['year', 'until_month']) as $key => $value)
-                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                            @endforeach
-                            <input type="hidden" name="year" value="{{ $year }}">
-                            <input type="hidden" name="until_month" value="{{ $untilMonth }}">
-                            <button class="button button-secondary">Perbarui Tagihan</button>
-                        </form>
+            <section class="bill-workspace">
+                <div class="bill-page-heading">
+                    <div>
+                        <h1>Tagihan Siswa</h1>
+                        <p>Pantau tagihan semua siswa, rincian SPP, pembayaran lain-lain, dan sisa kewajiban.</p>
                     </div>
+                    <form method="POST" action="{{ route('finance.bills.sync') }}" class="bill-sync-form">
+                        @csrf
+                        @foreach($billQuery(['year', 'until_month']) as $key => $value)
+                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                        @endforeach
+                        <input type="hidden" name="year" value="{{ $year }}">
+                        <input type="hidden" name="until_month" value="{{ $untilMonth }}">
+                        <button class="button bill-sync-button">{!! $icon('refresh') !!} Perbarui Tagihan</button>
+                    </form>
                 </div>
 
-                <form method="GET" action="{{ route('finance.bills.index') }}" class="student-filter-panel bills-filter-panel">
-                    <input type="hidden" name="year" value="{{ $year }}">
-                    <input type="hidden" name="until_month" value="{{ $untilMonth }}">
+                <form method="GET" action="{{ route('finance.bills.index') }}" class="bills-filter-panel">
                     <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                     <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
-                    <label><span>Cari Siswa</span><input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Nama atau NIS"></label>
                     <input type="hidden" name="per_page" value="{{ request('per_page') }}">
                     <input type="hidden" name="sort" value="{{ request('sort') }}">
                     <input type="hidden" name="direction" value="{{ request('direction') }}">
-                    <span class="bill-filter-total-label">Jumlah Tagihan</span>
-                    <div class="bill-filter-total"><span class="bill-filter-value">{{ $rupiah($stats['remaining']) }}</span><small>{{ number_format($stats['students'], 0, ',', '.') }} siswa</small></div>
-                    <div class="student-filter-actions">
-                        <button class="button student-search-button" aria-label="Tampilkan data">{!! $icon('search') !!}</button>
-                        <a href="{{ route('finance.bills.index') }}" class="button button-secondary bill-filter-reset">Reset</a>
+                    <label class="bill-search-field"><span>Cari Siswa</span><span class="bill-search-input">{!! $icon('search') !!}<input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Nama atau NIS..."></span></label>
+                    <div class="bill-filter-actions">
+                        <button class="button bill-filter-apply">Terapkan</button>
+                        <a href="{{ route('finance.bills.index') }}" class="button bill-filter-reset">Reset</a>
                     </div>
                 </form>
-            </section>
 
-            <section class="card student-data-card student-list-table-card bills-data-card">
-                <div class="student-table-toolbar bill-list-summary">
-                    <strong>Daftar Tagihan Siswa</strong>
-                    <span>Total {{ $rupiah($stats['remaining']) }} · SPP {{ $rupiah($stats['spp']) }} · Lain-lain {{ $rupiah($stats['other']) }}</span>
+                <div class="bill-summary-strip">
+                    <span><small>Sisa Tagihan</small><strong>{{ $rupiah($stats['remaining']) }}</strong></span>
+                    <span><small>Sudah Dibayar</small><strong>{{ $rupiah($stats['paid']) }}</strong></span>
+                    <span><small>SPP</small><strong>{{ $rupiah($stats['spp']) }}</strong></span>
+                    <span><small>Lain-lain</small><strong>{{ $rupiah($stats['other']) }}</strong></span>
+                    <span><small>Jatuh Tempo</small><strong>{{ number_format($stats['overdue_students'], 0, ',', '.') }} siswa</strong></span>
                 </div>
 
-                <div class="table-wrap">
-                    <table class="data-table student-flat-table bill-flat-table">
-                        <colgroup>
-                            <col class="bill-col-no">
-                            <col class="bill-col-nis">
-                            <col class="bill-col-name">
-                            <col class="bill-col-unit">
-                            <col class="bill-col-class">
-                            <col class="bill-col-total">
-                            <col class="bill-col-action">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th>
-                                <th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th>
-                                <th>@include('partials.sortable-heading', ['column' => 'unit', 'label' => 'Unit'])</th>
-                                <th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th>
-                                <th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($studentsWithBills as $summary)
-                                @php($student = $summary['student'])
+                <div class="bill-table-toolbar">
+                    <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-page-size-form">
+                        @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                            @if(is_scalar($value))
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endif
+                        @endforeach
+                        <label>Tampilkan
+                            <select name="per_page" aria-label="Jumlah data per halaman" onchange="this.form.submit()">
+                                @foreach([10, 25, 50, 100, 500] as $size)
+                                    <option value="{{ $size }}" @selected(request('per_page', 10) == $size)>{{ $size }}</option>
+                                @endforeach
+                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                            </select>
+                            data
+                        </label>
+                    </form>
+                    <span>Menampilkan {{ number_format($showingFrom, 0, ',', '.') }}-{{ number_format($showingTo, 0, ',', '.') }} dari {{ number_format($studentsWithBills->total(), 0, ',', '.') }} siswa</span>
+                </div>
+
+                <section class="bills-data-card">
+                    <div class="table-wrap">
+                        <table class="bill-flat-table">
+                            <colgroup>
+                                <col class="bill-col-no">
+                                <col class="bill-col-nis">
+                                <col class="bill-col-name">
+                                <col class="bill-col-unit">
+                                <col class="bill-col-class">
+                                <col class="bill-col-total">
+                                <col class="bill-col-action">
+                            </colgroup>
+                            <thead>
                                 <tr>
-                                    <td>{{ $studentsWithBills->firstItem() + $loop->index }}</td>
-                                    <td>{{ $student->nis }}</td>
-                                    <td><span class="bill-student-name">{{ $student->name }}</span></td>
-                                    <td>{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</td>
-                                    <td>{{ $student->schoolClass?->name ?? '-' }}</td>
-                                    <td><span class="bill-total">{{ $rupiah($summary['total_remaining']) }}</span></td>
-                                    <td>
-                                        <div class="bill-row-actions">
-                                            <details class="bill-row-detail">
-                                                <summary>Aksi</summary>
-                                                <div class="bill-detail-panel">
-                                                    <div class="bill-action-links">
-                                                        @if($summary['spp_remaining'] > 0)
-                                                            <a href="{{ route('finance.spp.create', ['student_id' => $student->id]) }}" class="button button-primary">Bayar SPP</a>
-                                                        @endif
-                                                        @if($summary['other_remaining'] > 0)
-                                                            <a href="{{ route('finance.other.create', ['student_id' => $student->id]) }}" class="button button-secondary">Bayar Lain-lain</a>
-                                                        @endif
-                                                    </div>
-                                                    <div class="bill-detail-block">
-                                                        <span class="bill-detail-title">SPP</span>
-                                                        @forelse($summary['spp'] as $item)
-                                                            <span>{{ $item['month_name'] }} {{ $item['year'] }} <span class="bill-detail-amount">{{ $rupiah($item['remaining']) }}</span></span>
-                                                        @empty
-                                                            <span class="bill-clear">{!! $icon('check') !!} Lunas</span>
-                                                        @endforelse
-                                                    </div>
-                                                    <div class="bill-detail-block">
-                                                        <span class="bill-detail-title">Lain-lain</span>
-                                                        @forelse($summary['other'] as $item)
-                                                            <span>{{ $item['name'] }} <span class="bill-detail-amount">{{ $rupiah($item['remaining']) }}</span></span>
-                                                        @empty
-                                                            <span class="bill-clear">{!! $icon('check') !!} Lunas</span>
-                                                        @endforelse
-                                                    </div>
-                                                </div>
-                                            </details>
-                                        </div>
-                                    </td>
+                                    <th>No</th>
+                                    <th>NIS</th>
+                                    <th>Nama Siswa</th>
+                                    <th>Unit</th>
+                                    <th>Kelas</th>
+                                    <th>Total Tagihan</th>
+                                    <th>Aksi</th>
                                 </tr>
-                            @empty
-                                <tr><td colspan="7" class="empty-state">Belum ada tagihan pada filter ini.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                <div class="pagination-wrap">{{ $studentsWithBills->links() }}</div>
+                            </thead>
+                            <tbody>
+                                @forelse($studentsWithBills as $summary)
+                                    @php($student = $summary['student'])
+                                    <tr class="bill-main-row">
+                                        <td>{{ $studentsWithBills->firstItem() + $loop->index }}</td>
+                                        <td>{{ $student?->nis }}</td>
+                                        <td><span class="bill-student-name">{{ $student?->name }}</span></td>
+                                        <td>{{ $student?->schoolClass?->educationUnit?->code ?? '-' }}</td>
+                                        <td>{{ $student?->schoolClass?->name ?? '-' }}</td>
+                                        <td><span class="bill-money remaining">{{ $rupiah($summary['total_remaining']) }}</span></td>
+                                        <td>
+                                            <div class="bill-table-actions">
+                                                <button type="button" class="button bill-detail-trigger" data-bill-detail-target="bill-detail-{{ $student?->id ?? $loop->index }}" aria-label="Detail tagihan" title="Detail">{!! $icon('eye') !!}</button>
+                                                <a href="{{ route('finance.payments.index', ['student_id' => $student?->id, 'search' => $student?->nis]) }}" class="bill-pay-short" aria-label="Bayar tagihan" title="Bayar">{!! $icon('wallet') !!}</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="7" class="empty-state">Belum ada tagihan pada filter ini.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    @foreach($studentsWithBills as $summary)
+                        @php($student = $summary['student'])
+                        <dialog class="bill-detail-dialog" id="bill-detail-{{ $student?->id ?? $loop->index }}">
+                            <div class="bill-dialog-panel">
+                                <div class="bill-dialog-head">
+                                    <div>
+                                        <strong>{{ $student?->name }}</strong>
+                                        <span>{{ $student?->nis }} · {{ $student?->schoolClass?->educationUnit?->code ?? '-' }} · {{ $student?->schoolClass?->name ?? '-' }}</span>
+                                    </div>
+                                    <form method="dialog">
+                                        <button class="bill-dialog-close" aria-label="Tutup detail">×</button>
+                                    </form>
+                                </div>
+                                <div class="bill-dialog-summary">
+                                    <span><small>Total Tagihan</small><b>{{ $rupiah($summary['total_remaining']) }}</b></span>
+                                    <span><small>SPP</small><b>{{ $rupiah($summary['spp_remaining']) }}</b></span>
+                                    <span><small>Lain-lain</small><b>{{ $rupiah($summary['other_remaining']) }}</b></span>
+                                    <span><small>Status</small><b>{{ $summary['status'] }}</b></span>
+                                </div>
+                                <div class="bill-dialog-grid">
+                                    <div class="bill-detail-block">
+                                        <strong>SPP</strong>
+                                        <div class="bill-detail-items">
+                                            @forelse($summary['spp'] as $item)
+                                                <span>{{ $item['month_name'] }} {{ $item['year'] }} <b>{{ $rupiah($item['remaining']) }}</b></span>
+                                            @empty
+                                                <span>Lunas</span>
+                                            @endforelse
+                                        </div>
+                                    </div>
+                                    <div class="bill-detail-block">
+                                        <strong>Lain-lain</strong>
+                                        <div class="bill-detail-items">
+                                            @forelse($summary['other'] as $item)
+                                                <span>{{ $item['name'] }} <b>{{ $rupiah($item['remaining']) }}</b></span>
+                                            @empty
+                                                <span>Lunas</span>
+                                            @endforelse
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bill-detail-actions">
+                                    @if($student && $summary['spp_remaining'] > 0)
+                                        <a href="{{ route('finance.spp.create', ['student_id' => $student->id]) }}" class="button bill-detail-primary">Bayar SPP</a>
+                                    @endif
+                                    @if($student && $summary['other_remaining'] > 0)
+                                        <a href="{{ route('finance.other.create', ['student_id' => $student->id]) }}" class="button bill-detail-secondary">Bayar Lain-lain</a>
+                                    @endif
+                                </div>
+                            </div>
+                        </dialog>
+                    @endforeach
+                </section>
             </section>
         </main>
     </div>
 </div>
+<script>
+    document.querySelectorAll('[data-bill-detail-target]').forEach((trigger) => {
+        trigger.addEventListener('click', () => {
+            const dialog = document.getElementById(trigger.dataset.billDetailTarget);
+            if (dialog && typeof dialog.showModal === 'function') {
+                dialog.showModal();
+            }
+        });
+    });
+</script>
 </body>
 </html>

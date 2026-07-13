@@ -16,10 +16,13 @@ class BillController extends Controller
     public function index(Request $request, BillQueryService $bills)
     {
         [$year, $untilMonth] = $this->period($request);
+        $status = $this->statusFilter($request);
         $filters = [
             'unit_id' => $request->integer('unit_id') ?: null,
             'class_id' => $request->integer('class_id') ?: null,
             'student_id' => $request->integer('student_id') ?: null,
+            'fee_type_id' => $request->integer('fee_type_id') ?: null,
+            'status' => $status,
             'student_search' => $request->string('student_search')->value() ?: null,
             'student_name' => $request->string('student_name')->value() ?: null,
             'nis' => $request->string('nis')->value() ?: null,
@@ -37,6 +40,7 @@ class BillController extends Controller
             'studentsWithBills' => $students,
             'year' => $year,
             'untilMonth' => $untilMonth,
+            'statusFilter' => $status,
             'stats' => $bills->stats($year, $untilMonth, $filters),
             'educationUnits' => EducationUnit::where('is_active', true)->orderByRaw($this->educationUnitOrderExpression())->orderBy('name')->get(),
             'classes' => SchoolClass::select('school_classes.*')
@@ -51,6 +55,13 @@ class BillController extends Controller
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get(),
+            'feeTypes' => FeeType::where('is_active', true)
+                ->where('creates_bill', true)
+                ->where(function ($query) {
+                    $query->whereNull('payment_group')->orWhereNotIn('payment_group', ['spp', 'laundry']);
+                })
+                ->orderBy('name')
+                ->get(['id', 'code', 'name']),
             'months' => [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'],
         ]);
     }
@@ -63,6 +74,8 @@ class BillController extends Controller
             'unit_id' => $request->integer('unit_id') ?: null,
             'class_id' => $request->integer('class_id') ?: null,
             'student_id' => $request->integer('student_id') ?: null,
+            'fee_type_id' => $request->integer('fee_type_id') ?: null,
+            'status' => $this->statusFilter($request),
             'student_search' => $request->string('student_search')->value() ?: null,
             'student_name' => $request->string('student_name')->value() ?: null,
             'nis' => $request->string('nis')->value() ?: null,
@@ -83,7 +96,7 @@ class BillController extends Controller
             });
 
         return redirect()
-            ->route('finance.bills.index', $request->only(['year', 'until_month', 'unit_id', 'class_id', 'student_id', 'student_search', 'student_name', 'nis', 'search', 'per_page', 'sort', 'direction']))
+            ->route('finance.bills.index', $request->only(['year', 'until_month', 'unit_id', 'class_id', 'student_id', 'fee_type_id', 'status', 'student_search', 'student_name', 'nis', 'search', 'per_page', 'sort', 'direction']))
             ->with('success', 'Sinkron tagihan selesai. Baru: '.number_format($result['created'], 0, ',', '.').', sudah ada: '.number_format($result['existing'], 0, ',', '.').', dilewati: '.number_format($result['skipped'], 0, ',', '.').'.');
     }
 
@@ -95,6 +108,15 @@ class BillController extends Controller
         $untilMonth = $untilMonth >= 1 && $untilMonth <= 12 ? $untilMonth : now()->month;
 
         return [$year, $untilMonth];
+    }
+
+    private function statusFilter(Request $request): string
+    {
+        $status = $request->string('status')->value();
+
+        return in_array($status, ['all', 'outstanding', 'partial', 'paid', 'overdue'], true)
+            ? $status
+            : 'outstanding';
     }
 
     private function mergeResult(array &$base, array $addition): void

@@ -85,8 +85,8 @@
 
         html body .class-movement-standard-page .student-reference-filter {
             display: grid !important;
-            grid-template-columns: 160px 140px 140px 130px minmax(220px, 260px) !important;
-            grid-template-rows: auto auto !important;
+            grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
+            grid-template-rows: auto !important;
             align-items: end !important;
             gap:12px !important;
             width: 100% !important;
@@ -94,7 +94,7 @@
             padding:16px !important;
             background: #ffffff !important;
             border: 1px solid #d1d5db !important;
-            border-radius: 8px !important;
+            border-radius: 12px !important;
             box-shadow: none !important;
         }
 
@@ -117,12 +117,10 @@
 
         html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(1) { grid-column: 1 !important; grid-row: 1 !important; }
         html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(2) { grid-column: 2 !important; grid-row: 1 !important; }
-        html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(3) { grid-column: 3 !important; grid-row: 1 !important; }
-        html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(4) { grid-column: 4 !important; grid-row: 1 !important; }
 
         html body .class-movement-standard-page .student-reference-search {
             position: relative !important;
-            grid-column: 5 !important;
+            grid-column: 3 !important;
             grid-row: 1 !important;
             display: block !important;
             width: 100% !important;
@@ -178,8 +176,8 @@
         }
 
         html body .class-movement-standard-page .student-reference-filter .student-filter-actions {
-            grid-column: 1 !important;
-            grid-row: 2 !important;
+            grid-column: 4 !important;
+            grid-row: 1 !important;
             display: inline-flex !important;
             align-items: end !important;
             justify-content: flex-start !important;
@@ -581,8 +579,6 @@
 
             html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(1),
             html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(2),
-            html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(3),
-            html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(4),
             html body .class-movement-standard-page .student-reference-search,
             html body .class-movement-standard-page .student-reference-filter .student-filter-actions {
                 grid-column: auto !important;
@@ -652,7 +648,7 @@
         }
 
         html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
-            grid-template-columns: 160px 150px 120px minmax(220px, 300px) max-content !important;
+            grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
             grid-template-rows: auto !important;
         }
 
@@ -666,18 +662,13 @@
             grid-row: 1 !important;
         }
 
-        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3) {
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
             grid-column: 3 !important;
             grid-row: 1 !important;
         }
 
-        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
-            grid-column: 4 !important;
-            grid-row: 1 !important;
-        }
-
         html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-            grid-column: 5 !important;
+            grid-column: 4 !important;
             grid-row: 1 !important;
             align-self: end !important;
             width: auto !important;
@@ -691,7 +682,6 @@
 
             html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
             html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
-            html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3),
             html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search,
             html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
                 grid-column: auto !important;
@@ -917,7 +907,7 @@
             display: block !important;
             gap:0 !important;
             row-gap:0 !important;
-            padding:16px 32px 32px !important;
+            padding:24px 32px 32px !important;
             background:#ffffff !important;
         }
 
@@ -967,15 +957,15 @@
 
         html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter {
             display:grid !important;
-            grid-template-columns: 240px 224px 180px minmax(260px, 1fr) 144px 144px !important;
+            grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
             align-items:end !important;
-            gap:16px !important;
+            gap:12px !important;
             width:100% !important;
             margin:0 !important;
-            padding:24px !important;
+            padding:16px !important;
             background:#ffffff !important;
             border:1px solid #d1d5db !important;
-            border-radius:8px !important;
+            border-radius:12px !important;
             box-shadow:none !important;
         }
 
@@ -999,10 +989,6 @@
             grid-column:2 !important;
         }
 
-        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label:nth-child(3) {
-            grid-column:3 !important;
-        }
-
         html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label > span {
             color:#404942 !important;
             font-size:14px !important;
@@ -1015,8 +1001,8 @@
             box-sizing:border-box !important;
             width:100% !important;
             min-width:0 !important;
-            height:44px !important;
-            min-height:44px !important;
+            height:40px !important;
+            min-height:40px !important;
             margin:0 !important;
             color:#111c2c !important;
             background:#ffffff !important;
@@ -1025,7 +1011,7 @@
             box-shadow:none !important;
             font-size:14px !important;
             font-weight:400 !important;
-            line-height:44px !important;
+            line-height:40px !important;
         }
 
         html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter select {
@@ -1033,7 +1019,7 @@
         }
 
         html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-search {
-            grid-column:4 !important;
+            grid-column:3 !important;
             position:relative !important;
             display:block !important;
         }
@@ -1058,10 +1044,10 @@
         }
 
         html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-filter-actions {
-            grid-column:5 / span 2 !important;
+            grid-column:4 !important;
             display:grid !important;
-            grid-template-columns:144px 144px !important;
-            gap:16px !important;
+            grid-template-columns:96px 96px !important;
+            gap:10px !important;
             align-items:end !important;
             width:auto !important;
             min-width:0 !important;
@@ -1070,10 +1056,10 @@
         }
 
         html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-filter-actions .button {
-            width:144px !important;
-            min-width:144px !important;
-            height:44px !important;
-            min-height:44px !important;
+            width:96px !important;
+            min-width:96px !important;
+            height:40px !important;
+            min-height:40px !important;
             margin:0 !important;
             padding:0 16px !important;
             border-radius:8px !important;
@@ -1089,7 +1075,6 @@
 
             html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label:nth-child(1),
             html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label:nth-child(2),
-            html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label:nth-child(3),
             html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-search,
             html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-filter-actions {
                 grid-column:auto !important;
@@ -1219,7 +1204,6 @@
                     <div class="class-movement-filter-grid">
                         <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected($filters['unit_id'] == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                         <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected($filters['class_id'] == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
-                        <label><span>Tahun Pelajaran</span><select name="year_id">@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected($filters['year_id'] == $year->id)>{{ $year->name }}</option>@endforeach</select></label>
                     </div>
                     <label class="class-movement-filter-search">
                         <span>Cari siswa</span>
@@ -1393,7 +1377,7 @@
         display: block !important;
         gap:0 !important;
         row-gap:0 !important;
-        padding:16px 32px 32px !important;
+        padding:24px 32px 32px !important;
         background:#ffffff !important;
     }
 
@@ -1478,17 +1462,17 @@
     /* Final filter lock: mirror Data Siswa filter card without changing block spacing. */
     html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
         display:grid !important;
-        grid-template-columns:160px 150px 120px minmax(220px, 300px) max-content !important;
+        grid-template-columns:160px 150px minmax(220px, 300px) max-content !important;
         grid-template-rows:auto !important;
         align-items:end !important;
         justify-content:stretch !important;
-        gap:16px !important;
+        gap:12px !important;
         width:100% !important;
         margin:0 !important;
-        padding:24px !important;
+        padding:16px !important;
         background:#ffffff !important;
         border:1px solid #d1d5db !important;
-        border-radius:8px !important;
+        border-radius:12px !important;
         box-shadow:none !important;
     }
 
@@ -1505,7 +1489,6 @@
 
     html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label:nth-child(1) { grid-column:1 !important; grid-row:1 !important; }
     html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label:nth-child(2) { grid-column:2 !important; grid-row:1 !important; }
-    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label:nth-child(3) { grid-column:3 !important; grid-row:1 !important; }
 
     html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid span {
         color:#404942 !important;
@@ -1540,7 +1523,7 @@
     html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-filter-search {
         position:relative !important;
         display:block !important;
-        grid-column:4 !important;
+        grid-column:3 !important;
         grid-row:1 !important;
         width:100% !important;
         min-width:0 !important;
@@ -1568,7 +1551,7 @@
     }
 
     html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-        grid-column:5 !important;
+        grid-column:4 !important;
         grid-row:1 !important;
         display:flex !important;
         align-items:end !important;
@@ -1605,18 +1588,18 @@
     html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter.class-movement-filter-panel {
         box-sizing:border-box !important;
         display:grid !important;
-        grid-template-columns:160px 150px 120px minmax(220px, 300px) max-content !important;
+        grid-template-columns:160px 150px minmax(220px, 300px) max-content !important;
         grid-template-rows:auto !important;
         align-items:end !important;
         justify-content:stretch !important;
-        gap:16px !important;
+        gap:12px !important;
         width:100% !important;
         max-width:100% !important;
         margin:0 !important;
-        padding:24px !important;
+        padding:16px !important;
         background:#ffffff !important;
         border:1px solid #d1d5db !important;
-        border-radius:8px !important;
+        border-radius:12px !important;
         box-shadow:none !important;
         overflow:visible !important;
     }
@@ -1646,7 +1629,6 @@
 
     html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label:nth-child(1) { grid-column:1 !important; grid-row:1 !important; }
     html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label:nth-child(2) { grid-column:2 !important; grid-row:1 !important; }
-    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label:nth-child(3) { grid-column:3 !important; grid-row:1 !important; }
 
     html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label > span,
     html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search > span {
@@ -1686,7 +1668,7 @@
     html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search {
         position:relative !important;
         display:block !important;
-        grid-column:4 !important;
+        grid-column:3 !important;
         grid-row:1 !important;
         align-self:end !important;
     }
@@ -1711,7 +1693,7 @@
     }
 
     html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-actions {
-        grid-column:5 !important;
+        grid-column:4 !important;
         grid-row:1 !important;
         display:flex !important;
         align-items:end !important;
@@ -1751,6 +1733,12 @@
         border:1px solid #004528 !important;
     }
 
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-apply-button:hover {
+        color:#ffffff !important;
+        background:#0d5f36 !important;
+        border-color:#0d5f36 !important;
+    }
+
     html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-reset-button {
         color:#404942 !important;
         background:#ffffff !important;
@@ -1769,7 +1757,6 @@
 
         html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label:nth-child(1),
         html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label:nth-child(2),
-        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label:nth-child(3),
         html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-filter-search,
         html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
             grid-column:auto !important;
@@ -1795,7 +1782,6 @@
 
         html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label:nth-child(1),
         html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label:nth-child(2),
-        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label:nth-child(3),
         html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search,
         html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-actions {
             grid-column:auto !important;

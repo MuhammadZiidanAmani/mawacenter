@@ -48,7 +48,7 @@
         <a href="{{ route('finance.payments.index') }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
         @endif
         @if($canAccess('bills'))
-        <a href="{{ route('finance.bills.index') }}" class="nav-item {{ $activeMenu === 'bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</a>
+        <a href="{{ route('finance.bills.index') }}" class="nav-item {{ $activeMenu === 'bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan</span></a>
         @endif
         @if($canAccess('reports'))
         <div class="nav-group nested-nav {{ $reportOpen ? 'open' : '' }}">

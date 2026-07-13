@@ -400,7 +400,7 @@
         }
 
         html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
-            grid-template-columns: 160px 150px 120px minmax(220px, 300px) max-content !important;
+            grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
             grid-template-rows: auto !important;
         }
 
@@ -414,18 +414,13 @@
             grid-row: 1 !important;
         }
 
-        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3) {
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
             grid-column: 3 !important;
             grid-row: 1 !important;
         }
 
-        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
-            grid-column: 4 !important;
-            grid-row: 1 !important;
-        }
-
         html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-            grid-column: 5 !important;
+            grid-column: 4 !important;
             grid-row: 1 !important;
             align-self: end !important;
             width: auto !important;
@@ -449,7 +444,6 @@
 
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
-            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3),
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search,
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
                 grid-column: auto !important;
@@ -475,7 +469,6 @@
         'split' => '<path d="M6 4v6a4 4 0 0 0 4 4h1m7 6v-6a4 4 0 0 0-4-4h-1m-2 4 3-3-3-3m2 12-3-3 3-3"/>',
     ];
     $icon = fn ($name, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$icons[$name].'</svg>';
-    $selectedYearId = $filters['year_id'] ?: $activeAcademicYear?->id;
     $hasRows = $candidates->count() > 0;
     $totalRows = $candidates->total() ?? 0;
     $firstRow = $totalRows > 0 ? ($candidates->firstItem() ?? 1) : 0;
@@ -545,14 +538,6 @@
                                 <option value="">semua</option>
                                 @foreach ($schoolClasses as $class)
                                     <option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected((string) $filters['class_id'] === (string) $class->id)>{{ $class->name }}</option>
-                                @endforeach
-                            </select>
-                        </label>
-                        <label>
-                            <span>Tahun Pelajaran</span>
-                            <select name="year_id">
-                                @foreach ($academicYears as $year)
-                                    <option value="{{ $year->id }}" @selected((string) $selectedYearId === (string) $year->id)>{{ $year->name }}</option>
                                 @endforeach
                             </select>
                         </label>

@@ -54,14 +54,9 @@ class MasterDataController extends Controller
         $studentStatus = 'active';
         $classYearId = $tab === 'classes' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
         $classStatus = $tab === 'classes' ? $request->query('status', 'active') : null;
-        $feeTypeClassId = $tab === 'fee-types' ? ($request->integer('class_id') ?: null) : null;
-        $feeTypeClass = $feeTypeClassId ? SchoolClass::find($feeTypeClassId) : null;
-        $feeTypeClassUnitId = $feeTypeClass?->education_unit_id;
-        $feeTypeClassLevel = $feeTypeClass ? ClassLevel::key($feeTypeClass->level ?: $feeTypeClass->name) : null;
         $feeTypeYearId = $tab === 'fee-types' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
-        $feeTypeStatus = $tab === 'fee-types' ? $request->query('status', 'active') : null;
+        $feeTypeStatus = null;
         $feeDiscountYearId = $tab === 'fee-discounts' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
-        $feeDiscountStatus = $tab === 'fee-discounts' ? $request->query('status', 'active') : null;
         $studentSort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'class'], true)
             ? $request->string('sort')->value()
             : 'name';
@@ -107,25 +102,18 @@ class MasterDataController extends Controller
 
                 $classPerPage = $request->query('per_page') === 'all'
                     ? max(1, (clone $query)->count())
-                    : ($request->has('per_page') ? $perPage : 25);
+                    : ($request->has('per_page') ? $perPage : 10);
 
                 return $query->paginate($classPerPage)->withQueryString();
             })(),
-            'fee-types' => (function () use ($request, $search, $feeTypeClassId, $feeTypeClassUnitId, $feeTypeClassLevel, $feeTypeYearId, $feeTypeStatus, $listSort, $listDirection, $perPage) {
+            'fee-types' => (function () use ($request, $search, $feeTypeYearId, $listSort, $listDirection, $perPage) {
                 $query = FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
                     ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
                     ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->where('education_unit_id', $unitId))
-                    ->when($feeTypeClassId && $feeTypeClassUnitId, fn ($query) => $query
-                        ->where('education_unit_id', $feeTypeClassUnitId)
-                        ->where(fn ($feeType) => $feeType
-                            ->where('school_class_id', $feeTypeClassId)
-                            ->orWhere('class_level', $feeTypeClassLevel)
-                            ->orWhere(fn ($scope) => $scope->whereNull('school_class_id')->whereNull('class_level'))))
                     ->when($feeTypeYearId, fn ($query, $yearId) => $query
                         ->where(fn ($feeType) => $feeType
                             ->where('academic_year_id', $yearId)
                             ->orWhereNull('academic_year_id')))
-                    ->when($feeTypeStatus !== null && $feeTypeStatus !== '', fn ($query) => $query->where('is_active', $feeTypeStatus === 'active'))
                     ->orderBy(match ($listSort) {
                         'name' => 'name', 'unit' => 'education_unit_id', 'class' => 'class_level',
                         'year' => 'academic_year_id', 'amount' => 'amount', 'is_active' => 'is_active',
@@ -135,17 +123,16 @@ class MasterDataController extends Controller
 
                 $feeTypePerPage = $request->query('per_page') === 'all'
                     ? max(1, (clone $query)->count())
-                    : ($request->has('per_page') ? $perPage : 25);
+                    : ($request->has('per_page') ? $perPage : 10);
 
                 return $query->paginate($feeTypePerPage)->withQueryString();
             })(),
-            'fee-discounts' => (function () use ($request, $search, $feeDiscountYearId, $feeDiscountStatus, $listSort, $listDirection, $perPage) {
+            'fee-discounts' => (function () use ($request, $search, $feeDiscountYearId, $listSort, $listDirection, $perPage) {
                 $query = FeeDiscount::with(['student.schoolClass.educationUnit', 'feeType'])
                     ->when($search, fn ($query) => $query->whereHas('student', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")))
                     ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->whereHas('student.schoolClass', fn ($class) => $class->where('education_unit_id', $unitId)))
                     ->when($request->integer('class_id'), fn ($query, $classId) => $query->whereHas('student', fn ($student) => $student->where('school_class_id', $classId)))
                     ->when($feeDiscountYearId, fn ($query, $yearId) => $query->whereHas('student', fn ($student) => $student->where('academic_year_id', $yearId)))
-                    ->when($feeDiscountStatus !== null && $feeDiscountStatus !== '', fn ($query) => $query->where('is_active', $feeDiscountStatus === 'active'))
                     ->orderBy(match ($listSort) {
                         'student' => 'student_id', 'payment' => 'source_type',
                         'discount' => 'discount_value', 'is_active' => 'is_active',
@@ -154,7 +141,7 @@ class MasterDataController extends Controller
 
                 $feeDiscountPerPage = $request->query('per_page') === 'all'
                     ? max(1, (clone $query)->count())
-                    : ($request->has('per_page') ? $perPage : 25);
+                    : ($request->has('per_page') ? $perPage : 10);
 
                 return $query->paginate($feeDiscountPerPage)->withQueryString();
             })(),
@@ -171,7 +158,7 @@ class MasterDataController extends Controller
 
                 $rolePerPage = $request->query('per_page') === 'all'
                     ? max(1, (clone $query)->count())
-                    : ($request->has('per_page') ? $perPage : 25);
+                    : ($request->has('per_page') ? $perPage : 10);
 
                 return $query->paginate($rolePerPage)->withQueryString();
             })(),
@@ -189,7 +176,7 @@ class MasterDataController extends Controller
 
                 $userPerPage = $request->query('per_page') === 'all'
                     ? max(1, (clone $query)->count())
-                    : ($request->has('per_page') ? $perPage : 25);
+                    : ($request->has('per_page') ? $perPage : 10);
 
                 return $query->paginate($userPerPage)->withQueryString();
             })(),
@@ -242,7 +229,10 @@ class MasterDataController extends Controller
             }
         }
 
-        $showCreate = $request->routeIs('master.create') || $request->routeIs('student-management.students.create');
+        $editingStudent = $request->attributes->get('editingStudent');
+        $showCreate = $request->routeIs('master.create')
+            || $request->routeIs('student-management.students.create')
+            || $request->routeIs('student-management.students.edit');
         $showStudentImport = $request->routeIs('student-management.students.import');
         $studentImportPreview = $this->studentImportPreview($request);
 
@@ -261,7 +251,6 @@ class MasterDataController extends Controller
             'feeTypeYearId' => $feeTypeYearId,
             'feeTypeStatus' => $feeTypeStatus,
             'feeDiscountYearId' => $feeDiscountYearId,
-            'feeDiscountStatus' => $feeDiscountStatus,
             'studentOptions' => $this->studentOptions($tab, $showCreate),
             'existingStudentOptions' => $this->existingStudentOptions($tab, $showCreate),
             'feeTypeOptions' => $this->feeTypeOptions($tab, $showCreate),
@@ -269,6 +258,7 @@ class MasterDataController extends Controller
             'permissionOptions' => Role::PERMISSIONS,
             'stats' => $this->masterStats(),
             'showCreate' => $showCreate,
+            'editingStudent' => $editingStudent,
             'showStudentImport' => $showStudentImport,
             'studentImportPreview' => $studentImportPreview,
             'studentImportToken' => $request->string('import_token')->value() ?: null,
@@ -293,6 +283,14 @@ class MasterDataController extends Controller
     public function studentCreate(Request $request)
     {
         $request->merge(['tab' => 'students']);
+
+        return $this->index($request);
+    }
+
+    public function studentEdit(Request $request, Student $student)
+    {
+        $request->merge(['tab' => 'students']);
+        $request->attributes->set('editingStudent', $student->load('schoolClass.educationUnit'));
 
         return $this->index($request);
     }

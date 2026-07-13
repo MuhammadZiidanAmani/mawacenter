@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $mode === 'import-preview' ? 'Preview Import Pembayaran' : ($mode === 'import' ? 'Import Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Pembayaran')) }} - MA'WA CENTER</title>
+    <title>{{ $mode === 'import-preview' ? 'Preview Impor Pembayaran' : ($mode === 'import' ? 'Impor Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Pembayaran')) }} - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
@@ -71,7 +71,7 @@
                                     <h1>Pembayaran</h1>
                                     <p>Cari siswa, pilih tagihan, lalu proses pembayaran.</p>
                                 </div>
-                                <a href="{{ route('finance.payments.import') }}" class="button payment-import-action">{!! $icon('upload') !!}<span>Import</span></a>
+                                <a href="{{ route('finance.payments.import') }}" class="button action-purple payment-import-action">{!! $icon('upload') !!} Import</a>
                             </div>
                             <form method="GET" action="{{ route('finance.payments.index') }}" class="payment-one-stop-search">
                                 <label>
@@ -456,7 +456,7 @@
                     </div>
                 @else
                     <div class="payment-import-heading-copy">
-                        <h1>{{ $mode === 'import-preview' ? 'Preview Import Pembayaran' : 'Import Pembayaran' }}</h1>
+                        <h1>{{ $mode === 'import-preview' ? 'Preview Impor Pembayaran' : 'Impor Pembayaran' }}</h1>
                         <p>{{ $mode === 'import-preview' ? 'Periksa data gagal sebelum mengimpor transaksi valid.' : 'Unggah data pembayaran dari file Excel untuk diperiksa sebelum disimpan.' }}</p>
                     </div>
                     <div class="payment-hub-heading-actions">
@@ -576,7 +576,7 @@
                             <input type="hidden" name="token" value="{{ $importToken }}">
                             <button class="button button-primary" @disabled(! $canImport)>
                                 {!! $icon('check') !!}
-                                Import {{ number_format($importPreview['valid'], 0, ',', '.') }} Transaksi
+                                Impor {{ number_format($importPreview['valid'], 0, ',', '.') }} Transaksi
                             </button>
                         </form>
                     </div>

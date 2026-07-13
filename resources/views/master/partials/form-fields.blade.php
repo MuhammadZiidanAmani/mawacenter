@@ -1,4 +1,27 @@
 @if ($tab === 'students')
+    @php
+        $studentForm = $editingStudent ?? null;
+        $studentField = fn ($field, $default = '') => old($field, $studentForm?->{$field} ?? $default);
+        $studentDate = function ($field, $default = '') use ($studentForm) {
+            $oldValue = old($field);
+            if ($oldValue !== null) {
+                return $oldValue;
+            }
+
+            $value = $studentForm?->{$field};
+            if ($value instanceof \DateTimeInterface) {
+                return $value->format('Y-m-d');
+            }
+
+            return $value ? substr((string) $value, 0, 10) : $default;
+        };
+        $selectedUnitId = old('education_unit_id', $studentForm?->schoolClass?->education_unit_id);
+        $selectedClassId = old('school_class_id', $studentForm?->school_class_id);
+        $selectedYearId = old('academic_year_id', $studentForm?->academic_year_id ?? $activeAcademicYear?->id);
+        $selectedGender = old('gender', $studentForm?->gender ?? 'L');
+        $isActiveStudent = (string) old('is_active', $studentForm ? ($studentForm->is_active ? '1' : '0') : '1') === '1';
+    @endphp
+    @unless($studentForm)
     <div class="span-2 student-existing-choice">
         <strong>Data siswa</strong>
         <p>Pilih siswa yang sudah ada jika siswa akan didaftarkan ke unit pendidikan lain.</p>
@@ -11,32 +34,33 @@
         </div>
         <small>Identitas, alamat, dan data orang tua akan diambil otomatis.</small>
     </label>
-    <label>NIS <input name="nis" required value="{{ old('nis') }}"></label>
+    @endunless
+    <label>NIS <input name="nis" required value="{{ $studentField('nis') }}"></label>
+    <label>NISN <input name="nisn" value="{{ $studentField('nisn') }}"></label>
     <div class="student-personal-fields span-2" data-new-student-fields>
-    <label>NISN <input name="nisn" value="{{ old('nisn') }}"></label>
-    <label class="span-2">Nama Siswa <input name="name" required value="{{ old('name') }}"></label>
-    <label>Tempat Lahir <input name="birth_place" value="{{ old('birth_place') }}"></label><label>Tanggal Lahir <input type="date" name="birth_date" value="{{ old('birth_date') }}"></label>
-    <label>Jenis Kelamin <select name="gender" required><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
+    <label class="span-2">Nama Siswa <input name="name" required value="{{ $studentField('name') }}"></label>
+    <label>Tempat Lahir <input name="birth_place" value="{{ $studentField('birth_place') }}"></label><label>Tanggal Lahir <input type="date" name="birth_date" value="{{ $studentDate('birth_date') }}"></label>
+    <label>Jenis Kelamin <select name="gender" required><option value="L" @selected($selectedGender === 'L')>Laki-laki</option><option value="P" @selected($selectedGender === 'P')>Perempuan</option></select></label>
     </div>
-    <label>Unit Pendidikan <select name="education_unit_id" required data-student-unit><option value="">Pilih Unit Pendidikan</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}">{{ $unit->code }} - {{ $unit->name }}</option>@endforeach</select></label>
-    <label>Kelas <select name="school_class_id" required data-student-class><option value="">Pilih Kelas</option>@foreach($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}">{{ $class->name }}</option>@endforeach</select></label>
-    <label>Tahun Pelajaran <select name="academic_year_id" required>@foreach($academicYears as $year)<option value="{{ $year->id }}">{{ $year->name }}</option>@endforeach</select></label>
-    <label>Tanggal Masuk <input type="date" name="entry_date" required value="{{ old('entry_date', now()->toDateString()) }}"></label>
-    <label>Mulai Tagihan Khusus <input type="date" name="billing_start_date" value="{{ old('billing_start_date') }}"></label>
+    <label>Unit Pendidikan <select name="education_unit_id" required data-student-unit><option value="">Pilih Unit Pendidikan</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected((string) $selectedUnitId === (string) $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>@endforeach</select></label>
+    <label>Kelas <select name="school_class_id" required data-student-class><option value="">Pilih Kelas</option>@foreach($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected((string) $selectedClassId === (string) $class->id)>{{ $class->name }}</option>@endforeach</select></label>
+    <label>Tahun Pelajaran <select name="academic_year_id" required>@foreach($academicYears as $year)<option value="{{ $year->id }}" @selected((string) $selectedYearId === (string) $year->id)>{{ $year->name }}</option>@endforeach</select></label>
+    <label>Tanggal Masuk <input type="date" name="entry_date" required value="{{ $studentDate('entry_date', now()->toDateString()) }}"></label>
+    <label>Mulai Tagihan Khusus <input type="date" name="billing_start_date" value="{{ $studentDate('billing_start_date') }}"></label>
     <div class="student-personal-fields span-2" data-new-student-fields>
-    <label>Nama Ayah <input name="father_name" value="{{ old('father_name') }}"></label><label>Nama Ibu <input name="mother_name" value="{{ old('mother_name') }}"></label>
-    <label>No. WA Ayah <input name="father_whatsapp" value="{{ old('father_whatsapp') }}" placeholder="08xxxxxxxxxx" data-father-whatsapp></label>
-    <label>No. WA Ibu <span class="student-whatsapp-copy"><input name="mother_whatsapp" value="{{ old('mother_whatsapp') }}" placeholder="08xxxxxxxxxx" data-mother-whatsapp><button type="button" class="button button-secondary" data-copy-father-whatsapp>Samakan dengan Ayah</button></span></label>
-    <label>Provinsi <select name="province" data-student-region="province"><option value="">Pilih Provinsi</option>@if(old('province'))<option value="{{ old('province') }}" selected>{{ old('province') }}</option>@endif</select></label>
-    <label>Kabupaten/Kota <select name="city" data-student-region="city" disabled><option value="">Pilih Kabupaten/Kota</option>@if(old('city'))<option value="{{ old('city') }}" selected>{{ old('city') }}</option>@endif</select></label>
-    <label>Kecamatan <select name="district" data-student-region="district" disabled><option value="">Pilih Kecamatan</option>@if(old('district'))<option value="{{ old('district') }}" selected>{{ old('district') }}</option>@endif</select></label>
-    <label>Desa <select name="village" data-student-region="village" disabled><option value="">Pilih Desa</option>@if(old('village'))<option value="{{ old('village') }}" selected>{{ old('village') }}</option>@endif</select></label>
-    <label class="span-2">Alamat <input name="address" value="{{ old('address') }}"></label>
+    <label>Nama Ayah <input name="father_name" value="{{ $studentField('father_name') }}"></label><label>Nama Ibu <input name="mother_name" value="{{ $studentField('mother_name') }}"></label>
+    <label>No. WA Ayah <input name="father_whatsapp" value="{{ $studentField('father_whatsapp') }}" placeholder="08xxxxxxxxxx" data-father-whatsapp></label>
+    <label>No. WA Ibu <span class="student-whatsapp-copy"><input name="mother_whatsapp" value="{{ $studentField('mother_whatsapp') }}" placeholder="08xxxxxxxxxx" data-mother-whatsapp><button type="button" class="button button-secondary" data-copy-father-whatsapp>Samakan dengan Ayah</button></span></label>
+    <label>Provinsi <select name="province" data-student-region="province"><option value="">Pilih Provinsi</option>@if($studentField('province'))<option value="{{ $studentField('province') }}" selected>{{ $studentField('province') }}</option>@endif</select></label>
+    <label>Kabupaten/Kota <select name="city" data-student-region="city" disabled><option value="">Pilih Kabupaten/Kota</option>@if($studentField('city'))<option value="{{ $studentField('city') }}" selected>{{ $studentField('city') }}</option>@endif</select></label>
+    <label>Kecamatan <select name="district" data-student-region="district" disabled><option value="">Pilih Kecamatan</option>@if($studentField('district'))<option value="{{ $studentField('district') }}" selected>{{ $studentField('district') }}</option>@endif</select></label>
+    <label>Desa <select name="village" data-student-region="village" disabled><option value="">Pilih Desa</option>@if($studentField('village'))<option value="{{ $studentField('village') }}" selected>{{ $studentField('village') }}</option>@endif</select></label>
+    <label class="span-2">Alamat <input name="address" value="{{ $studentField('address') }}"></label>
     </div>
-    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked data-student-status><span></span> Siswa aktif</label>
+    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" @checked($isActiveStudent) data-student-status><span></span> Siswa aktif</label>
     <div class="student-inactive-fields span-2" data-inactive-fields hidden>
-        <label>Tanggal Keluar <input type="date" name="exit_date" value="{{ old('exit_date') }}"></label>
-        <label>Alasan Nonaktif <input name="inactive_reason" value="{{ old('inactive_reason') }}" placeholder="Contoh: Lulus, pindah, mengundurkan diri"></label>
+        <label>Tanggal Keluar <input type="date" name="exit_date" value="{{ $studentDate('exit_date') }}"></label>
+        <label>Alasan Nonaktif <input name="inactive_reason" value="{{ $studentField('inactive_reason') }}" placeholder="Contoh: Lulus, pindah, mengundurkan diri"></label>
     </div>
 @elseif ($tab === 'education-units')
     <label>Kode Unit <input name="code" required value="{{ old('code') }}" placeholder="" autocomplete="off"></label><label>Nama Unit <input name="name" required value="{{ old('name') }}" placeholder="" autocomplete="off"></label>

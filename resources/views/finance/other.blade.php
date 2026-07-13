@@ -110,7 +110,7 @@
                 <div class="spp-import-modal-backdrop {{ $errors->any() ? 'show' : '' }}" data-spp-import-panel @if(! $errors->any()) hidden @endif>
                     <section class="spp-import-modal" role="dialog" aria-modal="true" aria-labelledby="other-import-title">
                         <header class="spp-import-modal-head">
-                            <div><span class="spp-import-kicker">Pembayaran · {{ $paymentSection['title'] }}</span><h2 id="other-import-title">Import Pembayaran {{ $paymentSection['title'] }}</h2><p>Unggah laporan pembayaran untuk memproses transaksi massal.</p></div>
+                            <div><span class="spp-import-kicker">Pembayaran · {{ $paymentSection['title'] }}</span><h2 id="other-import-title">Impor Pembayaran {{ $paymentSection['title'] }}</h2><p>Unggah laporan pembayaran untuk memproses transaksi massal.</p></div>
                             <button type="button" class="spp-import-close" data-spp-import-close aria-label="Tutup modal import">×</button>
                         </header>
                         <div class="spp-import-progress">
@@ -161,7 +161,7 @@
                     </form>
                 </section>
                 <section class="card spp-import-preview">
-                    <div class="spp-preview-header"><div class="spp-preview-title"><span class="spp-preview-icon">✓</span><div><span class="spp-import-kicker">Hasil Validasi</span><strong>Preview Import Pembayaran {{ $paymentSection['title'] }}</strong><span>{{ $importPreview['valid'] > 0 ? 'Transaksi valid siap disimpan setelah pemetaan diperiksa.' : 'Belum ada transaksi yang dapat diimpor.' }}</span></div></div><form method="POST" action="{{ route('finance.other.import', ['category' => $paymentSection['key']]) }}">@csrf<input type="hidden" name="token" value="{{ $importToken }}"><button class="button button-primary spp-confirm-button" @disabled($importPreview['valid'] < 1)><span>Konfirmasi Import</span><b>{{ $importPreview['valid'] }} Transaksi</b></button></form></div>
+                    <div class="spp-preview-header"><div class="spp-preview-title"><span class="spp-preview-icon">✓</span><div><span class="spp-import-kicker">Hasil Validasi</span><strong>Preview Impor Pembayaran {{ $paymentSection['title'] }}</strong><span>{{ $importPreview['valid'] > 0 ? 'Transaksi valid siap disimpan setelah pemetaan diperiksa.' : 'Belum ada transaksi yang dapat diimpor.' }}</span></div></div><form method="POST" action="{{ route('finance.other.import', ['category' => $paymentSection['key']]) }}">@csrf<input type="hidden" name="token" value="{{ $importToken }}"><button class="button button-primary spp-confirm-button" @disabled($importPreview['valid'] < 1)><span>Konfirmasi Impor</span><b>{{ $importPreview['valid'] }} Transaksi</b></button></form></div>
                     <div class="spp-import-stats">
                         <div class="total"><span class="spp-stat-icon">Σ</span><p><span>Total Baris</span><strong>{{ $importPreview['total'] }}</strong><small>data diperiksa</small></p></div>
                         <div class="valid"><span class="spp-stat-icon">✓</span><p><span>Valid</span><strong>{{ $importPreview['valid'] }}</strong><small>siap diimpor</small></p></div>
