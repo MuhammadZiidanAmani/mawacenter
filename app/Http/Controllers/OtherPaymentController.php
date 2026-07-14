@@ -41,6 +41,7 @@ class OtherPaymentController extends Controller
             ? $request->string('sort')->value()
             : 'date';
         $direction = $request->string('direction')->value() === 'asc' ? 'asc' : 'desc';
+        $unitIds = $request->user()?->accessibleUnitIds();
 
         return view('finance.other', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
@@ -52,6 +53,7 @@ class OtherPaymentController extends Controller
                 ->when($request->filled('status'), fn ($query) => $query->where('other_payments.status', $request->string('status')->value()))
                 ->when($request->filled('operator_name'), fn ($query) => $query->where('other_payments.operator_name', $request->string('operator_name')->value()))
                 ->when($request->filled('student_id'), fn ($query) => $query->where('other_payments.student_id', $request->integer('student_id')))
+                ->when(is_array($unitIds), fn ($query) => $query->whereHas('student.schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
                 ->when($request->filled('nis'), fn ($query) => $query->whereHas('student', fn ($student) => $student->where('nis', 'like', '%'.$request->string('nis')->value().'%')))
                 ->when(! $request->filled('student_id') && $request->filled('student_search'), fn ($query) => $query->whereHas('student', fn ($student) => $student
                     ->where('nis', 'like', '%'.$request->string('student_search')->value().'%')
@@ -99,6 +101,10 @@ class OtherPaymentController extends Controller
 
         if ($request->filled('student_id')) {
             $selectedStudent = Student::with('schoolClass.educationUnit')->findOrFail($request->integer('student_id'));
+            $unitIds = $request->user()?->accessibleUnitIds();
+            if (is_array($unitIds) && ! in_array((int) $selectedStudent->schoolClass?->education_unit_id, $unitIds, true)) {
+                abort(403, 'Anda tidak memiliki akses ke siswa ini.');
+            }
             $matchedFeeTypes = $this->matchedFeeTypesForStudent($selectedStudent, $feeTypes, $section);
 
             if ($matchedFeeTypes->isNotEmpty() && ! $this->hasPayableFeeTypeForStudent($selectedStudent, $matchedFeeTypes, $section, $payments)) {
@@ -114,6 +120,7 @@ class OtherPaymentController extends Controller
                 ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
                 ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
                 ->where('students.is_active', true)
+                ->when(is_array($unitIds ?? null), fn ($query) => $query->whereIn('school_classes.education_unit_id', $unitIds))
                 ->orderByRaw("CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
                 ->orderBy('education_units.name')
                 ->orderBy('students.name')

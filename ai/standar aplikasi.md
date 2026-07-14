@@ -49,6 +49,18 @@ Larangan warna:
 - Warna biru hanya boleh dipakai sangat terbatas untuk info, chart, atau tautan bantuan.
 - Checkbox native boleh memakai aksen biru bawaan browser seperti checkbox "Pilih Semua" pada menu Pindah Kelas.
 
+Standar Sidebar dan Navigasi
+
+- Sidebar dan topbar memakai background #ffffff dengan border #d1d5db.
+- Brand/sidebar identity memakai hijau utama #004528 untuk teks utama dan #707971 untuk teks pendamping.
+- Item menu normal memakai teks dan ikon #334155 di atas background transparan/putih.
+- Item menu hover memakai teks dan ikon #0d5f36 dengan background #f3fbf6.
+- Item menu aktif, parent menu terbuka, dan submenu aktif memakai teks dan ikon #004528 dengan background #e9f8ef.
+- Ikon sidebar mengikuti warna teks menu melalui currentColor agar warna ikon dan label selalu sama.
+- Menu sidebar bukan tombol aksi primer solid. Jangan memakai background solid #004528 pada item menu sidebar, karena #004528 solid hanya untuk tombol aksi utama seperti Tambah, Import, Terapkan, Simpan, dan Konfirmasi.
+- Semua submenu, termasuk Manajemen Siswa, Data Master, dan Laporan, wajib memakai warna normal, hover, focus, dan aktif yang sama.
+- Focus-visible item sidebar memakai outline 2px solid #004528 dengan offset 2px.
+
 Standar Tipografi
 
 Jenis font utama memakai system sans: Inter jika tersedia, lalu ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif.
@@ -471,22 +483,25 @@ Daftar tagihan:
 - Jangan biarkan nominal turun tidak rapi di mobile
 
 Standar halaman Tagihan Siswa:
-- Halaman Tagihan Siswa memakai kanvas data maksimal 1200px, rata tengah, background putih, dan urutan Heading, Card Filter, Ringkasan, Toolbar jumlah data, Tabel, lalu Pagination.
-- Judul halaman memakai 20px / 700, deskripsi 14px / 400, jarak judul ke deskripsi 4px, dan jarak deskripsi ke card filter 16px.
+- Halaman Tagihan Siswa memakai kanvas data maksimal 1200px, rata tengah, background putih, dan urutan Heading, Tabel Ringkasan Per Unit tanpa judul/subdeskripsi, Card Filter, Toolbar jumlah data, Tabel, lalu Pagination.
+- Judul halaman memakai 20px / 700, deskripsi 14px / 400, jarak judul ke deskripsi 4px, jarak blok heading ke tabel ringkasan 16px, dan jarak tabel ringkasan ke card filter 16px.
 - Card filter Tagihan Siswa mengikuti standar card filter Data Siswa: background #ffffff, border #d1d5db, radius 12px, padding 16px, gap 12px, field 40px, label 14px / 400, tombol Terapkan primer #004528, dan tombol Reset putih border #d1d5db.
-- Urutan filter Tagihan Siswa: Unit Pendidikan, Kelas, Cari Siswa, lalu tombol aksi.
+- Card filter Tagihan Siswa diletakkan setelah tabel ringkasan per unit dan tepat sebelum toolbar/tabel siswa. Urutan filter Tagihan Siswa: Unit Pendidikan, Kelas, Cari Siswa, lalu tombol aksi.
 - Filter Tahun Tagihan, Sampai Bulan, Status Tagihan, dan Kategori tidak ditampilkan di card filter Tagihan agar panel tetap ringkas untuk admin/bendahara.
-- Ringkasan Tagihan Siswa tidak dibuat card-card besar; gunakan strip ringkas berisi Sisa Tagihan, Sudah Dibayar, SPP, Lain-lain, dan Jatuh Tempo.
-- Toolbar "Tampilkan 10/25/50/100/500/All data" mengikuti standar toolbar Data Siswa dengan select 78px x 34px dan teks kanan "Menampilkan 1-10 dari ... siswa".
-- Setelah toolbar jumlah data, langsung tampilkan tabel. Jangan menampilkan subjudul duplikat seperti "Daftar Tagihan Siswa" atau ringkasan ulang "Total ... SPP ... Lain-lain ..." di atas tabel.
+- Ringkasan Tagihan Siswa tidak dibuat card-card besar dan tidak memakai strip total di atas tabel. Nominal pembayaran masuk seperti Terbayar ditempatkan di menu Laporan, bukan di menu Tagihan.
+- Tampilkan tabel ringkasan per unit tanpa judul atau subdeskripsi tambahan. Kolom acuan: No, Unit Pendidikan, Siswa, Jumlah Tagihan.
+- Tabel Ringkasan Per Unit mengikuti standar tabel compact 40px: header rata tengah, No rata tengah, Unit Pendidikan rata kiri dan menampilkan nama unit tanpa kode unit, jumlah siswa rata tengah, dan nominal rata kanan. Total ditampilkan sebagai satu baris `tfoot` compact: label Total Keseluruhan rata tengah memakai `colspan="2"` pada area kolom No dan Unit Pendidikan, total siswa berupa angka saja di kolom Siswa, dan total nominal langsung di kolom Jumlah Tagihan tanpa label bertumpuk.
+- Toolbar "Tampilkan 10/25/50/100/500/All data" mengikuti standar toolbar Data Siswa dengan select 78px x 34px dan teks kanan "Menampilkan 1-10 dari ... siswa". Jarak toolbar ke tabel siswa wajib 16px, dihitung dari bawah toolbar/select ke atas header tabel. Jika parent workspace sudah memakai gap 16px, toolbar tidak boleh menambah margin-bottom lagi agar jarak tidak dobel.
+- Setelah toolbar jumlah data, langsung tampilkan tabel siswa. Jangan menampilkan subjudul duplikat seperti "Daftar Tagihan Siswa" atau ringkasan ulang "Total ... SPP ... Lain-lain ..." di atas tabel siswa.
 - Tabel utama Tagihan Siswa memakai tabel compact ke bawah, bukan card siswa berulang. Header dan baris utama tinggi 40px, header rata tengah, isi nama siswa rata kiri, nominal rata kanan, dan baris terakhir tidak boleh memiliki garis bawah penutup.
 - Kolom tabel Tagihan Siswa: No, NIS, Nama Siswa, Unit, Kelas, Total Tagihan, Aksi.
-- Header tabel Tagihan Siswa memakai teks polos rata tengah tanpa ikon/panah sort agar header tetap rapi.
+- Header tabel Tagihan Siswa memakai teks polos Title Case rata tengah tanpa ikon/panah sort agar header tetap rapi. Jangan memakai kapital semua kecuali singkatan resmi seperti NIS.
 - Kolom Aksi berisi ikon transparan tanpa card/border, ukuran tombol sekitar 28px: ikon Detail dan ikon Bayar, masing-masing wajib memiliki `aria-label`/`title`. Jangan memakai teks di tombol aksi tabel Tagihan agar kolom Kelas tetap longgar.
 - Lebar kolom tabel Tagihan Siswa acuan desktop: No 48px, NIS 84px, Unit 74px, Kelas sekitar 168px, Total Tagihan sekitar 136px, Aksi sekitar 60px, dan Nama Siswa memakai ruang fleksibel tersisa.
-- Rincian SPP dan Lain-lain tidak ditampilkan sebagai kolom/baris detail di tabel utama. Tampilkan rincian lewat dialog/panel detail agar tabel tetap ringkas, terutama di mobile.
+- Rincian SPP dan Lain-lain tidak ditampilkan sebagai kolom/baris detail di tabel utama. Tombol Detail membuka halaman Surat Tagihan Siswa siap cetak, bukan modal kecil, agar admin/bendahara bisa melihat rincian resmi dan mencetak pemberitahuan untuk wali murid.
+- Surat Tagihan Siswa memakai halaman A4 portrait, background putih, font cetak serif, judul resmi "Penertiban Administrasi Keuangan", identitas siswa, tabel rincian No, Uraian, Tahun, Rp., Jml Bulan, Jumlah, total keseluruhan, terbilang, tanggal, dan tanda tangan. Toolbar layar hanya berisi Kembali, Bayar, dan Cetak, lalu wajib hilang saat print.
 - Pagination bawah Tagihan Siswa tidak ditampilkan. Jangan memakai teks default "Showing ... results", nomor halaman berjajar, tombol Sebelumnya, atau tombol Berikutnya; cukup gunakan toolbar ringkasan jumlah data di atas tabel.
-- Menu Tagihan Siswa wajib responsif mobile: tabel boleh scroll horizontal pada layar sempit, filter menjadi satu kolom, tombol filter menjadi dua kolom atau full width jika ruang tidak cukup, dan dialog detail berubah satu kolom.
+- Menu Tagihan Siswa wajib responsif mobile: halaman tidak boleh melebar ke kanan; parent grid/section tabel wajib `min-width:0`, hanya `.table-wrap` yang boleh scroll horizontal, filter menjadi satu kolom, tombol filter menjadi dua kolom atau full width jika ruang tidak cukup, dan dialog detail berubah satu kolom. Tabel ringkasan per unit di mobile memakai min-width sekitar 520px, sedangkan tabel siswa boleh sekitar 760px.
 
 Rumus Aman Implementasi
 

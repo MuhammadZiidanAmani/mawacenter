@@ -192,7 +192,7 @@
                                             });
                                         $oldPaidDigits = preg_replace('/\D/', '', (string) old('paid_amount', $defaultTotal));
                                         $oldPaidLabel = $oldPaidDigits !== '' ? number_format((int) $oldPaidDigits, 0, ',', '.') : '';
-                                        $oldPaymentMethod = old('payment_method', 'Cash');
+                                        $oldPaymentMethod = $cashOnly ? 'Cash' : old('payment_method', 'Cash');
                                     @endphp
                                     <article class="payment-one-stop-person">
                                         <div class="payment-one-stop-person-head payment-one-stop-profile-card">
@@ -340,10 +340,13 @@
                                                         <span>Pilih Metode Pembayaran</span>
                                                         <select name="payment_method" data-payment-method>
                                                             <option value="Cash" @selected($oldPaymentMethod === 'Cash')>Tunai</option>
+                                                            @unless($cashOnly)
                                                             <option value="Transfer" @selected($oldPaymentMethod === 'Transfer')>Transfer Bank</option>
+                                                            @endunless
                                                         </select>
                                                     </label>
 
+                                                    @unless($cashOnly)
                                                     <div class="payment-one-stop-transfer-card" data-payment-transfer-panel @hidden($oldPaymentMethod !== 'Transfer')>
                                                         <div>
                                                             <span>Rekening Tujuan</span>
@@ -367,6 +370,7 @@
                                                             <input type="file" name="transfer_proof" accept=".jpg,.jpeg,.png,.pdf" data-payment-transfer-file>
                                                         </label>
                                                     </div>
+                                                    @endunless
 
                                                     <label>
                                                         <span>Input Nominal Pembayaran (Rp)</span>

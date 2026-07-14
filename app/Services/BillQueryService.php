@@ -43,13 +43,7 @@ class BillQueryService
                 'education_units.code as unit_code',
                 'education_units.name as unit_name',
             ])
-            ->selectRaw("SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END) as spp_remaining")
-            ->selectRaw("SUM(CASE WHEN bills.source_type <> 'spp' THEN bills.remaining_amount ELSE 0 END) as other_remaining")
-            ->selectRaw('SUM(bills.total_amount) as total_billed')
-            ->selectRaw('SUM(bills.paid_amount) as total_paid')
             ->selectRaw('SUM(bills.remaining_amount) as total_remaining')
-            ->selectRaw('COUNT(*) as bill_count')
-            ->selectRaw('SUM(CASE WHEN bills.remaining_amount > 0 AND bills.due_date IS NOT NULL AND bills.due_date < ? THEN 1 ELSE 0 END) as overdue_count', [now()->toDateString()])
             ->groupBy(
                 'students.id',
                 'students.nis',
@@ -63,27 +57,18 @@ class BillQueryService
 
         $students = $query->paginate($perPage)->withQueryString();
         $studentIds = $students->getCollection()->pluck('student_id')->all();
-        $studentModels = Student::with('schoolClass.educationUnit')
+        $studentModels = Student::with([
+            'schoolClass:id,name,education_unit_id',
+            'schoolClass.educationUnit:id,code,name',
+        ])
             ->whereIn('id', $studentIds)
-            ->get()
+            ->get(['id', 'nis', 'name', 'school_class_id'])
             ->keyBy('id');
-        $details = $this->details($year, $untilMonth, $studentIds);
 
-        $students->setCollection($students->getCollection()->map(function ($row) use ($studentModels, $details) {
-            $studentDetails = $details->get($row->student_id, ['spp' => collect(), 'other' => collect()]);
-
+        $students->setCollection($students->getCollection()->map(function ($row) use ($studentModels) {
             return [
                 'student' => $studentModels->get($row->student_id),
-                'spp' => $studentDetails['spp']->values()->all(),
-                'other' => $studentDetails['other']->values()->all(),
-                'spp_remaining' => (int) $row->spp_remaining,
-                'other_remaining' => (int) $row->other_remaining,
-                'total_billed' => (int) $row->total_billed,
-                'total_paid' => (int) $row->total_paid,
                 'total_remaining' => (int) $row->total_remaining,
-                'bill_count' => (int) $row->bill_count,
-                'overdue_count' => (int) $row->overdue_count,
-                'status' => $this->summaryStatus((int) $row->total_remaining, (int) $row->total_paid, (int) $row->overdue_count),
             ];
         }));
 
@@ -122,6 +107,71 @@ class BillQueryService
         );
     }
 
+    public function unitBreakdown(int $year, int $untilMonth, array $filters): Collection
+    {
+        $rows = PerformanceCache::remember(
+            'bill-unit-breakdown-v3',
+            ['year' => $year, 'until_month' => $untilMonth, 'filters' => $filters],
+            config('performance.query_cache.bill_stats_ttl', 120),
+            function () use ($year, $untilMonth, $filters) {
+                return $this->baseQuery($year, $untilMonth, $filters)
+                    ->select([
+                        'education_units.id as unit_id',
+                        'education_units.code as unit_code',
+                        'education_units.name as unit_name',
+                    ])
+                    ->selectRaw('COUNT(DISTINCT bills.student_id) as students')
+                    ->selectRaw("SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END) as spp")
+                    ->selectRaw("SUM(CASE WHEN bills.source_type <> 'spp' THEN bills.remaining_amount ELSE 0 END) as other")
+                    ->selectRaw('SUM(bills.total_amount) as billed')
+                    ->selectRaw('SUM(bills.paid_amount) as paid')
+                    ->selectRaw('SUM(bills.remaining_amount) as remaining')
+                    ->selectRaw('COUNT(DISTINCT CASE WHEN bills.remaining_amount > 0 AND bills.due_date IS NOT NULL AND bills.due_date < ? THEN bills.student_id END) as overdue_students', [now()->toDateString()])
+                    ->groupBy('education_units.id', 'education_units.code', 'education_units.name')
+                    ->orderByRaw("CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+                    ->orderBy('education_units.name')
+                    ->get()
+                    ->map(fn ($row) => [
+                        'unit_id' => $row->unit_id,
+                        'unit_code' => $row->unit_code ?? '-',
+                        'unit_name' => $row->unit_name ?? 'Tanpa Unit',
+                        'students' => (int) ($row->students ?? 0),
+                        'spp' => (int) ($row->spp ?? 0),
+                        'other' => (int) ($row->other ?? 0),
+                        'billed' => (int) ($row->billed ?? 0),
+                        'paid' => (int) ($row->paid ?? 0),
+                        'remaining' => (int) ($row->remaining ?? 0),
+                        'overdue_students' => (int) ($row->overdue_students ?? 0),
+                    ])
+                    ->values()
+                    ->all();
+            },
+        );
+
+        return collect(is_array($rows) ? $rows : []);
+    }
+
+    public function statement(Student $student, int $year, int $untilMonth): array
+    {
+        $query = Bill::with(['academicYear:id,name', 'feeType:id,name,payment_group'])
+            ->where('student_id', $student->id)
+            ->orderByRaw("CASE WHEN source_type = 'spp' THEN 0 ELSE 1 END")
+            ->orderBy('year')
+            ->orderBy('month')
+            ->orderBy('title');
+
+        $this->applyBillScope($query, $year, $untilMonth, 'bills', 'outstanding');
+
+        $bills = $query->get();
+        $lines = $this->statementLines($bills);
+
+        return [
+            'lines' => $lines,
+            'total' => (int) $lines->sum('total'),
+            'bill_count' => $bills->count(),
+        ];
+    }
+
     private function baseQuery(int $year, int $untilMonth, array $filters)
     {
         $query = Bill::query()
@@ -133,8 +183,10 @@ class BillQueryService
 
         return $query
             ->when($filters['unit_id'] ?? null, fn ($query, $id) => $query->where('school_classes.education_unit_id', $id))
+            ->when($filters['unit_ids'] ?? null, fn ($query, $ids) => $query->whereIn('school_classes.education_unit_id', $ids))
             ->when($filters['class_id'] ?? null, fn ($query, $id) => $query->where('students.school_class_id', $id))
             ->when($filters['student_id'] ?? null, fn ($query, $id) => $query->where('students.id', $id))
+            ->when($filters['student_ids'] ?? null, fn ($query, $ids) => $query->whereIn('students.id', $ids))
             ->when($filters['fee_type_id'] ?? null, fn ($query, $id) => $query->where('bills.fee_type_id', $id))
             ->when(($filters['student_search'] ?? null) && ! ($filters['student_id'] ?? null), function ($query) use ($filters) {
                 $search = trim((string) $filters['student_search']);
@@ -195,6 +247,107 @@ class BillQueryService
                     ]),
                 ];
             });
+    }
+
+    private function statementLines(Collection $bills): Collection
+    {
+        $lines = collect();
+        $current = null;
+
+        foreach ($bills as $bill) {
+            if ($bill->month === null) {
+                $lines->push($this->statementLineFromBills(collect([$bill])));
+
+                continue;
+            }
+
+            $key = implode('|', [
+                $this->statementBaseTitle($bill),
+                $this->statementYearLabel($bill),
+                (int) $bill->remaining_amount,
+            ]);
+            $isSequential = $current !== null
+                && $current['key'] === $key
+                && $current['last_month'] !== null
+                && (int) $bill->month === $current['last_month'] + 1;
+
+            if (! $isSequential) {
+                if ($current !== null) {
+                    $lines->push($this->statementLineFromBills($current['bills']));
+                }
+
+                $current = [
+                    'key' => $key,
+                    'last_month' => (int) $bill->month,
+                    'bills' => collect([$bill]),
+                ];
+
+                continue;
+            }
+
+            $current['last_month'] = (int) $bill->month;
+            $current['bills']->push($bill);
+        }
+
+        if ($current !== null) {
+            $lines->push($this->statementLineFromBills($current['bills']));
+        }
+
+        return $lines->values();
+    }
+
+    private function statementLineFromBills(Collection $bills): array
+    {
+        /** @var Bill $first */
+        $first = $bills->first();
+        $months = $bills->pluck('month')->filter()->map(fn ($month) => (int) $month)->values();
+        $monthCount = max(1, $months->count());
+        $title = $this->statementBaseTitle($first);
+
+        if ($months->isNotEmpty()) {
+            $title = trim($title.' '.$this->statementMonthRange($months));
+        }
+
+        return [
+            'title' => $title,
+            'year' => $this->statementYearLabel($first),
+            'month_count' => $monthCount,
+            'unit_amount' => (int) $first->remaining_amount,
+            'total' => (int) $bills->sum('remaining_amount'),
+        ];
+    }
+
+    private function statementBaseTitle(Bill $bill): string
+    {
+        if ($bill->source_type === 'spp') {
+            return 'SPP';
+        }
+
+        $title = trim($bill->feeType?->name ?: $bill->title);
+        if ($bill->month !== null && $bill->year !== null) {
+            $month = self::MONTHS[(int) $bill->month] ?? null;
+            if ($month) {
+                $title = preg_replace('/\s+'.preg_quote($month, '/').'\s+'.preg_quote((string) $bill->year, '/').'$/i', '', $title) ?: $title;
+            }
+        }
+
+        return trim($title);
+    }
+
+    private function statementYearLabel(Bill $bill): string
+    {
+        return $bill->year ? (string) $bill->year : ($bill->academicYear?->name ?? '-');
+    }
+
+    private function statementMonthRange(Collection $months): string
+    {
+        $names = $months->map(fn (int $month) => self::MONTHS[$month] ?? (string) $month)->values();
+
+        if ($names->count() === 1) {
+            return $names->first();
+        }
+
+        return $names->first().' - '.$names->last();
     }
 
     private function applyBillScope($query, int $year, int $untilMonth, string $table, string $status = 'outstanding'): void

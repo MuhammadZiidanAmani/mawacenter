@@ -177,6 +177,20 @@
             @foreach($roleOptions as $key => $label)<option value="{{ $key }}" @selected(old('role') === $key)>{{ $label }}</option>@endforeach
         </select>
     </label>
+    <label class="span-2">Akses Unit Pendidikan
+        <select name="education_unit_ids[]" multiple size="5">
+            @foreach($educationUnits as $unit)
+                <option value="{{ $unit->id }}" @selected(in_array($unit->id, old('education_unit_ids', [])))>{{ $unit->code }} - {{ $unit->name }}</option>
+            @endforeach
+        </select>
+    </label>
+    <label class="span-2">Akses Wali Santri
+        <select name="guardian_student_ids[]" multiple size="7">
+            @foreach($studentOptions as $student)
+                <option value="{{ $student->id }}" @selected(in_array($student->id, old('guardian_student_ids', [])))>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
+            @endforeach
+        </select>
+    </label>
     <label class="span-2">Password <input type="password" name="password" autocomplete="new-password" placeholder="Wajib saat tambah, kosongkan saat edit jika tidak diganti"></label>
 @else
     <div class="fee-discount-simple span-2">

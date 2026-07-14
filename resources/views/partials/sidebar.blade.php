@@ -29,10 +29,10 @@
 <aside class="sidebar" data-sidebar>
     <div class="brand"><div class="brand-mark"><img src="{{ asset('images/mawa-center-mark.png') }}" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
     <nav class="sidebar-nav">
-        @if($canAccess('dashboard'))
+        @if($canAccess('dashboard.view'))
         <a href="{{ route('dashboard') }}" class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}">{!! $sidebarIcon('grid') !!}<span>Dashboard</span></a>
         @endif
-        @if($canAccess('students'))
+        @if($canAccess('students.view'))
         <div class="nav-group nested-nav {{ $studentOpen ? 'open' : '' }}">
             <button type="button" class="nav-item nav-parent {{ $studentOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $studentOpen ? 'true' : 'false' }}">{!! $sidebarIcon('users') !!}<span>Manajemen Siswa</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
@@ -44,24 +44,31 @@
             </div>
         </div>
         @endif
-        @if($canAccess('payments'))
+        @if($canAccess('payments.cash.create'))
         <a href="{{ route('finance.payments.index') }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
         @endif
-        @if($canAccess('bills'))
+        @if($canAccess('payments.verify_transfer'))
+        <a href="{{ route('finance.transfer-verifications.index') }}" class="nav-item {{ $activeMenu === 'transfer-verification' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>Verifikasi Transfer</span></a>
+        @endif
+        @if($canAccess('bills.view') || $canAccess('bills.view_unit'))
         <a href="{{ route('finance.bills.index') }}" class="nav-item {{ $activeMenu === 'bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan</span></a>
         @endif
-        @if($canAccess('reports'))
+        @if($canAccess('bills.view_guardian'))
+        <a href="{{ route('guardian.bills.index') }}" class="nav-item {{ $activeMenu === 'guardian-bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan Anak</span></a>
+        @endif
+        @if($canAccess('reports.view') || $canAccess('reports.view_unit'))
         <div class="nav-group nested-nav {{ $reportOpen ? 'open' : '' }}">
             <button type="button" class="nav-item nav-parent {{ $reportOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $reportOpen ? 'true' : 'false' }}">{!! $sidebarIcon('chart') !!}<span>Laporan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
-                <a href="{{ route('reports.index') }}" class="{{ $activeReportMenu === 'report' ? 'active' : '' }}">{!! $sidebarIcon('chart') !!}<span>Laporan Pembayaran</span></a>
-                @if($canAccess('payments'))
-                <a href="{{ route('finance.payments.history') }}" class="{{ $activeReportMenu === 'history' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Riwayat Pembayaran</span></a>
-                @endif
+                <a href="{{ route('reports.transactions') }}" class="{{ $activeReportMenu === 'transactions' ? 'active' : '' }}">{!! $sidebarIcon('chart') !!}<span>Laporan Transaksi</span></a>
+                <a href="{{ route('reports.monthly_spp') }}" class="{{ $activeReportMenu === 'monthly-spp' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>SPP Perbulan</span></a>
+                <a href="{{ route('reports.outstanding_spp') }}" class="{{ $activeReportMenu === 'outstanding-spp' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>SPP Belum Bayar</span></a>
+                <a href="{{ route('reports.yearly_spp') }}" class="{{ $activeReportMenu === 'yearly-spp' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>SPP Tahun Pelajaran</span></a>
+                <a href="{{ route('reports.unit_recap') }}" class="{{ $activeReportMenu === 'unit-recap' ? 'active' : '' }}">{!! $sidebarIcon('database') !!}<span>Rekap Per Unit</span></a>
             </div>
         </div>
         @endif
-        @if($canAccess('master'))
+        @if($canAccess('master.manage') || $canAccess('users.manage'))
         <div class="nav-group master-nav {{ $masterOpen ? 'open' : '' }}">
             <button type="button" class="nav-item nav-parent {{ $masterOpen ? 'active' : '' }}" data-master-nav-toggle aria-expanded="{{ $masterOpen ? 'true' : 'false' }}">{!! $sidebarIcon('database') !!}<span>Data Master</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
@@ -79,7 +86,7 @@
             </div>
         </div>
         @endif
-        @if($canAccess('settings'))
+        @if($canAccess('settings.view'))
         <a href="{{ route('settings.index') }}" class="nav-item {{ $activeMenu === 'settings' ? 'active' : '' }}">{!! $sidebarIcon('settings') !!}<span>Pengaturan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</a>
         @endif
     </nav>

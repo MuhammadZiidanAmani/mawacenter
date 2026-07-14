@@ -557,6 +557,411 @@ body .finance-page .payment-create-page .payment-spp-v8-form .payment-spp-v8-lay
 body .finance-page .payment-create-page .payment-spp-v8-form .payment-spp-receipt-summary{position:sticky!important;top:24px!important;width:280px!important;max-width:280px!important}
 }
 
+/* Reports v2: PRD Menu Laporan */
+html body .app-shell .main-panel main.report-page-v2 {
+    width:100% !important;
+    min-width:0 !important;
+    padding:24px 32px !important;
+    background:#ffffff !important;
+    overflow-x:hidden !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-workspace-v2 {
+    width:100% !important;
+    max-width:1200px !important;
+    min-width:0 !important;
+    margin-inline:auto !important;
+    display:grid !important;
+    gap:16px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-heading-v2 {
+    display:flex !important;
+    align-items:flex-start !important;
+    justify-content:space-between !important;
+    gap:12px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-heading-v2 h1 {
+    margin:0 !important;
+    color:#020617 !important;
+    font-size:20px !important;
+    font-weight:700 !important;
+    line-height:1.25 !important;
+    letter-spacing:0 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-heading-v2 p {
+    margin:4px 0 0 !important;
+    color:#404942 !important;
+    font-size:14px !important;
+    font-weight:400 !important;
+    line-height:1.35 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-export-actions {
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-end !important;
+    flex-wrap:wrap !important;
+    gap:8px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-export-button {
+    height:40px !important;
+    min-height:40px !important;
+    min-width:88px !important;
+    padding:0 14px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:8px !important;
+    color:#ffffff !important;
+    background:#004528 !important;
+    border:1px solid #004528 !important;
+    border-radius:8px !important;
+    font-size:14px !important;
+    font-weight:700 !important;
+    line-height:1 !important;
+    box-shadow:0 4px 12px rgba(0,0,0,.05) !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-export-button.secondary {
+    color:#0d5f36 !important;
+    background:#f3fbf6 !important;
+    border-color:#b9dcc7 !important;
+    box-shadow:none !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-export-button .icon {
+    width:18px !important;
+    height:18px !important;
+    stroke:currentColor !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-filter-card-v2 {
+    width:100% !important;
+    display:grid !important;
+    grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)) !important;
+    align-items:end !important;
+    gap:12px !important;
+    padding:16px !important;
+    margin:0 !important;
+    background:#ffffff !important;
+    border:1px solid #d1d5db !important;
+    border-radius:12px !important;
+    box-shadow:none !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-filter-card-v2 label {
+    min-width:0 !important;
+    display:grid !important;
+    gap:6px !important;
+    color:#334155 !important;
+    font-size:14px !important;
+    font-weight:400 !important;
+    line-height:1.25 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-filter-card-v2 input,
+html body .app-shell .main-panel main.report-page-v2 .report-filter-card-v2 select {
+    width:100% !important;
+    height:40px !important;
+    min-height:40px !important;
+    padding:0 12px !important;
+    color:#020617 !important;
+    background:#ffffff !important;
+    border:1px solid #d1d5db !important;
+    border-radius:8px !important;
+    font-size:14px !important;
+    font-weight:400 !important;
+    line-height:40px !important;
+    outline:none !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-search-field {
+    min-width:min(300px, 100%) !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-search-input {
+    position:relative !important;
+    display:block !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-search-input .icon {
+    position:absolute !important;
+    left:12px !important;
+    top:50% !important;
+    width:18px !important;
+    height:18px !important;
+    color:#707971 !important;
+    transform:translateY(-50%) !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-search-input input {
+    padding-left:36px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-filter-actions-v2 {
+    display:flex !important;
+    align-items:end !important;
+    gap:8px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-filter-actions-v2 .button {
+    height:40px !important;
+    min-height:40px !important;
+    min-width:96px !important;
+    padding:0 14px !important;
+    border-radius:8px !important;
+    font-size:14px !important;
+    font-weight:700 !important;
+    line-height:1 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-apply-button {
+    color:#ffffff !important;
+    background:#004528 !important;
+    border:1px solid #004528 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-reset-button {
+    color:#404942 !important;
+    background:#ffffff !important;
+    border:1px solid #d1d5db !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-summary-grid-v2 {
+    display:grid !important;
+    grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)) !important;
+    gap:12px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-summary-grid-v2 > div {
+    display:grid !important;
+    gap:4px !important;
+    padding:12px 14px !important;
+    background:#fbfdf8 !important;
+    border:1px solid #dfe5dc !important;
+    border-radius:8px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-summary-grid-v2 span {
+    color:#707971 !important;
+    font-size:14px !important;
+    font-weight:400 !important;
+    line-height:1.25 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-summary-grid-v2 strong {
+    color:#004528 !important;
+    font-size:20px !important;
+    font-weight:700 !important;
+    line-height:1.25 !important;
+    font-variant-numeric:tabular-nums !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-table-toolbar-v2 {
+    width:100% !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    flex-wrap:wrap !important;
+    gap:14px !important;
+    margin:0 !important;
+    color:#707971 !important;
+    font-size:14px !important;
+    font-weight:400 !important;
+    line-height:1.35 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-page-size-form label {
+    display:inline-flex !important;
+    align-items:center !important;
+    gap:8px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-page-size-form select {
+    width:78px !important;
+    min-width:78px !important;
+    height:34px !important;
+    min-height:34px !important;
+    padding:0 10px !important;
+    color:#111c2c !important;
+    background:#ffffff !important;
+    border:1px solid #d1d5db !important;
+    border-radius:8px !important;
+    font-size:14px !important;
+    font-weight:500 !important;
+    line-height:34px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .table-wrap {
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-table-v2 {
+    width:100% !important;
+    min-width:920px !important;
+    table-layout:fixed !important;
+    border-collapse:collapse !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-summary-table-v2 {
+    min-width:680px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-table-v2 th,
+html body .app-shell .main-panel main.report-page-v2 .report-table-v2 td {
+    height:40px !important;
+    min-height:40px !important;
+    padding:4px 10px !important;
+    border-bottom:1px solid #e5e7eb !important;
+    font-size:14px !important;
+    line-height:1.2 !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-table-v2 th {
+    color:#334155 !important;
+    background:#fbfdf8 !important;
+    font-weight:700 !important;
+    text-align:center !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-table-v2 td {
+    color:#020617 !important;
+    font-weight:400 !important;
+    text-align:center !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-table-v2 tbody tr:last-child td {
+    border-bottom:0 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-table-v2 tbody tr:hover td {
+    background:#fbfdf8 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-name-cell {
+    color:#004528 !important;
+    font-weight:700 !important;
+    text-align:left !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-money-cell {
+    color:#004528 !important;
+    font-weight:700 !important;
+    text-align:right !important;
+    font-variant-numeric:tabular-nums !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-status {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-height:24px !important;
+    padding:0 10px !important;
+    border-radius:999px !important;
+    font-size:14px !important;
+    font-weight:700 !important;
+    line-height:1 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-status.success {
+    color:#157144 !important;
+    background:#e9f8ef !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-status.warning {
+    color:#92400e !important;
+    background:#fff7ed !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-status.danger {
+    color:#ef1f2d !important;
+    background:#fff4f4 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-status.neutral {
+    color:#707971 !important;
+    background:#f9fafb !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-row-actions {
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:8px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-row-actions a {
+    width:28px !important;
+    height:28px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    color:#004528 !important;
+    background:transparent !important;
+    border:0 !important;
+    border-radius:8px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-row-actions .icon {
+    width:18px !important;
+    height:18px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .pagination-wrap {
+    margin-top:0 !important;
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.report-page-v2 {
+        padding:16px !important;
+    }
+
+    html body .app-shell .main-panel main.report-page-v2 .report-heading-v2 {
+        flex-direction:column !important;
+        align-items:stretch !important;
+    }
+
+    html body .app-shell .main-panel main.report-page-v2 .report-export-actions {
+        justify-content:flex-start !important;
+    }
+
+    html body .app-shell .main-panel main.report-page-v2 .report-filter-card-v2 {
+        grid-template-columns:1fr !important;
+        padding:16px !important;
+    }
+
+    html body .app-shell .main-panel main.report-page-v2 .report-filter-actions-v2 {
+        display:grid !important;
+        grid-template-columns:1fr 1fr !important;
+        width:100% !important;
+    }
+
+    html body .app-shell .main-panel main.report-page-v2 .report-filter-actions-v2 .button,
+    html body .app-shell .main-panel main.report-page-v2 .report-export-button {
+        width:100% !important;
+    }
+
+    html body .app-shell .main-panel main.report-page-v2 .report-summary-grid-v2 {
+        grid-template-columns:1fr !important;
+    }
+
+    html body .app-shell .main-panel main.report-page-v2 .report-table-toolbar-v2 {
+        align-items:flex-start !important;
+        flex-direction:column !important;
+    }
+}
+
 /* Hard lock: class movement spacing must stay aligned with ai/standar aplikasi.md. */
 html body .app-shell .main-panel main.class-movement-page.class-transfer-screen,
 html body .app-shell .main-panel main.class-movement-page.class-promotion-page {
@@ -19827,6 +20232,7 @@ html body .app-shell .main-panel main.payment-transaction-page.payment-flat-page
     --mawa-green-dark: #0d5f36;
     --mawa-green-deep: #004528;
     --mawa-green-soft: #e9f8ef;
+    --mawa-green-softer: #f3fbf6;
     --mawa-danger: #ef1f2d;
     --mawa-danger-dark: #c91724;
     --mawa-danger-soft: #fff4f4;
@@ -19881,17 +20287,41 @@ html body .app-shell .user-card small {
 }
 
 html body .app-shell .nav-item,
+html body .app-shell .nav-parent,
+html body .app-shell .nav-submenu a,
 html body .app-shell .master-nav .nav-parent,
 html body .app-shell .master-nav .nav-submenu a,
 html body .app-shell .nested-level > .nav-submenu-deep a {
     color: var(--mawa-label) !important;
 }
 
+html body .app-shell .nav-item:hover,
+html body .app-shell .nav-parent:hover,
+html body .app-shell .nav-submenu a:hover,
+html body .app-shell .master-nav .nav-parent:hover,
+html body .app-shell .master-nav .nav-submenu a:hover,
+html body .app-shell .nested-level > .nav-submenu-deep a:hover {
+    color: var(--mawa-green-dark) !important;
+    background: var(--mawa-green-softer) !important;
+}
+
+html body .app-shell .nav-item:focus-visible,
+html body .app-shell .nav-parent:focus-visible,
+html body .app-shell .nav-submenu a:focus-visible,
+html body .app-shell .master-nav .nav-parent:focus-visible,
+html body .app-shell .master-nav .nav-submenu a:focus-visible,
+html body .app-shell .nested-level > .nav-submenu-deep a:focus-visible {
+    outline: 2px solid var(--mawa-green-deep) !important;
+    outline-offset: 2px !important;
+}
+
 html body .app-shell .nav-item.active,
+html body .app-shell .nav-parent.active,
+html body .app-shell .nav-submenu a.active,
 html body .app-shell .master-nav .nav-parent.active,
 html body .app-shell .master-nav .nav-submenu a.active,
 html body .app-shell .nested-level > .nav-submenu-deep a.active {
-    color: var(--mawa-green) !important;
+    color: var(--mawa-green-deep) !important;
     background: var(--mawa-green-soft) !important;
 }
 
@@ -27501,6 +27931,7 @@ html body .app-shell .main-panel main.bill-flat-page {
 html body .app-shell .main-panel main.bill-flat-page .bill-workspace {
     width:min(100%, 1200px) !important;
     max-width:1200px !important;
+    min-width:0 !important;
     margin:0 !important;
     padding:0 !important;
     display:grid !important;
@@ -27700,49 +28131,125 @@ html body .app-shell .main-panel main.bill-flat-page .bill-detail-secondary {
     box-shadow:none !important;
 }
 
-html body .app-shell .main-panel main.bill-flat-page .bill-summary-strip {
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary {
     width:100% !important;
-    display:flex !important;
-    flex-wrap:wrap !important;
-    align-items:center !important;
-    gap:8px 18px !important;
+    min-width:0 !important;
+    display:grid !important;
+    gap:8px !important;
     margin:0 !important;
-    padding:0 0 4px !important;
+    padding:0 !important;
     background:transparent !important;
     border:0 !important;
     box-shadow:none !important;
 }
 
-html body .app-shell .main-panel main.bill-flat-page .bill-summary-strip span {
-    display:inline-grid !important;
-    gap:2px !important;
-    min-width:120px !important;
-    padding-right:18px !important;
-    border-right:1px solid #e5e7eb !important;
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table-wrap {
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    margin:0 0 4px !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
 }
 
-html body .app-shell .main-panel main.bill-flat-page .bill-summary-strip span:last-child {
-    border-right:0 !important;
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table {
+    width:100% !important;
+    min-width:0 !important;
+    table-layout:fixed !important;
+    border-collapse:collapse !important;
+    border:0 !important;
 }
 
-html body .app-shell .main-panel main.bill-flat-page .bill-summary-strip small {
-    color:#707971 !important;
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-col-no { width:48px !important; }
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-col-unit { width:auto !important; }
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-col-students { width:82px !important; }
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-col-total { width:150px !important; }
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table th,
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td {
+    height:40px !important;
+    min-height:40px !important;
+    max-height:40px !important;
+    padding:4px 10px !important;
+    color:#020617 !important;
+    background:#ffffff !important;
+    border:0 !important;
+    border-bottom:1px solid #e5e7eb !important;
     font-size:14px !important;
     font-weight:400 !important;
-    line-height:1.25 !important;
+    line-height:1.2 !important;
+    vertical-align:middle !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
 }
 
-html body .app-shell .main-panel main.bill-flat-page .bill-summary-strip strong {
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table th {
+    color:#334155 !important;
+    background:#fbfdf8 !important;
+    text-align:center !important;
+    font-weight:700 !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:first-child {
+    text-align:center !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:nth-child(2) {
+    text-align:left !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:nth-child(3) {
+    text-align:center !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:nth-child(4) {
+    text-align:right !important;
+    font-variant-numeric:tabular-nums !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tr.is-active td {
+    background:#fbfdf8 !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot td {
+    height:44px !important;
+    min-height:44px !important;
+    max-height:44px !important;
+    padding:4px 10px !important;
+    background:#fbfdf8 !important;
+    border-top:1px solid #d1d5db !important;
+    border-bottom:0 !important;
+    color:#004528 !important;
+    font-weight:700 !important;
+    vertical-align:middle !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot .bill-unit-total-caption {
+    color:#707971 !important;
+    text-align:center !important;
+    font-weight:700 !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot td:nth-child(2) {
+    text-align:center !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot td:nth-child(3) {
+    text-align:right !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot strong {
     color:#004528 !important;
     font-size:16px !important;
     font-weight:700 !important;
-    line-height:1.25 !important;
+    line-height:1.2 !important;
     font-variant-numeric:tabular-nums !important;
 }
 
 html body .app-shell .main-panel main.bill-flat-page .bill-table-toolbar {
     width:100% !important;
-    margin:0 0 12px !important;
+    margin:0 !important;
     padding:0 !important;
     display:flex !important;
     align-items:center !important;
@@ -27790,6 +28297,7 @@ html body .app-shell .main-panel main.bill-flat-page .bill-page-size-form select
 
 html body .app-shell .main-panel main.bill-flat-page .bills-data-card {
     width:100% !important;
+    min-width:0 !important;
     margin:0 !important;
     padding:0 !important;
     background:transparent !important;
@@ -27800,6 +28308,8 @@ html body .app-shell .main-panel main.bill-flat-page .bills-data-card {
 
 html body .app-shell .main-panel main.bill-flat-page .table-wrap {
     width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
     margin:0 !important;
     padding:0 !important;
     overflow-x:hidden !important;
@@ -27838,7 +28348,9 @@ html body .app-shell .main-panel main.bill-flat-page .bill-flat-table td {
     border:0 !important;
     border-bottom:1px solid #e5e7eb !important;
     font-size:14px !important;
+    letter-spacing:0 !important;
     line-height:1.2 !important;
+    text-transform:none !important;
     white-space:nowrap !important;
     overflow:hidden !important;
     text-overflow:ellipsis !important;
@@ -27849,6 +28361,7 @@ html body .app-shell .main-panel main.bill-flat-page .bill-flat-table th {
     background:#fbfdf8 !important;
     color:#334155 !important;
     font-weight:700 !important;
+    text-transform:none !important;
 }
 
 html body .app-shell .main-panel main.bill-flat-page .bill-flat-table td {
@@ -28164,12 +28677,17 @@ html body .app-shell .main-panel main.bill-flat-page .pagination-wrap {
 
 @media (width <= 760px) {
     html body .app-shell .main-panel main.bill-flat-page {
+        width:100% !important;
+        max-width:100vw !important;
         padding:16px !important;
+        overflow-x:hidden !important;
     }
 
     html body .app-shell .main-panel main.bill-flat-page .bill-workspace {
         width:100% !important;
         max-width:none !important;
+        min-width:0 !important;
+        overflow-x:hidden !important;
     }
 
     html body .app-shell .main-panel main.bill-flat-page .bill-page-heading {
@@ -28183,6 +28701,9 @@ html body .app-shell .main-panel main.bill-flat-page .pagination-wrap {
     }
 
     html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel {
+        width:100% !important;
+        max-width:100% !important;
+        min-width:0 !important;
         grid-template-columns:1fr !important;
     }
 
@@ -28203,16 +28724,26 @@ html body .app-shell .main-panel main.bill-flat-page .pagination-wrap {
     }
 
     html body .app-shell .main-panel main.bill-flat-page .table-wrap {
+        width:100% !important;
+        max-width:100% !important;
+        min-width:0 !important;
         overflow-x:auto !important;
+        overflow-y:hidden !important;
+        -webkit-overflow-scrolling:touch !important;
     }
 
     html body .app-shell .main-panel main.bill-flat-page .bill-flat-table {
         min-width:760px !important;
     }
 
+    html body .app-shell .main-panel main.bill-flat-page .bill-unit-table {
+        min-width:520px !important;
+    }
+
     html body .app-shell .main-panel main.bill-flat-page .bill-table-toolbar {
         align-items:flex-start !important;
         flex-direction:column !important;
+        margin-bottom:0 !important;
     }
 
     html body .app-shell .main-panel main.bill-flat-page .bill-dialog-summary,
@@ -28227,5 +28758,145 @@ html body .app-shell .main-panel main.bill-flat-page .pagination-wrap {
 
     html body .app-shell .main-panel main.bill-flat-page .bill-detail-actions .button {
         width:100% !important;
+    }
+}
+/* Multi login: guardian portal and transfer verification */
+.guardian-page,
+.transfer-verification-page {
+    gap: 16px;
+}
+
+.guardian-filter,
+.transfer-filter,
+.guardian-upload-panel {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 16px;
+}
+
+.guardian-filter,
+.transfer-filter {
+    grid-template-columns: minmax(0, 320px);
+}
+
+.guardian-filter label,
+.transfer-filter label,
+.guardian-upload-panel label {
+    color: #334155;
+    display: grid;
+    font-size: 14px;
+    font-weight: 500;
+    gap: 8px;
+}
+
+.guardian-filter select,
+.transfer-filter select,
+.guardian-upload-panel input[type="file"],
+.login-form select,
+.data-user-create-page select[multiple],
+.data-user-edit-modal select[multiple] {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #020617;
+    font-size: 14px;
+    min-height: 40px;
+    padding: 8px 12px;
+}
+
+.login-form select {
+    border: 0;
+    outline: 0;
+    width: 100%;
+}
+
+.guardian-transfer-form {
+    display: grid;
+    gap: 16px;
+}
+
+.guardian-upload-panel {
+    align-items: end;
+    grid-template-columns: minmax(0, 1fr) max-content;
+}
+
+.guardian-bill-table td:nth-child(1),
+.guardian-bill-table th:nth-child(1),
+.transfer-verification-table td:nth-child(1),
+.transfer-verification-table th:nth-child(1) {
+    text-align: center;
+    width: 64px;
+}
+
+.guardian-bill-table td,
+.guardian-bill-table th,
+.guardian-history-table td,
+.guardian-history-table th,
+.transfer-verification-table td,
+.transfer-verification-table th {
+    height: 40px;
+    min-height: 40px;
+    vertical-align: middle;
+}
+
+.guardian-bill-table td small,
+.transfer-verification-table td small {
+    color: #707971;
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+.transfer-actions {
+    display: inline-flex;
+    gap: 8px;
+}
+
+.transfer-actions form {
+    margin: 0;
+}
+
+.transfer-proof-link,
+.transfer-accept-button,
+.transfer-reject-button {
+    align-items: center;
+    border-radius: 8px;
+    display: inline-flex;
+    height: 36px;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0;
+    width: 40px;
+}
+
+.transfer-proof-link,
+.transfer-accept-button {
+    background: #157144;
+    border: 1px solid #157144;
+    color: #fff;
+}
+
+.transfer-reject-button {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    color: #b42318;
+}
+
+@media (max-width: 760px) {
+    .guardian-filter,
+    .transfer-filter,
+    .guardian-upload-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .guardian-upload-panel .button,
+    .transfer-filter select,
+    .guardian-filter select {
+        width: 100%;
     }
 }

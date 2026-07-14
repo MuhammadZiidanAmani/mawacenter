@@ -31,10 +31,22 @@
         <form method="POST" action="{{ route('login.store') }}" class="login-form">
             @csrf
             <label>
+                <span>Unit Pendidikan Wali Santri</span>
+                <span class="login-input">
+                    {!! $icon('<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h8M10 19v-4h4v4"/>') !!}
+                    <select name="guardian_unit_id">
+                        <option value="">Login internal</option>
+                        @foreach($educationUnits as $unit)
+                            <option value="{{ $unit->id }}" @selected(old('guardian_unit_id') == $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>
+                        @endforeach
+                    </select>
+                </span>
+            </label>
+            <label>
                 <span>Username</span>
                 <span class="login-input">
                     {!! $icon('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.6-4 2.9-6 7-6s6.4 2 7 6"/>') !!}
-                    <input type="text" name="username" value="{{ old('username') }}" placeholder="Masukkan username" autocomplete="username" autofocus required>
+                    <input type="text" name="username" value="{{ old('username') }}" placeholder="Username atau NIS" autocomplete="username" autofocus required>
                 </span>
             </label>
             <label>

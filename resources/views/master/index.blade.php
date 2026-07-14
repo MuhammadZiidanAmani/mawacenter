@@ -956,10 +956,11 @@
                             <col class="data-user-col-username">
                             <col class="data-user-col-email">
                             <col class="data-user-col-role">
+                            <col class="data-user-col-access">
                             <col class="data-user-col-actions">
                         </colgroup>
-                        <thead><tr><th>No</th><th>Nama User</th><th>Username</th><th>Email</th><th>Role</th><th>Aksi</th></tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td>{{ $row->username }}</td><td>{{ $row->email }}</td><td><span class="status success">{{ $row->roleLabel() }}</span></td><td>@include('master.partials.actions', ['type' => 'data-users', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                        <thead><tr><th>No</th><th>Nama User</th><th>Username</th><th>Email</th><th>Role</th><th>Akses</th><th>Aksi</th></tr></thead>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td>{{ $row->username }}</td><td>{{ $row->email }}</td><td><span class="status success">{{ $row->roleLabel() }}</span></td><td>@if($row->isGuardian()){{ $row->guardianStudents->map(fn($student) => ($student->schoolClass?->educationUnit?->code ?? '-').' - '.$student->nis)->implode(', ') ?: '-' }}@elseif($row->isBendaharaUnit() || $row->isPetugas()){{ $row->educationUnits->pluck('code')->implode(', ') ?: 'Semua unit' }}@else Semua akses @endif</td><td>@include('master.partials.actions', ['type' => 'data-users', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @else
                         <colgroup>
                             <col class="fee-discount-col-no">

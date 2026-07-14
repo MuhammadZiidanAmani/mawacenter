@@ -10,6 +10,7 @@ use App\Models\SppPayment;
 use App\Models\SppPaymentItem;
 use App\Models\Student;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -25,10 +26,12 @@ class BillService
     {
         $result = ['created' => 0, 'existing' => 0, 'skipped' => 0];
         $students = $this->students($academicYear, $filters)->get();
+        $months = array_unique(array_map('intval', $months));
+        $existingKeys = $this->existingSppKeys($students, $year, $months);
 
-        DB::transaction(function () use ($academicYear, $year, $months, $students, &$result) {
+        DB::transaction(function () use ($academicYear, $year, $months, $students, $existingKeys, &$result) {
             foreach ($students as $student) {
-                foreach (array_unique(array_map('intval', $months)) as $month) {
+                foreach ($months as $month) {
                     $periodStart = CarbonImmutable::create($year, $month, 1);
                     if (! $this->eligible($student, $periodStart)) {
                         $result['skipped']++;
@@ -41,10 +44,18 @@ class BillService
                         continue;
                     }
 
+                    if (isset($existingKeys[$this->sppGenerationKey($student->id, $year, $month)])) {
+                        $result['existing']++;
+
+                        continue;
+                    }
+
                     try {
                         [$bill, $created] = $this->ensureSppBill($student, $academicYear, $year, $month);
                         $result[$created ? 'created' : 'existing']++;
-                        $this->syncSppBillPayments($bill);
+                        if ($created) {
+                            $this->syncSppBillPayments($bill);
+                        }
                     } catch (ValidationException) {
                         $result['skipped']++;
                     }
@@ -60,8 +71,9 @@ class BillService
         $result = ['created' => 0, 'existing' => 0, 'skipped' => 0];
         $students = $this->students($academicYear, $filters)->get();
         $endPeriod = CarbonImmutable::create($endYear, $endMonth, 1)->startOfMonth();
+        $existingKeys = $this->existingSppKeysUntil($students, $endPeriod);
 
-        DB::transaction(function () use ($academicYear, $endPeriod, $students, &$result) {
+        DB::transaction(function () use ($academicYear, $endPeriod, $students, $existingKeys, &$result) {
             foreach ($students as $student) {
                 $period = $this->studentBillingStart($student, $academicYear);
 
@@ -85,10 +97,19 @@ class BillService
                         continue;
                     }
 
+                    if (isset($existingKeys[$this->sppGenerationKey($student->id, $period->year, $period->month)])) {
+                        $result['existing']++;
+                        $period = $period->addMonth();
+
+                        continue;
+                    }
+
                     try {
                         [$bill, $created] = $this->ensureSppBill($student, $academicYear, $period->year, $period->month);
                         $result[$created ? 'created' : 'existing']++;
-                        $this->syncSppBillPayments($bill);
+                        if ($created) {
+                            $this->syncSppBillPayments($bill);
+                        }
                     } catch (ValidationException) {
                         $result['skipped']++;
                     }
@@ -109,14 +130,64 @@ class BillService
             return $result;
         }
 
-        DB::transaction(function () use ($academicYear, $feeType, $year, $month, $filters, &$result) {
-            foreach ($this->students($academicYear, $filters)->get() as $student) {
+        $students = $this->students($academicYear, $filters)->get();
+        $existingKeys = $this->existingFeeTypeKeys($students, $feeType);
+
+        DB::transaction(function () use ($academicYear, $feeType, $year, $month, $students, $existingKeys, &$result) {
+            foreach ($students as $student) {
+                if (isset($existingKeys[$this->feeTypeGenerationKey($student->id, $feeType, $academicYear, $year, $month)])) {
+                    $result['existing']++;
+
+                    continue;
+                }
+
                 try {
                     [$bill, $created] = $this->ensureFeeTypeBill($student, $academicYear, $feeType, $year, $month);
                     $result[$created ? 'created' : 'existing']++;
-                    $this->syncOtherBillPayments($bill);
+                    if ($created) {
+                        $this->syncOtherBillPayments($bill);
+                    }
                 } catch (ValidationException) {
                     $result['skipped']++;
+                }
+            }
+        });
+
+        return $result;
+    }
+
+    public function generateFeeTypes(AcademicYear $academicYear, Collection $feeTypes, ?int $year, ?int $month, array $filters = []): array
+    {
+        $result = ['created' => 0, 'existing' => 0, 'skipped' => 0];
+        $feeTypes = $feeTypes
+            ->filter(fn (FeeType $feeType) => $feeType->creates_bill && $feeType->payment_group !== 'laundry')
+            ->values();
+
+        if ($feeTypes->isEmpty()) {
+            return $result;
+        }
+
+        $students = $this->students($academicYear, $filters)->get();
+        $existingKeys = $this->existingFeeTypeKeysForTypes($students, $feeTypes);
+
+        DB::transaction(function () use ($academicYear, $feeTypes, $year, $month, $students, $existingKeys, &$result) {
+            foreach ($feeTypes as $feeType) {
+                foreach ($students as $student) {
+                    if (isset($existingKeys[$this->feeTypeGenerationKey($student->id, $feeType, $academicYear, $year, $month)])) {
+                        $result['existing']++;
+
+                        continue;
+                    }
+
+                    try {
+                        [$bill, $created] = $this->ensureFeeTypeBill($student, $academicYear, $feeType, $year, $month);
+                        $result[$created ? 'created' : 'existing']++;
+                        if ($created) {
+                            $this->syncOtherBillPayments($bill);
+                        }
+                    } catch (ValidationException) {
+                        $result['skipped']++;
+                    }
                 }
             }
         });
@@ -261,7 +332,7 @@ class BillService
             throw ValidationException::withMessages(['bill' => 'SPP bulan Juli untuk unit MTs/MA sudah termasuk Daftar Ulang.']);
         }
 
-        $key = hash('sha256', "spp|{$student->id}|{$year}|{$month}");
+        $key = $this->sppGenerationKey($student->id, $year, $month);
         if ($bill = Bill::where('generation_key', $key)->first()) {
             return [$bill, false];
         }
@@ -287,8 +358,8 @@ class BillService
         $period = $this->feePeriod($feeType);
         $year ??= $academicYear->start_date?->year ?? (int) explode('/', $academicYear->name)[0];
         $month = $period === 'Bulanan' ? ($month ?? now()->month) : null;
-        $periodKey = $period === 'Sekali Bayar' ? 'once' : ($period === 'Tahunan' ? $academicYear->id : "{$year}|{$month}");
-        $key = hash('sha256', "fee|{$student->id}|{$feeType->id}|{$periodKey}");
+        $periodKey = $this->feeTypePeriodKey($feeType, $academicYear, $year, $month);
+        $key = $this->feeTypeGenerationKey($student->id, $feeType, $academicYear, $year, $month);
         if ($bill = Bill::where('generation_key', $key)->first()) {
             return [$bill, false];
         }
@@ -358,6 +429,96 @@ class BillService
             'student_id' => $student->id, 'academic_year_id' => $academicYear->id,
             'unit_name' => $student->schoolClass?->educationUnit?->name, 'class_name' => $student->schoolClass?->name,
         ];
+    }
+
+    private function existingSppKeys(Collection $students, int $year, array $months): array
+    {
+        $studentIds = $students->pluck('id')->all();
+        if ($studentIds === [] || $months === []) {
+            return [];
+        }
+
+        return Bill::where('source_type', 'spp')
+            ->whereIn('student_id', $studentIds)
+            ->where('year', $year)
+            ->whereIn('month', $months)
+            ->pluck('generation_key')
+            ->flip()
+            ->all();
+    }
+
+    private function existingSppKeysUntil(Collection $students, CarbonImmutable $endPeriod): array
+    {
+        $studentIds = $students->pluck('id')->all();
+        if ($studentIds === []) {
+            return [];
+        }
+
+        return Bill::where('source_type', 'spp')
+            ->whereIn('student_id', $studentIds)
+            ->where(function ($query) use ($endPeriod) {
+                $query->where('year', '<', $endPeriod->year)
+                    ->orWhere(function ($query) use ($endPeriod) {
+                        $query->where('year', $endPeriod->year)
+                            ->where('month', '<=', $endPeriod->month);
+                    });
+            })
+            ->pluck('generation_key')
+            ->flip()
+            ->all();
+    }
+
+    private function existingFeeTypeKeys(Collection $students, FeeType $feeType): array
+    {
+        $studentIds = $students->pluck('id')->all();
+        if ($studentIds === []) {
+            return [];
+        }
+
+        return Bill::where('source_type', 'fee_type')
+            ->where('fee_type_id', $feeType->id)
+            ->whereIn('student_id', $studentIds)
+            ->pluck('generation_key')
+            ->flip()
+            ->all();
+    }
+
+    private function existingFeeTypeKeysForTypes(Collection $students, Collection $feeTypes): array
+    {
+        $studentIds = $students->pluck('id')->all();
+        $feeTypeIds = $feeTypes->pluck('id')->all();
+        if ($studentIds === [] || $feeTypeIds === []) {
+            return [];
+        }
+
+        return Bill::where('source_type', 'fee_type')
+            ->whereIn('fee_type_id', $feeTypeIds)
+            ->whereIn('student_id', $studentIds)
+            ->pluck('generation_key')
+            ->flip()
+            ->all();
+    }
+
+    private function sppGenerationKey(int $studentId, int $year, int $month): string
+    {
+        return hash('sha256', "spp|{$studentId}|{$year}|{$month}");
+    }
+
+    private function feeTypeGenerationKey(int $studentId, FeeType $feeType, AcademicYear $academicYear, ?int $year, ?int $month): string
+    {
+        $period = $this->feePeriod($feeType);
+        $year ??= $academicYear->start_date?->year ?? (int) explode('/', $academicYear->name)[0];
+        $month = $period === 'Bulanan' ? ($month ?? now()->month) : null;
+        $periodKey = $this->feeTypePeriodKey($feeType, $academicYear, $year, $month);
+
+        return hash('sha256', "fee|{$studentId}|{$feeType->id}|{$periodKey}");
+    }
+
+    private function feeTypePeriodKey(FeeType $feeType, AcademicYear $academicYear, int $year, ?int $month): string|int
+    {
+        $period = $this->feePeriod($feeType);
+
+        return $period === 'Sekali Bayar' ? 'once' : ($period === 'Tahunan' ? $academicYear->id : "{$year}|{$month}");
     }
 
     private function students(AcademicYear $academicYear, array $filters)

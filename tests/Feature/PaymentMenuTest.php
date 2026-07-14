@@ -29,15 +29,19 @@ class PaymentMenuTest extends TestCase
         ]);
     }
 
-    public function test_payment_is_direct_menu_and_history_moves_under_reports(): void
+    public function test_payment_is_direct_menu_and_reports_use_prd_submenus(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']))->get('/')
             ->assertOk()
             ->assertSee('<a href="'.route('finance.payments.index').'" class="nav-item ">', false)
             ->assertDontSee('<span>Transaksi Baru</span>', false)
             ->assertDontSee('<span>Import Pembayaran</span>', false)
-            ->assertSee('<span>Laporan Pembayaran</span>', false)
-            ->assertSee('<span>Riwayat Pembayaran</span>', false);
+            ->assertSee('<span>Laporan Transaksi</span>', false)
+            ->assertSee('<span>SPP Perbulan</span>', false)
+            ->assertSee('<span>SPP Belum Bayar</span>', false)
+            ->assertSee('<span>SPP Tahun Pelajaran</span>', false)
+            ->assertSee('<span>Rekap Per Unit</span>', false)
+            ->assertDontSee('<span>Riwayat Pembayaran</span>', false);
     }
 
     public function test_payment_history_page_has_clear_links_for_each_payment_group(): void

@@ -11,32 +11,44 @@ class EnsureRolePermission
     public function handle(Request $request, Closure $next): Response
     {
         $routeName = (string) $request->route()?->getName();
-        $permission = $this->permissionForRoute($routeName);
+        $permissions = $this->permissionsForRoute($routeName);
 
-        if (! $permission || $routeName === 'logout') {
+        if ($permissions === [] || $routeName === 'logout') {
             return $next($request);
         }
 
-        if ($request->user()?->hasPermission($permission)) {
+        foreach ($permissions as $permission) {
+            if ($request->user()?->hasPermission($permission)) {
+                return $next($request);
+            }
+        }
+
+        if ($request->user()?->isSuperAdmin()) {
             return $next($request);
         }
 
         abort(403, 'Anda tidak memiliki hak akses ke menu ini.');
     }
 
-    private function permissionForRoute(string $routeName): ?string
+    private function permissionsForRoute(string $routeName): array
     {
         return match (true) {
-            $routeName === 'dashboard' => 'dashboard',
-            str_starts_with($routeName, 'student-management.') => 'students',
+            $routeName === 'dashboard' => ['dashboard.view'],
+            str_starts_with($routeName, 'student-management.') => ['students.view'],
+            str_starts_with($routeName, 'finance.transfer-verifications.') => ['payments.verify_transfer'],
+            in_array($routeName, ['finance.payments.import', 'finance.spp.import.preview', 'finance.spp.import', 'finance.other.import.preview', 'finance.other.import', 'finance.spp.correct', 'finance.spp.update', 'finance.spp.destroy', 'finance.other.update', 'finance.other.destroy'], true) => ['payments.verify_transfer'],
+            in_array($routeName, ['finance.spp.store', 'finance.other.store', 'finance.spp.create', 'finance.other.create', 'finance.spp.months', 'finance.spp.quote', 'finance.other.months', 'finance.other.quote'], true) => ['payments.cash.create'],
             str_starts_with($routeName, 'finance.spp.'),
             str_starts_with($routeName, 'finance.other.'),
-            str_starts_with($routeName, 'finance.payments.') => 'payments',
-            str_starts_with($routeName, 'finance.bills.') => 'bills',
-            str_starts_with($routeName, 'reports.') => 'reports',
-            str_starts_with($routeName, 'master.') => 'master',
-            str_starts_with($routeName, 'settings.') => 'settings',
-            default => null,
+            str_starts_with($routeName, 'finance.payments.') => ['payments.cash.create', 'payments.view_unit'],
+            $routeName === 'finance.bills.sync' => ['payments.verify_transfer'],
+            str_starts_with($routeName, 'finance.bills.') => ['bills.view', 'bills.view_unit'],
+            str_starts_with($routeName, 'guardian.') => ['bills.view_guardian', 'payments.transfer.submit_guardian'],
+            str_starts_with($routeName, 'reports.export.') || $routeName === 'reports.export' => ['reports.export'],
+            str_starts_with($routeName, 'reports.') => ['reports.view', 'reports.view_unit'],
+            str_starts_with($routeName, 'master.') => ['master.manage', 'users.manage'],
+            str_starts_with($routeName, 'settings.') => ['settings.view'],
+            default => [],
         };
     }
 }

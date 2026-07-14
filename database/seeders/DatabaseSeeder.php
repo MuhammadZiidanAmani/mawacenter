@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
                 [
                     'name' => $name,
                     'description' => 'Role bawaan sistem',
-                    'permissions' => Role::defaultPermissions(),
+                    'permissions' => Role::defaultPermissionsFor($key),
                     'is_active' => true,
                 ],
             );

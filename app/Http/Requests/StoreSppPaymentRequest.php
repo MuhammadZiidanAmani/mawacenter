@@ -26,6 +26,8 @@ class StoreSppPaymentRequest extends FormRequest
 
     public function rules(): array
     {
+        $cashOnly = $this->user()?->isPetugas() ?? false;
+
         return [
             'transaction_date' => ['required', 'date'],
             'transaction_time' => ['required', 'date_format:H:i:s'],
@@ -34,8 +36,8 @@ class StoreSppPaymentRequest extends FormRequest
             'months' => ['required_without:month_count', 'array', 'min:1'],
             'months.*' => ['integer', 'between:1,12'],
             'year' => ['required_with:months', 'integer', 'between:2000,2100'],
-            'payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
-            'status' => ['required', Rule::in(['Diterima', 'Pending'])],
+            'payment_method' => ['required', Rule::in($cashOnly ? ['Cash'] : ['Cash', 'Transfer'])],
+            'status' => ['required', Rule::in($cashOnly ? ['Diterima'] : ['Diterima', 'Pending'])],
             'paid_amount' => ['required', 'integer', 'min:1'],
         ];
     }

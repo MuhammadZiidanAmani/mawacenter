@@ -60,6 +60,46 @@
                     </form>
                 </div>
 
+                <section class="bill-unit-summary" aria-label="Ringkasan tagihan per unit">
+                    <div class="table-wrap bill-unit-table-wrap">
+                        <table class="bill-unit-table">
+                            <colgroup>
+                                <col class="bill-unit-col-no">
+                                <col class="bill-unit-col-unit">
+                                <col class="bill-unit-col-students">
+                                <col class="bill-unit-col-total">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Unit Pendidikan</th>
+                                    <th>Siswa</th>
+                                    <th>Jumlah Tagihan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($unitSummaries as $unitSummary)
+                                    <tr @class(['is-active' => (string) request('unit_id') === (string) $unitSummary['unit_id']])>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $unitSummary['unit_name'] }}</td>
+                                        <td>{{ number_format($unitSummary['students'], 0, ',', '.') }}</td>
+                                        <td><span class="bill-money remaining">{{ $rupiah($unitSummary['remaining']) }}</span></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="4" class="empty-state">Belum ada ringkasan tagihan per unit.</td></tr>
+                                @endforelse
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" class="bill-unit-total-caption">Total Keseluruhan</td>
+                                    <td><strong>{{ number_format($overviewStats['students'], 0, ',', '.') }}</strong></td>
+                                    <td><strong>{{ $rupiah($overviewStats['remaining']) }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </section>
+
                 <form method="GET" action="{{ route('finance.bills.index') }}" class="bills-filter-panel">
                     <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                     <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
@@ -72,14 +112,6 @@
                         <a href="{{ route('finance.bills.index') }}" class="button bill-filter-reset">Reset</a>
                     </div>
                 </form>
-
-                <div class="bill-summary-strip">
-                    <span><small>Sisa Tagihan</small><strong>{{ $rupiah($stats['remaining']) }}</strong></span>
-                    <span><small>Sudah Dibayar</small><strong>{{ $rupiah($stats['paid']) }}</strong></span>
-                    <span><small>SPP</small><strong>{{ $rupiah($stats['spp']) }}</strong></span>
-                    <span><small>Lain-lain</small><strong>{{ $rupiah($stats['other']) }}</strong></span>
-                    <span><small>Jatuh Tempo</small><strong>{{ number_format($stats['overdue_students'], 0, ',', '.') }} siswa</strong></span>
-                </div>
 
                 <div class="bill-table-toolbar">
                     <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-page-size-form">
@@ -136,7 +168,7 @@
                                         <td><span class="bill-money remaining">{{ $rupiah($summary['total_remaining']) }}</span></td>
                                         <td>
                                             <div class="bill-table-actions">
-                                                <button type="button" class="button bill-detail-trigger" data-bill-detail-target="bill-detail-{{ $student?->id ?? $loop->index }}" aria-label="Detail tagihan" title="Detail">{!! $icon('eye') !!}</button>
+                                                <a href="{{ $student ? route('finance.bills.show', array_merge(request()->only(['unit_id', 'class_id', 'student_id', 'student_search', 'per_page', 'sort', 'direction']), ['student' => $student->id, 'year' => $year, 'until_month' => $untilMonth])) : '#' }}" class="button bill-detail-trigger" aria-label="Detail tagihan" title="Detail">{!! $icon('eye') !!}</a>
                                                 <a href="{{ route('finance.payments.index', ['student_id' => $student?->id, 'search' => $student?->nis]) }}" class="bill-pay-short" aria-label="Bayar tagihan" title="Bayar">{!! $icon('wallet') !!}</a>
                                             </div>
                                         </td>
@@ -147,72 +179,10 @@
                             </tbody>
                         </table>
                     </div>
-                    @foreach($studentsWithBills as $summary)
-                        @php($student = $summary['student'])
-                        <dialog class="bill-detail-dialog" id="bill-detail-{{ $student?->id ?? $loop->index }}">
-                            <div class="bill-dialog-panel">
-                                <div class="bill-dialog-head">
-                                    <div>
-                                        <strong>{{ $student?->name }}</strong>
-                                        <span>{{ $student?->nis }} · {{ $student?->schoolClass?->educationUnit?->code ?? '-' }} · {{ $student?->schoolClass?->name ?? '-' }}</span>
-                                    </div>
-                                    <form method="dialog">
-                                        <button class="bill-dialog-close" aria-label="Tutup detail">×</button>
-                                    </form>
-                                </div>
-                                <div class="bill-dialog-summary">
-                                    <span><small>Total Tagihan</small><b>{{ $rupiah($summary['total_remaining']) }}</b></span>
-                                    <span><small>SPP</small><b>{{ $rupiah($summary['spp_remaining']) }}</b></span>
-                                    <span><small>Lain-lain</small><b>{{ $rupiah($summary['other_remaining']) }}</b></span>
-                                    <span><small>Status</small><b>{{ $summary['status'] }}</b></span>
-                                </div>
-                                <div class="bill-dialog-grid">
-                                    <div class="bill-detail-block">
-                                        <strong>SPP</strong>
-                                        <div class="bill-detail-items">
-                                            @forelse($summary['spp'] as $item)
-                                                <span>{{ $item['month_name'] }} {{ $item['year'] }} <b>{{ $rupiah($item['remaining']) }}</b></span>
-                                            @empty
-                                                <span>Lunas</span>
-                                            @endforelse
-                                        </div>
-                                    </div>
-                                    <div class="bill-detail-block">
-                                        <strong>Lain-lain</strong>
-                                        <div class="bill-detail-items">
-                                            @forelse($summary['other'] as $item)
-                                                <span>{{ $item['name'] }} <b>{{ $rupiah($item['remaining']) }}</b></span>
-                                            @empty
-                                                <span>Lunas</span>
-                                            @endforelse
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="bill-detail-actions">
-                                    @if($student && $summary['spp_remaining'] > 0)
-                                        <a href="{{ route('finance.spp.create', ['student_id' => $student->id]) }}" class="button bill-detail-primary">Bayar SPP</a>
-                                    @endif
-                                    @if($student && $summary['other_remaining'] > 0)
-                                        <a href="{{ route('finance.other.create', ['student_id' => $student->id]) }}" class="button bill-detail-secondary">Bayar Lain-lain</a>
-                                    @endif
-                                </div>
-                            </div>
-                        </dialog>
-                    @endforeach
                 </section>
             </section>
         </main>
     </div>
 </div>
-<script>
-    document.querySelectorAll('[data-bill-detail-target]').forEach((trigger) => {
-        trigger.addEventListener('click', () => {
-            const dialog = document.getElementById(trigger.dataset.billDetailTarget);
-            if (dialog && typeof dialog.showModal === 'function') {
-                dialog.showModal();
-            }
-        });
-    });
-</script>
 </body>
 </html>

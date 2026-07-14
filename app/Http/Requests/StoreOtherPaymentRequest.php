@@ -34,13 +34,15 @@ class StoreOtherPaymentRequest extends FormRequest
 
     public function rules(): array
     {
+        $cashOnly = $this->user()?->isPetugas() ?? false;
+
         $rules = [
             'transaction_date' => ['required', 'date'],
             'transaction_time' => ['required', 'date_format:H:i:s'],
             'student_id' => ['required', 'exists:students,id'],
             'fee_type_id' => ['required', 'exists:fee_types,id'],
-            'payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
-            'status' => ['required', Rule::in(['Diterima', 'Pending'])],
+            'payment_method' => ['required', Rule::in($cashOnly ? ['Cash'] : ['Cash', 'Transfer'])],
+            'status' => ['required', Rule::in($cashOnly ? ['Diterima'] : ['Diterima', 'Pending'])],
             'paid_amount' => ['required', 'integer', 'min:1'],
         ];
 

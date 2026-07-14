@@ -1546,16 +1546,21 @@ class MasterDataTest extends TestCase
             ->assertSee('Perbarui Tagihan')
             ->assertSee('Menampilkan 1-1 dari 1 siswa')
             ->assertSee('Total Tagihan')
+            ->assertSee('Jumlah Tagihan')
             ->assertDontSee('Daftar Tagihan Siswa')
-            ->assertSee('SPP')
-            ->assertSee('Lain-lain')
-            ->assertSee('Bayar SPP')
-            ->assertSee('Bayar Lain-lain')
-            ->assertSee('Januari 2026')
-            ->assertSee('Februari 2026')
-            ->assertSee('Juni 2026')
-            ->assertSee('Daftar Ulang')
+            ->assertSee('Detail tagihan')
             ->assertSee('Rp 7.100.000');
+
+        $this->get('/keuangan/tagihan/siswa/'.$student->id.'?year=2026&until_month=6')
+            ->assertOk()
+            ->assertSee('Penertiban Administrasi Keuangan')
+            ->assertSee('Tagihan Siswa')
+            ->assertSee('SPP Agustus - Desember')
+            ->assertSee('SPP Januari - Juni')
+            ->assertSee('Daftar Ulang')
+            ->assertSee('Total Keseluruhan')
+            ->assertSee('Terbilang :')
+            ->assertSee('Rp. 7.100.000,-');
 
         $this->assertDatabaseHas('bills', [
             'student_id' => $student->id,
@@ -1624,26 +1629,30 @@ class MasterDataTest extends TestCase
 
         $this->get('/laporan?start_date=2026-06-01&end_date=2026-06-30&per_page=25&sort=amount&direction=desc')
             ->assertOk()
-            ->assertSee('report-workspace', false)
+            ->assertSee('report-page-v2', false)
+            ->assertSee('Laporan Transaksi')
+            ->assertSee('XLSX')
+            ->assertSee('PDF')
             ->assertSee('type="date" name="date_from"', false)
             ->assertSee('type="date" name="date_to"', false)
             ->assertDontSee('placeholder="DD/MM/YYYY"', false)
             ->assertDontSee('data-date-picker-button', false)
-            ->assertSee('Show')
-            ->assertSee('Search:')
+            ->assertSee('Tampilkan')
             ->assertSee('Unit')
             ->assertSee('Cara Bayar')
             ->assertSee('Status')
             ->assertSee('Rp 500.000')
             ->assertSee('Siswa Laporan')
-            ->assertSee('Buku')
+            ->assertSee('Lain-lain')
             ->assertSee('Transfer')
-            ->assertSee('Diterima')
-            ->assertSee('sort=date&amp;direction=asc', false);
+            ->assertSee('Diterima');
         $this->get('/laporan?start_date=2026-06-01&end_date=2026-06-30&type=spp')
-            ->assertOk()->assertSee('Rp 300.000')->assertDontSee('Buku');
+            ->assertOk()->assertSee('Rp 300.000')->assertDontSee('Rp 200.000');
         $this->get('/laporan/export?start_date=2026-06-01&end_date=2026-06-30')
-            ->assertOk()->assertDownload('laporan-pembayaran-20260601-20260630.csv');
+            ->assertOk()->assertDownload();
+        $this->get('/laporan/transaksi/export/pdf?start_date=2026-06-01&end_date=2026-06-30')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
     }
 
     public function test_application_settings_can_be_saved(): void

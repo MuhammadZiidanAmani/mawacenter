@@ -4,6 +4,7 @@ use App\Http\Controllers\BillController;
 use App\Http\Controllers\OtherPaymentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SppPaymentController;
+use App\Http\Controllers\TransferVerificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('keuangan/pembayaran')->name('finance.payments.')->controller(PaymentController::class)->group(function () {
@@ -47,5 +48,12 @@ Route::prefix('keuangan/pembayaran/lain-lain')->name('finance.other.')->controll
 
 Route::prefix('keuangan/tagihan')->name('finance.bills.')->controller(BillController::class)->group(function () {
     Route::get('/', 'index')->name('index');
+    Route::get('/siswa/{student}', 'show')->name('show');
     Route::post('/sync', 'sync')->name('sync');
+});
+
+Route::prefix('keuangan/verifikasi-transfer')->name('finance.transfer-verifications.')->controller(TransferVerificationController::class)->group(function () {
+    Route::get('/', 'index')->name('index');
+    Route::post('/{transfer}/terima', 'accept')->name('accept');
+    Route::post('/{transfer}/tolak', 'reject')->name('reject');
 });

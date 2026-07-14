@@ -10,6 +10,7 @@ use App\Models\BillPaymentAllocation;
 use App\Models\EducationUnit;
 use App\Models\FeeDiscount;
 use App\Models\FeeType;
+use App\Models\GuardianTransferRequest;
 use App\Models\OtherPayment;
 use App\Models\Role;
 use App\Models\SchoolClass;
@@ -164,6 +165,7 @@ class MasterDataController extends Controller
             })(),
             'data-users' => (function () use ($request, $search, $listSort, $listDirection, $perPage) {
                 $query = User::query()
+                    ->with(['educationUnits:id,code,name', 'guardianStudents:id,nis,name,school_class_id', 'guardianStudents.schoolClass.educationUnit:id,code'])
                     ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('username', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%")->orWhere('role', 'like', "%{$search}%")))
                     ->when($request->filled('role'), fn ($query) => $query->where('role', $request->query('role')))
                     ->orderBy(match ($listSort) {
@@ -798,7 +800,10 @@ class MasterDataController extends Controller
     {
         $this->normalizeUserRequest($request);
 
-        User::create($this->validateUser($request));
+        $validated = $this->validateUser($request);
+        unset($validated['education_unit_ids'], $validated['guardian_student_ids']);
+        $user = User::create($validated);
+        $this->syncUserAccess($user, $request);
 
         return $this->done('data-users', 'User berhasil ditambahkan.');
     }
@@ -811,8 +816,10 @@ class MasterDataController extends Controller
         if (blank($validated['password'] ?? null)) {
             unset($validated['password']);
         }
+        unset($validated['education_unit_ids'], $validated['guardian_student_ids']);
 
         $user->update($validated);
+        $this->syncUserAccess($user, $request);
 
         return $this->done('data-users', 'User berhasil diperbarui.');
     }
@@ -873,6 +880,7 @@ class MasterDataController extends Controller
             ->delete();
         Bill::whereIn('id', $billIds)->delete();
 
+        GuardianTransferRequest::where('student_id', $student->id)->delete();
         SppPaymentCorrection::whereIn('spp_payment_id', $sppPaymentIds)->delete();
         SppPaymentItem::where('student_id', $student->id)->delete();
         SppPayment::whereIn('id', $sppPaymentIds)->delete();
@@ -954,7 +962,35 @@ class MasterDataController extends Controller
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user)],
             'role' => ['required', Rule::exists('roles', 'key')->where('is_active', true)],
             'password' => [$user ? 'nullable' : 'required', 'string', 'min:8', 'max:100'],
+            'education_unit_ids' => ['nullable', 'array'],
+            'education_unit_ids.*' => ['integer', 'exists:education_units,id'],
+            'guardian_student_ids' => [Rule::requiredIf(fn () => $request->input('role') === 'orang_tua'), 'array'],
+            'guardian_student_ids.*' => ['integer', 'exists:students,id'],
         ]);
+    }
+
+    private function syncUserAccess(User $user, Request $request): void
+    {
+        $unitIds = collect($request->input('education_unit_ids', []))
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $studentIds = collect($request->input('guardian_student_ids', []))
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        $user->educationUnits()->sync($user->role === 'bendahara' || $user->role === 'kasir' ? $unitIds : []);
+        $user->guardianStudents()->sync(
+            $user->role === 'orang_tua'
+                ? collect($studentIds)->mapWithKeys(fn ($id) => [$id => ['relationship' => 'Wali', 'verified_at' => now()]])->all()
+                : [],
+        );
     }
 
     private function validateStudent(Request $request, ?Student $student = null, ?Student $identityStudent = null): array
@@ -1097,7 +1133,11 @@ class MasterDataController extends Controller
 
     private function studentOptions(string $tab, bool $showCreate)
     {
-        if (! $showCreate || $tab !== 'fee-discounts') {
+        if (! in_array($tab, ['fee-discounts', 'data-users'], true)) {
+            return collect();
+        }
+
+        if ($tab === 'fee-discounts' && ! $showCreate) {
             return collect();
         }
 

@@ -33,10 +33,12 @@ class PaymentController extends Controller
         $historyPeriodLabel = $this->monthName($historyMonth).' '.$historyYear;
         $people = collect();
         $paymentHistory = collect();
+        $unitIds = $request->user()?->accessibleUnitIds();
 
         if ($search !== '') {
             $matches = Student::query()
                 ->where('is_active', true)
+                ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
                 ->where(fn ($query) => $query
                     ->where('nis', 'like', "%{$search}%")
                     ->orWhere('nisn', 'like', "%{$search}%")
@@ -52,6 +54,7 @@ class PaymentController extends Controller
             if ($identityIds->isNotEmpty()) {
                 $registrations = Student::with(['academicYear', 'schoolClass.educationUnit'])
                     ->where('is_active', true)
+                    ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
                     ->where(fn ($query) => $query
                         ->whereIn('id', $identityIds)
                         ->orWhereIn('identity_student_id', $identityIds))
@@ -75,7 +78,9 @@ class PaymentController extends Controller
         }
 
         if ($selectedStudentId > 0) {
-            $selectedStudent = Student::where('is_active', true)->find($selectedStudentId);
+            $selectedStudent = Student::where('is_active', true)
+                ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
+                ->find($selectedStudentId);
             if ($selectedStudent) {
                 $identityId = $selectedStudent->identity_student_id ?: $selectedStudent->id;
                 $studentIds = Student::where('is_active', true)
@@ -146,12 +151,15 @@ class PaymentController extends Controller
             'historyPeriod' => $historyPeriod,
             'historyPeriodLabel' => $historyPeriodLabel,
             'transferAccount' => $this->transferAccount(),
+            'cashOnly' => $request->user()?->isPetugas() ?? false,
             'mode' => 'payment',
         ]);
     }
 
     public function store(Request $request, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): RedirectResponse
     {
+        abort_unless($request->user()?->hasPermission('payments.cash.create'), 403);
+
         $validated = $request->validate([
             'student_id' => ['required', 'exists:students,id'],
             'search' => ['nullable', 'string'],
@@ -168,9 +176,19 @@ class PaymentController extends Controller
             'transfer_proof.required_if' => 'Bukti transfer wajib diunggah untuk metode pembayaran Transfer.',
         ]);
 
+        if (($request->user()?->isPetugas() ?? false) && $validated['payment_method'] !== 'Cash') {
+            throw ValidationException::withMessages([
+                'payment_method' => 'Petugas hanya dapat menerima transaksi cash di kantor.',
+            ]);
+        }
+
         $selectedStudent = Student::with(['academicYear', 'schoolClass.educationUnit'])
             ->where('is_active', true)
             ->findOrFail($validated['student_id']);
+        $unitIds = $request->user()?->accessibleUnitIds();
+        if (is_array($unitIds) && ! in_array((int) $selectedStudent->schoolClass?->education_unit_id, $unitIds, true)) {
+            abort(403, 'Anda tidak memiliki akses ke siswa ini.');
+        }
         $identityId = $selectedStudent->identity_student_id ?: $selectedStudent->id;
         $registrations = Student::with(['academicYear', 'schoolClass.educationUnit'])
             ->where('is_active', true)

@@ -8,20 +8,29 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Role extends Model
 {
     public const DEFAULTS = [
-        'admin' => 'Admin',
-        'kasir' => 'Kasir',
-        'bendahara' => 'Bendahara',
-        'orang_tua' => 'Orang Tua',
+        'admin' => 'Super Admin',
+        'kasir' => 'Petugas',
+        'bendahara' => 'Bendahara Unit',
+        'orang_tua' => 'Wali Santri',
     ];
 
     public const PERMISSIONS = [
-        'dashboard' => 'Dashboard',
-        'students' => 'Manajemen Siswa',
-        'payments' => 'Pembayaran',
-        'bills' => 'Tagihan',
-        'reports' => 'Laporan',
-        'master' => 'Data Master',
-        'settings' => 'Pengaturan Akun',
+        'dashboard.view' => 'Dashboard',
+        'students.view' => 'Manajemen Siswa',
+        'payments.cash.create' => 'Transaksi Cash',
+        'payments.transfer.submit_guardian' => 'Transfer Wali Santri',
+        'payments.verify_transfer' => 'Verifikasi Transfer',
+        'payments.view_own' => 'Riwayat Transaksi Sendiri',
+        'payments.view_unit' => 'Riwayat Transaksi Unit',
+        'bills.view' => 'Tagihan Semua Siswa',
+        'bills.view_unit' => 'Tagihan Unit',
+        'bills.view_guardian' => 'Tagihan Anak Wali',
+        'reports.view' => 'Laporan Semua Unit',
+        'reports.view_unit' => 'Laporan Unit',
+        'reports.export' => 'Export Laporan',
+        'master.manage' => 'Data Master',
+        'users.manage' => 'Data User dan Role',
+        'settings.view' => 'Pengaturan Akun',
     ];
 
     protected $fillable = ['key', 'name', 'description', 'permissions', 'is_active'];
@@ -52,6 +61,17 @@ class Role extends Model
     public static function defaultPermissions(): array
     {
         return array_keys(self::PERMISSIONS);
+    }
+
+    public static function defaultPermissionsFor(string $roleKey): array
+    {
+        return match ($roleKey) {
+            'admin' => self::defaultPermissions(),
+            'kasir' => ['payments.cash.create', 'payments.view_own', 'bills.view', 'settings.view'],
+            'bendahara' => ['dashboard.view', 'payments.view_unit', 'bills.view_unit', 'reports.view_unit', 'settings.view'],
+            'orang_tua' => ['payments.transfer.submit_guardian', 'bills.view_guardian', 'settings.view'],
+            default => [],
+        };
     }
 
     public function permissionLabels(): array
