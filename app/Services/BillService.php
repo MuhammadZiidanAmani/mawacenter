@@ -4,11 +4,13 @@ namespace App\Services;
 
 use App\Models\AcademicYear;
 use App\Models\Bill;
+use App\Models\FeeDiscount;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\SppPayment;
 use App\Models\SppPaymentItem;
 use App\Models\Student;
+use App\Support\PerformanceCache;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +64,7 @@ class BillService
                 }
             }
         });
+        PerformanceCache::bust();
 
         return $result;
     }
@@ -75,7 +78,7 @@ class BillService
 
         DB::transaction(function () use ($academicYear, $endPeriod, $students, $existingKeys, &$result) {
             foreach ($students as $student) {
-                $period = $this->studentBillingStart($student, $academicYear);
+                $period = $this->studentBillingStart($student);
 
                 if ($period->gt($endPeriod)) {
                     $result['skipped']++;
@@ -118,6 +121,53 @@ class BillService
                 }
             }
         });
+        PerformanceCache::bust();
+
+        return $result;
+    }
+
+    public function syncStudentCurrentBills(Student $student, ?int $endYear = null, ?int $endMonth = null): array
+    {
+        $student->loadMissing(['academicYear', 'schoolClass.educationUnit']);
+        $academicYear = $student->academicYear ?? AcademicYear::where('is_active', true)->first();
+
+        if (! $academicYear) {
+            return ['created' => 0, 'existing' => 0, 'skipped' => 1, 'refreshed' => 0];
+        }
+
+        return $this->syncStudentsCurrentBills($academicYear, [$student->id], $endYear, $endMonth);
+    }
+
+    public function syncStudentsCurrentBills(AcademicYear $academicYear, array|Collection $students, ?int $endYear = null, ?int $endMonth = null): array
+    {
+        $studentIds = collect($students)
+            ->map(fn ($student) => $student instanceof Student ? $student->id : (int) $student)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($studentIds->isEmpty()) {
+            return ['created' => 0, 'existing' => 0, 'skipped' => 0, 'refreshed' => 0];
+        }
+
+        $endYear ??= now()->year;
+        $endMonth ??= now()->month;
+        $filters = ['student_ids' => $studentIds->all()];
+        $result = ['created' => 0, 'existing' => 0, 'skipped' => 0, 'refreshed' => 0];
+
+        $this->mergeResult($result, $this->generateSppFromEntryUntil($academicYear, $endYear, $endMonth, $filters));
+
+        $feeTypes = FeeType::where('is_active', true)
+            ->where('creates_bill', true)
+            ->where(function ($query) {
+                $query->whereNull('payment_group')->orWhereNotIn('payment_group', ['spp', 'laundry']);
+            })
+            ->orderBy('name')
+            ->get();
+
+        $this->mergeResult($result, $this->generateFeeTypes($academicYear, $feeTypes, $endYear, $endMonth, $filters));
+        $result['refreshed'] += $this->refreshBillsForStudents($studentIds)->get('updated', 0);
+        PerformanceCache::bust();
 
         return $result;
     }
@@ -152,6 +202,7 @@ class BillService
                 }
             }
         });
+        PerformanceCache::bust();
 
         return $result;
     }
@@ -191,6 +242,7 @@ class BillService
                 }
             }
         });
+        PerformanceCache::bust();
 
         return $result;
     }
@@ -199,7 +251,7 @@ class BillService
     {
         $total = (int) $data['amount'];
 
-        return Bill::create([
+        $bill = Bill::create([
             'student_id' => $student->id,
             'academic_year_id' => $data['academic_year_id'] ?? $student->academic_year_id,
             'source_type' => 'manual',
@@ -216,6 +268,9 @@ class BillService
             'unit_name' => $student->schoolClass?->educationUnit?->name,
             'class_name' => $student->schoolClass?->name,
         ]);
+        PerformanceCache::bust();
+
+        return $bill;
     }
 
     public function payManual(Bill $bill, array $data): Bill
@@ -236,6 +291,7 @@ class BillService
             $bill->allocations()->create(['payment_type' => 'manual', 'payment_id' => $payment->id, 'amount' => $payment->paid_amount]);
             $this->refresh($bill);
         });
+        PerformanceCache::bust();
 
         return $bill->refresh();
     }
@@ -258,6 +314,7 @@ class BillService
                 $this->refresh($bill);
             }
         });
+        PerformanceCache::bust();
     }
 
     public function syncOtherPayment(OtherPayment $payment): void
@@ -282,6 +339,7 @@ class BillService
                 ->delete();
         }
         $this->refresh($bill);
+        PerformanceCache::bust();
     }
 
     public function removePayment(string $type, int $paymentId): void
@@ -291,6 +349,25 @@ class BillService
             $bill->allocations()->where('payment_type', $type)->where('payment_id', $paymentId)->delete();
             $this->refresh($bill);
         }
+        PerformanceCache::bust();
+    }
+
+    public function refreshDiscountBills(FeeDiscount $discount): array
+    {
+        $discount->loadMissing('student.academicYear', 'student.schoolClass.educationUnit');
+        if (! $discount->student) {
+            return ['updated' => 0, 'skipped' => 1];
+        }
+
+        $result = $this->refreshStudentBills($discount->student);
+        $this->syncStudentCurrentBills($discount->student);
+
+        return $result;
+    }
+
+    public function refreshStudentBills(Student $student): array
+    {
+        return $this->refreshBillsForStudents([$student->id])->all();
     }
 
     public function syncAll(): array
@@ -322,6 +399,7 @@ class BillService
             throw ValidationException::withMessages(['bill' => 'Tagihan yang sudah memiliki pembayaran tidak dapat dibatalkan.']);
         }
         $bill->update(['status' => 'Dibatalkan', 'cancel_reason' => $reason]);
+        PerformanceCache::bust();
 
         return $bill->refresh();
     }
@@ -419,6 +497,124 @@ class BillService
             'paid_amount' => $paid, 'remaining_amount' => $remaining,
             'status' => $remaining === 0 ? 'Lunas' : ($paid > 0 ? 'Sebagian' : 'Belum Dibayar'),
         ]);
+    }
+
+    private function refreshBillsForStudents(array|Collection $studentIds): Collection
+    {
+        $result = ['updated' => 0, 'skipped' => 0];
+        $studentIds = collect($studentIds)->map(fn ($id) => (int) $id)->filter()->unique()->values();
+
+        if ($studentIds->isEmpty()) {
+            return collect($result);
+        }
+
+        Bill::with(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType.academicYear'])
+            ->whereIn('student_id', $studentIds)
+            ->where('status', '!=', 'Dibatalkan')
+            ->orderBy('id')
+            ->chunkById(100, function (Collection $bills) use (&$result) {
+                foreach ($bills as $bill) {
+                    if ($this->refreshBillAmount($bill)) {
+                        $result['updated']++;
+                    } else {
+                        $result['skipped']++;
+                    }
+                }
+            });
+
+        PerformanceCache::bust();
+
+        return collect($result);
+    }
+
+    private function refreshBillAmount(Bill $bill): bool
+    {
+        $student = $bill->student;
+        if (! $student) {
+            return false;
+        }
+
+        if ($bill->source_type === 'spp') {
+            if (! $bill->year || ! $bill->month) {
+                return false;
+            }
+            $period = CarbonImmutable::create((int) $bill->year, (int) $bill->month, 1)->startOfMonth();
+            if (! $this->eligible($student, $period) || $this->sppIsIncludedInRegistration($student, (int) $bill->year, (int) $bill->month)) {
+                if ((int) $bill->paid_amount > 0) {
+                    return false;
+                }
+
+                $bill->update([
+                    'remaining_amount' => 0,
+                    'status' => 'Dibatalkan',
+                    'cancel_reason' => 'Tagihan tidak berlaku setelah data siswa diperbarui.',
+                ]);
+
+                return true;
+            }
+
+            $charge = $this->calculator->calculateSppMonth($student, (int) $bill->year, (int) $bill->month);
+            if ($charge['original_amount'] < 1) {
+                return false;
+            }
+
+            $academicYear = $bill->academicYear ?? $student->academicYear;
+            if (! $academicYear) {
+                return false;
+            }
+
+            $bill->update($this->baseBill($student, $academicYear) + [
+                'title' => 'SPP '.$this->monthName((int) $bill->month).' '.$bill->year,
+                'original_amount' => $charge['original_amount'],
+                'discount_amount' => $charge['discount_amount'],
+                'total_amount' => $charge['final_amount'],
+            ]);
+            $this->syncSppBillPayments($bill->refresh());
+
+            return true;
+        }
+
+        if ($bill->source_type === 'fee_type') {
+            $feeType = $bill->feeType;
+            if (! $feeType) {
+                return false;
+            }
+
+            $date = $bill->issue_date?->toImmutable()
+                ?? ($bill->year && $bill->month ? CarbonImmutable::create((int) $bill->year, (int) $bill->month, 1) : now()->toImmutable());
+            $charge = $this->calculator->calculate($student, 'fee_type', $feeType, $date);
+            if ($charge['original_amount'] < 1) {
+                return false;
+            }
+
+            $academicYear = $bill->academicYear ?? $feeType->academicYear ?? $student->academicYear;
+            if (! $academicYear) {
+                return false;
+            }
+
+            $suffix = $bill->month
+                ? ' '.$this->monthName((int) $bill->month).' '.$bill->year
+                : ($this->feePeriod($feeType) === 'Tahunan' ? ' '.$academicYear->name : '');
+            $bill->update($this->baseBill($student, $academicYear) + [
+                'title' => $feeType->name.$suffix,
+                'original_amount' => $charge['original_amount'],
+                'discount_amount' => $charge['discount_amount'],
+                'total_amount' => $charge['final_amount'],
+            ]);
+            $this->syncOtherBillPayments($bill->refresh());
+
+            return true;
+        }
+
+        $academicYear = $bill->academicYear ?? $student->academicYear;
+        if (! $academicYear) {
+            return false;
+        }
+
+        $bill->update($this->baseBill($student, $academicYear));
+        $this->refresh($bill->refresh());
+
+        return true;
     }
 
     private function baseBill(Student $student, AcademicYear $academicYear): array
@@ -525,6 +721,7 @@ class BillService
     {
         return Student::with(['academicYear', 'schoolClass.educationUnit'])
             ->where('academic_year_id', $academicYear->id)
+            ->when($filters['student_ids'] ?? null, fn ($query, $ids) => $query->whereIn('id', $ids))
             ->when($filters['unit_id'] ?? null, fn ($query, $id) => $query->whereHas('schoolClass', fn ($class) => $class->where('education_unit_id', $id)))
             ->when($filters['class_id'] ?? null, fn ($query, $id) => $query->where('school_class_id', $id))
             ->when($filters['student_id'] ?? null, fn ($query, $id) => $query->where('id', $id))
@@ -540,32 +737,10 @@ class BillService
             ->when($filters['nis'] ?? null, fn ($query, $nis) => $query->where('nis', 'like', '%'.trim($nis).'%'));
     }
 
-    private function studentBillingStart(Student $student, AcademicYear $academicYear): CarbonImmutable
+    private function studentBillingStart(Student $student): CarbonImmutable
     {
         if ($student->billing_start_date) {
             return CarbonImmutable::parse($student->billing_start_date)->startOfMonth();
-        }
-
-        $academicStart = $this->sppStartForAcademicYear($academicYear);
-        $entryStart = $student->entry_date
-            ? CarbonImmutable::parse($student->entry_date)->startOfMonth()
-            : null;
-
-        if ($entryStart && $entryStart->greaterThan($academicStart)) {
-            return $entryStart;
-        }
-
-        return $academicStart;
-    }
-
-    private function sppStartForAcademicYear(?AcademicYear $academicYear): CarbonImmutable
-    {
-        if ($academicYear && preg_match('/^(\d{4})\/\d{4}$/', (string) $academicYear->name, $matches)) {
-            return CarbonImmutable::create((int) $matches[1], 7, 1)->startOfMonth();
-        }
-
-        if ($academicYear?->start_date) {
-            return CarbonImmutable::parse($academicYear->start_date)->startOfMonth();
         }
 
         return CarbonImmutable::parse(self::DEFAULT_BILLING_START_DATE)->startOfMonth();
@@ -573,7 +748,7 @@ class BillService
 
     private function eligible(Student $student, CarbonImmutable $month): bool
     {
-        $startDate = $this->studentBillingStart($student, $student->academicYear ?? new AcademicYear);
+        $startDate = $this->studentBillingStart($student);
 
         return $startDate->lte($month->endOfMonth())
             && (! $student->exit_date || $student->exit_date->gte($month->startOfMonth()));
@@ -603,5 +778,12 @@ class BillService
     private function monthName(int $month): string
     {
         return ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][$month];
+    }
+
+    private function mergeResult(array &$base, array $addition): void
+    {
+        foreach (['created', 'existing', 'skipped'] as $key) {
+            $base[$key] += $addition[$key] ?? 0;
+        }
     }
 }

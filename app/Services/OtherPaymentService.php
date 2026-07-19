@@ -63,6 +63,7 @@ class OtherPaymentService
             'transfer_proof_path' => $data['transfer_proof_path'] ?? null,
             'status' => $data['status'],
             'operator_name' => $data['operator_name'] ?? null,
+            'operator_user_id' => $data['operator_user_id'] ?? null,
             'import_source' => $data['import_source'] ?? null,
             'import_key' => $data['import_key'] ?? null,
             'original_amount' => $quote['original_amount'],

@@ -50,19 +50,15 @@
         @if($canAccess('payments.verify_transfer'))
         <a href="{{ route('finance.transfer-verifications.index') }}" class="nav-item {{ $activeMenu === 'transfer-verification' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>Verifikasi Transfer</span></a>
         @endif
-        @if($canAccess('bills.view') || $canAccess('bills.view_unit'))
+        @if($canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))
         <a href="{{ route('finance.bills.index') }}" class="nav-item {{ $activeMenu === 'bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan</span></a>
-        @endif
-        @if($canAccess('bills.view_guardian'))
-        <a href="{{ route('guardian.bills.index') }}" class="nav-item {{ $activeMenu === 'guardian-bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan Anak</span></a>
         @endif
         @if($canAccess('reports.view') || $canAccess('reports.view_unit'))
         <div class="nav-group nested-nav {{ $reportOpen ? 'open' : '' }}">
             <button type="button" class="nav-item nav-parent {{ $reportOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $reportOpen ? 'true' : 'false' }}">{!! $sidebarIcon('chart') !!}<span>Laporan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
-                <a href="{{ route('reports.transactions') }}" class="{{ $activeReportMenu === 'transactions' ? 'active' : '' }}">{!! $sidebarIcon('chart') !!}<span>Laporan Transaksi</span></a>
+                <a href="{{ route('reports.transactions') }}" class="{{ $activeReportMenu === 'transactions' ? 'active' : '' }}">{!! $sidebarIcon('chart') !!}<span>Semua Transaksi</span></a>
                 <a href="{{ route('reports.monthly_spp') }}" class="{{ $activeReportMenu === 'monthly-spp' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>SPP Perbulan</span></a>
-                <a href="{{ route('reports.outstanding_spp') }}" class="{{ $activeReportMenu === 'outstanding-spp' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>SPP Belum Bayar</span></a>
                 <a href="{{ route('reports.yearly_spp') }}" class="{{ $activeReportMenu === 'yearly-spp' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>SPP Tahun Pelajaran</span></a>
                 <a href="{{ route('reports.unit_recap') }}" class="{{ $activeReportMenu === 'unit-recap' ? 'active' : '' }}">{!! $sidebarIcon('database') !!}<span>Rekap Per Unit</span></a>
             </div>

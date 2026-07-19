@@ -2,6 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\AcademicYear;
+use App\Models\EducationUnit;
+use App\Models\SchoolClass;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,7 +17,12 @@ class AuthTest extends TestCase
     public function test_guest_is_redirected_to_login(): void
     {
         $this->get('/')->assertRedirect('/login');
-        $this->get('/login')->assertOk()->assertSee('Sistem Manajemen Keuangan');
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee("MA'WA", false)
+            ->assertSee('Petugas')
+            ->assertSee('Bendahara')
+            ->assertSee('Wali Santri');
     }
 
     public function test_user_can_login_and_logout(): void
@@ -50,5 +59,56 @@ class AuthTest extends TestCase
         ])->assertSessionHasErrors('username');
 
         $this->assertGuest();
+    }
+
+    public function test_guardian_can_login_with_unit_and_nis_without_password(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'MTs Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7A', 'level' => 7, 'is_active' => true]);
+        $student = Student::create([
+            'nis' => '260001',
+            'name' => 'Siswa Wali',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'entry_date' => '2025-07-01',
+            'is_active' => true,
+        ]);
+        $guardian = User::factory()->create(['role' => 'orang_tua']);
+        $guardian->guardianStudents()->attach($student->id);
+
+        $this->post('/login', [
+            'login_type' => 'wali',
+            'guardian_unit_id' => $unit->id,
+            'username' => '260001',
+        ])->assertRedirect('/keuangan/tagihan');
+
+        $this->assertAuthenticatedAs($guardian);
+    }
+
+    public function test_guardian_login_auto_creates_linked_account_from_valid_unit_and_nis(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PAUD', 'name' => 'PAUD Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'A1', 'level' => 1, 'is_active' => true]);
+        Student::create([
+            'nis' => '240289',
+            'name' => 'Siswa PAUD',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'entry_date' => '2025-07-01',
+            'is_active' => true,
+        ]);
+
+        $this->post('/login', [
+            'login_type' => 'wali',
+            'guardian_unit_id' => $unit->id,
+            'username' => '240289',
+        ])->assertRedirect('/keuangan/tagihan');
+
+        $this->assertAuthenticated();
+        $this->assertAuthenticatedAs(User::where('username', 'wali-paud-240289')->first());
     }
 }

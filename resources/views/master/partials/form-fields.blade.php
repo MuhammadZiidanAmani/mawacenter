@@ -77,12 +77,12 @@
     @php($selectedPaymentGroup = old('payment_group', 'spp'))
     <div class="fee-type-simple span-2">
         <label class="fee-type-simple-field">
-            <span>Nama Kategori Pembayaran</span>
+            <span>Nama Pembayaran</span>
             <input name="name" required value="{{ old('name') }}" placeholder="" autocomplete="off">
         </label>
 
         <label class="fee-type-simple-field fee-type-simple-short">
-            <span>Jenis Pembayaran</span>
+            <span>Kategori Pembayaran</span>
             <select name="payment_group" required data-fee-category>
                 <option value="spp" @selected($selectedPaymentGroup === 'spp')>SPP</option>
                 <option value="daftar-ulang" @selected($selectedPaymentGroup === 'daftar-ulang')>Daftar Ulang</option>

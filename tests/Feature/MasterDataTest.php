@@ -1061,6 +1061,9 @@ class MasterDataTest extends TestCase
         unlink($path);
 
         $preview = $this->post('/keuangan/pembayaran/spp/import/preview', [
+            'unit_id' => $unit->id,
+            'month' => 1,
+            'year' => 2026,
             'file' => UploadedFile::fake()->createWithContent('laporan-spp.xlsx', $workbook),
         ]);
 
@@ -1117,6 +1120,9 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseCount('spp_payment_items', 2);
 
         $duplicatePreview = $this->post('/keuangan/pembayaran/spp/import/preview', [
+            'unit_id' => $unit->id,
+            'month' => 1,
+            'year' => 2026,
             'file' => UploadedFile::fake()->createWithContent('laporan-spp.xlsx', $workbook),
         ]);
         $duplicatePreview->assertOk();
@@ -1148,7 +1154,11 @@ class MasterDataTest extends TestCase
         ]);
 
         try {
-            $preview = app(SppPaymentImportService::class)->preview($path, 'laporan-spp-mts.xlsx');
+            $preview = app(SppPaymentImportService::class)->preview($path, 'laporan-spp-mts.xlsx', [
+                'unit_id' => $unit->id,
+                'month' => 8,
+                'year' => 2025,
+            ]);
         } finally {
             @unlink($path);
         }
@@ -1579,17 +1589,18 @@ class MasterDataTest extends TestCase
         ]);
     }
 
-    public function test_spp_generation_defaults_to_july_2025_for_old_students(): void
+    public function test_spp_generation_uses_default_july_2025_when_billing_start_is_empty(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'start_date' => '2025-07-01', 'end_date' => '2026-06-30', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'PAUD', 'name' => 'PAUD', 'is_active' => true]);
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'Kelompok Bermain', 'level' => 'Kelas KB']);
-        $student = Student::create(['nis' => '7501', 'name' => 'Siswa Lama', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'entry_date' => '2023-01-10', 'is_active' => true]);
+        $student = Student::create(['nis' => '7501', 'name' => 'Siswa Lama', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'entry_date' => '2024-08-10', 'is_active' => true]);
         $this->createSppCategory($unit, 100000);
 
         app(BillService::class)->generateSppFromEntryUntil($year, 2025, 8);
 
-        $this->assertDatabaseMissing('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2025, 'month' => 6]);
+        $this->assertDatabaseMissing('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2024, 'month' => 7]);
+        $this->assertDatabaseMissing('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2024, 'month' => 8]);
         $this->assertDatabaseHas('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2025, 'month' => 7]);
         $this->assertDatabaseHas('bills', ['student_id' => $student->id, 'source_type' => 'spp', 'year' => 2025, 'month' => 8]);
     }

@@ -79,6 +79,7 @@
                 </form>
             </section>
         </main>
+        @include('partials.app-footer')
     </div>
 </div>
 </body>

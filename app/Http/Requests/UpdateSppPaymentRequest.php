@@ -28,9 +28,12 @@ class UpdateSppPaymentRequest extends FormRequest
         return [
             'transaction_date' => ['required', 'date'],
             'transaction_time' => ['required', 'date_format:H:i:s'],
+            'student_id' => ['sometimes', 'required', 'exists:students,id'],
+            'month_count' => ['sometimes', 'required', 'integer', 'min:1', 'max:120'],
             'payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
             'status' => ['required', Rule::in(['Diterima', 'Pending'])],
             'paid_amount' => ['sometimes', 'required', 'integer', 'min:0'],
+            'transfer_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ];
     }
 }

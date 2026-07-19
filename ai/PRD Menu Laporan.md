@@ -4,7 +4,7 @@
 
 Menu Laporan menjadi pusat kontrol keuangan untuk admin dan bendahara. Halaman ini harus membantu pengguna melihat transaksi masuk, status SPP bulanan, tunggakan SPP, rekap SPP satu tahun pelajaran, dan rekap penerimaan per unit pendidikan.
 
-PRD ini menggantikan arah lama yang memisahkan "Transaksi Harian" dan "Riwayat Pembayaran". Keduanya digabung menjadi satu halaman **Laporan Transaksi** agar menu lebih ringkas dan tidak dobel fungsi.
+PRD ini menggantikan arah lama yang memisahkan "Transaksi Harian" dan "Riwayat Pembayaran". Keduanya digabung menjadi satu halaman **Semua Transaksi** agar menu lebih ringkas dan tidak dobel fungsi.
 
 Semua halaman laporan wajib mengikuti [standar aplikasi.md](standar aplikasi.md), terutama standar spacing, card filter, tabel compact 40px, tombol, warna, dan responsif mobile.
 
@@ -34,15 +34,15 @@ Semua halaman laporan wajib mengikuti [standar aplikasi.md](standar aplikasi.md)
 
 Sidebar Laporan:
 
-1. Laporan Transaksi
+1. Semua Transaksi
 2. SPP Perbulan
 3. SPP Belum Bayar
 4. SPP Tahun Pelajaran
 5. Rekap Per Unit
 
-Menu **Riwayat Pembayaran** tidak dibuat submenu terpisah karena fungsinya masuk ke **Laporan Transaksi**.
+Menu **Riwayat Pembayaran** tidak dibuat submenu terpisah karena fungsinya masuk ke **Semua Transaksi**.
 
-## Halaman 1: Laporan Transaksi
+## Halaman 1: Semua Transaksi
 
 ### Tujuan
 
@@ -495,7 +495,7 @@ app/Exports/Reports/UnitRecapReportExport.php
 
 Tambahkan test feature untuk:
 
-- Laporan Transaksi menampilkan transaksi SPP dan pembayaran lain.
+- Semua Transaksi menampilkan transaksi SPP dan pembayaran lain.
 - Filter unit/kelas/siswa bekerja.
 - SPP Perbulan menampilkan status Lunas, Sebagian, dan Belum Bayar.
 - SPP Belum Bayar hanya menampilkan `remaining_amount > 0`.
@@ -508,8 +508,8 @@ Tambahkan test feature untuk:
 1. Rapikan sidebar dan route laporan.
 2. Buat `ReportQueryService`.
 3. Buat komponen/pola layout laporan mengikuti standar aplikasi.
-4. Implementasi Laporan Transaksi.
-5. Implementasi export XLSX/PDF Laporan Transaksi.
+4. Implementasi Semua Transaksi.
+5. Implementasi export XLSX/PDF Semua Transaksi.
 6. Implementasi SPP Perbulan.
 7. Implementasi export XLSX/PDF SPP Perbulan.
 8. Implementasi SPP Belum Bayar.
@@ -524,13 +524,13 @@ Tambahkan test feature untuk:
 
 Prioritas pengerjaan:
 
-1. Laporan Transaksi
+1. Semua Transaksi
 2. SPP Perbulan
 3. SPP Belum Bayar
 4. SPP Tahun Pelajaran
 5. Rekap Per Unit
 
-Alasannya: Laporan Transaksi dan SPP Perbulan adalah kebutuhan harian bendahara. SPP Belum Bayar mendukung penagihan. SPP Tahun Pelajaran dan Rekap Per Unit lebih cocok untuk evaluasi dan laporan pimpinan.
+Alasannya: Semua Transaksi dan SPP Perbulan adalah kebutuhan harian bendahara. SPP Belum Bayar mendukung penagihan. SPP Tahun Pelajaran dan Rekap Per Unit lebih cocok untuk evaluasi dan laporan pimpinan.
 
 ## Kriteria Selesai
 

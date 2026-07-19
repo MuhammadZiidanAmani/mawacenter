@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\AppSetting;
+use App\Models\Bill;
 use App\Models\EducationUnit;
 use App\Models\FeeType;
+use App\Models\GuardianTransferRequest;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Services\BillQueryService;
@@ -19,6 +22,8 @@ class BillController extends Controller
     {
         [$year, $untilMonth] = $this->period($request);
         $status = $this->statusFilter($request);
+        $user = $request->user();
+        $isGuardian = $user?->isGuardian() ?? false;
         $filters = [
             'unit_id' => $request->integer('unit_id') ?: null,
             'class_id' => $request->integer('class_id') ?: null,
@@ -31,6 +36,39 @@ class BillController extends Controller
             'search' => $request->string('search')->value() ?: null,
         ];
         $this->applyUserScope($request, $filters);
+        $guardianStudents = collect();
+        $guardianBills = collect();
+        $guardianTransfers = collect();
+        $selectedGuardianStudentId = null;
+        if ($isGuardian) {
+            $studentIds = $user->accessibleStudentIds() ?? [];
+            $guardianStudents = Student::with('schoolClass.educationUnit')
+                ->whereIn('id', $studentIds)
+                ->orderBy('name')
+                ->get();
+            $selectedGuardianStudentId = $request->integer('student_id') ?: $guardianStudents->first()?->id;
+            if ($selectedGuardianStudentId && ! in_array((int) $selectedGuardianStudentId, $studentIds, true)) {
+                abort(403, 'Anda tidak memiliki akses ke tagihan siswa ini.');
+            }
+            $filters['student_id'] = $selectedGuardianStudentId;
+            $filters['status'] = 'outstanding';
+            $guardianBills = Bill::with(['feeType:id,name', 'student.schoolClass.educationUnit'])
+                ->whereIn('student_id', $studentIds)
+                ->when($selectedGuardianStudentId, fn ($query) => $query->where('student_id', $selectedGuardianStudentId))
+                ->where('status', '!=', 'Dibatalkan')
+                ->where('remaining_amount', '>', 0)
+                ->orderBy('student_id')
+                ->orderByRaw("CASE WHEN source_type = 'spp' THEN 0 ELSE 1 END")
+                ->orderBy('year')
+                ->orderBy('month')
+                ->orderBy('title')
+                ->get();
+            $guardianTransfers = GuardianTransferRequest::with('student.schoolClass.educationUnit', 'verifier:id,name')
+                ->where('user_id', $user->id)
+                ->latest()
+                ->limit(20)
+                ->get();
+        }
         $sort = in_array($request->string('sort')->value(), ['name', 'nis', 'unit', 'class', 'total'], true)
             ? $request->string('sort')->value()
             : 'name';
@@ -51,6 +89,12 @@ class BillController extends Controller
             'untilMonth' => $untilMonth,
             'overviewStats' => $bills->stats($year, $untilMonth, $overviewFilters),
             'unitSummaries' => $bills->unitBreakdown($year, $untilMonth, $overviewFilters),
+            'isGuardianView' => $isGuardian,
+            'guardianStudents' => $guardianStudents,
+            'selectedGuardianStudentId' => $selectedGuardianStudentId,
+            'guardianBills' => $guardianBills,
+            'guardianTransfers' => $guardianTransfers,
+            'transferAccount' => $this->transferAccount(),
             'educationUnits' => EducationUnit::where('is_active', true)
                 ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
                 ->orderByRaw($this->educationUnitOrderExpression())->orderBy('name')->get(),
@@ -69,9 +113,17 @@ class BillController extends Controller
     {
         [$year, $untilMonth] = $this->period($request);
         $student->load('schoolClass.educationUnit');
-        $unitIds = $request->user()?->accessibleUnitIds();
-        if (is_array($unitIds) && ! in_array((int) $student->schoolClass?->education_unit_id, $unitIds, true)) {
-            abort(403, 'Anda tidak memiliki akses ke tagihan siswa ini.');
+        $user = $request->user();
+        if ($user?->isGuardian()) {
+            $studentIds = $user->accessibleStudentIds() ?? [];
+            if (! in_array((int) $student->id, $studentIds, true)) {
+                abort(403, 'Anda tidak memiliki akses ke tagihan siswa ini.');
+            }
+        } else {
+            $unitIds = $user?->accessibleUnitIds();
+            if (is_array($unitIds) && ! in_array((int) $student->schoolClass?->education_unit_id, $unitIds, true)) {
+                abort(403, 'Anda tidak memiliki akses ke tagihan siswa ini.');
+            }
         }
         $statement = $bills->statement($student, $year, $untilMonth);
         $issuedAt = now();
@@ -124,7 +176,18 @@ class BillController extends Controller
 
     private function applyUserScope(Request $request, array &$filters): void
     {
-        $unitIds = $request->user()?->accessibleUnitIds();
+        $user = $request->user();
+        if ($user?->isGuardian()) {
+            $studentIds = $user->accessibleStudentIds() ?? [];
+            $filters['student_ids'] = $studentIds;
+            if ($filters['student_id'] && ! in_array((int) $filters['student_id'], $studentIds, true)) {
+                abort(403, 'Anda tidak memiliki akses ke tagihan siswa ini.');
+            }
+
+            return;
+        }
+
+        $unitIds = $user?->accessibleUnitIds();
         if (is_array($unitIds)) {
             $filters['unit_ids'] = $unitIds;
             if ($filters['unit_id'] && ! in_array((int) $filters['unit_id'], $unitIds, true)) {
@@ -169,6 +232,21 @@ class BillController extends Controller
     private function educationUnitOrderExpression(): string
     {
         return "CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END";
+    }
+
+    private function transferAccount(): array
+    {
+        $settings = AppSetting::values([
+            'transfer_bank_name' => 'Bank belum diatur',
+            'transfer_account_number' => '-',
+            'transfer_account_name' => "MA'WA CENTER",
+        ]);
+
+        return [
+            'bank_name' => $settings['transfer_bank_name'] ?: 'Bank belum diatur',
+            'account_number' => $settings['transfer_account_number'] ?: '-',
+            'account_name' => $settings['transfer_account_name'] ?: "MA'WA CENTER",
+        ];
     }
 
     private function terbilangRupiah(int $amount): string

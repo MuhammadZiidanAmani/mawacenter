@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BillController;
+use App\Http\Controllers\GuardianPortalController;
 use App\Http\Controllers\OtherPaymentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SppPaymentController;
@@ -51,6 +52,7 @@ Route::prefix('keuangan/tagihan')->name('finance.bills.')->controller(BillContro
     Route::get('/siswa/{student}', 'show')->name('show');
     Route::post('/sync', 'sync')->name('sync');
 });
+Route::post('keuangan/tagihan/transfer', [GuardianPortalController::class, 'store'])->name('finance.bills.transfer');
 
 Route::prefix('keuangan/verifikasi-transfer')->name('finance.transfer-verifications.')->controller(TransferVerificationController::class)->group(function () {
     Route::get('/', 'index')->name('index');

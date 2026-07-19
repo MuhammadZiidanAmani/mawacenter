@@ -11,7 +11,7 @@ class OtherPayment extends Model
     protected $fillable = [
         'student_id', 'fee_type_id', 'transaction_at', 'payment_method', 'transfer_proof_path', 'status',
         'original_amount', 'discount_amount', 'total_amount', 'paid_amount',
-        'remaining_amount', 'payment_status', 'operator_name', 'import_source', 'import_key',
+        'remaining_amount', 'payment_status', 'operator_name', 'operator_user_id', 'import_source', 'import_key',
     ];
 
     protected function casts(): array
@@ -29,6 +29,11 @@ class OtherPayment extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function operatorUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'operator_user_id');
     }
 
     public function feeType(): BelongsTo

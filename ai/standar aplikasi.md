@@ -85,6 +85,7 @@ Kombinasi penggunaan:
 - 14px / 700 untuk tombol, badge, status, chip, header tabel, dan aksi kecil yang harus jelas.
 - 16px / 500 untuk item penting yang masih bersifat isi, misalnya nama pada list, nominal biasa, atau ringkasan penting.
 - 16px / 700 untuk nama siswa, nama tagihan, judul card kecil, judul item, dan teks utama di dalam komponen.
+- 20px / 500 untuk pilihan role/akses login dan teks utama yang perlu terlihat besar tetapi tidak sekuat judul.
 - 20px / 700 untuk judul halaman utama, total besar, nominal utama, dan angka ringkasan yang menjadi fokus.
 
 Aturan pembatas:
@@ -273,7 +274,11 @@ Standar tabel data compact Data Siswa:
 - Kolom teks utama seperti Nama boleh font 14px / 700 dan warna #004528 agar mudah dipindai.
 - Header semua kolom rata tengah, termasuk header Nama. Isi kolom Nama tetap rata kiri agar nama panjang mudah dibaca.
 - Kolom angka pendek, kode, JK, unit, kelas, dan aksi rata tengah.
-- Garis pemisah antar baris boleh dipakai tipis, tetapi baris terakhir/tabel paling bawah tidak boleh memiliki garis penutup agar tampilan list berakhir bersih.
+- Tabel compact Data Siswa menjadi standar garis tabel: tidak memakai garis vertikal, tidak memakai border luar tabel, dan hanya memakai garis horizontal tipis antar baris.
+- Garis horizontal isi baris memakai `border-bottom: 1px solid #eef2f7`.
+- Header tabel memakai background #f8faf7, teks #475569, dan garis bawah header `border-bottom: 1px solid #dbe5dd`.
+- Hover baris memakai background #fbfdf8 dan boleh mengubah warna garis bawah menjadi #dfe8df.
+- Baris terakhir/tabel paling bawah wajib `border-bottom: 0` agar tampilan list berakhir bersih tanpa garis penutup.
 - Pada desktop, tabel Data Master tidak boleh memunculkan garis/scrollbar horizontal di bagian paling bawah. Gunakan width 100%, min-width 0, dan overflow-x hidden pada wrapper. Horizontal scroll hanya boleh aktif pada layar mobile/sempit.
 - Header Data Siswa memakai label ringkas: No, NIS, Nama, JK, Unit, Kelas, Aksi.
 - Isi JK memakai singkatan L untuk Laki-Laki dan P untuk Perempuan agar kolom Nama lebih fleksibel.
@@ -413,7 +418,7 @@ Standar:
 
 Nominal dan Keuangan
 
-Nominal biasa memakai #020617, ukuran 14px sampai 16px, weight 600.
+Nominal biasa memakai #020617, ukuran 14px sampai 16px, weight 500.
 
 Nominal penting atau total boleh memakai #004528 atau #020617, ukuran 20px, weight 700.
 
@@ -454,6 +459,15 @@ Aturan mobile:
 Standar Halaman Transaksi dan Pembayaran
 
 Halaman transaksi harus operasional dan langsung usable. Jangan membuat landing page atau hero.
+
+Standar import SPP bulanan:
+- Import SPP dilakukan per Unit Pendidikan, Bulan, dan Tahun dari form sebelum file Excel dipreview.
+- Field konteks import SPP wajib: Unit Pendidikan, Bulan, Tahun, dan File Excel.
+- Unit Pendidikan, Bulan, dan Tahun pada form menjadi sumber utama periode import.
+- Kolom Unit Pendidikan, Bulan, dan Tahun di Excel boleh tetap ada, tetapi hanya dipakai sebagai validasi silang. Jika nilainya berbeda dengan pilihan form, baris wajib ditolak.
+- Jika Excel tidak memiliki kolom Unit Pendidikan, Bulan, atau Tahun, import tetap berjalan memakai konteks dari form.
+- Kolom minimal Excel untuk import SPP: NIS, Nama, Cara bayar, Waktu, dan Nominal. Kolom Petugas boleh opsional.
+- Form import mengikuti standar form: label di atas field, tinggi field 40px, radius 8px, border #d1d5db, gap antar field 12px, dan tombol Preview memakai tombol primer #004528.
 
 Alur pembayaran:
 - Cari siswa

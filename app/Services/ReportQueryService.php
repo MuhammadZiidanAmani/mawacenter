@@ -5,10 +5,13 @@ namespace App\Services;
 use App\Models\AcademicYear;
 use App\Models\Bill;
 use App\Models\EducationUnit;
+use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\SchoolClass;
 use App\Models\SppPayment;
+use App\Models\SppPaymentItem;
 use App\Models\Student;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -42,14 +45,11 @@ class ReportQueryService
                 ->orderByRaw($this->educationUnitOrderExpression())
                 ->orderBy('school_classes.name')
                 ->get(),
-            'operators' => SppPayment::query()
-                ->whereNotNull('operator_name')
-                ->where('operator_name', '!=', '')
-                ->pluck('operator_name')
-                ->concat(OtherPayment::query()->whereNotNull('operator_name')->where('operator_name', '!=', '')->pluck('operator_name'))
-                ->unique()
-                ->sort()
-                ->values(),
+            'feeTypes' => FeeType::with('educationUnit:id,code,name')
+                ->orderBy('name')
+                ->get(['id', 'name', 'education_unit_id', 'payment_group']),
+            'operators' => $this->operatorOptions(),
+            'years' => $this->reportYearOptions(),
         ];
     }
 
@@ -59,16 +59,22 @@ class ReportQueryService
         $academicYearId = $request->integer('academic_year_id') ?: $activeYear?->id;
         $month = $request->integer('month') ?: now()->month;
         $untilMonth = $request->integer('until_month') ?: now()->month;
+        $month = $month >= 1 && $month <= 12 ? $month : now()->month;
+        $academicPeriod = collect($this->academicMonths($activeYear))->firstWhere('month', $month);
+        $defaultSppYear = (int) ($academicPeriod['year'] ?? now()->year);
+        $year = $request->integer('year') ?: $defaultSppYear;
 
         return [
             'date_from' => $this->filterDate($request, 'date_from') ?? $this->filterDate($request, 'start_date') ?? CarbonImmutable::now()->startOfMonth()->startOfDay(),
             'date_to' => $this->filterDate($request, 'date_to', true) ?? $this->filterDate($request, 'end_date', true) ?? CarbonImmutable::now()->endOfDay(),
             'academic_year_id' => $academicYearId,
-            'month' => $month >= 1 && $month <= 12 ? $month : now()->month,
+            'month' => $month,
+            'year' => $year >= 2000 && $year <= 2100 ? $year : $defaultSppYear,
             'until_month' => $untilMonth >= 1 && $untilMonth <= 12 ? $untilMonth : now()->month,
             'unit_id' => $request->integer('unit_id') ?: null,
             'class_id' => $request->integer('class_id') ?: null,
             'type' => in_array($request->string('type')->value(), ['spp', 'daftar-ulang', 'laundry', 'lain-lain'], true) ? $request->string('type')->value() : null,
+            'fee_type_id' => $request->integer('fee_type_id') ?: null,
             'payment_method' => in_array($request->string('payment_method')->value(), ['Cash', 'Transfer'], true) ? $request->string('payment_method')->value() : null,
             'payment_status' => in_array($request->string('payment_status')->value(), ['Diterima', 'Pending'], true) ? $request->string('payment_status')->value() : null,
             'spp_status' => in_array($request->string('spp_status')->value(), ['paid', 'partial', 'unpaid'], true) ? $request->string('spp_status')->value() : null,
@@ -101,7 +107,8 @@ class ReportQueryService
                 ['key' => 'transactions', 'label' => 'Jumlah Transaksi', 'type' => 'number'],
                 ['key' => 'amount', 'label' => 'Total Penerimaan', 'type' => 'money'],
             ],
-            'summaryRows' => $this->transactionUnitSummary($accepted),
+            'summaryRows' => $this->transactionUnitSummary($accepted, $filters),
+            'chartData' => $this->transactionChartData($accepted, $filters),
         ];
     }
 
@@ -115,9 +122,20 @@ class ReportQueryService
             ->whereIn('student_id', $students->pluck('id')->all())
             ->get()
             ->keyBy('student_id');
+        $paymentItems = SppPaymentItem::with('payment.operatorUser')
+            ->where('year', $period['year'])
+            ->where('month', $period['month'])
+            ->whereIn('student_id', $students->pluck('id')->all())
+            ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
+            ->get()
+            ->groupBy('student_id');
 
-        $rows = $students->map(function (Student $student) use ($bills, $period) {
+        $rows = $students->map(function (Student $student) use ($bills, $paymentItems, $period) {
             $bill = $bills->get($student->id);
+            $studentPaymentItems = $paymentItems->get($student->id, collect());
+            $latestPaymentItem = $studentPaymentItems
+                ->sortByDesc(fn (SppPaymentItem $item) => $item->payment?->transaction_at?->timestamp ?? 0)
+                ->first();
             $status = $this->sppStatus($bill?->total_amount ?? 0, $bill?->paid_amount ?? 0, $bill?->remaining_amount ?? 0);
 
             return [
@@ -127,10 +145,23 @@ class ReportQueryService
                 'unit' => $student->schoolClass?->educationUnit?->code ?? '-',
                 'unit_name' => $student->schoolClass?->educationUnit?->name ?? 'Tanpa Unit',
                 'class' => $student->schoolClass?->name ?? '-',
-                'month' => self::MONTHS[$period['month']].' '.$period['year'],
+                'month' => self::MONTHS[$period['month']],
+                'year' => (int) $period['year'],
                 'billed' => (int) ($bill?->total_amount ?? 0),
                 'paid' => (int) ($bill?->paid_amount ?? 0),
                 'remaining' => (int) ($bill?->remaining_amount ?? 0),
+                'operator' => $studentPaymentItems
+                    ->map(fn (SppPaymentItem $item) => $item->payment ? $this->paymentOperatorName($item->payment) : null)
+                    ->filter()
+                    ->unique()
+                    ->join(', ') ?: '-',
+                'method' => $studentPaymentItems
+                    ->map(fn (SppPaymentItem $item) => $item->payment?->payment_method)
+                    ->filter()
+                    ->unique()
+                    ->join(', ') ?: '-',
+                'payment_time' => $latestPaymentItem?->payment?->transaction_at?->format('Y-m-d H:i:s') ?? '-',
+                'nominal' => (int) $studentPaymentItems->sum('paid_amount'),
                 'status' => $status,
                 'status_key' => $this->sppStatusKey($status),
             ];
@@ -140,7 +171,7 @@ class ReportQueryService
             'rows' => $rows,
             'summaryCards' => [
                 ['label' => 'Jumlah Siswa', 'value' => $rows->count(), 'type' => 'number'],
-                ['label' => 'Sudah Bayar', 'value' => $rows->where('status_key', 'paid')->count(), 'type' => 'number'],
+                ['label' => 'Lunas', 'value' => $rows->where('status_key', 'paid')->count(), 'type' => 'number'],
                 ['label' => 'Sebagian', 'value' => $rows->where('status_key', 'partial')->count(), 'type' => 'number'],
                 ['label' => 'Belum Bayar', 'value' => $rows->where('status_key', 'unpaid')->count(), 'type' => 'number'],
                 ['label' => 'Total Terbayar', 'value' => (int) $rows->sum('paid'), 'type' => 'money'],
@@ -150,13 +181,14 @@ class ReportQueryService
                 ['key' => 'no', 'label' => 'No'],
                 ['key' => 'unit', 'label' => 'Unit Pendidikan'],
                 ['key' => 'students', 'label' => 'Jumlah Siswa', 'type' => 'number'],
-                ['key' => 'paid_count', 'label' => 'Sudah Bayar', 'type' => 'number'],
+                ['key' => 'paid_count', 'label' => 'Lunas', 'type' => 'number'],
                 ['key' => 'partial_count', 'label' => 'Sebagian', 'type' => 'number'],
                 ['key' => 'unpaid_count', 'label' => 'Belum Bayar', 'type' => 'number'],
                 ['key' => 'paid', 'label' => 'Total Terbayar', 'type' => 'money'],
                 ['key' => 'remaining', 'label' => 'Total Tunggakan', 'type' => 'money'],
             ],
             'summaryRows' => $this->monthlySppUnitSummary($rows),
+            'chartData' => $this->monthlySppChartData($rows),
         ];
     }
 
@@ -328,7 +360,10 @@ class ReportQueryService
             return $query->whereBetween('transaction_at', [$filters['date_from'], $filters['date_to']])
                 ->when($filters['payment_method'], fn ($query, $method) => $query->where('payment_method', $method))
                 ->when($filters['payment_status'], fn ($query, $status) => $query->where('status', $status))
-                ->when($filters['operator_name'], fn ($query, $operator) => $query->where('operator_name', $operator))
+                ->when($filters['operator_name'], fn ($query, $operator) => $query->where(function ($query) use ($operator) {
+                    $query->whereHas('operatorUser', fn ($query) => $query->where('name', $operator))
+                        ->orWhere(fn ($query) => $query->whereNull('operator_user_id')->where('operator_name', $operator));
+                }))
                 ->when($filters['unit_id'], fn ($query, $unit) => $query->whereHas('student.schoolClass', fn ($query) => $query->where('education_unit_id', $unit)))
                 ->when($filters['unit_ids'] ?? null, fn ($query, $units) => $query->whereHas('student.schoolClass', fn ($query) => $query->whereIn('education_unit_id', $units)))
                 ->when($filters['class_id'], fn ($query, $class) => $query->whereHas('student', fn ($query) => $query->where('school_class_id', $class)))
@@ -337,9 +372,11 @@ class ReportQueryService
         };
 
         $spp = collect();
-        if (! $filters['type'] || $filters['type'] === 'spp') {
-            $spp = $filterPayment(SppPayment::with('student.schoolClass.educationUnit'))->get()->map(fn (SppPayment $payment) => $this->paymentRow(
+        if ((! $filters['type'] || $filters['type'] === 'spp') && ! $filters['fee_type_id']) {
+            $spp = $filterPayment(SppPayment::with(['student.schoolClass.educationUnit', 'operatorUser', 'items']))->get()->map(fn (SppPayment $payment) => $this->paymentRow(
                 'spp-'.$payment->id,
+                'spp',
+                $payment->id,
                 $payment->student,
                 $payment->transaction_at,
                 'SPP',
@@ -347,22 +384,29 @@ class ReportQueryService
                 'Pembayaran SPP',
                 $payment->payment_method,
                 $payment->status,
-                $payment->operator_name,
+                $this->paymentOperatorName($payment),
                 (int) $payment->paid_amount,
+                'Periode SPP',
+                $this->paymentPeriodText($payment->items),
             ));
         }
 
         $other = collect();
         if ($filters['type'] !== 'spp') {
-            $query = $filterPayment(OtherPayment::with(['student.schoolClass.educationUnit', 'feeType']));
+            $query = $filterPayment(OtherPayment::with(['student.schoolClass.educationUnit', 'feeType', 'operatorUser', 'items']));
             if ($filters['type']) {
                 $query->whereHas('feeType', fn ($query) => $query->where('payment_group', $filters['type']));
+            }
+            if ($filters['fee_type_id']) {
+                $query->where('fee_type_id', $filters['fee_type_id']);
             }
             $other = $query->get()->map(function (OtherPayment $payment) {
                 $group = $this->otherPaymentGroup($payment);
 
                 return $this->paymentRow(
                     'other-'.$payment->id,
+                    'other',
+                    $payment->id,
                     $payment->student,
                     $payment->transaction_at,
                     $this->paymentGroupLabel($group),
@@ -370,8 +414,10 @@ class ReportQueryService
                     $payment->feeType?->name ?? 'Pembayaran lain-lain',
                     $payment->payment_method,
                     $payment->status,
-                    $payment->operator_name,
+                    $this->paymentOperatorName($payment),
                     (int) $payment->paid_amount,
+                    $group === 'laundry' ? 'Periode Laundry' : null,
+                    $group === 'laundry' ? $this->paymentPeriodText($payment->items) : null,
                 );
             });
         }
@@ -381,6 +427,8 @@ class ReportQueryService
 
     private function paymentRow(
         string $id,
+        string $source,
+        int $sourceId,
         ?Student $student,
         $date,
         string $type,
@@ -390,9 +438,13 @@ class ReportQueryService
         ?string $status,
         ?string $operator,
         int $amount,
+        ?string $periodLabel = null,
+        ?string $period = null,
     ): array {
         return [
             'id' => $id,
+            'source' => $source,
+            'source_id' => $sourceId,
             'student_id' => $student?->id,
             'date_sort' => $date,
             'date' => $date?->format('d/m/Y H:i') ?? '-',
@@ -409,7 +461,73 @@ class ReportQueryService
             'status' => $status ?: '-',
             'operator' => $operator ?: '-',
             'amount' => $amount,
+            'period_label' => $periodLabel,
+            'period' => $period,
         ];
+    }
+
+    private function paymentPeriodText(Collection $items): ?string
+    {
+        $periods = $items
+            ->filter(fn ($item) => $item->year && $item->month)
+            ->sortBy(fn ($item) => ((int) $item->year * 100) + (int) $item->month)
+            ->values();
+
+        if ($periods->isEmpty()) {
+            return null;
+        }
+
+        if ($periods->count() === 1) {
+            $item = $periods->first();
+
+            return self::MONTHS[(int) $item->month].' '.$item->year;
+        }
+
+        $first = $periods->first();
+        $last = $periods->last();
+        $monthCount = $periods->count();
+
+        if ((int) $first->year === (int) $last->year) {
+            return self::MONTHS[(int) $first->month].' - '.self::MONTHS[(int) $last->month].' '.$last->year.' ('.$monthCount.' bulan)';
+        }
+
+        return self::MONTHS[(int) $first->month].' '.$first->year.' - '.self::MONTHS[(int) $last->month].' '.$last->year.' ('.$monthCount.' bulan)';
+    }
+
+    private function operatorOptions(): Collection
+    {
+        $userIds = SppPayment::query()
+            ->whereNotNull('operator_user_id')
+            ->pluck('operator_user_id')
+            ->concat(OtherPayment::query()->whereNotNull('operator_user_id')->pluck('operator_user_id'))
+            ->unique()
+            ->values();
+
+        $userNames = User::query()
+            ->whereIn('id', $userIds)
+            ->pluck('name');
+
+        $legacyNames = SppPayment::query()
+            ->whereNull('operator_user_id')
+            ->whereNotNull('operator_name')
+            ->where('operator_name', '!=', '')
+            ->pluck('operator_name')
+            ->concat(OtherPayment::query()
+                ->whereNull('operator_user_id')
+                ->whereNotNull('operator_name')
+                ->where('operator_name', '!=', '')
+                ->pluck('operator_name'));
+
+        return $userNames
+            ->concat($legacyNames)
+            ->unique()
+            ->sort()
+            ->values();
+    }
+
+    private function paymentOperatorName(SppPayment|OtherPayment $payment): ?string
+    {
+        return $payment->operatorUser?->name ?: $payment->operator_name;
     }
 
     private function filteredStudents(array $filters)
@@ -429,6 +547,10 @@ class ReportQueryService
 
     private function selectedSppPeriod(array $filters, bool $until = false): array
     {
+        if (! $until && ($filters['report'] ?? null) === 'monthly-spp' && ! empty($filters['year'])) {
+            return ['month' => (int) $filters['month'], 'year' => (int) $filters['year']];
+        }
+
         $academicYear = AcademicYear::find($filters['academic_year_id']);
         $month = $until ? $filters['until_month'] : $filters['month'];
         $months = collect($this->academicMonths($academicYear))->keyBy('month');
@@ -437,10 +559,34 @@ class ReportQueryService
         return ['month' => (int) $period['month'], 'year' => (int) $period['year']];
     }
 
+    private function reportYearOptions(): Collection
+    {
+        $academicYears = AcademicYear::query()->get(['name', 'start_date', 'end_date']);
+        $yearsFromAcademicYears = $academicYears->flatMap(function (AcademicYear $academicYear) {
+            if (preg_match('/^(\d{4})\/(\d{4})$/', (string) $academicYear->name, $matches)) {
+                return [(int) $matches[1], (int) $matches[2]];
+            }
+
+            return [
+                $academicYear->start_date?->year,
+                $academicYear->end_date?->year,
+            ];
+        });
+
+        return collect([now()->year, now()->addYear()->year])
+            ->concat(Bill::query()->where('source_type', 'spp')->distinct()->pluck('year'))
+            ->concat($yearsFromAcademicYears)
+            ->filter()
+            ->map(fn ($year) => (int) $year)
+            ->unique()
+            ->sortDesc()
+            ->values();
+    }
+
     private function sppStatus(int $billed, int $paid, int $remaining): string
     {
         if ($billed > 0 && $remaining <= 0) {
-            return 'Sudah Bayar';
+            return 'Lunas';
         }
 
         if ($paid > 0 && $remaining > 0) {
@@ -453,19 +599,101 @@ class ReportQueryService
     private function sppStatusKey(string $status): string
     {
         return match ($status) {
-            'Sudah Bayar' => 'paid',
+            'Lunas', 'Sudah Bayar' => 'paid',
             'Sebagian' => 'partial',
             default => 'unpaid',
         };
     }
 
-    private function transactionUnitSummary(Collection $rows): Collection
+    private function transactionUnitSummary(Collection $rows, array $filters = []): Collection
     {
-        return $rows->groupBy('unit_name')->map(fn (Collection $unitRows, string $unitName) => [
-            'unit' => $unitName,
-            'transactions' => $unitRows->count(),
-            'amount' => (int) $unitRows->sum('amount'),
-        ])->values();
+        $rowsByUnitId = $rows->groupBy('unit_id');
+        $units = EducationUnit::query()
+            ->when($filters['unit_ids'] ?? null, fn ($query, $unitIds) => $query->whereIn('id', $unitIds))
+            ->when($filters['unit_id'] ?? null, fn ($query, $unitId) => $query->where('id', $unitId))
+            ->orderByRaw($this->educationUnitOrderExpression())
+            ->orderBy('name')
+            ->get(['id', 'code', 'name']);
+
+        return $units->map(function (EducationUnit $unit) use ($rowsByUnitId) {
+            $unitRows = $rowsByUnitId->get($unit->id, collect());
+
+            return [
+                'unit' => $unit->name,
+                'unit_code' => $unit->code,
+                'transactions' => $unitRows->count(),
+                'amount' => (int) $unitRows->sum('amount'),
+            ];
+        })->values();
+    }
+
+    private function transactionChartData(Collection $rows, array $filters = []): array
+    {
+        $monthlyRows = $rows
+            ->filter(fn (array $row) => $row['date_sort'])
+            ->groupBy(fn (array $row) => $row['date_sort']->format('Y-m'))
+            ->map(function (Collection $monthRows, string $key) {
+                $date = CarbonImmutable::createFromFormat('Y-m', $key)->startOfMonth();
+
+                return [
+                    'label' => self::MONTHS[$date->month].' '.$date->year,
+                    'short_label' => mb_substr(self::MONTHS[$date->month], 0, 3).' '.$date->format('y'),
+                    'amount' => (int) $monthRows->sum('amount'),
+                    'transactions' => $monthRows->count(),
+                    'sort' => $key,
+                ];
+            })
+            ->sortBy('sort')
+            ->values()
+            ->take(-6)
+            ->values();
+
+        $unitRows = $this->transactionUnitSummary($rows, $filters)
+            ->values();
+
+        $unitOrder = EducationUnit::query()
+            ->orderByRaw($this->educationUnitOrderExpression())
+            ->orderBy('name')
+            ->pluck('code')
+            ->values()
+            ->flip();
+
+        $classRows = $rows
+            ->groupBy(fn (array $row) => ($row['unit_id'] ?? '-').'|'.($row['class'] ?? '-'))
+            ->map(function (Collection $classPayments) use ($unitOrder) {
+                $firstPayment = $classPayments->first();
+                $unitCode = $firstPayment['unit'] ?? '-';
+                $className = $firstPayment['class'] ?? '-';
+
+                return [
+                    'class' => trim($unitCode.' '.$className),
+                    'unit_code' => $unitCode,
+                    'unit_order' => (int) ($unitOrder->get($unitCode) ?? 999),
+                    'class_name' => $className,
+                    'amount' => (int) $classPayments->sum('amount'),
+                    'transactions' => $classPayments->count(),
+                ];
+            })
+            ->sortBy([
+                ['unit_order', 'asc'],
+                ['class_name', 'asc'],
+            ])
+            ->values();
+
+        return [
+            'monthly' => $monthlyRows,
+            'units' => $unitRows,
+            'classes' => $classRows,
+            'methods' => collect(['Cash', 'Transfer'])->map(function (string $method) use ($rows) {
+                $methodRows = $rows->where('method', $method);
+
+                return [
+                    'method' => $method,
+                    'amount' => (int) $methodRows->sum('amount'),
+                    'transactions' => $methodRows->count(),
+                ];
+            })->values(),
+        ];
     }
 
     private function monthlySppUnitSummary(Collection $rows): Collection
@@ -479,6 +707,53 @@ class ReportQueryService
             'paid' => (int) $unitRows->sum('paid'),
             'remaining' => (int) $unitRows->sum('remaining'),
         ])->values();
+    }
+
+    private function monthlySppChartData(Collection $rows): array
+    {
+        $unitOrder = EducationUnit::query()
+            ->orderByRaw($this->educationUnitOrderExpression())
+            ->orderBy('name')
+            ->pluck('code')
+            ->values()
+            ->flip();
+
+        $unitRows = $rows->groupBy('unit_name')->map(function (Collection $unitRows, string $unitName) use ($unitOrder) {
+            $firstRow = $unitRows->first();
+            $students = max(1, $unitRows->count());
+            $paidCount = $unitRows->where('status_key', 'paid')->count();
+            $partialCount = $unitRows->where('status_key', 'partial')->count();
+            $unpaidCount = $unitRows->where('status_key', 'unpaid')->count();
+            $unitCode = $firstRow['unit'] ?? '-';
+
+            return [
+                'unit' => $unitName,
+                'unit_code' => $unitCode,
+                'unit_order' => (int) ($unitOrder->get($unitCode) ?? 999),
+                'students' => $unitRows->count(),
+                'paid_count' => $paidCount,
+                'partial_count' => $partialCount,
+                'unpaid_count' => $unpaidCount,
+                'paid_percent' => round(($paidCount / $students) * 100, 2),
+                'partial_percent' => round(($partialCount / $students) * 100, 2),
+                'unpaid_percent' => round(($unpaidCount / $students) * 100, 2),
+                'paid' => (int) $unitRows->sum('paid'),
+                'remaining' => (int) $unitRows->sum('remaining'),
+            ];
+        })->sortBy([
+            ['unit_order', 'asc'],
+            ['unit', 'asc'],
+        ])->values();
+
+        return [
+            'units' => $unitRows,
+            'payments' => $unitRows->sortByDesc('paid')->values(),
+            'totals' => [
+                'students' => $rows->count(),
+                'billed' => (int) $rows->sum('billed'),
+                'paid' => (int) $rows->sum('paid'),
+            ],
+        ];
     }
 
     private function outstandingSppUnitSummary(Collection $rows): Collection

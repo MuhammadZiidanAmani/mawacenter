@@ -181,12 +181,10 @@ class BillQueryService
 
         $this->applyBillScope($query, $year, $untilMonth, 'bills', $filters['status'] ?? 'outstanding');
 
-        return $query
+        $query
             ->when($filters['unit_id'] ?? null, fn ($query, $id) => $query->where('school_classes.education_unit_id', $id))
-            ->when($filters['unit_ids'] ?? null, fn ($query, $ids) => $query->whereIn('school_classes.education_unit_id', $ids))
             ->when($filters['class_id'] ?? null, fn ($query, $id) => $query->where('students.school_class_id', $id))
             ->when($filters['student_id'] ?? null, fn ($query, $id) => $query->where('students.id', $id))
-            ->when($filters['student_ids'] ?? null, fn ($query, $ids) => $query->whereIn('students.id', $ids))
             ->when($filters['fee_type_id'] ?? null, fn ($query, $id) => $query->where('bills.fee_type_id', $id))
             ->when(($filters['student_search'] ?? null) && ! ($filters['student_id'] ?? null), function ($query) use ($filters) {
                 $search = trim((string) $filters['student_search']);
@@ -209,6 +207,22 @@ class BillQueryService
                         ->orWhere('students.nis', 'like', "%{$search}%");
                 });
             });
+
+        if (array_key_exists('unit_ids', $filters)) {
+            $ids = array_values(array_filter((array) $filters['unit_ids'], fn ($id) => $id !== null && $id !== ''));
+            $ids === []
+                ? $query->whereRaw('1 = 0')
+                : $query->whereIn('school_classes.education_unit_id', $ids);
+        }
+
+        if (array_key_exists('student_ids', $filters)) {
+            $ids = array_values(array_filter((array) $filters['student_ids'], fn ($id) => $id !== null && $id !== ''));
+            $ids === []
+                ? $query->whereRaw('1 = 0')
+                : $query->whereIn('students.id', $ids);
+        }
+
+        return $query;
     }
 
     private function details(int $year, int $untilMonth, array $studentIds): Collection

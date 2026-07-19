@@ -269,6 +269,9 @@ class PaymentMenuTest extends TestCase
             ->assertSee(route('finance.other.import.preview', ['category' => 'daftar-ulang']), false)
             ->assertSee(route('finance.other.import.preview', ['category' => 'laundry']), false)
             ->assertSee('Jenis Pembayaran')
+            ->assertSee('Unit Pendidikan')
+            ->assertSee('Bulan')
+            ->assertSee('Tahun')
             ->assertSee('Preview Data')
             ->assertSee('data-payment-import', false);
     }

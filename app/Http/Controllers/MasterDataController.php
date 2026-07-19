@@ -19,6 +19,7 @@ use App\Models\SppPaymentCorrection;
 use App\Models\SppPaymentItem;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\BillService;
 use App\Services\ChargeCalculator;
 use App\Services\StudentImportService;
 use App\Support\ClassLevel;
@@ -574,7 +575,8 @@ class MasterDataController extends Controller
             ]);
         }
 
-        Student::create($data);
+        $student = Student::create($data);
+        app(BillService::class)->syncStudentCurrentBills($student);
 
         return $this->done('students', 'Data siswa berhasil ditambahkan.');
     }
@@ -592,6 +594,7 @@ class MasterDataController extends Controller
                 ->orWhere('identity_student_id', $rootIdentityId))
                 ->update(collect($data)->only($this->studentPersonalFields())->all());
         });
+        app(BillService::class)->syncStudentCurrentBills($student->refresh());
 
         return $this->done('students', 'Data siswa berhasil diperbarui.');
     }
@@ -740,6 +743,10 @@ class MasterDataController extends Controller
         if ($failures) {
             $message .= ' '.count($failures).' baris dilewati: '.collect($failures)->pluck('message')->take(3)->implode(' ');
         }
+        if (! empty($result['student_ids'])) {
+            app(BillService::class)->syncStudentsCurrentBills($activeYear, $result['student_ids']);
+            $message .= ' Tagihan siswa baru otomatis diperbarui.';
+        }
 
         return $this->done('students', $message);
     }
@@ -770,7 +777,8 @@ class MasterDataController extends Controller
 
     public function storeFeeDiscount(Request $request): RedirectResponse
     {
-        FeeDiscount::create($this->validateFeeDiscount($request));
+        $discount = FeeDiscount::create($this->validateFeeDiscount($request));
+        app(BillService::class)->refreshDiscountBills($discount);
 
         return $this->done('fee-discounts', 'Keringanan biaya berhasil ditambahkan.');
     }
@@ -778,6 +786,7 @@ class MasterDataController extends Controller
     public function updateFeeDiscount(Request $request, FeeDiscount $feeDiscount): RedirectResponse
     {
         $feeDiscount->update($this->validateFeeDiscount($request, $feeDiscount));
+        app(BillService::class)->refreshDiscountBills($feeDiscount->refresh());
 
         return $this->done('fee-discounts', 'Keringanan biaya berhasil diperbarui.');
     }

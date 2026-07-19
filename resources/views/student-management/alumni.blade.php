@@ -36,7 +36,7 @@
             <button class="icon-button logout-button" aria-label="Keluar">{!! $icon('logout') !!}</button>
         </header>
 
-        <main id="student-alumni-page" class="student-page student-alumni-page">
+        <main id="student-alumni-page" class="student-page student-alumni-page student-alumni-v7">
             <section class="student-workspace student-list-filter-card">
                 <div class="student-flat-header">
                     <div class="student-master-heading">
@@ -54,15 +54,6 @@
                                 <option value="">semua</option>
                                 @foreach ($educationUnits as $unit)
                                     <option value="{{ $unit->id }}" @selected($filters['unit_id'] == $unit->id)>{{ $unit->code }}</option>
-                                @endforeach
-                            </select>
-                        </label>
-                        <label>
-                            <span>Tahun Pelajaran</span>
-                            <select name="year_id">
-                                <option value="">semua</option>
-                                @foreach ($academicYears as $year)
-                                    <option value="{{ $year->id }}" @selected($filters['year_id'] == $year->id)>{{ $year->name }}</option>
                                 @endforeach
                             </select>
                         </label>
@@ -102,36 +93,62 @@
                     </span>
                 </div>
 
-                <div class="student-reference-card-list">
-                    @forelse ($alumni as $student)
-                        <article class="student-reference-card">
-                            <div class="student-reference-card-top">
-                                <div class="student-reference-card-title">
-                                    <strong>{{ $student->name }}</strong>
-                                    <div class="student-reference-card-meta">
-                                        <span>{!! $icon('card') !!}<b>{{ $student->nis ?: '-' }}</b></span>
-                                        <span>{!! $icon('school') !!}<b>{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</b></span>
-                                        <span>{!! $icon('info') !!}<b>{{ $student->gender === 'L' ? 'Laki-Laki' : 'Perempuan' }}</b></span>
-                                        <span>{!! $icon('calendar') !!}<b>{{ $student->exit_date?->format('d/m/Y') ?? '-' }}</b></span>
-                                        <span>{!! $icon('info') !!}<b>{{ $student->inactive_reason ?: '-' }}</b></span>
-                                    </div>
-                                </div>
-                                <div class="student-reference-card-side">
-                                    <span class="student-reference-status is-inactive">Alumni</span>
-                                </div>
-                            </div>
-                        </article>
-                    @empty
-                        <div class="student-reference-empty">
-                            <strong>Belum ada data alumni</strong>
-                            <span>Data akan muncul setelah siswa dijadikan nonaktif/alumni.</span>
-                        </div>
-                    @endforelse
+                <div class="table-wrap alumni-table-wrap">
+                    <table class="data-table student-flat-table alumni-table">
+                        <colgroup>
+                            <col class="alumni-col-no">
+                            <col class="alumni-col-nis">
+                            <col class="alumni-col-name">
+                            <col class="alumni-col-gender">
+                            <col class="alumni-col-unit">
+                            <col class="alumni-col-date">
+                            <col class="alumni-col-reason">
+                            <col class="alumni-col-actions">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>NIS</th>
+                                <th>Nama Siswa</th>
+                                <th>JK</th>
+                                <th>Unit</th>
+                                <th>Tanggal Keluar</th>
+                                <th>Alasan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($alumni as $student)
+                                <tr>
+                                    <td class="alumni-cell-center">{{ $alumni->firstItem() + $loop->index }}</td>
+                                    <td class="alumni-cell-center">{{ $student->nis ?: '-' }}</td>
+                                    <td class="alumni-cell-main"><strong>{{ $student->name }}</strong></td>
+                                    <td class="alumni-cell-center">{{ $student->gender === 'L' ? 'L' : 'P' }}</td>
+                                    <td class="alumni-cell-center">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</td>
+                                    <td class="alumni-cell-center">{{ $student->exit_date?->format('d/m/Y') ?? '-' }}</td>
+                                    <td class="alumni-cell-center">{{ $student->inactive_reason ?: '-' }}</td>
+                                    <td class="alumni-actions-cell">
+                                        <a class="icon-button alumni-action-edit" href="{{ route('student-management.students.edit', array_merge([$student], request()->query())) }}" title="Edit / aktifkan kembali" aria-label="Edit atau aktifkan kembali {{ $student->name }}">
+                                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+                                        </a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="alumni-empty-cell">
+                                        <strong>Belum ada data alumni</strong>
+                                        <span>Data akan muncul setelah siswa dijadikan nonaktif/alumni.</span>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
 
                 <div class="pagination-wrap">{{ $alumni->links() }}</div>
             </section>
         </main>
+        @include('partials.app-footer')
     </div>
 </div>
 </body>

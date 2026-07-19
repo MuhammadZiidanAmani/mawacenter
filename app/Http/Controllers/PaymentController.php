@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\AppSetting;
 use App\Models\Bill;
+use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\SppPayment;
@@ -25,6 +26,20 @@ class PaymentController extends Controller
     {
         $search = trim($request->string('search')->value());
         $selectedStudentId = (int) $request->integer('student_id');
+        $editSppPayment = null;
+        $editPaymentId = (int) $request->integer('edit_payment');
+        if ($editPaymentId > 0) {
+            $editSppPayment = SppPayment::with(['student.schoolClass.educationUnit', 'items'])
+                ->findOrFail($editPaymentId);
+            $unitIds = $request->user()?->accessibleUnitIds();
+            if (is_array($unitIds) && ! in_array((int) $editSppPayment->student?->schoolClass?->education_unit_id, $unitIds, true)) {
+                abort(403, 'Anda tidak memiliki akses ke transaksi ini.');
+            }
+            $selectedStudentId = (int) $editSppPayment->student_id;
+            if ($search === '') {
+                $search = $editSppPayment->student?->nis ?: $editSppPayment->student?->name ?: '';
+            }
+        }
         $historyPeriod = trim($request->string('history_period')->value());
         if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $historyPeriod)) {
             $historyPeriod = now()->format('Y-m');
@@ -62,8 +77,8 @@ class PaymentController extends Controller
                     ->get();
                 $feeTypes = FeeType::where('is_active', true)->get();
 
-                $registrations->each(function (Student $student) use ($feeTypes, $sppPayments, $otherPayments, $laundryPayments) {
-                    $student->setAttribute('payment_options', $this->paymentOptions($student, $feeTypes, $sppPayments, $otherPayments, $laundryPayments));
+                $registrations->each(function (Student $student) use ($feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment) {
+                    $student->setAttribute('payment_options', $this->paymentOptions($student, $feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment));
                     $student->setAttribute('optional_payment_options', $this->optionalPaymentOptions($student, $feeTypes, $otherPayments, $laundryPayments));
                 });
 
@@ -152,6 +167,8 @@ class PaymentController extends Controller
             'historyPeriodLabel' => $historyPeriodLabel,
             'transferAccount' => $this->transferAccount(),
             'cashOnly' => $request->user()?->isPetugas() ?? false,
+            'editSppPayment' => $editSppPayment,
+            'returnUrl' => trim($request->string('return_url')->value()),
             'mode' => 'payment',
         ]);
     }
@@ -229,6 +246,7 @@ class PaymentController extends Controller
             'payment_method' => $validated['payment_method'],
             'status' => 'Diterima',
             'operator_name' => auth()->user()?->name,
+            'operator_user_id' => auth()->id(),
         ];
         if ($validated['payment_method'] === 'Transfer' && $request->hasFile('transfer_proof')) {
             $baseData['transfer_proof_path'] = $request->file('transfer_proof')->store('payment-proofs', 'public');
@@ -455,6 +473,9 @@ class PaymentController extends Controller
     {
         return view('finance.payments', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
+            'educationUnits' => EducationUnit::orderByRaw("CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+                ->orderBy('name')
+                ->get(),
             'mode' => 'import',
         ]);
     }
@@ -580,7 +601,7 @@ class PaymentController extends Controller
         return str_contains(strtolower($feeType->name), 'laundry') ? 'laundry' : 'lain-lain';
     }
 
-    private function paymentOptions(Student $student, Collection $feeTypes, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): array
+    private function paymentOptions(Student $student, Collection $feeTypes, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments, ?SppPayment $editSppPayment = null): array
     {
         $matchedFeeTypes = $this->matchedFeeTypes($student, $feeTypes);
         $grouped = $matchedFeeTypes->groupBy(fn (FeeType $feeType) => $this->paymentGroup($feeType));
@@ -592,12 +613,15 @@ class PaymentController extends Controller
 
         return collect($definitions)
             ->filter(fn (array $definition, string $group) => $grouped->has($group))
-            ->map(function (array $definition, string $group) use ($student, $grouped, $sppPayments, $otherPayments, $laundryPayments) {
+            ->map(function (array $definition, string $group) use ($student, $grouped, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment) {
                 $feeTypes = $grouped->get($group);
+                $ignoredPayment = $group === 'spp' && $editSppPayment && (int) $editSppPayment->student_id === (int) $student->id
+                    ? $editSppPayment
+                    : null;
                 $payable = $group === 'spp'
-                    ? ($sppPayments->paymentPlan($student)['max_month_count'] > 0)
+                    ? (($ignoredPayment ? $sppPayments->paymentPlanFromPayment($ignoredPayment) : $sppPayments->paymentPlan($student))['max_month_count'] > 0)
                     : $this->hasPayableFeeType($student, $feeTypes, $group, $otherPayments);
-                $summary = $this->paymentOptionSummary($student, $feeTypes, $group, $sppPayments, $otherPayments, $laundryPayments);
+                $summary = $this->paymentOptionSummary($student, $feeTypes, $group, $sppPayments, $otherPayments, $laundryPayments, $ignoredPayment);
 
                 return [
                     'key' => $group,
@@ -618,17 +642,22 @@ class PaymentController extends Controller
             ->all();
     }
 
-    private function paymentOptionSummary(Student $student, Collection $feeTypes, string $group, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): array
+    private function paymentOptionSummary(Student $student, Collection $feeTypes, string $group, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments, ?SppPayment $ignoredPayment = null): array
     {
         if ($group === 'spp') {
-            $plan = $sppPayments->paymentPlan($student);
+            $plan = $ignoredPayment ? $sppPayments->paymentPlanFromPayment($ignoredPayment) : $sppPayments->paymentPlan($student);
             $monthCount = max(0, (int) ($plan['default_month_count'] ?: $plan['max_month_count']));
+            if ($ignoredPayment) {
+                $monthCount = max(1, min((int) $ignoredPayment->items->count(), (int) $plan['max_month_count']));
+            }
             $remainingAmount = 0;
             $periods = [];
 
             if ($monthCount > 0) {
                 try {
-                    $quote = $sppPayments->quoteByMonthCount($student, $monthCount);
+                    $quote = $ignoredPayment
+                        ? $sppPayments->quoteFromPaymentStart($ignoredPayment, $monthCount)
+                        : $sppPayments->quoteByMonthCount($student, $monthCount);
                     $remainingAmount = (int) ($quote['remaining_amount'] ?? 0);
                     $periods = $quote['items'] ?? [];
                 } catch (ValidationException) {
@@ -639,7 +668,19 @@ class PaymentController extends Controller
 
             $periodOptions = [];
             $defaultPeriodCount = 1;
-            try {
+            if ($ignoredPayment) {
+                $runningAmount = 0;
+                foreach ($plan['periods'] as $index => $item) {
+                    $runningAmount += (int) $item['remaining_amount'];
+                    $periodOptions[] = $this->periodOption($index + 1, [
+                        'remaining_amount' => $runningAmount,
+                        'period_start' => $plan['periods'][0] ?? null,
+                        'period_end' => ['year' => $item['year'], 'month' => $item['month']],
+                    ], true);
+                }
+                $defaultPeriodCount = $monthCount;
+            } else {
+                try {
                 $window = $sppPayments->paymentWindow($student);
                 $defaultPeriodCount = (int) $window['default_month_count'];
                 $runningAmount = 0;
@@ -651,13 +692,14 @@ class PaymentController extends Controller
                         'period_end' => ['year' => $item['year'], 'month' => $item['month']],
                     ], true);
                 }
-            } catch (ValidationException) {
-                // Tidak ada periode SPP yang dapat ditagihkan.
+                } catch (ValidationException) {
+                    // Tidak ada periode SPP yang dapat ditagihkan.
+                }
             }
             if ($periodOptions !== []) {
                 $defaultOption = $periodOptions[$defaultPeriodCount - 1] ?? $periodOptions[0];
                 $remainingAmount = (int) $defaultOption['amount'];
-                $periods = array_slice($window['items'], 0, $defaultPeriodCount);
+                $periods = array_slice($ignoredPayment ? ($plan['periods'] ?? []) : ($window['items'] ?? []), 0, $defaultPeriodCount);
             }
 
             return [

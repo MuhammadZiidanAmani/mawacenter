@@ -173,10 +173,10 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="pagination-wrap">{{ $transactions->links() }}</div>
                 </section>
             </section>
         </main>
+        @include('partials.app-footer')
     </div>
 </div>
 </body>

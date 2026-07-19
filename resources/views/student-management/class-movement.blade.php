@@ -1370,6 +1370,7 @@
             </form>
             </section>
         </main>
+        @include('partials.app-footer')
     </div>
 </div>
 <style data-class-movement-spacing-lock>

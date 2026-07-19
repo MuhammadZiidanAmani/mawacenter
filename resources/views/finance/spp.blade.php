@@ -112,11 +112,13 @@
                     @include('partials.list-toolbar', ['action' => route('finance.spp.index'), 'searchLabel' => 'Cari pembayaran SPP'])
                     <div class="table-wrap"><table class="data-table student-flat-table payment-flat-table spp-list-table registration-payment-table"><thead><tr><th>No</th><th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'method', 'label' => 'Cara Bayar'])</th><th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th><th>Rincian</th></tr></thead><tbody>
                         @forelse($payments as $payment)
-                            @php($sppPeriodText = $payment->items
-                                ->sortBy(fn($item) => ((int) $item->year * 100) + (int) $item->month)
-                                ->groupBy('year')
-                                ->map(fn($items, $year) => $items->map(fn($item) => $months[$item->month])->join(', ').' '.$year)
-                                ->join('; '))
+                            @php
+                                $sppPeriodText = $payment->items
+                                    ->sortBy(fn($item) => ((int) $item->year * 100) + (int) $item->month)
+                                    ->groupBy('year')
+                                    ->map(fn($items, $year) => $items->map(fn($item) => $months[$item->month])->join(', ').' '.$year)
+                                    ->join('; ');
+                            @endphp
                             <tr class="spp-main-row">
                                 <td>{{ $payments->firstItem()+$loop->index }}</td><td>{{ $payment->student?->nis }}</td><td><span class="payment-student-name">{{ $payment->student?->name }}</span><small class="payment-student-unit">Unit Pendidikan: {{ $payment->student?->schoolClass?->educationUnit?->code ?? '-' }}</small></td><td class="spp-class-cell">{{ $payment->student?->schoolClass?->name ?? '-' }}</td><td><span class="payment-method">{{ strtolower($payment->payment_method) }}</span></td><td class="spp-total-cell"><span>Rp {{ number_format($payment->paid_amount,0,',','.') }}</span></td><td><button type="button" class="spp-expand-button" data-spp-row-toggle="{{ $payment->id }}" aria-expanded="false">Lihat</button></td>
                             </tr>
@@ -138,19 +140,31 @@
                 </section>
             </div>
             @else
+            @php
+                $isEditingSpp = isset($editPayment) && $editPayment;
+                $sppFormAction = $isEditingSpp ? route('finance.spp.update', $editPayment) : route('finance.spp.store');
+                $sppReturnUrl = $returnUrl ?? url()->previous();
+                $sppMonthCount = $isEditingSpp ? $editPayment->items->count() : null;
+                $sppPaymentMethod = old('payment_method', $isEditingSpp ? $editPayment->payment_method : ($defaultPaymentMethod ?? 'Cash'));
+                $sppStatus = old('status', $isEditingSpp ? $editPayment->status : 'Diterima');
+            @endphp
             <section class="spp-form-page payment-create-page">
                 <div class="student-flat-header payment-create-heading">
                     <div class="student-master-heading">
-                        <h1>Pembayaran SPP</h1>
-                        <p>Lengkapi data pembayaran SPP sebelum transaksi disimpan.</p>
+                        <h1>{{ $isEditingSpp ? 'Edit Pembayaran SPP' : 'Pembayaran SPP' }}</h1>
+                        <p>{{ $isEditingSpp ? 'Sesuaikan periode, nominal, dan data penerimaan transaksi SPP.' : 'Lengkapi data pembayaran SPP sebelum transaksi disimpan.' }}</p>
                     </div>
                 </div>
-                <form method="POST" action="{{ route('finance.spp.store') }}" class="card payment-spp-v8-form" data-spp-form data-quote-url="{{ route('finance.spp.quote') }}" data-months-url="{{ route('finance.spp.months') }}">
+                <form method="POST" action="{{ $sppFormAction }}" class="card payment-spp-v8-form" data-spp-form data-quote-url="{{ route('finance.spp.quote') }}" data-months-url="{{ route('finance.spp.months') }}" @if($isEditingSpp) data-spp-edit-payment="{{ $editPayment->id }}" @endif>
                 @csrf
+                @if($isEditingSpp)
+                    @method('PUT')
+                    <input type="hidden" name="return_url" value="{{ $sppReturnUrl }}">
+                @endif
                 <div class="payment-form-body">
                     <select name="student_id" data-spp-student hidden>
                         @foreach($students as $student)
-                            <option value="{{ $student->id }}" @selected(old('student_id', request('student_id')) == $student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->schoolClass?->name ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
+                            <option value="{{ $student->id }}" @selected(old('student_id', request('student_id', $selectedStudent?->id)) == $student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->schoolClass?->name ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
                         @endforeach
                     </select>
 
@@ -158,11 +172,11 @@
                         <div class="payment-spp-v8-main">
                             <section class="payment-spp-v8-time-grid">
                                 <label>Tanggal
-                                    <input type="date" name="transaction_date" value="{{ $nativeDateValue(old('transaction_date'), now()->toDateString()) }}" required data-spp-date>
+                                    <input type="date" name="transaction_date" value="{{ $nativeDateValue(old('transaction_date'), $isEditingSpp ? $editPayment->transaction_at->format('Y-m-d') : now()->toDateString()) }}" required data-spp-date>
                                 </label>
                                 <label>Jam
                                     <span class="payment-spp-clock-field">
-                                        <input type="time" name="transaction_time" value="{{ $nativeTimeValue(old('transaction_time'), now()->format('H:i:s')) }}" required data-wib-clock data-spp-time>
+                                        <input type="time" name="transaction_time" value="{{ $nativeTimeValue(old('transaction_time'), $isEditingSpp ? $editPayment->transaction_at->format('H:i:s') : now()->format('H:i:s')) }}" required data-wib-clock data-spp-time>
                                         <b>WIB</b>
                                     </span>
                                 </label>
@@ -172,14 +186,16 @@
                                 <label class="payment-spp-student-field-compact">Siswa
                                     <input class="payment-spp-student-input-compact" type="text" value="{{ $selectedStudent?->schoolClass?->educationUnit?->code ?? '-' }} - {{ $selectedStudent?->nis }} - {{ $selectedStudent?->name }}" readonly>
                                 </label>
-                                <a href="{{ route('finance.payments.index') }}" class="button button-secondary payment-spp-change-student">Ganti Siswa</a>
+                                @unless($isEditingSpp)
+                                    <a href="{{ route('finance.payments.index') }}" class="button button-secondary payment-spp-change-student">Ganti Siswa</a>
+                                @endunless
                             </div>
 
                             <section class="payment-spp-period-block">
                                 <div class="payment-spp-period-field">
                                     <label>Jumlah Bulan
                                         <span class="payment-spp-month-input">
-                                            <input type="number" name="month_count" min="1" max="120" step="1" value="{{ old('month_count') }}" required data-spp-month-count-input>
+                                            <input type="number" name="month_count" min="1" max="120" step="1" value="{{ old('month_count', $sppMonthCount) }}" required data-spp-month-count-input>
                                         </span>
                                     </label>
                                     <div class="payment-spp-period-result">
@@ -192,13 +208,13 @@
 
                             <section class="payment-spp-v8-payment-grid">
                                 <label>Cara Bayar
-                                    <select name="payment_method" required><option @selected(($defaultPaymentMethod ?? 'Cash')==='Cash')>Cash</option><option @selected(($defaultPaymentMethod ?? 'Cash')==='Transfer')>Transfer</option></select>
+                                    <select name="payment_method" required><option @selected($sppPaymentMethod === 'Cash')>Cash</option><option @selected($sppPaymentMethod === 'Transfer')>Transfer</option></select>
                                 </label>
                                 <label>Status
-                                    <select name="status" required><option>Diterima</option><option>Pending</option></select>
+                                    <select name="status" required><option @selected($sppStatus === 'Diterima')>Diterima</option><option @selected($sppStatus === 'Pending')>Pending</option></select>
                                 </label>
                                 <label class="payment-spp-total-field">Total Bayar
-                                    <input type="text" inputmode="numeric" name="paid_amount" required value="{{ old('paid_amount') }}" placeholder="Otomatis sesuai tagihan, bisa diedit" data-spp-paid-input data-currency-input>
+                                    <input type="text" inputmode="numeric" name="paid_amount" required value="{{ old('paid_amount', $isEditingSpp ? $editPayment->paid_amount : null) }}" placeholder="Otomatis sesuai tagihan, bisa diedit" data-spp-paid-input data-currency-input>
                                 </label>
                             </section>
                         </div>
@@ -229,8 +245,12 @@
                     <div data-spp-hidden-months></div>
                 </div>
                 <div class="form-actions">
-                    <a href="{{ route('finance.spp.index') }}" class="button button-secondary">Batal</a>
-                    <button class="button button-primary" formtarget="_blank">Simpan Pembayaran</button>
+                    <a href="{{ $isEditingSpp ? $sppReturnUrl : route('finance.spp.index') }}" class="button button-secondary">Batal</a>
+                    @if($isEditingSpp)
+                        <button class="button button-primary">Simpan Perubahan</button>
+                    @else
+                        <button class="button button-primary" formtarget="_blank">Simpan Pembayaran</button>
+                    @endif
                 </div>
             </form>
             </section>
@@ -278,6 +298,7 @@
                 </div>
             </div>
         </main>
+        @include('partials.app-footer')
     </div>
 </div>
 </body>

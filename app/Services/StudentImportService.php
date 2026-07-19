@@ -32,6 +32,7 @@ class StudentImportService
             'duplicates' => 0,
             'created_classes' => 0,
             'failures' => [],
+            'student_ids' => [],
             'rows' => [],
         ];
 
@@ -83,7 +84,7 @@ class StudentImportService
                 }
 
                 try {
-                    Student::create([
+                    $student = Student::create([
                         'nis' => $row['nis'],
                         'nisn' => $row['nisn'],
                         'name' => $row['name'],
@@ -107,6 +108,9 @@ class StudentImportService
                         'inactive_reason' => $row['is_active'] ? null : $row['inactive_reason'],
                         'is_active' => $row['is_active'],
                     ]);
+                    if ($persist) {
+                        $result['student_ids'][] = $student->id;
+                    }
 
                     $row['status'] = 'Valid';
                     $row['message'] = $persist ? 'Berhasil diimpor.' : 'Siap diimpor.';

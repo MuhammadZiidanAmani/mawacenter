@@ -84,6 +84,7 @@
                 {{ $requests->links() }}
             </section>
         </main>
+        @include('partials.app-footer')
     </div>
 </div>
 </body>

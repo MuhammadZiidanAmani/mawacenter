@@ -4,52 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Bill;
 use App\Models\GuardianTransferRequest;
-use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Illuminate\View\View;
 
 class GuardianPortalController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): RedirectResponse
     {
-        $studentIds = $request->user()->accessibleStudentIds() ?? [];
-        $students = Student::with('schoolClass.educationUnit')
-            ->whereIn('id', $studentIds)
-            ->orderBy('name')
-            ->get();
-
-        $selectedStudentId = $request->integer('student_id') ?: $students->first()?->id;
-        if ($selectedStudentId && ! in_array($selectedStudentId, $studentIds, true)) {
-            abort(403, 'Anda tidak memiliki akses ke tagihan siswa ini.');
-        }
-
-        $bills = Bill::with(['feeType:id,name', 'student.schoolClass.educationUnit'])
-            ->whereIn('student_id', $studentIds)
-            ->when($selectedStudentId, fn ($query) => $query->where('student_id', $selectedStudentId))
-            ->where('status', '!=', 'Dibatalkan')
-            ->where('remaining_amount', '>', 0)
-            ->orderBy('student_id')
-            ->orderByRaw("CASE WHEN source_type = 'spp' THEN 0 ELSE 1 END")
-            ->orderBy('year')
-            ->orderBy('month')
-            ->orderBy('title')
-            ->get();
-
-        $transfers = GuardianTransferRequest::with('student.schoolClass.educationUnit', 'verifier:id,name')
-            ->where('user_id', $request->user()->id)
-            ->latest()
-            ->limit(20)
-            ->get();
-
-        return view('guardian.bills', [
-            'students' => $students,
-            'selectedStudentId' => $selectedStudentId,
-            'bills' => $bills,
-            'transfers' => $transfers,
-        ]);
+        return redirect()->route('finance.bills.index', $request->only('student_id'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -87,7 +51,7 @@ class GuardianPortalController extends Controller
         ]);
 
         return redirect()
-            ->route('guardian.bills.index', ['student_id' => $validated['student_id']])
+            ->route('finance.bills.index', ['student_id' => $validated['student_id']])
             ->with('success', 'Bukti transfer berhasil dikirim dan menunggu verifikasi Super Admin.');
     }
 }

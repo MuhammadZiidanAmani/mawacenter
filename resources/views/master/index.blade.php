@@ -123,7 +123,7 @@
                 @php
                     $createDescriptions = [
                         'classes' => 'Pastikan unit pendidikan, nama kelas, dan status aktif sudah sesuai.',
-                        'fee-types' => 'Pastikan kategori, unit, kelas, nominal, dan status aktif sudah sesuai.',
+                        'fee-types' => 'Pastikan nama pembayaran, kategori pembayaran, unit, kelas, nominal, dan status aktif sudah sesuai.',
                         'fee-discounts' => 'Pastikan siswa, jenis pembayaran, nilai keringanan, tanggal, dan status aktif sudah sesuai.',
                         'data-roles' => 'Pastikan nama role, kode, dan hak akses sudah sesuai.',
                         'data-users' => 'Pastikan identitas user, email, dan role akses sudah sesuai.',
@@ -415,7 +415,7 @@
 
                     <label class="fee-type-filter-search">
                         {!! $icon('search') !!}
-                        <input name="search" value="{{ request('search') }}" placeholder="Cari kategori pembayaran..." aria-label="Cari kategori pembayaran">
+                        <input name="search" value="{{ request('search') }}" placeholder="Cari nama pembayaran..." aria-label="Cari nama pembayaran">
                     </label>
 
                     <div class="fee-type-card-filter-actions">
@@ -809,7 +809,7 @@
                             'academic-years' => 'Cari tahun pelajaran...',
                             'education-units' => 'Cari unit atau kode...',
                             'classes' => 'Cari kelas...',
-                            'fee-types' => 'Cari kategori pembayaran...',
+                            'fee-types' => 'Cari nama pembayaran...',
                             'fee-discounts' => 'Cari nama siswa...',
                             'data-roles' => 'Cari role...',
                             'data-users' => 'Cari nama atau email...',
@@ -935,7 +935,7 @@
                             <col class="fee-type-col-status">
                             <col class="fee-type-col-actions">
                         </colgroup>
-                        <thead><tr><th>No</th><th>Kategori Pembayaran</th><th>Unit</th><th>Tingkat</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>No</th><th>Nama Pembayaran</th><th>Unit</th><th>Tingkat</th><th>Nominal</th><th>Status</th><th>Aksi</th></tr></thead>
                         <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td><strong>{{ $row->educationUnit?->code ?? '-' }}</strong></td><td><strong>{{ $row->class_level ? \App\Support\ClassLevel::label($row->class_level) : ($row->schoolClass?->name ?? 'Semua Tingkat') }}</strong></td><td><strong>Rp {{ number_format($row->amount, 0, ',', '.') }}</strong></td><td><span class="status {{ $row->is_active ? 'success' : 'neutral' }}">{{ $row->is_active ? 'Aktif' : 'Nonaktif' }}</span></td><td>@include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @elseif ($tab === 'data-roles')
                         <colgroup>
@@ -989,6 +989,7 @@
             @endif
             @endif
         </main>
+        @include('partials.app-footer')
     </div>
 </div>
 

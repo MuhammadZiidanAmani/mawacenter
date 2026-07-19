@@ -47,6 +47,62 @@ passwordToggle?.addEventListener('click', () => {
     passwordToggle.setAttribute('title', revealing ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
 });
 
+const loginTypeValue = document.querySelector('[data-login-type-value]');
+const loginUsernameInput = document.querySelector('.login-form input[name="username"]');
+const loginUsernameLabel = document.querySelector('[data-login-username-label]');
+const guardianUnitSelect = document.querySelector('.login-form select[name="guardian_unit_id"]');
+const loginAccessReset = document.querySelector('[data-login-access-reset]');
+const loginAccessTitle = document.querySelector('[data-login-access-title]');
+const loginRoleName = document.querySelector('[data-login-role-name]');
+const loginAlerts = Array.from(document.querySelectorAll('[data-login-alert]'));
+const loginTypeLabels = {
+    petugas: 'Petugas',
+    bendahara: 'Bendahara',
+    wali: 'Wali Santri',
+};
+const syncLoginType = () => {
+    const selected = document.querySelector('input[name="login_type_picker"]:checked')?.value ?? '';
+    if (loginTypeValue) loginTypeValue.value = selected;
+    if (loginAccessTitle) {
+        if (selected) {
+            loginAccessTitle.textContent = '';
+        } else {
+            loginAccessTitle.textContent = 'Pilih Peran Anda';
+        }
+    }
+    if (loginRoleName) {
+        loginRoleName.textContent = loginTypeLabels[selected] ?? 'Petugas';
+    }
+    if (loginUsernameInput) {
+        loginUsernameInput.placeholder = selected === 'wali' ? 'Masukan NIS' : 'Username';
+        loginUsernameInput.autocomplete = selected === 'wali' ? 'off' : 'username';
+    }
+    if (loginUsernameLabel) {
+        loginUsernameLabel.textContent = selected === 'wali' ? 'Masukan NIS' : 'Username';
+    }
+    if (passwordInput) {
+        passwordInput.required = selected !== 'wali';
+        if (selected === 'wali') passwordInput.value = '';
+    }
+    if (guardianUnitSelect) {
+        guardianUnitSelect.required = selected === 'wali';
+    }
+};
+document.querySelectorAll('input[name="login_type_picker"]').forEach((input) => {
+    input.addEventListener('change', syncLoginType);
+});
+loginAccessReset?.addEventListener('click', () => {
+    document.querySelectorAll('input[name="login_type_picker"]').forEach((input) => {
+        input.checked = false;
+    });
+    loginAlerts.forEach((alert) => alert.remove());
+    if (loginUsernameInput) loginUsernameInput.value = '';
+    if (passwordInput) passwordInput.value = '';
+    if (guardianUnitSelect) guardianUnitSelect.value = '';
+    syncLoginType();
+});
+syncLoginType();
+
 document.querySelectorAll('.logout-button').forEach((button) => {
     button.addEventListener('click', () => { window.location.href = '/logout'; });
 });
@@ -100,13 +156,48 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     const transferUpload = form.querySelector('[data-payment-transfer-upload]');
     const transferFile = form.querySelector('[data-payment-transfer-file]');
     const uploadName = form.querySelector('[data-payment-upload-name]');
+    const isEditPayment = Boolean(form.dataset.paymentEditMode);
+    const hasTransferProof = form.dataset.paymentHasTransferProof === 'true';
     let paidTouched = false;
 
     const selectedTotal = () => bills
         .filter((bill) => bill.checked)
         .reduce((total, bill) => total + Number(bill.dataset.amount || 0), 0);
 
+    const parseBillIds = (value) => {
+        try {
+            const ids = JSON.parse(value || '[]');
+            return Array.isArray(ids) ? ids : [];
+        } catch {
+            return [];
+        }
+    };
+
+    const syncBillIds = (row) => {
+        const target = row?.querySelector('[data-payment-bill-ids]');
+        const bill = row?.querySelector('[data-payment-bill]');
+        if (!target || !bill) return;
+
+        target.replaceChildren();
+        if (!bill.checked) return;
+
+        const periodOption = row.querySelector('[data-payment-period-select]')?.selectedOptions?.[0];
+        const ids = parseBillIds(periodOption?.dataset.billIds || bill.dataset.billIds);
+        ids.forEach((id) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'bill_ids[]';
+            input.value = id;
+            target.appendChild(input);
+        });
+    };
+
+    const syncAllBillIds = () => {
+        form.querySelectorAll('[data-payment-bill-row]').forEach(syncBillIds);
+    };
+
     const renderTotal = (syncPaid = false) => {
+        syncAllBillIds();
         const total = selectedTotal();
         if (totalOutput) totalOutput.textContent = `${formatter.format(total)},-`;
         if (submitButton) submitButton.disabled = total < 1;
@@ -121,7 +212,7 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         if (transferPanel) transferPanel.hidden = !isTransfer;
         if (transferUpload) transferUpload.hidden = !isTransfer;
         if (transferFile) {
-            transferFile.required = isTransfer;
+            transferFile.required = isTransfer && (!isEditPayment || !hasTransferProof);
             if (!isTransfer) transferFile.setCustomValidity('');
         }
     };
@@ -141,11 +232,14 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
 
             bill.dataset.amount = option.dataset.amount || '0';
             bill.checked = true;
+            if (option.dataset.billIds) bill.dataset.billIds = option.dataset.billIds;
             if (detail) detail.textContent = option.dataset.detail || '';
             if (amount) amount.textContent = `${formatter.format(Number(option.dataset.amount || 0))},-`;
             renderTotal(true);
         });
     });
+
+    form.addEventListener('submit', syncAllBillIds);
 
     paidInput?.addEventListener('input', () => {
         paidTouched = true;
@@ -222,15 +316,29 @@ if (paymentImport) {
     const fileInput = paymentImport.querySelector('[data-payment-import-file]');
     const submitButton = paymentImport.querySelector('[data-payment-import-submit]');
     const submitLabel = paymentImport.querySelector('[data-payment-import-submit-label]');
+    const sppContext = paymentImport.querySelector('[data-payment-import-spp-context]');
+    const sppFields = Array.from(paymentImport.querySelectorAll('[data-payment-import-spp-field]'));
 
-    category?.addEventListener('change', () => {
+    const syncPaymentImport = () => {
         const action = category.selectedOptions?.[0]?.dataset.action;
         if (action) paymentImport.action = action;
-    });
 
-    fileInput?.addEventListener('change', () => {
-        if (submitButton) submitButton.disabled = !fileInput.files?.length;
-    });
+        const isSpp = category?.value === 'spp';
+        if (sppContext) sppContext.hidden = !isSpp;
+        sppFields.forEach((field) => {
+            field.disabled = !isSpp;
+            field.required = isSpp;
+        });
+
+        const hasFile = Boolean(fileInput?.files?.length);
+        const hasSppContext = !isSpp || sppFields.every((field) => field.value);
+        if (submitButton) submitButton.disabled = !hasFile || !hasSppContext;
+    };
+
+    category?.addEventListener('change', syncPaymentImport);
+    fileInput?.addEventListener('change', syncPaymentImport);
+    sppFields.forEach((field) => field.addEventListener('change', syncPaymentImport));
+    syncPaymentImport();
 
     paymentImport.addEventListener('submit', () => {
         if (submitButton) {
@@ -366,6 +474,14 @@ const studentFilterPairs = Array.from(document.querySelectorAll('[data-student-f
         const classSelect = scope.querySelector('[data-student-filter-class]');
 
         return classSelect ? { unitSelect, classSelect, options: Array.from(classSelect.options) } : null;
+    })
+    .filter(Boolean);
+const reportFeeTypePairs = Array.from(document.querySelectorAll('[data-report-payment-type]'))
+    .map((paymentTypeSelect) => {
+        const scope = paymentTypeSelect.closest('form') || document;
+        const feeTypeSelect = scope.querySelector('[data-report-fee-type]');
+
+        return feeTypeSelect ? { paymentTypeSelect, feeTypeSelect, options: Array.from(feeTypeSelect.options) } : null;
     })
     .filter(Boolean);
 const studentFilterToggle = document.querySelector('[data-student-filter-toggle]');
@@ -648,25 +764,69 @@ const filterStudentListClasses = (filterPair, preserveSelection = false) => {
     if (!filterPair) return;
     const { unitSelect, classSelect, options } = filterPair;
     const unitId = unitSelect.value;
-    const currentClass = preserveSelection ? classSelect.value : '';
-    classSelect.disabled = false;
+    const requiresUnit = classSelect.hasAttribute('data-class-requires-unit');
+    const currentClass = classSelect.value;
+    classSelect.disabled = requiresUnit && !unitId;
     options.forEach((option) => {
         if (!option.value) {
-            option.textContent = 'semua';
+            option.textContent = requiresUnit && !unitId ? 'Pilih Unit Pendidikan' : 'semua';
             option.hidden = false;
             return;
         }
-        option.hidden = Boolean(unitId) && option.dataset.unitId !== unitId;
+        const shouldHide = (requiresUnit && !unitId) || (Boolean(unitId) && option.dataset.unitId !== unitId);
+        option.hidden = option.value !== currentClass && shouldHide;
         option.disabled = option.hidden;
     });
-    classSelect.value = currentClass && options.some((option) => option.value === currentClass && !option.hidden)
-        ? currentClass
-        : '';
+    classSelect.value = currentClass;
 };
 studentFilterPairs.forEach((filterPair) => {
     filterPair.unitSelect.addEventListener('change', () => filterStudentListClasses(filterPair));
     filterStudentListClasses(filterPair, true);
 });
+const filterReportFeeTypes = (filterPair, preserveSelection = false) => {
+    if (!filterPair) return;
+    const { paymentTypeSelect, feeTypeSelect, options } = filterPair;
+    const paymentType = paymentTypeSelect.value;
+    const currentFeeType = feeTypeSelect.value;
+    feeTypeSelect.disabled = !paymentType;
+    options.forEach((option) => {
+        if (!option.value) {
+            option.textContent = paymentType ? 'Semua' : 'Pilih Kategori Pembayaran';
+            option.hidden = false;
+            return;
+        }
+        const shouldHide = !paymentType || option.dataset.paymentGroup !== paymentType;
+        option.hidden = option.value !== currentFeeType && shouldHide;
+        option.disabled = option.hidden;
+    });
+    feeTypeSelect.value = currentFeeType;
+};
+reportFeeTypePairs.forEach((filterPair) => {
+    filterPair.paymentTypeSelect.addEventListener('change', () => filterReportFeeTypes(filterPair));
+    filterReportFeeTypes(filterPair, true);
+});
+
+const reportRowToggleButtons = Array.from(document.querySelectorAll('[data-report-row-toggle]'));
+reportRowToggleButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+        const detailRow = document.getElementById(button.dataset.reportRowToggle);
+        if (!detailRow) return;
+
+        const willOpen = detailRow.hidden;
+        reportRowToggleButtons.forEach((item) => {
+            const row = document.getElementById(item.dataset.reportRowToggle);
+            if (!row) return;
+            row.hidden = true;
+            item.setAttribute('aria-expanded', 'false');
+            item.classList.remove('open');
+        });
+
+        detailRow.hidden = !willOpen;
+        button.setAttribute('aria-expanded', String(willOpen));
+        button.classList.toggle('open', willOpen);
+    });
+});
+
 const filterStudentExportClasses = () => {
     if (!studentExportUnit || !studentExportClass) return;
     const unitId = studentExportUnit.value;
@@ -917,8 +1077,9 @@ if (sppForm) {
     };
     const paymentStatus = sppForm.querySelector('[data-spp-status]');
     const paidInput = sppForm.querySelector('[data-spp-paid-input]');
+    const editPaymentId = sppForm.dataset.sppEditPayment || '';
     let paidInputEditedManually = Boolean(digitsOnly(paidInput.value));
-    let monthCountEditedManually = false;
+    let monthCountEditedManually = Boolean(monthCountInput.value);
     let maxMonthCount = 0;
     const transactionTime = sppForm.querySelector('[data-spp-time]');
     const transactionClock = sppForm.querySelector('[data-wib-clock]');
@@ -991,6 +1152,7 @@ if (sppForm) {
             return;
         }
         const params = new URLSearchParams({ student_id: student.value, month_count: monthCount });
+        if (editPaymentId) params.set('edit_payment', editPaymentId);
         message.textContent = 'Menghitung nominal dan keringanan...';
         message.classList.remove('error');
         try {
@@ -1025,6 +1187,7 @@ if (sppForm) {
         }
 
         const params = new URLSearchParams({ student_id: student.value });
+        if (editPaymentId) params.set('edit_payment', editPaymentId);
         try {
             const response = await fetch(`${sppForm.dataset.monthsUrl}?${params.toString()}`, { headers: { Accept: 'application/json' } });
             const data = await response.json();

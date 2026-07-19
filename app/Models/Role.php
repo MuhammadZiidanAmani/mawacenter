@@ -24,7 +24,7 @@ class Role extends Model
         'payments.view_unit' => 'Riwayat Transaksi Unit',
         'bills.view' => 'Tagihan Semua Siswa',
         'bills.view_unit' => 'Tagihan Unit',
-        'bills.view_guardian' => 'Tagihan Anak Wali',
+        'bills.view_guardian' => 'Tagihan Wali Santri',
         'reports.view' => 'Laporan Semua Unit',
         'reports.view_unit' => 'Laporan Unit',
         'reports.export' => 'Export Laporan',

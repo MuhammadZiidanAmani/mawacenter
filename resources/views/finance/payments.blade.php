@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $mode === 'import-preview' ? 'Preview Impor Pembayaran' : ($mode === 'import' ? 'Impor Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Pembayaran')) }} - MA'WA CENTER</title>
+    <title>{{ $mode === 'import-preview' ? 'Preview Import Pembayaran' : ($mode === 'import' ? 'Import Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Pembayaran')) }} - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
@@ -141,6 +141,9 @@
                                         $studentStatusLabel = 'Aktif';
                                         $mandatoryRows = collect();
                                         $optionalRows = collect();
+                                        $isEditingSppPayment = isset($editSppPayment) && $editSppPayment;
+                                        $editSppBillKey = $isEditingSppPayment ? $editSppPayment->student_id.':spp' : null;
+                                        $editSppModeKey = $editSppBillKey ? str_replace(':', '_', $editSppBillKey) : null;
 
                                         foreach ($selectedRegistrations as $student) {
                                             $unitCode = $student->schoolClass?->educationUnit?->code ?? '-';
@@ -176,11 +179,18 @@
 
                                         $mandatoryBillRows = $mandatoryRows->filter(fn ($row) => $row['amount'] > 0 || $row['period_options'] !== [])->values();
                                         $optionalBillRows = $optionalRows->filter(fn ($row) => $row['amount'] > 0 || $row['period_options'] !== [])->values();
+                                        if ($isEditingSppPayment) {
+                                            $mandatoryBillRows = $mandatoryBillRows->filter(fn ($row) => $row['key'] === $editSppBillKey)->values();
+                                            $optionalBillRows = collect();
+                                        }
                                         $billRows = $mandatoryBillRows->concat($optionalBillRows)->values();
                                         $hasOldSelection = old('bill_keys') !== null || old('optional_keys') !== null;
-                                        $oldBillKeys = collect(old('bill_keys', []));
+                                        $oldBillKeys = collect(old('bill_keys', $isEditingSppPayment ? [$editSppBillKey] : []));
                                         $oldOptionalKeys = collect(old('optional_keys', []));
                                         $oldPaymentMonthCounts = collect(old('payment_month_counts', []));
+                                        if ($isEditingSppPayment && ! $oldPaymentMonthCounts->has($editSppModeKey)) {
+                                            $oldPaymentMonthCounts->put($editSppModeKey, (int) old('month_count', $editSppPayment->items->count()));
+                                        }
                                         $defaultTotal = $billRows
                                             ->filter(fn ($row) => $row['name'] === 'optional_keys[]'
                                                 ? ($hasOldSelection && $oldOptionalKeys->contains($row['key']))
@@ -190,9 +200,11 @@
                                                 $option = collect($row['period_options'])->firstWhere('count', $count);
                                                 return (int) ($option['amount'] ?? $row['amount']);
                                             });
-                                        $oldPaidDigits = preg_replace('/\D/', '', (string) old('paid_amount', $defaultTotal));
+                                        $oldPaidDigits = preg_replace('/\D/', '', (string) old('paid_amount', $isEditingSppPayment ? $editSppPayment->paid_amount : $defaultTotal));
                                         $oldPaidLabel = $oldPaidDigits !== '' ? number_format((int) $oldPaidDigits, 0, ',', '.') : '';
-                                        $oldPaymentMethod = $cashOnly ? 'Cash' : old('payment_method', 'Cash');
+                                        $oldPaymentMethod = $cashOnly ? 'Cash' : old('payment_method', $isEditingSppPayment ? $editSppPayment->payment_method : 'Cash');
+                                        $paymentFormAction = $isEditingSppPayment ? route('finance.spp.update', $editSppPayment) : route('finance.payments.store');
+                                        $paymentReturnUrl = $returnUrl ?: route('reports.transactions', request()->except(['edit_payment', 'student_id', 'search', 'return_url']));
                                     @endphp
                                     <article class="payment-one-stop-person">
                                         <div class="payment-one-stop-person-head payment-one-stop-profile-card">
@@ -211,16 +223,23 @@
                                             </div>
                                         </div>
 
-                                        <form method="POST" action="{{ route('finance.payments.store') }}" enctype="multipart/form-data" class="payment-one-stop-pay-form" data-payment-one-stop-form>
+                                        <form method="POST" action="{{ $paymentFormAction }}" enctype="multipart/form-data" class="payment-one-stop-pay-form" data-payment-one-stop-form @if($isEditingSppPayment) data-payment-edit-mode="spp" data-payment-has-transfer-proof="{{ $editSppPayment->transfer_proof_path ? 'true' : 'false' }}" @endif>
                                             @csrf
-                                            <input type="hidden" name="student_id" value="{{ $selectedIdentity->id }}">
+                                            @if($isEditingSppPayment)
+                                                @method('PUT')
+                                                <input type="hidden" name="return_url" value="{{ $paymentReturnUrl }}">
+                                                <input type="hidden" name="transaction_date" value="{{ $editSppPayment->transaction_at->format('Y-m-d') }}">
+                                                <input type="hidden" name="transaction_time" value="{{ $editSppPayment->transaction_at->format('H:i:s') }}">
+                                                <input type="hidden" name="status" value="{{ $editSppPayment->status }}">
+                                            @endif
+                                            <input type="hidden" name="student_id" value="{{ $isEditingSppPayment ? $editSppPayment->student_id : $selectedIdentity->id }}">
                                             <input type="hidden" name="search" value="{{ $search }}">
 
                                             <section class="payment-one-stop-bills-card">
                                                 <div class="payment-one-stop-bills-head">
-                                                    <h2>Daftar Tagihan</h2>
+                                                    <h2>{{ $isEditingSppPayment ? 'Edit Pembayaran SPP' : 'Daftar Tagihan' }}</h2>
                                                     <span @class(['is-administration-paid' => $mandatoryBillRows->isEmpty()])>
-                                                        {{ $mandatoryBillRows->isEmpty() ? 'Lunas Administrasi' : $mandatoryBillRows->count().' Tagihan' }}
+                                                        {{ $isEditingSppPayment ? 'Mode Edit' : ($mandatoryBillRows->isEmpty() ? 'Lunas Administrasi' : $mandatoryBillRows->count().' Tagihan') }}
                                                     </span>
                                                 </div>
 
@@ -255,7 +274,7 @@
                                                                     @if($row['period_options'] !== [])
                                                                         <label class="payment-one-stop-period-select">
                                                                             <span>Bayar sampai</span>
-                                                                            <select name="payment_month_counts[{{ $row['mode_key'] }}]" data-payment-period-select>
+                                                                            <select name="{{ $isEditingSppPayment && $row['key'] === $editSppBillKey ? 'month_count' : 'payment_month_counts['.$row['mode_key'].']' }}" data-payment-period-select>
                                                                                 @foreach($row['period_options'] as $periodOption)
                                                                                     <option value="{{ $periodOption['count'] }}" data-amount="{{ $periodOption['amount'] }}" data-detail="{{ $periodOption['card_detail'] ?? $periodOption['detail'] }}" @selected($selectedMonthCount === $periodOption['count'])>{{ $periodOption['detail'] }}</option>
                                                                                 @endforeach
@@ -364,7 +383,7 @@
                                                         <label class="payment-one-stop-upload-field">
                                                             <span class="payment-one-stop-upload-icon" aria-hidden="true">{!! $icon('upload') !!}</span>
                                                             <span class="payment-one-stop-upload-copy">
-                                                                <strong data-payment-upload-name>Pilih file bukti transfer</strong>
+                                                                <strong data-payment-upload-name>{{ $isEditingSppPayment && $editSppPayment->transfer_proof_path ? 'Bukti lama tersimpan, pilih file jika ingin mengganti' : 'Pilih file bukti transfer' }}</strong>
                                                                 <small>JPG, PNG, atau PDF maksimal 2 MB</small>
                                                             </span>
                                                             <input type="file" name="transfer_proof" accept=".jpg,.jpeg,.png,.pdf" data-payment-transfer-file>
@@ -377,7 +396,7 @@
                                                         <input type="text" name="paid_amount" value="{{ $oldPaidLabel }}" inputmode="numeric" data-currency-input data-payment-paid-display>
                                                     </label>
 
-                                                    <button class="payment-one-stop-pay-button" data-payment-submit @disabled($billRows->isEmpty())>Bayar Sekarang</button>
+                                                    <button class="payment-one-stop-pay-button" data-payment-submit @disabled($billRows->isEmpty())>{{ $isEditingSppPayment ? 'Simpan Perubahan' : 'Bayar Sekarang' }}</button>
                                                 </div>
                                             </section>
                                         </form>
@@ -460,7 +479,7 @@
                     </div>
                 @else
                     <div class="payment-import-heading-copy">
-                        <h1>{{ $mode === 'import-preview' ? 'Preview Impor Pembayaran' : 'Impor Pembayaran' }}</h1>
+                        <h1>{{ $mode === 'import-preview' ? 'Preview Import Pembayaran' : 'Import Pembayaran' }}</h1>
                         <p>{{ $mode === 'import-preview' ? 'Periksa data gagal sebelum mengimpor transaksi valid.' : 'Unggah data pembayaran dari file Excel untuk diperiksa sebelum disimpan.' }}</p>
                     </div>
                     <div class="payment-hub-heading-actions">
@@ -477,6 +496,10 @@
                         ['laundry', 'LD', 'Laundry', 'Pembayaran laundry per bulan.', route('finance.other.import.preview', ['category' => 'laundry'])],
                         ['lain-lain', 'LL', 'Pembayaran Lain', 'Kategori pembayaran lainnya.', route('finance.other.import.preview')],
                     ];
+                    $importMonths = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
+                    $importYears = range(now()->year - 5, now()->year + 1);
+                    $defaultImportMonth = (int) old('month', now()->month);
+                    $defaultImportYear = (int) old('year', now()->year);
                 @endphp
 
                 @if(session('success'))
@@ -501,13 +524,48 @@
                 >
                     @csrf
                     <label class="payment-import-simple-field">
-                        <span>Kategori Pembayaran</span>
+                        <span>Jenis Pembayaran</span>
                         <select data-payment-import-category>
                             @foreach($importTypes as [$key, $code, $title, $description, $action])
                                 <option value="{{ $key }}" data-action="{{ $action }}">{{ $title }}</option>
                             @endforeach
                         </select>
                     </label>
+
+                    <div class="payment-import-spp-context" data-payment-import-spp-context>
+                        <label class="payment-import-simple-field">
+                            <span>Unit Pendidikan</span>
+                            <select name="unit_id" required data-payment-import-spp-field>
+                                <option value="">Pilih unit</option>
+                                @foreach($educationUnits ?? [] as $unit)
+                                    <option value="{{ $unit->id }}" @selected((int) old('unit_id') === $unit->id)>{{ $unit->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+
+                        <label class="payment-import-simple-field">
+                            <span>Bulan</span>
+                            <select name="month" required data-payment-import-spp-field>
+                                @foreach($importMonths as $monthNumber => $monthName)
+                                    <option value="{{ $monthNumber }}" @selected($defaultImportMonth === $monthNumber)>{{ $monthName }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+
+                        <label class="payment-import-simple-field">
+                            <span>Tahun</span>
+                            <select name="year" required data-payment-import-spp-field>
+                                @foreach($importYears as $year)
+                                    <option value="{{ $year }}" @selected($defaultImportYear === $year)>{{ $year }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+
+                        <div class="payment-import-sequence-warning">
+                            <strong>Import SPP wajib berurutan.</strong>
+                            <span>Mulai dari Juli 2025 dan tidak boleh loncat bulan. MTs dan MA mulai Agustus 2025 karena Juli termasuk Daftar Ulang.</span>
+                        </div>
+                    </div>
 
                     <label class="payment-import-simple-field">
                         <span>File Excel</span>
@@ -573,14 +631,20 @@
                     <div class="payment-import-preview-top">
                         <div>
                             <strong>{{ number_format($importPreview['valid'], 0, ',', '.') }} transaksi siap diimpor</strong>
-                            <span>{{ $sectionTitle }} · {{ number_format(count($importPreview['failures']), 0, ',', '.') }} gagal · {{ number_format($importPreview['duplicates'], 0, ',', '.') }} duplikat</span>
+                            <span>
+                                {{ $sectionTitle }}
+                                @if(! empty($importContext))
+                                    · {{ $importContext['unit'] }} · {{ $importContext['month'] }} {{ $importContext['year'] }}
+                                @endif
+                                · {{ number_format(count($importPreview['failures']), 0, ',', '.') }} gagal · {{ number_format($importPreview['duplicates'], 0, ',', '.') }} duplikat
+                            </span>
                         </div>
                         <form method="POST" action="{{ $previewImportAction }}">
                             @csrf
                             <input type="hidden" name="token" value="{{ $importToken }}">
                             <button class="button button-primary" @disabled(! $canImport)>
                                 {!! $icon('check') !!}
-                                Impor {{ number_format($importPreview['valid'], 0, ',', '.') }} Transaksi
+                                Import {{ number_format($importPreview['valid'], 0, ',', '.') }} Transaksi
                             </button>
                         </form>
                     </div>
@@ -619,6 +683,7 @@
                 </section>
             @endif
         </main>
+        @include('partials.app-footer')
     </div>
 </div>
 </body>

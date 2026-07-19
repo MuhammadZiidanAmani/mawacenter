@@ -17,7 +17,7 @@
         table.data th { background:#f3f4f6; text-align:center; font-weight:bold; }
         .money { text-align:right; white-space:nowrap; }
         .center { text-align:center; }
-        .footer { margin-top:18px; text-align:right; color:#374151; }
+        .footer { margin-top:18px; text-align:center; color:#374151; }
     </style>
 </head>
 <body>
@@ -72,6 +72,6 @@
         @endforelse
     </tbody>
 </table>
-<div class="footer">MA'WA CENTER</div>
+<div class="footer">&copy; 2026 Ma'wa Center</div>
 </body>
 </html>
