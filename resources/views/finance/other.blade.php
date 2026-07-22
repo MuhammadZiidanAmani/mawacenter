@@ -241,7 +241,7 @@
                                             <select name="student_id" data-laundry-student data-student-source hidden>
                                                 <option value="">Pilih siswa...</option>
                                                 @foreach($students as $student)
-                                                    <option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-class-name="{{ $student->schoolClass?->name }}" data-unit-id="{{ $student->schoolClass?->education_unit_id }}" data-unit-code="{{ $student->schoolClass?->educationUnit?->code }}" data-year-id="{{ $student->academic_year_id }}" data-nis="{{ $student->nis }}" data-name="{{ $student->name }}" @selected(old('student_id', request('student_id'))==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
+                                                    <option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-class-name="{{ $student->schoolClass?->name }}" data-unit-id="{{ $student->schoolClass?->education_unit_id }}" data-unit-code="{{ $student->schoolClass?->educationUnit?->code }}" data-year-id="{{ $student->academic_year_id }}" data-intake-status="{{ $student->intake_status ?? \App\Models\Student::INTAKE_RETURNING }}" data-nis="{{ $student->nis }}" data-name="{{ $student->name }}" @selected(old('student_id', request('student_id'))==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
                                                 @endforeach
                                             </select>
                                             <span class="student-search-results" data-student-results hidden></span>
@@ -257,7 +257,7 @@
                                     <label>Kategori Laundry
                                         <select name="fee_type_id" required data-laundry-fee disabled>
                                             <option value="">Pilih siswa terlebih dahulu</option>
-                                            @foreach($feeTypes as $feeType)<option value="{{ $feeType->id }}" data-class-id="{{ $feeType->school_class_id }}" data-unit-id="{{ $feeType->education_unit_id }}" data-year-id="{{ $feeType->academic_year_id }}" @selected(old('fee_type_id')==$feeType->id)>{{ $feeType->name }}</option>@endforeach
+                                            @foreach($feeTypes as $feeType)<option value="{{ $feeType->id }}" data-class-id="{{ $feeType->school_class_id }}" data-unit-id="{{ $feeType->education_unit_id }}" data-year-id="{{ $feeType->academic_year_id }}" data-student-scope="{{ $feeType->student_scope ?? \App\Models\FeeType::STUDENT_SCOPE_ALL }}" @selected(old('fee_type_id')==$feeType->id)>{{ $feeType->name }}</option>@endforeach
                                         </select>
                                     </label>
                                 </section>
@@ -353,7 +353,7 @@
                                             <select name="student_id" data-other-student data-student-source hidden>
                                                 <option value="">Pilih siswa...</option>
                                                 @foreach($students as $student)
-                                                    <option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-class-name="{{ $student->schoolClass?->name }}" data-unit-id="{{ $student->schoolClass?->education_unit_id }}" data-unit-code="{{ $student->schoolClass?->educationUnit?->code }}" data-year-id="{{ $student->academic_year_id }}" data-nis="{{ $student->nis }}" data-name="{{ $student->name }}" @selected(old('student_id', request('student_id'))==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
+                                                    <option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-class-name="{{ $student->schoolClass?->name }}" data-unit-id="{{ $student->schoolClass?->education_unit_id }}" data-unit-code="{{ $student->schoolClass?->educationUnit?->code }}" data-year-id="{{ $student->academic_year_id }}" data-intake-status="{{ $student->intake_status ?? \App\Models\Student::INTAKE_RETURNING }}" data-nis="{{ $student->nis }}" data-name="{{ $student->name }}" @selected(old('student_id', request('student_id'))==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
                                                 @endforeach
                                             </select>
                                             <span class="student-search-results" data-student-results hidden></span>
@@ -375,7 +375,7 @@
                                         <select name="fee_type_id" required data-other-fee disabled>
                                             <option value="">Pilih siswa terlebih dahulu</option>
                                             @foreach($feeTypes as $feeType)
-                                                <option value="{{ $feeType->id }}" data-class-id="{{ $feeType->school_class_id }}" data-class-name="{{ $feeType->schoolClass?->name }}" data-unit-id="{{ $feeType->education_unit_id }}" data-unit-code="{{ $feeType->educationUnit?->code }}" data-year-id="{{ $feeType->academic_year_id }}" @selected(old('fee_type_id')==$feeType->id)>{{ $feeType->name }}</option>
+                                                <option value="{{ $feeType->id }}" data-class-id="{{ $feeType->school_class_id }}" data-class-name="{{ $feeType->schoolClass?->name }}" data-unit-id="{{ $feeType->education_unit_id }}" data-unit-code="{{ $feeType->educationUnit?->code }}" data-year-id="{{ $feeType->academic_year_id }}" data-student-scope="{{ $feeType->student_scope ?? \App\Models\FeeType::STUDENT_SCOPE_ALL }}" @selected(old('fee_type_id')==$feeType->id)>{{ $feeType->name }}</option>
                                             @endforeach
                                         </select>
                                     </label>
@@ -455,7 +455,7 @@
                                             <select name="student_id" data-other-student data-student-source hidden>
                                                 <option value="">Pilih siswa...</option>
                                                 @foreach($students as $student)
-                                                    <option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-class-name="{{ $student->schoolClass?->name }}" data-unit-id="{{ $student->schoolClass?->education_unit_id }}" data-unit-code="{{ $student->schoolClass?->educationUnit?->code }}" data-year-id="{{ $student->academic_year_id }}" data-nis="{{ $student->nis }}" data-name="{{ $student->name }}" @selected(old('student_id', request('student_id'))==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
+                                                    <option value="{{ $student->id }}" data-class-id="{{ $student->school_class_id }}" data-class-name="{{ $student->schoolClass?->name }}" data-unit-id="{{ $student->schoolClass?->education_unit_id }}" data-unit-code="{{ $student->schoolClass?->educationUnit?->code }}" data-year-id="{{ $student->academic_year_id }}" data-intake-status="{{ $student->intake_status ?? \App\Models\Student::INTAKE_RETURNING }}" data-nis="{{ $student->nis }}" data-name="{{ $student->name }}" @selected(old('student_id', request('student_id'))==$student->id)>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
                                                 @endforeach
                                             </select>
                                             <span class="student-search-results" data-student-results hidden></span>
@@ -468,7 +468,7 @@
                                     <label>Kategori Pembayaran
                                         <select name="fee_type_id" required data-other-fee disabled>
                                             <option value="">Pilih siswa terlebih dahulu</option>
-                                            @foreach($feeTypes as $feeType)<option value="{{ $feeType->id }}" data-class-id="{{ $feeType->school_class_id }}" data-class-name="{{ $feeType->schoolClass?->name }}" data-unit-id="{{ $feeType->education_unit_id }}" data-unit-code="{{ $feeType->educationUnit?->code }}" data-year-id="{{ $feeType->academic_year_id }}" @selected(old('fee_type_id')==$feeType->id)>{{ $feeType->name }}</option>@endforeach
+                                            @foreach($feeTypes as $feeType)<option value="{{ $feeType->id }}" data-class-id="{{ $feeType->school_class_id }}" data-class-name="{{ $feeType->schoolClass?->name }}" data-unit-id="{{ $feeType->education_unit_id }}" data-unit-code="{{ $feeType->educationUnit?->code }}" data-year-id="{{ $feeType->academic_year_id }}" data-student-scope="{{ $feeType->student_scope ?? \App\Models\FeeType::STUDENT_SCOPE_ALL }}" @selected(old('fee_type_id')==$feeType->id)>{{ $feeType->name }}</option>@endforeach
                                         </select>
                                     </label>
                                 </section>

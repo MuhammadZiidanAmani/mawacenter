@@ -38,7 +38,7 @@ class ChargeCalculator
             && ($feeType->payment_group === 'daftar-ulang' || $feeType->code === 'DAFTAR-ULANG' || str_starts_with($feeType->code, 'DAFTAR-ULANG-'));
 
         if (! $feeType || ! $feeType->is_active
-            || ! $feeType->matchesSchoolClass($student->schoolClass)
+            || ! $feeType->matchesStudent($student)
             || (! $isRegistrationFee && $feeType->academic_year_id !== null && $feeType->academic_year_id !== $student->academic_year_id)
         ) {
             return 0;

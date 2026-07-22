@@ -4,6 +4,43 @@ const toast = document.querySelector('[data-toast]');
 const passwordInput = document.querySelector('[data-password]');
 const passwordToggle = document.querySelector('[data-password-toggle]');
 const currencyInputs = Array.from(document.querySelectorAll('[data-currency-input]'));
+const themeStorageKey = 'mawacenter-theme';
+const themeIcons = {
+    light: '<svg class="icon theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+    dark: '<svg class="icon theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z"/></svg>',
+};
+const storedTheme = () => {
+    try {
+        return localStorage.getItem(themeStorageKey);
+    } catch {
+        return null;
+    }
+};
+const storeTheme = (theme) => {
+    try {
+        localStorage.setItem(themeStorageKey, theme);
+    } catch {
+        // Theme still changes for the current page if storage is unavailable.
+    }
+};
+const preferredTheme = () => {
+    const saved = storedTheme();
+    if (saved === 'dark' || saved === 'light') return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+const applyTheme = (theme) => {
+    const nextTheme = theme === 'dark' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = nextTheme;
+    document.documentElement.style.colorScheme = nextTheme;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', nextTheme === 'dark' ? '#07140f' : '#157144');
+    document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+        const dark = nextTheme === 'dark';
+        button.setAttribute('aria-label', dark ? 'Gunakan mode terang' : 'Gunakan mode gelap');
+        button.setAttribute('title', dark ? 'Mode terang' : 'Mode gelap');
+        button.innerHTML = dark ? themeIcons.dark : themeIcons.light;
+    });
+};
+applyTheme(preferredTheme());
 const digitsOnly = (value) => String(value ?? '').replace(/\D/g, '');
 const formatThousands = (value) => {
     const digits = digitsOnly(value).replace(/^0+(?=\d)/, '');
@@ -107,6 +144,38 @@ document.querySelectorAll('.logout-button').forEach((button) => {
     button.addEventListener('click', () => { window.location.href = '/logout'; });
 });
 
+document.querySelectorAll('.topbar').forEach((topbar) => {
+    if (topbar.querySelector('[data-theme-toggle]')) return;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'icon-button theme-toggle-button';
+    button.dataset.themeToggle = 'true';
+    button.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        storeTheme(nextTheme);
+        applyTheme(nextTheme);
+    });
+
+    const notificationButton = topbar.querySelector('.notification-button');
+    topbar.insertBefore(button, notificationButton ?? topbar.querySelector('.logout-button'));
+    applyTheme(document.documentElement.dataset.theme);
+});
+
+if (document.querySelector('.login-page') && !document.querySelector('[data-theme-toggle]')) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'icon-button theme-toggle-button login-theme-toggle';
+    button.dataset.themeToggle = 'true';
+    button.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        storeTheme(nextTheme);
+        applyTheme(nextTheme);
+    });
+    document.body.appendChild(button);
+    applyTheme(document.documentElement.dataset.theme);
+}
+
 document.querySelectorAll('[data-indonesian-date]').forEach((input) => {
     input.value = formatDateInput(input.value);
     input.addEventListener('input', () => { input.value = formatDateInput(input.value); });
@@ -152,6 +221,8 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     const paidInput = form.querySelector('[data-payment-paid-display]');
     const submitButton = form.querySelector('[data-payment-submit]');
     const method = form.querySelector('[data-payment-method]');
+    const billChoice = form.querySelector('[data-payment-bill-choice]');
+    const paymentType = form.querySelector('[data-payment-type]');
     const transferPanel = form.querySelector('[data-payment-transfer-panel]');
     const transferUpload = form.querySelector('[data-payment-transfer-upload]');
     const transferFile = form.querySelector('[data-payment-transfer-file]');
@@ -196,15 +267,46 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         form.querySelectorAll('[data-payment-bill-row]').forEach(syncBillIds);
     };
 
+    const formatTotal = (total) => (total > 0 ? formatter.format(total) : '');
+
     const renderTotal = (syncPaid = false) => {
         syncAllBillIds();
         const total = selectedTotal();
         if (totalOutput) totalOutput.textContent = `${formatter.format(total)},-`;
         if (submitButton) submitButton.disabled = total < 1;
-        if (paidInput && syncPaid && (!paidTouched || Number(digitsOnly(paidInput.value)) > total)) {
-            paidInput.value = total > 0 ? formatter.format(total) : '';
-            paidTouched = false;
+        if (paidInput) {
+            const isFullPayment = paymentType?.value !== 'partial';
+            paidInput.readOnly = isFullPayment;
+            if (isFullPayment) {
+                paidInput.value = formatTotal(total);
+                paidTouched = false;
+            } else if (syncPaid && (!paidTouched || Number(digitsOnly(paidInput.value)) > total)) {
+                paidInput.value = formatTotal(total);
+                paidTouched = false;
+            }
         }
+    };
+
+    const renderMandatoryDisplayTotal = () => {
+        const mandatoryTotal = form.querySelector('[data-payment-mandatory-total]');
+        if (!mandatoryTotal) return;
+
+        const total = Array.from(form.querySelectorAll('[data-payment-display-row]'))
+            .reduce((sum, row) => sum + Number(row.dataset.amount || 0), 0);
+        mandatoryTotal.textContent = `${formatter.format(total)},-`;
+    };
+
+    const syncBillChoice = () => {
+        const selectedKey = billChoice?.value || 'all';
+
+        form.querySelectorAll('[data-payment-summary-bill-key]').forEach((row) => {
+            const bill = row.querySelector('[data-payment-bill]');
+            const isSelected = selectedKey === 'all' || row.dataset.paymentSummaryBillKey === selectedKey;
+            if (bill) bill.checked = isSelected;
+            row.hidden = !isSelected;
+        });
+
+        renderTotal(true);
     };
 
     const renderTransferFields = () => {
@@ -221,6 +323,10 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         bill.addEventListener('change', () => renderTotal(true));
     });
 
+    billChoice?.addEventListener('change', syncBillChoice);
+
+    paymentType?.addEventListener('change', () => renderTotal(true));
+
     form.querySelectorAll('[data-payment-period-select]').forEach((select) => {
         select.addEventListener('change', () => {
             const row = select.closest('[data-payment-bill-row]');
@@ -235,6 +341,19 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
             if (option.dataset.billIds) bill.dataset.billIds = option.dataset.billIds;
             if (detail) detail.textContent = option.dataset.detail || '';
             if (amount) amount.textContent = `${formatter.format(Number(option.dataset.amount || 0))},-`;
+            const displayRow = Array.from(form.querySelectorAll('[data-payment-display-row]'))
+                .find((item) => item.dataset.paymentDisplayRow === row.dataset.paymentSummaryBillKey);
+            const displayDetail = displayRow?.querySelector('[data-payment-bill-detail]');
+            const displayAmount = displayRow?.querySelector('[data-payment-bill-amount]');
+            const displayMonthCount = displayRow?.querySelector('[data-payment-bill-month-count]');
+            const displayDuration = displayRow?.querySelector('[data-payment-duration-unit]');
+            if (displayRow) displayRow.dataset.amount = option.dataset.amount || '0';
+            if (displayDetail) displayDetail.textContent = option.dataset.detail || '';
+            if (displayAmount) displayAmount.textContent = `${formatter.format(Number(option.dataset.amount || 0))},-`;
+            if (displayMonthCount && displayDuration?.dataset.paymentDurationUnit === 'Bulan') {
+                displayMonthCount.textContent = select.value || '1';
+            }
+            renderMandatoryDisplayTotal();
             renderTotal(true);
         });
     });
@@ -276,6 +395,7 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     });
 
     renderTransferFields();
+    if (billChoice) syncBillChoice();
     renderTotal(false);
 });
 
@@ -1642,12 +1762,17 @@ if (otherForm) {
         const classId = student.selectedOptions[0]?.dataset.classId;
         const unitId = student.selectedOptions[0]?.dataset.unitId;
         const yearId = academicYear?.value || student.selectedOptions[0]?.dataset.yearId;
+        const intakeStatus = student.selectedOptions[0]?.dataset.intakeStatus || 'returning';
         let availableFees = 0;
         feeOptions.forEach((option) => {
+            const studentScope = option.dataset.studentScope || 'all';
+            const scopeMismatch = (studentScope === 'returning' && intakeStatus !== 'returning')
+                || (studentScope === 'new_transfer' && !['new', 'transfer'].includes(intakeStatus));
             const hidden = !classId
                 || option.dataset.unitId !== unitId
                 || (option.dataset.classId && option.dataset.classId !== classId)
-                || (option.dataset.yearId && option.dataset.yearId !== yearId);
+                || (option.dataset.yearId && option.dataset.yearId !== yearId)
+                || scopeMismatch;
             option.hidden = hidden;
             option.disabled = hidden;
             if (!hidden) availableFees += 1;

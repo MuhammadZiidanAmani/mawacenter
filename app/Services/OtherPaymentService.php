@@ -23,7 +23,7 @@ class OtherPaymentService
         $charge = $this->calculator->calculate($student, 'fee_type', $feeType, $date);
         if ($charge['original_amount'] < 1) {
             throw ValidationException::withMessages([
-                'fee_type_id' => 'Kategori pembayaran tidak aktif atau tidak berlaku untuk kelas siswa.',
+                'fee_type_id' => 'Kategori pembayaran tidak aktif atau tidak berlaku untuk kelas/sasaran siswa.',
             ]);
         }
 

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#c6c6c6",
+                        "secondary-fixed-dim": "#c6c6c7",
+                        "inverse-on-surface": "#f3f0ef",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#5f6161",
+                        "secondary-container": "#dcdddd",
+                        "primary-container": "#0f5b3c",
+                        "inverse-primary": "#8fd5ae",
+                        "surface": "#fcf9f8",
+                        "primary": "#004229",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e5e2e1",
+                        "background": "#fcf9f8",
+                        "inverse-surface": "#303030",
+                        "surface-container-highest": "#e5e2e1",
+                        "on-primary-container": "#8bd1a9",
+                        "on-tertiary-fixed": "#1a1c1c",
+                        "on-surface-variant": "#404942",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#e2e2e2",
+                        "outline": "#707972",
+                        "tertiary": "#373939",
+                        "on-primary-fixed": "#002112",
+                        "surface-tint": "#246a4a",
+                        "outline-variant": "#bfc9c0",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f0eded",
+                        "on-error-container": "#93000a",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#fcf9f8",
+                        "secondary": "#5d5f5f",
+                        "on-surface": "#1b1c1c",
+                        "on-secondary-fixed": "#1a1c1c",
+                        "on-tertiary-fixed-variant": "#454747",
+                        "on-primary-fixed-variant": "#005234",
+                        "tertiary-container": "#4e5050",
+                        "primary-fixed-dim": "#8fd5ae",
+                        "on-secondary-fixed-variant": "#454747",
+                        "surface-dim": "#dcd9d9",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#abf2c9",
+                        "secondary-fixed": "#e2e2e2",
+                        "on-tertiary-container": "#c2c2c2",
+                        "surface-container-low": "#f6f3f2",
+                        "on-background": "#1b1c1c",
+                        "surface-container-high": "#eae7e7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Merriweather", "serif"],
+                        "body": ["Inter", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        @media print {
+            @page {
+                size: 210mm 165mm;
+                margin: 0;
+            }
+            body { margin: 0; padding: 0; background-color: white !important; }
+            .no-print { display: none !important; }
+            .print-container { 
+                width: 210mm !important;
+                height: 165mm !important;
+                margin: 0 !important;
+                padding: 10mm !important;
+                box-shadow: none !important;
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+            /* Force table visibility for print even if mobile cards are visible on screen */
+            .table-desktop { display: table !important; }
+            .mobile-cards { display: none !important; }
+            .mobile-header { display: none !important; }
+            .desktop-header { display: block !important; }
+            .mobile-footer-action { display: none !important; }
+        }
+        .bill-table th {
+            @apply bg-surface-container-low border border-outline-variant p-2 text-primary font-headline text-sm;
+        }
+        .bill-table td {
+            @apply border border-outline-variant p-2 text-on-surface font-body text-sm;
+        }
+        /* Mobile specific font override */
+        @media (max-width: 767px) {
+            .text-xs { font-size: 14px !important; }
+            .text-sm { font-size: 14px !important; }
+        }
+    </style>
+</head>
+<body class="bg-surface-container-low min-h-screen flex flex-col items-center p-0 lg:p-8">
+<!-- Desktop Print Button -->
+<div class="no-print hidden lg:flex fixed top-4 right-4 gap-2 z-50">
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded flex items-center gap-2 hover:opacity-90 transition-all font-semibold shadow-lg" onclick="window.print()">
+<span class="material-symbols-outlined">print</span>
+            Cetak Dokumen
+        </button>
+</div>
+<!-- Main Container -->
+<div class="print-container bg-white w-full lg:w-[210mm] lg:h-[165mm] p-4 lg:p-8 lg:shadow-xl lg:mx-auto flex flex-col mb-24 lg:mb-0">
+<!-- Desktop Header (Hidden on Mobile, Visible on Print) -->
+<header class="hidden lg:block desktop-header text-center mb-4 pb-2 border-b-2 border-primary">
+<div class="flex justify-center items-center gap-6 mb-2">
+<img alt="Logo Yayasan" class="w-12 h-12 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeV5oKIKSaFb35gcPv93NNxTPdK4wMWu2rVWS_B3BlHEqu5AM88sxkDoE30nk8hFr0qvnqjPI1XrTQK3lkGfzcDJY93LvWNupB329aq0mXbla6q4eHUi-npex-EAvClXrbZ17xCjHkijvil7QJXVBueE4f2RWhhG8TNRouJNxQc85dL7WjAfFGEJ6amU-qwuwP7WJmKCwKSFw_IHnS9L3uJdZc8Av80ZAcDW73276KdionnPMsesp-2F6uxrZVFp0P0fwbQ_G88rXe"/>
+<div>
+<h1 class="text-xl font-black text-primary font-headline uppercase tracking-wide leading-none">
+                        YAYASAN MAMBAUL HIKMAH WADDAWAH
+                    </h1>
+<p class="text-[10pt] text-on-surface-variant font-body mt-2">
+                        Jl. Teglawangi • Kec. Talang • Kabupaten Tegal, Jawa Tengah
+                    </p>
+<p class="text-[9pt] text-on-surface-variant font-body italic">
+                        Email: admin@mambauhikmah.sch.id | Telp: (0283) 345xxx
+                    </p>
+</div>
+</div>
+</header>
+<!-- Mobile Header (Hidden on Desktop & Print) -->
+<header class="lg:hidden mobile-header text-center mb-6 no-print">
+<img alt="Logo" class="w-16 h-16 mx-auto mb-3 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeV5oKIKSaFb35gcPv93NNxTPdK4wMWu2rVWS_B3BlHEqu5AM88sxkDoE30nk8hFr0qvnqjPI1XrTQK3lkGfzcDJY93LvWNupB329aq0mXbla6q4eHUi-npex-EAvClXrbZ17xCjHkijvil7QJXVBueE4f2RWhhG8TNRouJNxQc85dL7WjAfFGEJ6amU-qwuwP7WJmKCwKSFw_IHnS9L3uJdZc8Av80ZAcDW73276KdionnPMsesp-2F6uxrZVFp0P0fwbQ_G88rXe"/>
+<h1 class="text-lg font-bold text-primary font-headline uppercase leading-tight">Yayasan Mambaul Hikmah Waddawah</h1>
+<p class="text-xs text-on-surface-variant font-body mt-1">Kabupaten Tegal, Jawa Tengah</p>
+</header>
+<!-- Document Title -->
+<section class="text-center mb-4 lg:mb-6">
+<h3 class="text-lg lg:text-xl font-bold font-headline lg:underline decoration-1 underline-offset-4">SURAT PENERTIBAN ADMINISTRASI</h3>
+<p class="text-sm font-semibold font-body mt-1">Nomor: 2026/SP/ADM/VII/0122</p>
+</section>
+<!-- Information Area -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 mb-4 border border-outline-variant rounded-lg p-4 bg-surface-container-low/30">
+<div>
+<table class="w-full text-sm font-body">
+<tbody>
+<tr class="flex flex-col lg:table-row mb-2 lg:mb-0">
+<td class="lg:w-24 text-on-surface-variant font-semibold lg:font-normal">Nama Santri</td>
+<td class="hidden lg:table-cell lg:w-2 text-center">:</td>
+<td class="font-bold lg:font-bold">A. Farel Al Fahrezi</td>
+</tr>
+<tr class="flex flex-col lg:table-row mb-2 lg:mb-0">
+<td class="lg:w-24 text-on-surface-variant font-semibold lg:font-normal">NIS</td>
+<td class="hidden lg:table-cell lg:w-2 text-center">:</td>
+<td>220005</td>
+</tr>
+<tr class="flex flex-col lg:table-row mb-2 lg:mb-0">
+<td class="lg:w-24 text-on-surface-variant font-semibold lg:font-normal">Kelas</td>
+<td class="hidden lg:table-cell lg:w-2 text-center">:</td>
+<td>10 A</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="lg:border-l lg:pl-8 lg:border-outline-variant">
+<table class="w-full text-sm font-body">
+<tbody>
+<tr class="flex flex-col lg:table-row mb-2 lg:mb-0">
+<td class="lg:w-24 text-on-surface-variant font-semibold lg:font-normal">Wali</td>
+<td class="hidden lg:table-cell lg:w-2 text-center">:</td>
+<td>Abdullah Ali</td>
+</tr>
+<tr class="flex flex-col lg:table-row mb-2 lg:mb-0">
+<td class="lg:w-24 text-on-surface-variant font-semibold lg:font-normal">Tgl Cetak</td>
+<td class="hidden lg:table-cell lg:w-2 text-center">:</td>
+<td>22 Juli 2026</td>
+</tr>
+<tr class="flex flex-col lg:table-row">
+<td class="lg:w-24 text-on-surface-variant font-semibold lg:font-normal">Status</td>
+<td class="hidden lg:table-cell lg:w-2 text-center">:</td>
+<td class="pt-1 lg:pt-0">
+<span class="inline-block bg-error text-on-error text-[10px] lg:text-[9px] px-2 py-0.5 font-bold uppercase tracking-wider rounded">BELUM LUNAS</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Body Message -->
+<section class="mb-4">
+<p class="text-sm font-body text-on-surface leading-relaxed">
+                Dengan hormat, Berdasarkan data administrasi keuangan Yayasan Mambaul Hikmah Waddawah, sampai dengan tanggal tersebut di bawah ini masih terdapat kewajiban administrasi yang perlu diselesaikan sebagai berikut:
+            </p>
+</section>
+<!-- Data Content (Table for Desktop/Print, Cards for Mobile) -->
+<section class="flex-grow mb-4">
+<!-- Desktop/Print Table -->
+<table class="hidden lg:table w-full bill-table table-desktop">
+<thead>
+<tr>
+<th class="w-12 text-center">No</th>
+<th class="text-left px-4">Uraian Kewajiban Administrasi</th>
+<th class="w-32 text-center">Tahun</th>
+<th class="w-40 text-right px-4">Nominal/Bulan</th>
+<th class="w-24 text-center">Jml Bulan</th>
+<th class="w-40 text-right px-4">Sub Total</th>
+</tr>
+</thead>
+<tbody class="bg-white">
+<tr>
+<td class="text-center">1</td>
+<td class="px-4 font-semibold lg:font-normal">SPP Juli – Desember</td>
+<td class="text-center">2025/2026</td>
+<td class="text-right px-4">Rp 600.000</td>
+<td class="text-center">6</td>
+<td class="text-right px-4 font-bold">Rp 3.600.000</td>
+</tr>
+<tr>
+<td class="text-center">2</td>
+<td class="px-4 font-semibold lg:font-normal">SPP Januari – Juli</td>
+<td class="text-center">2026/2027</td>
+<td class="text-right px-4">Rp 600.000</td>
+<td class="text-center">7</td>
+<td class="text-right px-4 font-bold">Rp 4.200.000</td>
+</tr>
+<tr>
+<td class="text-center">3</td>
+<td class="px-4 font-semibold lg:font-normal">Daftar Ulang Pondok Tahunan</td>
+<td class="text-center">2026/2027</td>
+<td class="text-right px-4">Rp 600.000</td>
+<td class="text-center">1</td>
+<td class="text-right px-4 font-bold">Rp 600.000</td>
+</tr>
+<tr class="bg-surface-container-low font-bold">
+<td class="text-right px-4 py-2 border border-outline-variant" colspan="5">Total Keseluruhan</td>
+<td class="text-right px-4 py-2 border border-outline-variant">Rp 8.400.000</td>
+</tr>
+</tbody>
+</table>
+<!-- Mobile Cards (Hidden on Desktop & Print) -->
+<div class="lg:hidden mobile-cards space-y-4 no-print">
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold text-primary uppercase">SPP Juli – Desember</span>
+<span class="text-[10px] bg-outline-variant px-1.5 py-0.5 rounded text-on-surface">2025/2026</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">6 bulan x Rp 600.000</span>
+<span class="font-bold">Rp 3.600.000</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold text-primary uppercase">SPP Januari – Juli</span>
+<span class="text-[10px] bg-outline-variant px-1.5 py-0.5 rounded text-on-surface">2026/2027</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">7 bulan x Rp 600.000</span>
+<span class="font-bold">Rp 4.200.000</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant">
+<div class="flex justify-between items-start mb-2">
+<span class="text-xs font-bold text-primary uppercase">Daftar Ulang Pondok</span>
+<span class="text-[10px] bg-outline-variant px-1.5 py-0.5 rounded text-on-surface">2026/2027</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">1 x Rp 600.000</span>
+<span class="font-bold">Rp 600.000</span>
+</div>
+</div>
+<div class="bg-primary text-on-primary p-4 rounded-lg shadow-md mt-6">
+<div class="flex justify-between items-center">
+<span class="text-sm font-semibold opacity-80">TOTAL KESELURUHAN</span>
+<span class="text-xl font-black">Rp 8.400.000</span>
+</div>
+</div>
+</div>
+<!-- Summary Text -->
+<div class="mt-3 flex flex-col lg:flex-row justify-between items-start">
+<div class="max-w-md">
+<p class="text-sm italic font-body text-on-surface-variant leading-tight">
+                        Terbilang: <span class="font-bold text-on-surface">Delapan Juta Empat Ratus Ribu Rupiah</span>
+</p>
+<div class="mt-4 flex gap-3 text-sm lg:text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-sm hidden lg:block">info</span>
+<p>Pembayaran dapat dilakukan melalui kantor bendahara atau transfer bank. Mohon konfirmasi setelah transaksi.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer Signatures -->
+<footer class="mt-auto pt-4 border-t border-outline-variant flex flex-col lg:flex-row justify-between items-center lg:items-end gap-8 lg:gap-0">
+<div class="text-center w-full lg:w-64">
+<p class="text-sm lg:text-xs font-body mb-8 lg:mb-12 text-on-surface">
+                    Mengetahui,<br/>
+<span class="font-bold">Mudiru Ma'had</span>
+</p>
+<p class="text-sm font-bold font-headline lg:underline decoration-1">( KH. Ahmad Muzakki )</p>
+</div>
+<div class="text-center w-full lg:w-64">
+<p class="text-sm lg:text-xs font-body mb-8 lg:mb-12 text-on-surface">
+                    Tegal, 22 Juli 2026<br/>
+<span class="font-bold">Petugas Keuangan</span>
+</p>
+<p class="text-sm font-bold font-headline lg:underline decoration-1">( Siti Aminah, S.E. )</p>
+</div>
+</footer>
+</div>
+<!-- Mobile Fixed Action Bar (Hidden on Desktop & Print) -->
+<div class="lg:hidden mobile-footer-action no-print fixed bottom-0 left-0 right-0 bg-white border-t border-outline-variant px-4 py-3 flex gap-2 z-[60] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+<button class="flex-1 bg-surface-container text-on-surface py-3 rounded-lg flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-xl">download</span>
+<span class="text-[10px] font-bold uppercase">PDF</span>
+</button>
+<button class="flex-1 bg-primary text-on-primary py-3 rounded-lg flex flex-col items-center justify-center gap-1 shadow-sm" onclick="window.print()">
+<span class="material-symbols-outlined text-xl">print</span>
+<span class="text-[10px] font-bold uppercase">Cetak</span>
+</button>
+<button class="flex-1 bg-surface-container text-on-surface py-3 rounded-lg flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined text-xl">share</span>
+<span class="text-[10px] font-bold uppercase">Bagikan</span>
+</button>
+</div>
+</body></html>

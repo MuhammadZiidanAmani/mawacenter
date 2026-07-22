@@ -13,12 +13,13 @@ use App\Models\Student;
 use App\Services\BillQueryService;
 use App\Services\BillService;
 use Illuminate\Http\Request;
+use Symfony\Component\Process\Process;
 
 class BillController extends Controller
 {
     private const MONTHS = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
 
-    public function index(Request $request, BillQueryService $bills)
+    public function index(Request $request, BillQueryService $bills, BillService $billService)
     {
         [$year, $untilMonth] = $this->period($request);
         $status = $this->statusFilter($request);
@@ -36,6 +37,7 @@ class BillController extends Controller
             'search' => $request->string('search')->value() ?: null,
         ];
         $this->applyUserScope($request, $filters);
+        $this->syncMissingFeeTypeBills($request, $billService);
         $guardianStudents = collect();
         $guardianBills = collect();
         $guardianTransfers = collect();
@@ -111,6 +113,131 @@ class BillController extends Controller
 
     public function show(Request $request, Student $student, BillQueryService $bills)
     {
+        $data = $this->noticeData($request, $student, $bills);
+
+        return view('finance.bill-notice', $data);
+    }
+
+    public function download(Request $request, Student $student, BillQueryService $bills)
+    {
+        $data = $this->noticeData($request, $student, $bills);
+        $unitCode = $student->schoolClass?->educationUnit?->code ?: 'unit';
+        $filename = 'detail-tagihan-'.$this->filenamePart($unitCode).'-'.$this->filenameNamePart($student->name).'.pdf';
+        $pdfPath = $this->renderNoticePdfWithBrowser($data);
+
+        return response()->download($pdfPath, $filename, [
+            'Content-Type' => 'application/pdf',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function print(Request $request, Student $student, BillQueryService $bills)
+    {
+        $data = $this->noticeData($request, $student, $bills, true);
+        $data['autoPrint'] = true;
+
+        return view('finance.bill-notice', $data);
+    }
+
+    private function renderNoticePdfWithBrowser(array $data): string
+    {
+        $directory = storage_path('app/pdf');
+        if (! is_dir($directory)) {
+            mkdir($directory, 0775, true);
+        }
+
+        $token = bin2hex(random_bytes(6));
+        $htmlPath = $directory.DIRECTORY_SEPARATOR.$token.'.html';
+        $pdfPath = $directory.DIRECTORY_SEPARATOR.$token.'.pdf';
+        $profilePath = $directory.DIRECTORY_SEPARATOR.$token.'-profile';
+
+        file_put_contents($htmlPath, view('finance.bill-notice', $data)->render());
+
+        $process = new Process([
+            $this->browserExecutable(),
+            '--headless=new',
+            '--disable-gpu',
+            '--no-sandbox',
+            '--allow-file-access-from-files',
+            '--user-data-dir='.$profilePath,
+            '--print-to-pdf='.$pdfPath,
+            '--print-to-pdf-no-header',
+            'file:///'.str_replace('\\', '/', $htmlPath),
+        ]);
+        $process->setTimeout(30);
+        $process->run();
+
+        @unlink($htmlPath);
+        $this->deleteDirectory($profilePath);
+
+        if (! $process->isSuccessful() || ! file_exists($pdfPath)) {
+            abort(500, 'Gagal membuat PDF unduhan detail tagihan.');
+        }
+
+        return $pdfPath;
+    }
+
+    private function browserExecutable(): string
+    {
+        $candidates = array_filter([
+            env('PDF_BROWSER_PATH'),
+            'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+            'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+            'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+        ]);
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                return $candidate;
+            }
+        }
+
+        abort(500, 'Browser untuk membuat PDF belum ditemukan.');
+    }
+
+    private function deleteDirectory(string $path): void
+    {
+        if (! is_dir($path)) {
+            return;
+        }
+
+        $items = scandir($path);
+        if ($items === false) {
+            return;
+        }
+
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $itemPath = $path.DIRECTORY_SEPARATOR.$item;
+            is_dir($itemPath) ? $this->deleteDirectory($itemPath) : @unlink($itemPath);
+        }
+
+        @rmdir($path);
+    }
+
+    private function filenamePart(?string $value): string
+    {
+        $value = strtolower((string) $value);
+        $value = preg_replace('/[^a-z0-9]+/', '-', $value) ?: '';
+        $value = trim($value, '-');
+
+        return $value !== '' ? $value : 'data';
+    }
+
+    private function filenameNamePart(?string $value): string
+    {
+        $value = strtoupper((string) $value);
+        $value = preg_replace('/[^A-Z0-9 ]+/', '', $value) ?: '';
+        $value = preg_replace('/\s+/', ' ', trim($value)) ?: '';
+
+        return $value !== '' ? $value : 'NAMA SISWA';
+    }
+
+    private function noticeData(Request $request, Student $student, BillQueryService $bills, bool $isPdf = false): array
+    {
         [$year, $untilMonth] = $this->period($request);
         $student->load('schoolClass.educationUnit');
         $user = $request->user();
@@ -127,16 +254,26 @@ class BillController extends Controller
         }
         $statement = $bills->statement($student, $year, $untilMonth);
         $issuedAt = now();
+        $logoPath = public_path('images/logo-yayasan-mambaul-hikmah.png');
+        $logoSrc = file_exists($logoPath)
+            ? 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath))
+            : asset('images/logo-yayasan-mambaul-hikmah.png');
 
-        return view('finance.bill-notice', [
+        $query = $request->only(['year', 'until_month', 'unit_id', 'class_id', 'student_id', 'student_search', 'per_page', 'sort', 'direction']);
+
+        return [
             'student' => $student,
             'statement' => $statement,
             'year' => $year,
             'untilMonth' => $untilMonth,
             'issuedDate' => $issuedAt->day.' '.self::MONTHS[(int) $issuedAt->month].' '.$issuedAt->year,
             'amountWords' => $this->terbilangRupiah((int) $statement['total']),
-            'backUrl' => route('finance.bills.index', $request->only(['year', 'until_month', 'unit_id', 'class_id', 'student_id', 'student_search', 'per_page', 'sort', 'direction'])),
-        ]);
+            'backUrl' => route('finance.bills.index', $query),
+            'downloadUrl' => route('finance.bills.download', array_merge($query, ['student' => $student->id])),
+            'printUrl' => route('finance.bills.print', array_merge($query, ['student' => $student->id])),
+            'logoSrc' => $logoSrc,
+            'isPdf' => $isPdf,
+        ];
     }
 
     public function sync(Request $request, BillService $bills)
@@ -219,6 +356,43 @@ class BillController extends Controller
     {
         foreach (['created', 'existing', 'skipped'] as $key) {
             $base[$key] += $addition[$key] ?? 0;
+        }
+    }
+
+    private function syncMissingFeeTypeBills(Request $request, BillService $bills): void
+    {
+        $academicYear = AcademicYear::where('is_active', true)->first();
+        if (! $academicYear) {
+            return;
+        }
+
+        $unitIds = $request->user()?->accessibleUnitIds();
+        $feeTypes = FeeType::where('is_active', true)
+            ->where('creates_bill', true)
+            ->where(function ($query) {
+                $query->whereNull('payment_group')->orWhereNotIn('payment_group', ['spp', 'laundry']);
+            })
+            ->where(function ($query) use ($academicYear) {
+                $query->whereNull('academic_year_id')->orWhere('academic_year_id', $academicYear->id);
+            })
+            ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
+            ->whereNotIn('id', Bill::where('source_type', 'fee_type')
+                ->whereNotNull('fee_type_id')
+                ->where('status', '!=', 'Dibatalkan')
+                ->select('fee_type_id'))
+            ->orderBy('id')
+            ->get();
+
+        if ($feeTypes->isEmpty()) {
+            return;
+        }
+
+        $endYear = now()->year;
+        $endMonth = now()->month;
+        foreach ($feeTypes as $feeType) {
+            $bills->generateFeeType($feeType->academicYear ?: $academicYear, $feeType, $endYear, $endMonth, [
+                'unit_id' => $feeType->education_unit_id,
+            ]);
         }
     }
 

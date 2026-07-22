@@ -97,13 +97,13 @@ class MasterDataTest extends TestCase
         $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
         $sourceClass = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
         $targetClass = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII B', 'level' => 'Kelas VII']);
-        $student = Student::create(['nis' => '2001', 'name' => 'Siswa Pindah', 'gender' => 'L', 'school_class_id' => $sourceClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        $student = Student::create(['nis' => '2001', 'name' => 'Siswa Pindah', 'gender' => 'L', 'school_class_id' => $sourceClass->id, 'academic_year_id' => $year->id, 'intake_status' => Student::INTAKE_NEW, 'is_active' => true]);
 
         $this->get('/manajemen-siswa/pindah-kelas?unit_id='.$unit->id.'&class_id='.$sourceClass->id.'&year_id='.$year->id)
             ->assertOk()
             ->assertSee('Pindah Kelas')
             ->assertSee('Siswa Pindah')
-            ->assertSee('Pindahkan Kelas');
+            ->assertSee('Proses Pindah Kelas');
 
         $this->post('/manajemen-siswa/pindah-kelas', [
             'student_ids' => [$student->id],
@@ -118,6 +118,7 @@ class MasterDataTest extends TestCase
             'id' => $student->id,
             'school_class_id' => $targetClass->id,
             'academic_year_id' => $year->id,
+            'intake_status' => Student::INTAKE_NEW,
         ]);
     }
 
@@ -156,13 +157,13 @@ class MasterDataTest extends TestCase
         $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
         $sourceClass = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'I A', 'level' => 'Kelas I']);
         $targetClass = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'II A', 'level' => 'Kelas II']);
-        $student = Student::create(['nis' => '3001', 'name' => 'Siswa Naik', 'gender' => 'P', 'school_class_id' => $sourceClass->id, 'academic_year_id' => $currentYear->id, 'is_active' => true]);
+        $student = Student::create(['nis' => '3001', 'name' => 'Siswa Naik', 'gender' => 'P', 'school_class_id' => $sourceClass->id, 'academic_year_id' => $currentYear->id, 'intake_status' => Student::INTAKE_TRANSFER, 'is_active' => true]);
 
         $this->get('/manajemen-siswa/naik-kelas?unit_id='.$unit->id.'&class_id='.$sourceClass->id.'&year_id='.$currentYear->id)
             ->assertOk()
             ->assertSee('Naik Kelas')
             ->assertSee('Siswa Naik')
-            ->assertSee('Naikkan Kelas');
+            ->assertSee('Proses Naik Kelas');
 
         $this->post('/manajemen-siswa/naik-kelas', [
             'student_ids' => [$student->id],
@@ -177,6 +178,7 @@ class MasterDataTest extends TestCase
             'id' => $student->id,
             'school_class_id' => $targetClass->id,
             'academic_year_id' => $nextYear->id,
+            'intake_status' => Student::INTAKE_RETURNING,
         ]);
     }
 
@@ -1553,10 +1555,10 @@ class MasterDataTest extends TestCase
         $this->get('/keuangan/tagihan?year=2026&until_month=6&per_page=25&sort=total&direction=desc')
             ->assertOk()
             ->assertSee('Tagihan Siswa')
-            ->assertSee('Perbarui Tagihan')
             ->assertSee('Menampilkan 1-1 dari 1 siswa')
             ->assertSee('Total Tagihan')
-            ->assertSee('Jumlah Tagihan')
+            ->assertSee('Tagihan per Unit')
+            ->assertSee('Daftar Ulang')
             ->assertDontSee('Daftar Tagihan Siswa')
             ->assertSee('Detail tagihan')
             ->assertSee('Rp 7.100.000');

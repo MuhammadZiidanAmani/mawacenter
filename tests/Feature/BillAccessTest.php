@@ -81,7 +81,8 @@ class BillAccessTest extends TestCase
             ->assertOk()
             ->assertSee('Tagihan Siswa')
             ->assertSee('Siswa Unit Bendahara')
-            ->assertSee('RA Mambaul Hikmah')
+            ->assertSee('Tagihan per Unit')
+            ->assertSee('<strong>RA</strong>', false)
             ->assertDontSee('Tagihan Anak')
             ->assertDontSee('Siswa Unit Lain')
             ->assertDontSee('MA Mambaul Hikmah');

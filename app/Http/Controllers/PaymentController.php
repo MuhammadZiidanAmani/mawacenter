@@ -51,15 +51,26 @@ class PaymentController extends Controller
         $unitIds = $request->user()?->accessibleUnitIds();
 
         if ($search !== '') {
-            $matches = Student::query()
-                ->where('is_active', true)
-                ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
+            $needle = $this->escapeLike($search);
+            $matches = $this->paymentStudentBaseQuery($unitIds)
                 ->where(fn ($query) => $query
-                    ->where('nis', 'like', "%{$search}%")
-                    ->orWhere('nisn', 'like', "%{$search}%")
-                    ->orWhere('name', 'like', "%{$search}%"))
+                    ->where('nis', 'like', "{$needle}%")
+                    ->orWhere('nisn', 'like', "{$needle}%")
+                    ->orWhere('name', 'like', "{$needle}%"))
+                ->orderBy('name')
                 ->limit(30)
                 ->get(['id', 'identity_student_id']);
+
+            if ($matches->count() < 30 && mb_strlen($search) >= 3) {
+                $fallbackMatches = $this->paymentStudentBaseQuery($unitIds)
+                    ->whereNotIn('id', $matches->pluck('id'))
+                    ->where('name', 'like', "%{$needle}%")
+                    ->orderBy('name')
+                    ->limit(30 - $matches->count())
+                    ->get(['id', 'identity_student_id']);
+
+                $matches = $matches->concat($fallbackMatches);
+            }
 
             $identityIds = $matches
                 ->map(fn (Student $student) => $student->identity_student_id ?: $student->id)
@@ -75,12 +86,6 @@ class PaymentController extends Controller
                         ->orWhereIn('identity_student_id', $identityIds))
                     ->orderBy('name')
                     ->get();
-                $feeTypes = FeeType::where('is_active', true)->get();
-
-                $registrations->each(function (Student $student) use ($feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment) {
-                    $student->setAttribute('payment_options', $this->paymentOptions($student, $feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment));
-                    $student->setAttribute('optional_payment_options', $this->optionalPaymentOptions($student, $feeTypes, $otherPayments, $laundryPayments));
-                });
 
                 $people = $registrations->groupBy(fn (Student $student) => $student->identity_student_id ?: $student->id);
             }
@@ -103,6 +108,30 @@ class PaymentController extends Controller
                         ->where('id', $identityId)
                         ->orWhere('identity_student_id', $identityId))
                     ->pluck('id');
+
+                $selectedRegistrations = $people->get($identityId);
+                if (! $selectedRegistrations) {
+                    $selectedRegistrations = Student::with(['academicYear', 'schoolClass.educationUnit'])
+                        ->where('is_active', true)
+                        ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
+                        ->where(fn ($query) => $query
+                            ->where('id', $identityId)
+                            ->orWhere('identity_student_id', $identityId))
+                        ->orderBy('name')
+                        ->get();
+
+                    if ($selectedRegistrations->isNotEmpty()) {
+                        $people->put($identityId, $selectedRegistrations);
+                    }
+                }
+
+                if ($selectedRegistrations && $selectedRegistrations->isNotEmpty()) {
+                    $feeTypes = FeeType::where('is_active', true)->get();
+                    $selectedRegistrations->each(function (Student $student) use ($feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment) {
+                        $student->setAttribute('payment_options', $this->paymentOptions($student, $feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment));
+                        $student->setAttribute('optional_payment_options', $this->optionalPaymentOptions($student, $feeTypes, $otherPayments, $laundryPayments));
+                    });
+                }
 
                 $sppHistory = SppPayment::with(['student.schoolClass.educationUnit', 'items'])
                     ->whereIn('student_id', $studentIds)
@@ -586,6 +615,18 @@ class PaymentController extends Controller
             ->map(fn ($item) => $this->monthName((int) $item->month).' '.$item->year)
             ->unique()
             ->join(', ');
+    }
+
+    private function paymentStudentBaseQuery(?array $unitIds)
+    {
+        return Student::query()
+            ->where('is_active', true)
+            ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)));
+    }
+
+    private function escapeLike(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
     }
 
     private function paymentGroup(FeeType $feeType): string

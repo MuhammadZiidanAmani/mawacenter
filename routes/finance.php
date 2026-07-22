@@ -49,6 +49,8 @@ Route::prefix('keuangan/pembayaran/lain-lain')->name('finance.other.')->controll
 
 Route::prefix('keuangan/tagihan')->name('finance.bills.')->controller(BillController::class)->group(function () {
     Route::get('/', 'index')->name('index');
+    Route::get('/siswa/{student}/download', 'download')->name('download');
+    Route::get('/siswa/{student}/print', 'print')->name('print');
     Route::get('/siswa/{student}', 'show')->name('show');
     Route::post('/sync', 'sync')->name('sync');
 });

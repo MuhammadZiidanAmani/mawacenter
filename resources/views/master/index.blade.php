@@ -471,6 +471,10 @@
                                     <span>Unit / Tingkat</span>
                                     <strong>{{ $row->educationUnit?->code ?? '-' }} · {{ $row->class_level ? \App\Support\ClassLevel::label($row->class_level) : ($row->schoolClass?->name ?? 'Semua Tingkat') }}</strong>
                                 </div>
+                                <div class="fee-type-card-unit">
+                                    <span>Sasaran</span>
+                                    <strong>{{ $row->studentScopeLabel() }}</strong>
+                                </div>
                                 <div class="fee-type-card-actions">
                                     @include('master.partials.actions', ['type' => 'fee-types', 'row' => $row])
                                 </div>

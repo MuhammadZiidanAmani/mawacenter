@@ -370,6 +370,30 @@ class BillService
         return $this->refreshBillsForStudents([$student->id])->all();
     }
 
+    public function refreshFeeTypeBills(FeeType $feeType): array
+    {
+        $result = ['updated' => 0, 'skipped' => 0];
+
+        Bill::with(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType.academicYear'])
+            ->where('source_type', 'fee_type')
+            ->where('fee_type_id', $feeType->id)
+            ->where('status', '!=', 'Dibatalkan')
+            ->orderBy('id')
+            ->chunkById(100, function (Collection $bills) use (&$result) {
+                foreach ($bills as $bill) {
+                    if ($this->refreshBillAmount($bill)) {
+                        $result['updated']++;
+                    } else {
+                        $result['skipped']++;
+                    }
+                }
+            });
+
+        PerformanceCache::bust();
+
+        return $result;
+    }
+
     public function syncAll(): array
     {
         $result = ['spp' => 0, 'other' => 0];
@@ -584,7 +608,17 @@ class BillService
                 ?? ($bill->year && $bill->month ? CarbonImmutable::create((int) $bill->year, (int) $bill->month, 1) : now()->toImmutable());
             $charge = $this->calculator->calculate($student, 'fee_type', $feeType, $date);
             if ($charge['original_amount'] < 1) {
-                return false;
+                if ((int) $bill->paid_amount > 0) {
+                    return false;
+                }
+
+                $bill->update([
+                    'remaining_amount' => 0,
+                    'status' => 'Dibatalkan',
+                    'cancel_reason' => 'Tagihan tidak sesuai sasaran siswa setelah kategori pembayaran diperbarui.',
+                ]);
+
+                return true;
             }
 
             $academicYear = $bill->academicYear ?? $feeType->academicYear ?? $student->academicYear;
@@ -739,11 +773,12 @@ class BillService
 
     private function studentBillingStart(Student $student): CarbonImmutable
     {
-        if ($student->billing_start_date) {
-            return CarbonImmutable::parse($student->billing_start_date)->startOfMonth();
-        }
+        $defaultStart = CarbonImmutable::parse(self::DEFAULT_BILLING_START_DATE)->startOfMonth();
+        $studentStart = $student->billing_start_date
+            ? CarbonImmutable::parse($student->billing_start_date)->startOfMonth()
+            : null;
 
-        return CarbonImmutable::parse(self::DEFAULT_BILLING_START_DATE)->startOfMonth();
+        return $studentStart && $studentStart->gt($defaultStart) ? $studentStart : $defaultStart;
     }
 
     private function eligible(Student $student, CarbonImmutable $month): bool

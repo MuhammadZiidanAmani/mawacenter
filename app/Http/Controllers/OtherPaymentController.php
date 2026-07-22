@@ -433,7 +433,7 @@ class OtherPaymentController extends Controller
 
     private function matchedFeeTypesForStudent(Student $student, $feeTypes, array $section)
     {
-        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->matchesSchoolClass($student->schoolClass)
+        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->matchesStudent($student)
             && ($section['key'] === 'daftar-ulang' || ! $feeType->academic_year_id || $feeType->academic_year_id === $student->academic_year_id));
     }
 

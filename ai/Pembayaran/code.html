@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ma'wa Center - Pembayaran Tagihan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Merriweather:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-low": "#f6f3f2",
+                    "inverse-surface": "#303030",
+                    "tertiary-fixed": "#e2e2e2",
+                    "on-tertiary-fixed-variant": "#454747",
+                    "background": "#fcf9f8",
+                    "on-tertiary-fixed": "#1a1c1c",
+                    "on-primary": "#ffffff",
+                    "surface-container": "#f0eded",
+                    "on-tertiary-container": "#c2c2c2",
+                    "on-background": "#1b1c1c",
+                    "inverse-on-surface": "#f3f0ef",
+                    "error": "#ba1a1a",
+                    "surface-bright": "#fcf9f8",
+                    "secondary-container": "#dcdddd",
+                    "primary": "#004229",
+                    "on-error-container": "#93000a",
+                    "tertiary": "#373939",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#002112",
+                    "on-secondary-fixed-variant": "#454747",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#0f5b3c",
+                    "on-surface": "#1b1c1c",
+                    "surface-container-high": "#eae7e7",
+                    "primary-fixed-dim": "#8fd5ae",
+                    "secondary-fixed": "#e2e2e2",
+                    "tertiary-container": "#4e5050",
+                    "surface-container-highest": "#e5e2e1",
+                    "primary-fixed": "#abf2c9",
+                    "secondary-fixed-dim": "#c6c6c7",
+                    "on-primary-container": "#8bd1a9",
+                    "secondary": "#5d5f5f",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#8fd5ae",
+                    "outline": "#707972",
+                    "on-primary-fixed-variant": "#005234",
+                    "on-secondary-container": "#5f6161",
+                    "surface-tint": "#246a4a",
+                    "on-surface-variant": "#404942",
+                    "on-error": "#ffffff",
+                    "surface": "#fcf9f8",
+                    "on-tertiary": "#ffffff",
+                    "surface-variant": "#e5e2e1",
+                    "surface-dim": "#dcd9d9",
+                    "tertiary-fixed-dim": "#c6c6c6",
+                    "outline-variant": "#bfc9c0",
+                    "on-secondary-fixed": "#1a1c1c"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0px",
+                    "lg": "0px",
+                    "xl": "0px",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "margin-mobile": "16px",
+                    "gutter": "24px",
+                    "max-width": "1200px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "headline-sm": ["Merriweather"],
+                    "headline-lg": ["Merriweather"],
+                    "headline-xl": ["Merriweather"],
+                    "body-lg": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Merriweather"],
+                    "body-md": ["Inter"],
+                    "label-md": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "headline-xl": ["40px", {"lineHeight": "52px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: #fcf9f8;
+            font-family: 'Inter', sans-serif;
+            color: #1b1c1c;
+        }
+        .institutional-card {
+            background: #ffffff;
+            border: 1px solid #D9D9D9;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .active-payment-method {
+            border: 2px solid #004229 !important;
+            background-color: #f0f7f4;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-margin-desktop h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-8">
+<span class="font-headline-sm text-headline-sm font-bold text-primary">Ma'wa Center</span>
+<div class="hidden md:flex gap-6">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Dashboard</a>
+<a class="font-label-md text-label-md text-primary font-bold" href="#">Payments</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">Reports</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined" data-icon="notifications">notifications</span></button>
+<button class="p-2 hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined" data-icon="help">help</span></button>
+<div class="w-8 h-8 bg-primary-container rounded-full flex items-center justify-center text-on-primary-container font-bold text-xs">AS</div>
+</div>
+</nav>
+<!-- Sidebar (ERP Style) -->
+<aside class="fixed left-0 top-0 h-full w-64 pt-16 flex flex-col z-40 bg-surface-container-low border-r border-outline-variant hidden lg:flex">
+<div class="p-6">
+<div class="flex flex-col gap-1 mb-8">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-widest">Financial System</span>
+<span class="font-headline-sm text-headline-sm text-primary">Admin Console</span>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container font-bold border-r-4 border-primary" href="#">
+<span class="material-symbols-outlined" data-icon="payments" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-label-md text-label-md">Payments</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md">Student Management</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-md text-label-md">Bills</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all mt-8" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6">
+<button class="w-full py-3 bg-primary text-white font-bold hover:bg-primary-container transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                New Payment
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="lg:pl-64 pt-16 flex-grow flex flex-col">
+<div class="max-w-max-width mx-auto w-full px-margin-mobile md:px-12 py-8">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary">Pembayaran Tagihan</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-xl">Cari siswa berdasarkan Nama, NIS, atau NISN untuk melakukan pembayaran tagihan.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-2 border border-outline font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                        Riwayat
+                    </button>
+<button class="px-6 py-2 border border-outline font-label-md text-label-md hover:bg-surface-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="upload">upload</span>
+                        Import
+                    </button>
+</div>
+</div>
+<!-- Dashboard Body: Two Columns -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Main Column (Left) -->
+<div class="lg:col-span-8 space-y-8">
+<!-- Stats Bar -->
+<div class="flex flex-wrap gap-4 items-center bg-surface-container-low p-4 border border-outline-variant">
+<div class="flex items-center gap-2 pr-6 border-r border-outline-variant">
+<span class="material-symbols-outlined text-primary" data-icon="sync_alt">sync_alt</span>
+<span class="font-label-md text-label-md">Transaksi Hari Ini: <span class="font-bold">24</span></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-label-md">Total Penerimaan: <span class="font-bold text-primary">Rp 12.500.000</span></span>
+</div>
+</div>
+<!-- Hero Search -->
+<div class="relative group">
+<span class="absolute left-6 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-2xl group-focus-within:text-primary transition-colors" data-icon="search">search</span>
+<input class="w-full h-[60px] pl-16 pr-6 bg-white border border-outline-variant shadow-sm focus:border-primary focus:ring-0 text-lg transition-all" placeholder="Cari Siswa" type="text" value="Abdullah Ali"/>
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1">
+<kbd class="px-2 py-1 bg-surface-container border border-outline-variant text-[10px] font-bold rounded">⌘</kbd>
+<kbd class="px-2 py-1 bg-surface-container border border-outline-variant text-[10px] font-bold rounded">K</kbd>
+</div>
+</div>
+<!-- Student Profile Card -->
+<div class="institutional-card p-6 flex flex-col md:flex-row gap-6 items-start">
+<div class="relative">
+<div class="w-24 h-24 bg-surface-container flex items-center justify-center overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A formal studio portrait of a young male student in an Islamic school uniform. The lighting is soft and professional, resembling a high-quality academic database record. The background is a neutral grey, maintaining an institutional and clean aesthetic consistent with a modern ERP interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgxcs1g4ImC_4rpRZOpkCfg2nK-bLr-I0QYC8lr8djJ94YIDg_aSQHvzD9oDbRK6T9Q3uONJUgTXzTNc9T-Ph0s1B2g0Si2EN_JmHrwtl5p_OnvChOfty4kf6-lkF23R7NU09uQMBFa7cnZaQni9oQdsH6zcs-veeqyG8b2TRnuaxYsJbDTzIYRoD5j9G2VAbEoR2SjCPvWFaTeD_VB3WeSqEkK2FNSOQNkjgNIDP_w7xoCcJOp1e4unl6cCnkQ-ss6bSu-zSJKsvW"/>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-primary text-white p-1 rounded-full border-2 border-white">
+<span class="material-symbols-outlined text-sm" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="flex-grow">
+<div class="flex flex-col md:flex-row justify-between items-start mb-4">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-primary mb-1 uppercase">ABDULLAH ALI SYABANI</h2>
+<div class="flex flex-wrap gap-4 text-on-surface-variant font-label-md">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="id_card">id_card</span> NIS: 240002</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="school">school</span> MA Mambaul Hikmah</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="meeting_room">meeting_room</span> Kelas: 11A</span>
+</div>
+</div>
+<span class="mt-2 md:mt-0 px-3 py-1 bg-error-container text-on-error-container font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="error">error</span> 
+                                    1 Tagihan Aktif
+                                </span>
+</div>
+</div>
+</div>
+<!-- Bill List -->
+<section>
+<h3 class="font-label-md text-label-md text-secondary uppercase mb-4 tracking-widest">Daftar Tagihan Tersedia</h3>
+<div class="institutional-card overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="p-4 w-12"><input checked="" class="text-primary focus:ring-primary border-outline-variant" type="checkbox"/></th>
+<th class="p-4 font-label-md text-label-md text-secondary">Nama Tagihan</th>
+<th class="p-4 font-label-md text-label-md text-secondary">Periode</th>
+<th class="p-4 font-label-md text-label-md text-secondary">Jumlah</th>
+<th class="p-4 font-label-md text-label-md text-secondary">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-t border-outline-variant hover:bg-surface-container-lowest transition-colors">
+<td class="p-4"><input checked="" class="text-primary focus:ring-primary border-outline-variant" type="checkbox"/></td>
+<td class="p-4">
+<div class="font-label-md text-label-md font-bold">SPP</div>
+<div class="text-[12px] text-on-surface-variant">Reguler Bulanan</div>
+</td>
+<td class="p-4 font-body-md text-body-md">Agustus 2025</td>
+<td class="p-4 font-body-md text-body-md font-bold">Rp 660.000</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 font-label-sm text-label-sm bg-error-container text-error">
+<span class="w-2 h-2 rounded-full bg-error mr-2"></span>
+                                                Belum Bayar
+                                            </span>
+</td>
+</tr>
+<tr class="border-t border-outline-variant hover:bg-surface-container-lowest transition-colors opacity-70">
+<td class="p-4"><input class="text-primary focus:ring-primary border-outline-variant" type="checkbox"/></td>
+<td class="p-4">
+<div class="font-label-md text-label-md font-bold">Daftar Ulang</div>
+<div class="text-[12px] text-on-surface-variant">Tahun Ajaran 2024/2025</div>
+</td>
+<td class="p-4 font-body-md text-body-md">-</td>
+<td class="p-4 font-body-md text-body-md font-bold">Rp 1.500.000</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 font-label-sm text-label-sm bg-secondary-container text-secondary">
+<span class="w-2 h-2 rounded-full bg-secondary mr-2"></span>
+                                                Cicilan
+                                            </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Payment Method Selection -->
+<section>
+<h3 class="font-label-md text-label-md text-secondary uppercase mb-4 tracking-widest">Metode Pembayaran</h3>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<button class="active-payment-method institutional-card p-4 flex flex-col items-center justify-center gap-3 hover:bg-surface-container-low transition-all cursor-pointer" onclick="selectMethod(this)">
+<span class="material-symbols-outlined text-4xl text-primary" data-icon="payments">payments</span>
+<span class="font-label-md text-label-md">Tunai</span>
+</button>
+<button class="institutional-card p-4 flex flex-col items-center justify-center gap-3 hover:bg-surface-container-low transition-all cursor-pointer" onclick="selectMethod(this)">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant" data-icon="account_balance">account_balance</span>
+<span class="font-label-md text-label-md">Transfer</span>
+</button>
+<button class="institutional-card p-4 flex flex-col items-center justify-center gap-3 hover:bg-surface-container-low transition-all cursor-pointer" onclick="selectMethod(this)">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant" data-icon="qr_code_2">qr_code_2</span>
+<span class="font-label-md text-label-md">QRIS</span>
+</button>
+<button class="institutional-card p-4 flex flex-col items-center justify-center gap-3 hover:bg-surface-container-low transition-all cursor-pointer" onclick="selectMethod(this)">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant" data-icon="credit_card">credit_card</span>
+<span class="font-label-md text-label-md">Virtual Account</span>
+</button>
+</div>
+</section>
+</div>
+<!-- Summary Panel (Right) -->
+<div class="lg:col-span-4">
+<div class="sticky top-24 space-y-6">
+<div class="institutional-card p-8 bg-white">
+<h2 class="font-headline-sm text-headline-sm text-primary mb-6">Ringkasan Pembayaran</h2>
+<div class="space-y-4 mb-8">
+<div class="flex justify-between font-body-md text-body-md">
+<span class="text-on-surface-variant">Tagihan (1 Item)</span>
+<span>Rp 660.000</span>
+</div>
+<div class="flex justify-between font-body-md text-body-md">
+<span class="text-on-surface-variant">Biaya Admin</span>
+<span class="text-primary font-bold">Rp 0</span>
+</div>
+<div class="pt-4 border-t border-outline-variant">
+<div class="flex justify-between items-baseline">
+<span class="font-label-md text-label-md uppercase text-secondary">Total Bayar</span>
+<span class="font-headline-md text-headline-md text-primary">Rp 660.000</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<button class="w-full h-[52px] bg-primary text-white font-bold text-lg hover:bg-primary-container transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
+<span class="material-symbols-outlined" data-icon="credit_score">credit_score</span>
+                                    Bayar Sekarang
+                                </button>
+<button class="w-full py-3 text-on-surface-variant font-label-md text-label-md hover:underline">
+                                    Cetak Pratinjau Invoice
+                                </button>
+</div>
+</div>
+<!-- Helper Tip -->
+<div class="p-6 bg-surface-container-low border-l-4 border-primary">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="lightbulb">lightbulb</span>
+<div>
+<p class="font-label-md text-label-md font-bold mb-1 text-primary">Petunjuk Pembayaran</p>
+<p class="font-body-md text-label-sm leading-relaxed">Pembayaran tunai akan otomatis mencetak struk fisik. Pastikan printer kasir dalam keadaan online.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-8 px-margin-desktop bg-surface-container border-t border-outline-variant mt-12">
+<div class="flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-label-sm text-label-sm text-secondary text-center md:text-left">
+                © 2024 Ma'wa Center Institutional Finance. All rights reserved.
+            </p>
+<div class="flex gap-6">
+<a class="font-label-sm text-label-sm text-secondary hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-secondary hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-secondary hover:text-primary transition-colors" href="#">System Status</a>
+</div>
+</div>
+</footer>
+<script>
+        function selectMethod(el) {
+            // Reset all siblings
+            const parent = el.parentElement;
+            parent.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('active-payment-method');
+                const icon = btn.querySelector('.material-symbols-outlined');
+                if(icon) icon.classList.replace('text-primary', 'text-on-surface-variant');
+            });
+
+            // Set active
+            el.classList.add('active-payment-method');
+            const icon = el.querySelector('.material-symbols-outlined');
+            if(icon) icon.classList.replace('text-on-surface-variant', 'text-primary');
+        }
+        
+        // Simple search focus microinteraction
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                document.querySelector('input[type="text"]').focus();
+            }
+        });
+    </script>
+</body></html>

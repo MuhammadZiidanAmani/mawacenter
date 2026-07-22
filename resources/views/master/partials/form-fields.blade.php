@@ -19,6 +19,7 @@
         $selectedClassId = old('school_class_id', $studentForm?->school_class_id);
         $selectedYearId = old('academic_year_id', $studentForm?->academic_year_id ?? $activeAcademicYear?->id);
         $selectedGender = old('gender', $studentForm?->gender ?? 'L');
+        $selectedIntakeStatus = old('intake_status', $studentForm?->intake_status ?? \App\Models\Student::INTAKE_RETURNING);
         $isActiveStudent = (string) old('is_active', $studentForm ? ($studentForm->is_active ? '1' : '0') : '1') === '1';
     @endphp
     @unless($studentForm)
@@ -47,6 +48,13 @@
     <label>Tahun Pelajaran <select name="academic_year_id" required>@foreach($academicYears as $year)<option value="{{ $year->id }}" @selected((string) $selectedYearId === (string) $year->id)>{{ $year->name }}</option>@endforeach</select></label>
     <label>Tanggal Masuk <input type="date" name="entry_date" required value="{{ $studentDate('entry_date', now()->toDateString()) }}"></label>
     <label>Mulai Tagihan Khusus <input type="date" name="billing_start_date" value="{{ $studentDate('billing_start_date') }}"></label>
+    <label>Status Masuk
+        <select name="intake_status" required>
+            @foreach(\App\Models\Student::INTAKE_LABELS as $key => $label)
+                <option value="{{ $key }}" @selected($selectedIntakeStatus === $key)>{{ $label }}</option>
+            @endforeach
+        </select>
+    </label>
     <div class="student-personal-fields span-2" data-new-student-fields>
     <label>Nama Ayah <input name="father_name" value="{{ $studentField('father_name') }}"></label><label>Nama Ibu <input name="mother_name" value="{{ $studentField('mother_name') }}"></label>
     <label>No. WA Ayah <input name="father_whatsapp" value="{{ $studentField('father_whatsapp') }}" placeholder="08xxxxxxxxxx" data-father-whatsapp></label>
@@ -119,6 +127,15 @@
             </select>
             <small data-fee-scope-help>Kategori akan berlaku untuk seluruh tingkat pada unit yang dipilih.</small>
         </div>
+
+        <label class="fee-type-simple-field fee-type-simple-student-scope">
+            <span>Sasaran Siswa</span>
+            <select name="student_scope">
+                @foreach(\App\Models\FeeType::STUDENT_SCOPE_LABELS as $key => $label)
+                    <option value="{{ $key }}" @selected(old('student_scope', \App\Models\FeeType::STUDENT_SCOPE_ALL) === $key)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </label>
 
         <label class="fee-type-simple-field fee-type-simple-short" data-registration-level-field hidden>
             <span>Tingkat</span>

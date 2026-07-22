@@ -35,6 +35,7 @@ class BillQueryService
         string $direction,
     ): LengthAwarePaginator {
         $query = $this->baseQuery($year, $untilMonth, $filters)
+            ->leftJoin('fee_types', 'fee_types.id', '=', 'bills.fee_type_id')
             ->select([
                 'students.id as student_id',
                 'students.nis',
@@ -43,6 +44,9 @@ class BillQueryService
                 'education_units.code as unit_code',
                 'education_units.name as unit_name',
             ])
+            ->selectRaw("SUM(CASE WHEN bills.source_type = 'fee_type' AND fee_types.payment_group = 'daftar-ulang' THEN bills.remaining_amount ELSE 0 END) as daftar_ulang")
+            ->selectRaw("SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END) as spp")
+            ->selectRaw("SUM(CASE WHEN bills.source_type = 'manual' OR (bills.source_type = 'fee_type' AND (fee_types.payment_group IS NULL OR fee_types.payment_group NOT IN ('daftar-ulang', 'laundry'))) THEN bills.remaining_amount ELSE 0 END) as lain_lain")
             ->selectRaw('SUM(bills.remaining_amount) as total_remaining')
             ->groupBy(
                 'students.id',
@@ -68,6 +72,9 @@ class BillQueryService
         $students->setCollection($students->getCollection()->map(function ($row) use ($studentModels) {
             return [
                 'student' => $studentModels->get($row->student_id),
+                'daftar_ulang' => (int) ($row->daftar_ulang ?? 0),
+                'spp' => (int) ($row->spp ?? 0),
+                'lain_lain' => (int) ($row->lain_lain ?? 0),
                 'total_remaining' => (int) $row->total_remaining,
             ];
         }));
@@ -110,24 +117,29 @@ class BillQueryService
     public function unitBreakdown(int $year, int $untilMonth, array $filters): Collection
     {
         $rows = PerformanceCache::remember(
-            'bill-unit-breakdown-v3',
+            'bill-unit-breakdown-v4',
             ['year' => $year, 'until_month' => $untilMonth, 'filters' => $filters],
             config('performance.query_cache.bill_stats_ttl', 120),
             function () use ($year, $untilMonth, $filters) {
+                $billableCondition = "bills.source_type = 'spp' OR bills.source_type = 'manual' OR (bills.source_type = 'fee_type' AND (fee_types.payment_group IS NULL OR fee_types.payment_group <> 'laundry'))";
+
                 return $this->baseQuery($year, $untilMonth, $filters)
+                    ->leftJoin('fee_types', 'fee_types.id', '=', 'bills.fee_type_id')
                     ->select([
                         'education_units.id as unit_id',
                         'education_units.code as unit_code',
                         'education_units.name as unit_name',
                     ])
-                    ->selectRaw('COUNT(DISTINCT bills.student_id) as students')
-                    ->selectRaw("SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END) as spp")
-                    ->selectRaw("SUM(CASE WHEN bills.source_type <> 'spp' THEN bills.remaining_amount ELSE 0 END) as other")
-                    ->selectRaw('SUM(bills.total_amount) as billed')
-                    ->selectRaw('SUM(bills.paid_amount) as paid')
-                    ->selectRaw('SUM(bills.remaining_amount) as remaining')
+                    ->selectRaw("COUNT(DISTINCT CASE WHEN {$billableCondition} THEN bills.student_id END) as students")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END), 0) as spp")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN bills.source_type = 'fee_type' AND fee_types.payment_group = 'daftar-ulang' THEN bills.remaining_amount ELSE 0 END), 0) as daftar_ulang")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN bills.source_type = 'manual' OR (bills.source_type = 'fee_type' AND (fee_types.payment_group IS NULL OR fee_types.payment_group NOT IN ('daftar-ulang', 'laundry'))) THEN bills.remaining_amount ELSE 0 END), 0) as lain_lain")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN {$billableCondition} THEN bills.total_amount ELSE 0 END), 0) as billed")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN {$billableCondition} THEN bills.paid_amount ELSE 0 END), 0) as paid")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN {$billableCondition} THEN bills.remaining_amount ELSE 0 END), 0) as remaining")
                     ->selectRaw('COUNT(DISTINCT CASE WHEN bills.remaining_amount > 0 AND bills.due_date IS NOT NULL AND bills.due_date < ? THEN bills.student_id END) as overdue_students', [now()->toDateString()])
                     ->groupBy('education_units.id', 'education_units.code', 'education_units.name')
+                    ->havingRaw("COALESCE(SUM(CASE WHEN {$billableCondition} THEN bills.remaining_amount ELSE 0 END), 0) > 0")
                     ->orderByRaw("CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
                     ->orderBy('education_units.name')
                     ->get()
@@ -137,7 +149,9 @@ class BillQueryService
                         'unit_name' => $row->unit_name ?? 'Tanpa Unit',
                         'students' => (int) ($row->students ?? 0),
                         'spp' => (int) ($row->spp ?? 0),
-                        'other' => (int) ($row->other ?? 0),
+                        'daftar_ulang' => (int) ($row->daftar_ulang ?? 0),
+                        'lain_lain' => (int) ($row->lain_lain ?? 0),
+                        'other' => (int) ($row->daftar_ulang ?? 0) + (int) ($row->lain_lain ?? 0),
                         'billed' => (int) ($row->billed ?? 0),
                         'paid' => (int) ($row->paid ?? 0),
                         'remaining' => (int) ($row->remaining ?? 0),
@@ -355,7 +369,7 @@ class BillQueryService
 
     private function statementMonthRange(Collection $months): string
     {
-        $names = $months->map(fn (int $month) => self::MONTHS[$month] ?? (string) $month)->values();
+        $names = $months->map(fn (int $month) => strtoupper(self::MONTHS[$month] ?? (string) $month))->values();
 
         if ($names->count() === 1) {
             return $names->first();

@@ -8,11 +8,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Student extends Model
 {
+    public const INTAKE_RETURNING = 'returning';
+
+    public const INTAKE_NEW = 'new';
+
+    public const INTAKE_TRANSFER = 'transfer';
+
+    public const INTAKE_LABELS = [
+        self::INTAKE_RETURNING => 'Siswa Lama',
+        self::INTAKE_NEW => 'Siswa Baru',
+        self::INTAKE_TRANSFER => 'Pindahan',
+    ];
+
     protected $fillable = [
         'identity_student_id', 'nis', 'nisn', 'name', 'birth_place', 'birth_date', 'gender',
         'father_name', 'mother_name', 'father_whatsapp', 'mother_whatsapp',
         'province', 'city', 'district', 'village', 'address',
-        'school_class_id', 'academic_year_id', 'entry_date', 'billing_start_date', 'exit_date', 'inactive_reason',
+        'school_class_id', 'academic_year_id', 'entry_date', 'billing_start_date', 'intake_status', 'exit_date', 'inactive_reason',
         'guardian_name', 'whatsapp', 'is_active',
     ];
 
@@ -50,5 +62,10 @@ class Student extends Model
     public function bills(): HasMany
     {
         return $this->hasMany(Bill::class);
+    }
+
+    public function intakeStatusLabel(): string
+    {
+        return self::INTAKE_LABELS[$this->intake_status ?: self::INTAKE_RETURNING] ?? self::INTAKE_LABELS[self::INTAKE_RETURNING];
     }
 }

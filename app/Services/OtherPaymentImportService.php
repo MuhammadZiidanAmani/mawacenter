@@ -354,7 +354,7 @@ class OtherPaymentImportService
     {
         $student->loadMissing('schoolClass.educationUnit');
 
-        if ($mappedFeeType?->matchesSchoolClass($student->schoolClass)) {
+        if ($mappedFeeType?->matchesStudent($student)) {
             return $mappedFeeType;
         }
 
@@ -363,7 +363,7 @@ class OtherPaymentImportService
 
         return $feeTypes
             ->filter(fn (FeeType $feeType) => $this->feeTypeMatchesCategory($feeType, $row['category'])
-                && $feeType->matchesSchoolClass($student->schoolClass))
+                && $feeType->matchesStudent($student))
             ->sortBy(fn (FeeType $feeType) => $this->feeTypeScore($feeType, $academicYear, $classLevel))
             ->first();
     }

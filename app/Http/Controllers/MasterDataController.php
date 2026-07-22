@@ -753,26 +753,38 @@ class MasterDataController extends Controller
 
     public function storeFeeType(Request $request): RedirectResponse
     {
-        DB::transaction(function () use ($request) {
-            foreach ($this->validateFeeType($request) as $data) {
-                FeeType::create($data);
-            }
+        $feeTypes = collect();
+        DB::transaction(function () use ($request, &$feeTypes) {
+            $feeTypes = collect($this->validateFeeType($request))
+                ->map(fn (array $data) => FeeType::create($data));
         });
+        $syncResult = $this->syncFeeTypeBills($feeTypes);
+        $message = 'Kategori pembayaran berhasil ditambahkan.';
+        if ($syncResult['created'] > 0 || $syncResult['refreshed'] > 0) {
+            $message .= ' Tagihan otomatis diperbarui.';
+        }
 
-        return $this->done('fee-types', 'Kategori pembayaran berhasil ditambahkan.');
+        return $this->done('fee-types', $message);
     }
 
     public function updateFeeType(Request $request, FeeType $feeType): RedirectResponse
     {
-        DB::transaction(function () use ($request, $feeType) {
+        $feeTypes = collect();
+        DB::transaction(function () use ($request, $feeType, &$feeTypes) {
             $payloads = $this->validateFeeType($request, $feeType);
             $feeType->update(array_shift($payloads));
+            $feeTypes->push($feeType->refresh());
             foreach ($payloads as $data) {
-                FeeType::create($data);
+                $feeTypes->push(FeeType::create($data));
             }
         });
+        $syncResult = $this->syncFeeTypeBills($feeTypes);
+        $message = 'Kategori pembayaran berhasil diperbarui.';
+        if ($syncResult['created'] > 0 || $syncResult['refreshed'] > 0) {
+            $message .= ' Tagihan otomatis diperbarui.';
+        }
 
-        return $this->done('fee-types', 'Kategori pembayaran berhasil diperbarui.');
+        return $this->done('fee-types', $message);
     }
 
     public function storeFeeDiscount(Request $request): RedirectResponse
@@ -1012,6 +1024,7 @@ class MasterDataController extends Controller
             'birth_place' => ['nullable', 'max:120'],
             'birth_date' => ['nullable', 'date'],
             'gender' => [$newIdentity || $student ? 'required' : 'nullable', Rule::in(['L', 'P'])],
+            'intake_status' => ['required', Rule::in(array_keys(Student::INTAKE_LABELS))],
             'father_name' => ['nullable', 'max:120'],
             'mother_name' => ['nullable', 'max:120'],
             'father_whatsapp' => ['nullable', 'max:25'],
@@ -1084,7 +1097,7 @@ class MasterDataController extends Controller
 
     private function studentImportHeaders(): array
     {
-        return ['No', 'NIS', 'NISN', 'Nama', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Kelamin', 'Nama Ayah', 'Nama Ibu', 'No. WA Ayah', 'No. WA Ibu', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Desa', 'Alamat', 'Unit Pendidikan', 'Kelas', 'Tanggal Masuk', 'Mulai Tagihan Khusus', 'Status', 'Tanggal Keluar', 'Alasan Nonaktif'];
+        return ['No', 'NIS', 'NISN', 'Nama', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Kelamin', 'Nama Ayah', 'Nama Ibu', 'No. WA Ayah', 'No. WA Ibu', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Desa', 'Alamat', 'Unit Pendidikan', 'Kelas', 'Tanggal Masuk', 'Mulai Tagihan Khusus', 'Status Masuk', 'Status', 'Tanggal Keluar', 'Alasan Nonaktif'];
     }
 
     private function studentImportPreview(Request $request): ?array
@@ -1206,6 +1219,47 @@ class MasterDataController extends Controller
         ];
     }
 
+    private function syncFeeTypeBills($feeTypes): array
+    {
+        $result = ['created' => 0, 'existing' => 0, 'skipped' => 0, 'refreshed' => 0];
+        $activeYear = AcademicYear::where('is_active', true)->first();
+        if (! $activeYear) {
+            return $result;
+        }
+
+        $billService = app(BillService::class);
+        $endYear = now()->year;
+        $endMonth = now()->month;
+
+        collect($feeTypes)
+            ->filter(fn (FeeType $feeType) => $feeType->is_active && $feeType->creates_bill && $feeType->payment_group !== 'laundry')
+            ->each(function (FeeType $feeType) use (&$result, $activeYear, $billService, $endYear, $endMonth): void {
+                $academicYear = $feeType->academicYear ?: $activeYear;
+                $filters = ['unit_id' => $feeType->education_unit_id];
+
+                if ($feeType->payment_group === 'spp') {
+                    $this->mergeBillSyncResult($result, $billService->generateSppFromEntryUntil($academicYear, $endYear, $endMonth, $filters));
+
+                    return;
+                }
+
+                $this->mergeBillSyncResult($result, $billService->generateFeeType($academicYear, $feeType, $endYear, $endMonth, $filters));
+                $refreshResult = $billService->refreshFeeTypeBills($feeType);
+                $result['refreshed'] += $refreshResult['updated'] ?? 0;
+            });
+
+        return $result;
+    }
+
+    private function mergeBillSyncResult(array &$base, array $addition): void
+    {
+        foreach ($addition as $key => $value) {
+            if (array_key_exists($key, $base)) {
+                $base[$key] += (int) $value;
+            }
+        }
+    }
+
     private function educationUnitOrderExpression(): string
     {
         return "CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END";
@@ -1226,9 +1280,11 @@ class MasterDataController extends Controller
             'amount' => ['required', 'integer', 'min:0'],
             'period' => ['nullable', Rule::in(['Bulanan', 'Tahunan', 'Sekali Bayar'])],
             'creates_bill' => ['nullable', 'boolean'],
+            'student_scope' => ['nullable', Rule::in(array_keys(FeeType::STUDENT_SCOPE_LABELS))],
             'is_active' => ['nullable', 'boolean'],
         ]);
         $validated['payment_group'] ??= $feeType?->payment_group ?? 'lain-lain';
+        $validated['student_scope'] ??= $feeType?->student_scope ?? FeeType::STUDENT_SCOPE_ALL;
 
         $fixedBehavior = [
             'spp' => ['period' => 'Bulanan', 'creates_bill' => true],
@@ -1317,6 +1373,7 @@ class MasterDataController extends Controller
                 'education_unit_id' => $validated['education_unit_id'],
                 'school_class_id' => null,
                 'class_level' => $level,
+                'student_scope' => $validated['student_scope'],
                 'academic_year_id' => $validated['academic_year_id'] ?? $feeType?->academic_year_id,
                 'amount' => $validated['amount'],
                 'period' => $validated['period'],
@@ -1565,11 +1622,17 @@ class MasterDataController extends Controller
             ]);
         }
 
-        DB::transaction(function () use ($students, $targetClassId, $targetYearId) {
-            Student::whereIn('id', $students->pluck('id'))->update([
-                'school_class_id' => $targetClassId,
-                'academic_year_id' => $targetYearId,
-            ]);
+        $studentUpdates = [
+            'school_class_id' => $targetClassId,
+            'academic_year_id' => $targetYearId,
+        ];
+
+        if ($isPromotion) {
+            $studentUpdates['intake_status'] = Student::INTAKE_RETURNING;
+        }
+
+        DB::transaction(function () use ($students, $studentUpdates) {
+            Student::whereIn('id', $students->pluck('id'))->update($studentUpdates);
         });
 
         $route = $isPromotion ? 'student-management.class-promotion.index' : 'student-management.class-transfer.index';

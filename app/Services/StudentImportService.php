@@ -104,6 +104,7 @@ class StudentImportService
                         'academic_year_id' => $activeYear->id,
                         'entry_date' => $row['entry_date'] ?? now()->toDateString(),
                         'billing_start_date' => $row['billing_start_date'],
+                        'intake_status' => $row['intake_status'],
                         'exit_date' => $row['is_active'] ? null : $row['exit_date'],
                         'inactive_reason' => $row['is_active'] ? null : $row['inactive_reason'],
                         'is_active' => $row['is_active'],
@@ -181,6 +182,7 @@ class StudentImportService
                 ?? $source['mulai_tagihan']
                 ?? null
         );
+        $intakeStatus = $this->normalizeIntakeStatus($source['status_masuk'] ?? null);
         $exitDate = $this->normalizeDate($source['tanggal_keluar'] ?? null);
         $inactiveReason = $this->nullable($source['alasan_nonaktif'] ?? null);
 
@@ -205,6 +207,7 @@ class StudentImportService
             'address' => $this->nullable($source['alamat'] ?? null),
             'entry_date' => $entryDate,
             'billing_start_date' => $billingStartDate,
+            'intake_status' => $intakeStatus,
             'exit_date' => $exitDate,
             'inactive_reason' => $inactiveReason,
             'is_active' => $isActive,
@@ -274,6 +277,17 @@ class StudentImportService
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    private function normalizeIntakeStatus(mixed $value): string
+    {
+        $value = $this->normalizeLookup((string) $value);
+
+        return match (true) {
+            in_array($value, ['siswabaru', 'baru', 'santribaru'], true) => Student::INTAKE_NEW,
+            in_array($value, ['pindahan', 'transfer'], true) => Student::INTAKE_TRANSFER,
+            default => Student::INTAKE_RETURNING,
+        };
     }
 
     private function normalizeLookup(string $value): string

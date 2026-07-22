@@ -495,6 +495,11 @@ Daftar tagihan:
 - Total tagihan jelas di bawah
 - Font detail minimal 14px
 - Jangan biarkan nominal turun tidak rapi di mobile
+- Card Daftar Tagihan pada menu Pembayaran memakai judul card 16px / 700, item tagihan 14px, dan Total Tagihan 16px / 700.
+- Garis pemisah pada Card Daftar Tagihan harus sejajar dengan inset kiri-kanan 16px.
+- Jarak garis bawah judul Card Daftar Tagihan ke item tagihan pertama memakai 12px.
+- Jarak antar item tagihan memakai padding vertikal 12px.
+- Baris Total Tagihan memakai padding vertikal 12px, rata tengah vertikal, dan dipisahkan dengan satu garis atas yang sejajar dengan garis lainnya.
 
 Standar halaman Tagihan Siswa:
 - Halaman Tagihan Siswa memakai kanvas data maksimal 1200px, rata tengah, background putih, dan urutan Heading, Tabel Ringkasan Per Unit tanpa judul/subdeskripsi, Card Filter, Toolbar jumlah data, Tabel, lalu Pagination.
@@ -516,6 +521,17 @@ Standar halaman Tagihan Siswa:
 - Surat Tagihan Siswa memakai halaman A4 portrait, background putih, font cetak serif, judul resmi "Penertiban Administrasi Keuangan", identitas siswa, tabel rincian No, Uraian, Tahun, Rp., Jml Bulan, Jumlah, total keseluruhan, terbilang, tanggal, dan tanda tangan. Toolbar layar hanya berisi Kembali, Bayar, dan Cetak, lalu wajib hilang saat print.
 - Pagination bawah Tagihan Siswa tidak ditampilkan. Jangan memakai teks default "Showing ... results", nomor halaman berjajar, tombol Sebelumnya, atau tombol Berikutnya; cukup gunakan toolbar ringkasan jumlah data di atas tabel.
 - Menu Tagihan Siswa wajib responsif mobile: halaman tidak boleh melebar ke kanan; parent grid/section tabel wajib `min-width:0`, hanya `.table-wrap` yang boleh scroll horizontal, filter menjadi satu kolom, tombol filter menjadi dua kolom atau full width jika ruang tidak cukup, dan dialog detail berubah satu kolom. Tabel ringkasan per unit di mobile memakai min-width sekitar 520px, sedangkan tabel siswa boleh sekitar 760px.
+
+Standar Mode Terang dan Gelap
+
+- Aplikasi mendukung mode terang dan gelap global.
+- Pilihan tema disimpan di browser dengan `localStorage` agar tetap sama setelah pindah halaman atau login ulang.
+- Tombol tema memakai tombol ikon standar 40px x 40px, radius 8px, ikon 18px, dan ditempatkan di topbar sebelum notifikasi. Pada halaman login, tombol boleh tampil sebagai tombol kecil di kanan atas.
+- Mode terang tetap menjadi standar utama aplikasi: background halaman #ffffff atau #fbfdf8, panel #ffffff, border #d1d5db, teks utama #020617, teks sekunder #404942/#707971, dan aksen hijau tua #004528.
+- Mode gelap memakai palet hijau gelap, bukan hitam pekat total: background halaman #07140f, panel #0b1b14, field/table header #0f241a atau #102419, border #284337/#335247, teks utama #e7f0ea, teks sekunder #b9c9c0, placeholder #8ea199, aksen #57c785 atau tombol primer #00693d.
+- Struktur, ukuran, spacing, radius, tinggi field 40px, tinggi tombol 40px, dan tinggi tabel compact tetap sama di mode terang maupun gelap.
+- Mode gelap tidak boleh mengubah layout, lebar kolom, tinggi baris, posisi tombol, atau urutan elemen.
+- Status, danger, warning, success, dan nominal penting tetap harus terbaca jelas di atas panel gelap.
 
 Rumus Aman Implementasi
 

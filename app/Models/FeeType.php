@@ -9,7 +9,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FeeType extends Model
 {
-    protected $fillable = ['education_unit_id', 'school_class_id', 'class_level', 'academic_year_id', 'payment_group', 'code', 'name', 'amount', 'period', 'creates_bill', 'is_active'];
+    public const STUDENT_SCOPE_ALL = 'all';
+
+    public const STUDENT_SCOPE_RETURNING = 'returning';
+
+    public const STUDENT_SCOPE_NEW_TRANSFER = 'new_transfer';
+
+    public const STUDENT_SCOPE_LABELS = [
+        self::STUDENT_SCOPE_ALL => 'Semua Siswa',
+        self::STUDENT_SCOPE_RETURNING => 'Siswa Lama',
+        self::STUDENT_SCOPE_NEW_TRANSFER => 'Siswa Baru/Pindahan',
+    ];
+
+    protected $fillable = ['education_unit_id', 'school_class_id', 'class_level', 'student_scope', 'academic_year_id', 'payment_group', 'code', 'name', 'amount', 'period', 'creates_bill', 'is_active'];
 
     protected function casts(): array
     {
@@ -43,6 +55,30 @@ class FeeType extends Model
 
         return $this->class_level === null
             || $this->class_level === ClassLevel::key($schoolClass->level ?: $schoolClass->name);
+    }
+
+    public function matchesStudent(Student $student): bool
+    {
+        return $this->matchesSchoolClass($student->schoolClass)
+            && $this->matchesStudentScope($student);
+    }
+
+    public function matchesStudentScope(Student $student): bool
+    {
+        return match ($this->student_scope ?: self::STUDENT_SCOPE_ALL) {
+            self::STUDENT_SCOPE_RETURNING => ($student->intake_status ?: Student::INTAKE_RETURNING) === Student::INTAKE_RETURNING,
+            self::STUDENT_SCOPE_NEW_TRANSFER => in_array(
+                $student->intake_status ?: Student::INTAKE_RETURNING,
+                [Student::INTAKE_NEW, Student::INTAKE_TRANSFER],
+                true
+            ),
+            default => true,
+        };
+    }
+
+    public function studentScopeLabel(): string
+    {
+        return self::STUDENT_SCOPE_LABELS[$this->student_scope ?: self::STUDENT_SCOPE_ALL] ?? self::STUDENT_SCOPE_LABELS[self::STUDENT_SCOPE_ALL];
     }
 
     public function scopePaymentGroup(Builder $query, string $group): Builder
