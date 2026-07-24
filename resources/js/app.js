@@ -4,6 +4,37 @@ const toast = document.querySelector('[data-toast]');
 const passwordInput = document.querySelector('[data-password]');
 const passwordToggle = document.querySelector('[data-password-toggle]');
 const currencyInputs = Array.from(document.querySelectorAll('[data-currency-input]'));
+
+// ============================================================
+// Login: Toggle mode Wali Santri
+// ============================================================
+const loginForm = document.querySelector('[data-login-form]');
+const waliToggle = document.querySelector('[data-wali-toggle]');
+const waliReset = document.querySelector('[data-wali-reset]');
+const loginTypeInput = document.querySelector('[data-login-type-value]');
+const loginUsernameLabel = document.querySelector('[data-login-username-label]');
+const loginUsernameInput = document.querySelector('[data-login-username-input]');
+const loginPasswordField = loginForm?.querySelector('.login-password-field input[type="password"]');
+
+const setWaliMode = (active) => {
+    if (!loginForm) return;
+    loginForm.classList.toggle('wali-mode', active);
+    if (loginTypeInput) loginTypeInput.value = active ? 'wali' : '';
+    if (loginUsernameLabel) loginUsernameLabel.textContent = active ? 'NIS Santri' : 'Username';
+    if (loginUsernameInput) {
+        loginUsernameInput.placeholder = active ? 'Masukkan NIS santri' : 'Masukkan username';
+        loginUsernameInput.focus();
+    }
+    // Toggle required pada password agar validasi HTML5 benar
+    if (loginPasswordField) {
+        loginPasswordField.required = !active;
+    }
+};
+
+waliToggle?.addEventListener('click', () => setWaliMode(true));
+waliReset?.addEventListener('click', () => setWaliMode(false));
+// ============================================================
+
 const themeStorageKey = 'mawacenter-theme';
 const themeIcons = {
     light: '<svg class="icon theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
@@ -84,61 +115,7 @@ passwordToggle?.addEventListener('click', () => {
     passwordToggle.setAttribute('title', revealing ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
 });
 
-const loginTypeValue = document.querySelector('[data-login-type-value]');
-const loginUsernameInput = document.querySelector('.login-form input[name="username"]');
-const loginUsernameLabel = document.querySelector('[data-login-username-label]');
-const guardianUnitSelect = document.querySelector('.login-form select[name="guardian_unit_id"]');
-const loginAccessReset = document.querySelector('[data-login-access-reset]');
-const loginAccessTitle = document.querySelector('[data-login-access-title]');
-const loginRoleName = document.querySelector('[data-login-role-name]');
-const loginAlerts = Array.from(document.querySelectorAll('[data-login-alert]'));
-const loginTypeLabels = {
-    petugas: 'Petugas',
-    bendahara: 'Bendahara',
-    wali: 'Wali Santri',
-};
-const syncLoginType = () => {
-    const selected = document.querySelector('input[name="login_type_picker"]:checked')?.value ?? '';
-    if (loginTypeValue) loginTypeValue.value = selected;
-    if (loginAccessTitle) {
-        if (selected) {
-            loginAccessTitle.textContent = '';
-        } else {
-            loginAccessTitle.textContent = 'Pilih Peran Anda';
-        }
-    }
-    if (loginRoleName) {
-        loginRoleName.textContent = loginTypeLabels[selected] ?? 'Petugas';
-    }
-    if (loginUsernameInput) {
-        loginUsernameInput.placeholder = selected === 'wali' ? 'Masukan NIS' : 'Username';
-        loginUsernameInput.autocomplete = selected === 'wali' ? 'off' : 'username';
-    }
-    if (loginUsernameLabel) {
-        loginUsernameLabel.textContent = selected === 'wali' ? 'Masukan NIS' : 'Username';
-    }
-    if (passwordInput) {
-        passwordInput.required = selected !== 'wali';
-        if (selected === 'wali') passwordInput.value = '';
-    }
-    if (guardianUnitSelect) {
-        guardianUnitSelect.required = selected === 'wali';
-    }
-};
-document.querySelectorAll('input[name="login_type_picker"]').forEach((input) => {
-    input.addEventListener('change', syncLoginType);
-});
-loginAccessReset?.addEventListener('click', () => {
-    document.querySelectorAll('input[name="login_type_picker"]').forEach((input) => {
-        input.checked = false;
-    });
-    loginAlerts.forEach((alert) => alert.remove());
-    if (loginUsernameInput) loginUsernameInput.value = '';
-    if (passwordInput) passwordInput.value = '';
-    if (guardianUnitSelect) guardianUnitSelect.value = '';
-    syncLoginType();
-});
-syncLoginType();
+
 
 document.querySelectorAll('.logout-button').forEach((button) => {
     button.addEventListener('click', () => { window.location.href = '/logout'; });
