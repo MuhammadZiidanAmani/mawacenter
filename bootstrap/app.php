@@ -12,6 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectUsersTo(fn (Request $request) => match (true) {
+            $request->user()?->isPetugas() => route('finance.payments.index'),
+            $request->user()?->isBendaharaUnit() => route('finance.bills.index'),
+            $request->user()?->isGuardian() => route('finance.bills.index'),
+            default => route('dashboard'),
+        });
+
         $middleware->alias([
             'role.access' => \App\Http\Middleware\EnsureRolePermission::class,
         ]);

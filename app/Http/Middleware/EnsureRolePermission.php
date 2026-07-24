@@ -27,6 +27,18 @@ class EnsureRolePermission
             return $next($request);
         }
 
+        if ($routeName === 'dashboard') {
+            $user = $request->user();
+            $redirect = match (true) {
+                $user?->isPetugas() => route('finance.payments.index'),
+                $user?->isBendaharaUnit() => route('finance.bills.index'),
+                $user?->isGuardian() => route('finance.bills.index'),
+                default => null,
+            };
+            if ($redirect) {
+                return redirect($redirect);
+            }
+        }
         abort(403, 'Anda tidak memiliki hak akses ke menu ini.');
     }
 
