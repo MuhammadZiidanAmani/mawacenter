@@ -269,7 +269,10 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         if (!mandatoryTotal) return;
 
         const total = Array.from(form.querySelectorAll('[data-payment-display-row]'))
-            .reduce((sum, row) => sum + Number(row.dataset.amount || 0), 0);
+            .reduce((sum, row) => {
+                const bill = row.querySelector('[data-payment-bill]');
+                return sum + (bill?.checked ? Number(row.dataset.amount || bill.dataset.amount || 0) : 0);
+            }, 0);
         mandatoryTotal.textContent = `${formatter.format(total)},-`;
     };
 
@@ -297,7 +300,10 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     };
 
     bills.forEach((bill) => {
-        bill.addEventListener('change', () => renderTotal(true));
+        bill.addEventListener('change', () => {
+            renderMandatoryDisplayTotal();
+            renderTotal(true);
+        });
     });
 
     billChoice?.addEventListener('change', syncBillChoice);
@@ -373,31 +379,97 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
 
     renderTransferFields();
     if (billChoice) syncBillChoice();
+    renderMandatoryDisplayTotal();
     renderTotal(false);
-});
-
-document.querySelectorAll('[data-payment-history-period]').forEach((input) => {
-    input.addEventListener('change', () => {
-        if (input.value) input.form?.requestSubmit();
-    });
 });
 
 document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
     const source = launcher.querySelector('[data-receipt-urls]');
+    const downloadSource = launcher.querySelector('[data-receipt-download-urls]');
+    const fallbackModal = launcher.querySelector('[data-auto-receipt-modal]');
     let urls = [];
+    let downloadUrls = [];
     try {
         urls = JSON.parse(source?.textContent || '[]');
     } catch {
         urls = [];
     }
+    try {
+        downloadUrls = JSON.parse(downloadSource?.textContent || '[]');
+    } catch {
+        downloadUrls = [];
+    }
+    const showFallback = () => {
+        if (!fallbackModal) return;
+        fallbackModal.hidden = false;
+        fallbackModal.classList.add('show');
+        fallbackModal.querySelector('[data-open-receipts]')?.focus();
+    };
+    const hideFallback = () => {
+        if (!fallbackModal) return;
+        fallbackModal.classList.remove('show');
+        fallbackModal.hidden = true;
+    };
     const openReceipts = () => {
+        let blocked = false;
         urls.forEach((url) => {
+            const opened = window.open(url, '_blank', 'noopener');
+            if (!opened) blocked = true;
+        });
+        if (blocked) showFallback();
+    };
+    const downloadReceipts = () => {
+        downloadUrls.forEach((url) => {
             window.open(url, '_blank', 'noopener');
         });
     };
 
     launcher.querySelector('[data-open-receipts]')?.addEventListener('click', openReceipts);
+    launcher.querySelector('[data-download-receipts]')?.addEventListener('click', downloadReceipts);
+    launcher.querySelectorAll('[data-alert-close]').forEach((button) => button.addEventListener('click', hideFallback));
+    fallbackModal?.addEventListener('click', (event) => {
+        if (event.target === fallbackModal) hideFallback();
+    });
     if (urls.length) openReceipts();
+});
+
+document.querySelectorAll('[data-payment-history-delete-modal]').forEach((modal) => {
+    let pendingForm = null;
+    const name = modal.querySelector('[data-payment-delete-name]');
+    const meta = modal.querySelector('[data-payment-delete-meta]');
+    const cancel = modal.querySelector('[data-payment-delete-cancel]');
+    const confirm = modal.querySelector('[data-payment-delete-confirm]');
+
+    const close = () => {
+        modal.classList.remove('show');
+        modal.hidden = true;
+        pendingForm = null;
+    };
+
+    document.querySelectorAll('[data-payment-history-delete-form]').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            if (form.dataset.paymentDeleteConfirmed === 'true') return;
+            event.preventDefault();
+            pendingForm = form;
+            const detail = form.dataset.paymentDeleteDetail || '';
+            const amount = form.dataset.paymentDeleteAmount || '';
+            if (name) name.textContent = form.dataset.paymentDeleteTitle || 'transaksi ini';
+            if (meta) meta.textContent = [detail, amount].filter(Boolean).join(' · ');
+            modal.hidden = false;
+            modal.classList.add('show');
+            confirm?.focus();
+        });
+    });
+
+    cancel?.addEventListener('click', close);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) close();
+    });
+    confirm?.addEventListener('click', () => {
+        if (!pendingForm) return;
+        pendingForm.dataset.paymentDeleteConfirmed = 'true';
+        pendingForm.submit();
+    });
 });
 
 document.querySelector('[data-spp-import-file]')?.addEventListener('change', (event) => {

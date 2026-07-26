@@ -12,6 +12,36 @@ Layout utama memakai app-shell: sidebar kiri, topbar, lalu area kerja utama. Pol
 
 Navigasi memakai sidebar bertingkat dengan menu aktif, submenu terbuka, ikon, dan overlay mobile. Topbar selalu menampilkan konteks penting seperti tombol sidebar dan Tahun Pelajaran Aktif.
 
+Keputusan Final Cepat
+
+- Font dasar seluruh UI: 14px.
+- Judul halaman: 20px / 700 / #020617.
+- Judul card atau section: 16px / 700 / #020617.
+- Label form dan label data: 14px / 500 / #334155.
+- Isi tabel, input, select, dan teks utama: 14px / 400 atau 500 / #020617.
+- Metadata, deskripsi, hint, placeholder, tanggal, metode, dan empty state: 14px / 400 / #707971.
+- Nominal biasa: 14px atau 16px / 700 / #004528.
+- Nominal total utama: 20px / 700 / #004528.
+- Bold hanya untuk struktur dan informasi yang benar-benar perlu dipindai cepat.
+- Hijau hanya untuk aksi utama, nominal penting, status aktif/sukses, dan brand.
+- Default teks rata kiri, nominal rata kanan, kolom sempit/icon/status pendek rata tengah.
+- Padding halaman desktop 24px 32px, tablet 20px 24px, mobile 16px.
+- Padding card besar 24px, card kecil/list item 12px sampai 16px.
+- Jarak antar elemen mengikuti skala 4px: 4, 8, 12, 16, 20, 24, 32.
+- Card operasional tidak boleh terasa seperti card di dalam card tanpa alasan yang jelas.
+- Error form selalu dekat field, loading tidak boleh menggeser layout, dan empty state bukan error.
+- Modal hanya untuk konfirmasi atau form pendek; detail resmi, tabel besar, dan dokumen cetak memakai halaman sendiri.
+- Tombol icon-only wajib memiliki `aria-label` dan `title`.
+- Dokumen print/PDF memakai gaya resmi putih-hitam, bukan card aplikasi.
+- Semua menu mengikuti template jenis halaman: data, form, detail, transaksi, laporan, dashboard, pengaturan, import, atau print.
+- Search/filter memakai urutan konteks besar, konteks turunan, periode/status, pencarian, lalu aksi.
+- Bahasa UI memakai kata kerja singkat dan konsisten seperti Simpan, Batal, Terapkan, Reset, Import, Export, Cetak, Unduh, Bayar, dan Hapus.
+- Aksi berisiko wajib memakai modal konfirmasi yang menyebut objek dan dampak.
+- Import wajib melalui preview dan validasi sebelum konfirmasi akhir.
+- Aksi UI mengikuti hak akses user; tombol tanpa izin disembunyikan atau disabled dengan alasan jelas.
+- Dashboard/chart memakai warna seperlunya, legenda jelas, dan tidak mengalahkan data utama.
+- Riwayat aktivitas/audit log mencatat waktu, petugas, aksi, objek, dan hasil aksi.
+
 Standar Warna
 
 Palet aman halaman baru:
@@ -33,6 +63,27 @@ Palet aman halaman baru:
 - Hijau gelap/brand/nominal penting: #004528
 - Hijau lembut: #e9f8ef
 - Hijau sangat lembut: #f3fbf6
+
+Standar peran warna teks:
+- Judul halaman, judul card, judul section, nama data penting: #020617.
+- Isi utama, isi tabel, isi form, dan teks nilai biasa: #020617 atau #111c2c pada halaman lama.
+- Label form, label data, header kecil, dan teks yang memberi konteks: #334155.
+- Deskripsi, placeholder, metadata, tanggal, metode, hint, empty state, dan teks pendukung: #707971.
+- Teks sekunder yang masih perlu lebih terbaca daripada metadata boleh memakai #404942.
+- Hijau #004528 hanya dipakai untuk aksi utama, tombol primer, nominal penting, status aktif penting, dan elemen brand yang memang perlu aksen.
+- Hijau #157144 dipakai untuk status aktif/sukses, bukan untuk semua judul atau semua teks penting.
+- Merah #ef1f2d hanya untuk hapus, error, gagal, atau tindakan berbahaya.
+- Biru hanya untuk info murni, chart, atau link bantuan yang memang berbeda konteks dari aksi utama.
+
+Aturan disiplin warna:
+- Jangan membuat semua teks penting menjadi hijau. Jika semua hijau, tidak ada lagi yang benar-benar penting.
+- Jangan membuat semua judul atau nama item berwarna hijau. Default judul tetap #020617.
+- Nominal biasa boleh #004528 jika perlu mudah dipindai, tetapi nominal total utama harus menjadi satu-satunya nominal yang paling dominan.
+- Teks pendukung jangan memakai warna terlalu gelap. Gunakan #707971 agar hierarki terbaca.
+- Tombol primer solid hijau hanya untuk aksi utama halaman atau form.
+- Tombol sekunder memakai putih, border #d1d5db, teks #334155 atau #404942.
+- Link kecil boleh hijau teks tanpa background solid.
+- Badge/status boleh memakai background lembut, tetapi jangan dipakai untuk metadata biasa.
 
 Status warna:
 - Sukses/Aktif: teks #157144, background #e9f8ef
@@ -61,13 +112,25 @@ Standar Sidebar dan Navigasi
 - Semua submenu, termasuk Manajemen Siswa, Data Master, dan Laporan, wajib memakai warna normal, hover, focus, dan aktif yang sama.
 - Focus-visible item sidebar memakai outline 2px solid #004528 dengan offset 2px.
 
+Standar Identitas, Footer, dan Copyright
+
+- Brand utama pada logo/sidebar boleh memakai `MA'WA CENTER` karena berfungsi sebagai identitas visual.
+- Nama brand pada kalimat biasa, footer, copyright, dokumen, dan teks naratif memakai `Ma'wa Center`.
+- Format copyright aplikasi: `© {tahun berjalan} Ma'wa Center`.
+- Tahun copyright harus dinamis dari sistem jika memungkinkan, bukan hardcode.
+- Copyright UI aplikasi memakai 14px / 400 / #707971 / line-height 1.4.
+- Copyright tidak memakai bold, hijau, background, badge, atau gaya tombol.
+- Footer aplikasi ditempatkan sebagai teks pendukung yang ringan; pada login boleh rata tengah, pada halaman internal boleh rata tengah di bawah area kerja.
+- Footer tidak boleh mengalahkan konten utama, tidak perlu card, dan tidak perlu border kecuali layout halaman memang membutuhkan pemisah halus.
+- Copyright dokumen print/PDF boleh lebih kecil mengikuti kebutuhan cetak, tetapi tetap netral, ringan, dan tidak dominan.
+
 Standar Tipografi
 
 Jenis font utama memakai system sans: Inter jika tersedia, lalu ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif.
 
 Gunakan satu keluarga font utama saja untuk seluruh aplikasi agar tampilan konsisten dan operasional.
 
-UI aplikasi hanya memakai 3 ukuran font utama dan 3 ketebalan font utama agar tampilan rapi, konsisten, dan mudah dirawat.
+UI aplikasi memakai ukuran dan ketebalan terbatas agar tampilan rapi, konsisten, dan mudah dirawat. Jangan menaikkan ukuran atau ketebalan hanya karena sebuah teks terasa penting; tentukan dulu perannya.
 
 Ukuran font UI:
 - 14px sebagai teks dasar. Dipakai untuk teks isi, tabel, form input, select, textarea, placeholder, label, metadata, badge, chip, tombol, teks bantuan, deskripsi, empty state, dan header tabel.
@@ -78,6 +141,19 @@ Ketebalan font UI:
 - 400 sebagai normal. Dipakai untuk teks isi, deskripsi, placeholder, teks bantuan, metadata ringan, dan keterangan tambahan.
 - 500 sebagai medium. Dipakai untuk label form, label tabel, isi tabel penting, isi form, metadata penting, nominal biasa, dan teks yang perlu lebih mudah dipindai.
 - 700 sebagai bold. Dipakai untuk judul halaman, judul section/card/modal, nama siswa atau tagihan penting, tombol, badge/status, menu aktif, dan nominal total penting.
+
+Standar hierarki tipografi global:
+- Judul halaman: 20px / 700 / line-height 1.2 / warna #020617.
+- Deskripsi halaman: 14px / 400 / line-height 1.45 / warna #404942 atau #707971.
+- Judul card/panel: 16px / 700 / line-height 1.25 / warna #020617.
+- Judul section di dalam card: 15px atau 16px / 700 / line-height 1.25 / warna #020617.
+- Label form dan label data: 14px / 500 / line-height 1.25 / warna #334155. Jika halaman lama masih memakai 600, ubah bertahap ke 500 atau 700 sesuai konteks.
+- Isi/input/select/table: 14px / 400 atau 500 / line-height 1.25 sampai 1.35 / warna #020617.
+- Nama siswa, nama tagihan, atau nama item penting: 14px atau 16px / 700 / warna #020617. Gunakan hijau hanya jika nama itu memang berfungsi sebagai status/tautan/aksen utama.
+- Metadata seperti tanggal, periode, metode, hint, dan keterangan kecil: 14px / 400 / warna #707971.
+- Tombol: 14px / 700 / line-height 1 / warna sesuai jenis tombol.
+- Nominal biasa: 14px atau 16px / 700 / warna #004528 jika perlu dipindai cepat.
+- Nominal total utama: 20px / 700 / warna #004528. Jika halaman benar-benar membutuhkan fokus finansial utama, boleh 22px / 700 sebagai pengecualian, tetapi jangan memakai 800.
 
 Kombinasi penggunaan:
 - 14px / 400 untuk deskripsi, teks bantuan, placeholder, metadata ringan, empty state, dan catatan kecil.
@@ -90,7 +166,7 @@ Kombinasi penggunaan:
 
 Aturan pembatas:
 - Jangan memakai font di bawah 14px pada UI aplikasi.
-- Jangan memakai font di atas 20px pada UI aplikasi.
+- Jangan memakai font di atas 20px pada UI aplikasi, kecuali nominal total utama tertentu yang disetujui boleh 22px.
 - Jangan memakai font-weight 300, 600, atau 800 pada UI aplikasi baru.
 - Jika menemukan font-weight 600, ubah ke 500 atau 700 sesuai konteks.
 - Jika menemukan font-weight 800, ubah ke 700.
@@ -101,6 +177,16 @@ Aturan pembatas:
 Letter spacing default 0. Jangan memakai letter-spacing negatif. Huruf kapital boleh dipakai untuk nama siswa, kode unit, status pendek, atau header tabel, tetapi tetap jaga ukuran maksimal 20px.
 
 Jangan memakai ukuran hero atau display besar di dashboard, card, tabel, sidebar, modal, atau form transaksi.
+
+Aturan disiplin bold:
+- Bold dipakai untuk struktur, bukan untuk semua informasi.
+- Satu card cukup memiliki satu sampai dua titik visual paling kuat.
+- Jika judul card sudah bold, isi card tidak semuanya perlu bold.
+- Label tidak perlu bold berat; gunakan 14px / 500 kecuali label sangat penting.
+- Nama item boleh bold, detailnya harus normal.
+- Nominal boleh bold, tetapi jangan membuat label nominal juga sama beratnya.
+- Metadata, tanggal, metode, deskripsi, dan empty state tidak boleh bold.
+- Tombol utama bold; tombol sekunder tetap bold tetapi warna dan background lebih ringan.
 
 Standar Layout
 
@@ -114,20 +200,41 @@ Standar Spacing
 
 Gunakan skala jarak 4px: 4, 8, 12, 16, 20, 24, 32. Hindari angka acak seperti 7px, 13px, 19px, atau 27px kecuali untuk penyesuaian ikon yang sangat spesifik.
 
+Standar alignment global:
+- Default semua teks UI rata kiri.
+- Judul halaman, deskripsi halaman, judul card, label form, isi form, empty state teks panjang, dan teks detail selalu rata kiri.
+- Container halaman boleh rata tengah dengan `margin-inline: auto`, tetapi isi teks di dalamnya tetap rata kiri.
+- Rata tengah dipakai hanya untuk kolom sempit seperti No, kode pendek, JK, status pendek, checkbox, ikon aksi, dan angka jumlah kecil.
+- Rata kanan dipakai untuk nominal, total uang, angka finansial, dan ringkasan angka yang perlu dibandingkan secara vertikal.
+- Header tabel rata tengah, kecuali header kolom teks utama boleh rata kiri jika tabelnya sangat padat dan lebih mudah dibaca.
+- Isi kolom nama, deskripsi, pembayaran, kategori, alamat, keterangan, dan teks panjang rata kiri.
+- Isi kolom nominal, total, sisa tagihan, dan nilai uang rata kanan.
+- Tombol aksi utama di header halaman rata kanan pada desktop dan turun full width pada mobile jika ruang sempit.
+- Jangan mencampur rata tengah dan rata kiri dalam satu kelompok teks kecuali memang tabel membutuhkan perataan kolom berbeda.
+- Jangan memakai `text-align: center` untuk card operasional, form, atau panel data hanya agar terlihat simetris.
+
+Standar padding dan posisi:
+- Padding halaman desktop: 24px atas/bawah dan 32px kiri/kanan.
+- Padding halaman tablet: 20px atas/bawah dan 24px kiri/kanan.
+- Padding halaman mobile: 16px semua sisi.
+- Padding card besar: 24px semua sisi.
+- Padding card kecil/list item: 12px sampai 16px.
+- Header card memakai tinggi stabil 56px atau padding vertikal setara, dengan padding kiri/kanan 24px.
+- Isi card dimulai 16px sampai 24px dari header card, sesuai kepadatan konten.
+- Jika card memiliki garis header, garis berada setelah header dan isi tidak boleh menempel ke garis.
+- Jarak kiri judul card dan isi card harus konsisten dalam card yang sama.
+- Jika dua card sejajar, padding header dan padding isi keduanya harus sama agar terlihat satu sistem.
+- Field form harus sejajar dengan labelnya; label tidak boleh terlalu jauh atau terlalu mepet dari field.
+- Tombol ikon harus berada tepat tengah secara horizontal dan vertikal di area kliknya.
+
 Kanvas dan area kerja:
 - Seluruh konten halaman harus berada di tengah area kerja dengan container `width: 100%` dan `margin-inline: auto`
 - Heading, deskripsi, filter, canvas, tabel, dan form utama pada satu halaman harus memakai batas kiri-kanan container yang sama
 - Halaman form atau tool sederhana boleh memakai max-width 720px; halaman tabel/data maksimal 1200px; dashboard padat maksimal 1440px
-- Jika halaman turunan diminta mengikuti halaman induk, gunakan `max-width` kanvas halaman induk secara konsisten pada judul dan konten utama; contoh keluarga Pembayaran memakai kanvas ringkas 560px dan tetap rata tengah
+- Jika halaman turunan diminta mengikuti halaman induk, gunakan `max-width` kanvas halaman induk secara konsisten pada judul dan konten utama.
 - Rata tengah yang dimaksud adalah posisi container, bukan `text-align: center`; judul, deskripsi, label, dan isi tetap rata kiri kecuali komponen memang membutuhkan perataan lain
 - Jarak topbar ke konten/heading halaman mengikuti pola Data Siswa: desktop 24px dan mobile 16px.
 - Jika judul/heading halaman adalah elemen pertama di area konten, jarak topbar ke judul mengikuti jarak topbar ke konten halaman: desktop 24px dan mobile 16px.
-- Padding halaman desktop: 24px 32px
-- Padding halaman tablet: 20px 24px
-- Padding halaman mobile: 16px
-- Padding workspace/card besar desktop: 24px
-- Padding workspace/card besar mobile: 16px
-- Padding card kecil atau list item: 12px sampai 16px
 
 Heading halaman:
 - Pola heading default memakai 16px untuk jarak antar blok utama, kecuali judul ke deskripsi tetap 4px karena masih satu pasangan informasi
@@ -175,12 +282,51 @@ Keputusan umum:
 - Gunakan 8px atau 12px untuk elemen kecil di dalam komponen.
 - Jangan memakai jarak lebih dari 32px di halaman operasional kecuali halaman benar-benar kosong atau perlu fokus khusus.
 
+Checklist audit visual cepat:
+- Apakah semua judul memakai ukuran dan warna sesuai perannya?
+- Apakah hanya 1 sampai 2 elemen dalam card yang benar-benar dominan?
+- Apakah teks pendukung sudah abu dan normal, bukan hitam tebal?
+- Apakah hijau hanya muncul pada aksi, nominal penting, status, atau brand?
+- Apakah padding kiri judul card dan isi card sejajar?
+- Apakah nominal rata kanan dan teks panjang rata kiri?
+- Apakah jarak antar section, card, field, dan tombol memakai skala 4px?
+- Apakah tidak ada card di dalam card tanpa alasan operasional?
+- Apakah mobile tetap satu kolom, tidak melebar kanan, dan tombol tetap mudah ditekan?
+
 Halaman data memakai pola:
 - Heading
 - Filter/search
 - Jumlah data atau ringkasan
 - Tabel/card list
 - Pagination
+
+Template jenis halaman:
+- Halaman data/list: Heading, deskripsi singkat jika perlu, aksi kanan utama, filter/search, toolbar jumlah data, tabel/list, pagination atau ringkasan data.
+- Halaman form tambah/edit: Heading, deskripsi singkat, card/form utama, field berurutan dari konteks besar ke detail, tombol Batal dan Simpan di akhir form.
+- Halaman detail: Heading, aksi kanan jika perlu, ringkasan identitas utama, detail data berkelompok, riwayat/aktivitas jika relevan, tombol kembali.
+- Halaman transaksi: Heading, konteks/pencarian, data objek terpilih, daftar pilihan transaksi, ringkasan/proses pembayaran, riwayat terbaru jika membantu.
+- Halaman laporan: Heading, filter periode/konteks, ringkasan angka utama, tabel/detail laporan, aksi Export/Cetak.
+- Halaman dashboard: Heading ringkas, ringkasan angka penting, chart/daftar prioritas, aktivitas terbaru, tanpa form panjang.
+- Halaman pengaturan: Heading, section pengaturan per kelompok, kontrol yang jelas, simpan perubahan per section jika risikonya rendah atau satu tombol simpan global jika saling terkait.
+- Halaman import: Heading, konteks import, upload file, preview data, ringkasan valid/gagal, daftar error per baris, tombol Konfirmasi Import.
+- Halaman print/dokumen: Toolbar layar, dokumen resmi, tombol Kembali/Cetak/Unduh; toolbar hilang saat print.
+- Jangan memakai template dashboard untuk halaman operasional transaksi atau data utama. Halaman kerja harus langsung membantu user menyelesaikan tugas.
+
+Standar search, filter, dan reset:
+- Search tunggal dipakai jika user hanya perlu mencari satu objek utama, misalnya siswa, kategori, atau nomor transaksi.
+- Card filter dipakai jika ada lebih dari dua field filter atau filter perlu konteks berpasangan seperti Unit dan Kelas.
+- Search utama ditempatkan setelah heading/deskripsi atau di dalam card filter jika menjadi bagian dari filter data.
+- Urutan filter umum: konteks besar, konteks turunan, periode/status, pencarian teks, aksi.
+- Contoh urutan: Unit Pendidikan, Kelas, Status, Cari, Terapkan, Reset.
+- Placeholder search harus singkat dan spesifik, misalnya "Nama atau NIS..." atau "Cari kategori...".
+- Tombol filter utama selalu memakai label "Terapkan".
+- Tombol reset selalu memakai label "Reset" dan mengembalikan halaman ke route bersih tanpa query filter.
+- Filter harus mempertahankan query penting seperti per_page, sort, direction, dan tab aktif jika halaman membutuhkannya.
+- Jika Unit Pendidikan berubah, field turunan seperti Kelas wajib disesuaikan atau direset jika nilainya tidak valid.
+- Jangan menampilkan filter yang tidak membantu keputusan user pada halaman itu.
+- Tahun Pelajaran tidak perlu diulang di filter jika sudah menjadi konteks aktif dari topbar, kecuali halaman arsip, laporan, import, atau form target tahun.
+- Search live boleh dipakai untuk lookup kecil seperti cari siswa, tetapi halaman data besar lebih aman memakai tombol Terapkan agar query jelas.
+- Reset tidak boleh menghapus data, hanya membersihkan filter.
 
 Toolbar ringkasan jumlah data:
 - Pola toolbar "Tampilkan 10/25/50" Data Siswa menjadi acuan untuk halaman data yang memakai tabel/list.
@@ -287,16 +433,55 @@ Standar tabel data compact Data Siswa:
 - Hindari ikon sort atau panah sort di header compact jika membuat header tidak rapi, terutama pada kolom sempit seperti JK dan Unit.
 - Aksi edit/hapus di tabel memakai tombol ikon compact 30px sampai 32px, berada di tengah cell, dan tidak boleh membuat tinggi baris melebihi 40px.
 
+Standar tabel lanjutan:
+- Loading tabel memakai baris skeleton atau pesan "Memuat data..." di area tabel, bukan spinner besar di tengah halaman.
+- Empty table memakai satu baris/box ringkas dengan teks 14px / 400 / #707971 dan background #fbfdf8.
+- Error table memakai pesan ringkas dengan warna bahaya dan tombol Coba Lagi jika data diambil async.
+- Sorting hanya ditampilkan pada kolom yang benar-benar bisa diurutkan.
+- Ikon sort tidak boleh membuat header kolom lebih tinggi dari standar 40px.
+- Kolom teks panjang wajib memakai ellipsis pada tabel compact.
+- Kolom nominal wajib rata kanan di header dan isi, kecuali header tabel global memaksa rata tengah; jika begitu isi nominal tetap rata kanan.
+- Kolom aksi selalu di kanan dan memakai tombol ikon compact.
+- Pagination berada di bawah tabel dengan jarak 16px dari tabel.
+- Pagination memakai tombol 32px sampai 36px, radius 8px, font 14px / 500.
+- Pagination aktif memakai background #004528 dan teks #ffffff.
+- Pagination disabled memakai teks #707971, border #d1d5db, dan opacity 0.55.
+- Jangan menampilkan dua kontrol jumlah data dalam satu halaman. Jika sudah ada toolbar "Tampilkan ... data", jangan tambah select serupa di bawah tabel.
+- Pada mobile, hanya wrapper tabel yang scroll horizontal; halaman utama tidak boleh melebar ke kanan.
+- Sticky header boleh dipakai untuk tabel sangat panjang, tetapi tinggi header, warna, border, dan z-index harus dijaga agar tidak menutup topbar atau filter.
+
 Card dan Panel
 
 Card hanya dipakai untuk item berulang, modal, panel data, atau tool yang memang perlu frame. Jangan menaruh card di dalam card jika tidak perlu.
 
 Standar card:
-- Background #ffffff
-- Border #d1d5db
-- Radius 8px
-- Shadow sangat tipis boleh dipakai: 0 1px 2px rgba(15, 23, 42, 0.04)
-- Jangan membuat shadow atau border terlihat biru
+- Background #ffffff.
+- Border 1px solid #d1d5db.
+- Radius 8px sebagai standar baru.
+- Radius 12px hanya boleh dipertahankan pada card filter lama yang sudah mengikuti pola Data Siswa sampai halaman itu dirapikan ulang.
+- Shadow default none.
+- Shadow sangat tipis boleh dipakai hanya untuk card yang perlu sedikit naik dari kanvas: 0 1px 2px rgba(15, 23, 42, 0.04).
+- Jangan membuat shadow atau border terlihat biru.
+- Padding card besar 24px.
+- Padding card operasional sedang 16px sampai 20px.
+- Padding card kecil/list item 12px sampai 16px.
+- Jarak antar card sejajar atau bertumpuk 16px.
+- Jika dua card sejajar, tinggi header, padding kiri-kanan, dan jarak isi harus konsisten.
+- Judul card memakai 16px / 700 / #020617.
+- Judul card rata kiri dan tidak perlu diberi background khusus.
+- Header card memakai padding kiri-kanan yang sama dengan isi card.
+- Header card boleh memakai tinggi stabil 56px atau padding vertikal setara.
+- Divider header hanya 1 garis: border-bottom 1px solid #e5e7eb.
+- Jangan membuat garis ganda di bawah judul card. Jika header sudah punya border-bottom, isi pertama tidak boleh punya border-top.
+- Isi card dimulai 16px sampai 24px dari header atau divider.
+- Jarak kiri judul card, divider, dan isi card harus sejajar.
+- Card boleh tanpa divider jika isinya pendek, misalnya Data Siswa, empty state, atau ringkasan sederhana.
+- Card yang berisi form memakai label di atas field, gap field 12px, dan field tinggi 40px.
+- Card yang berisi nominal utama boleh memiliki satu blok highlight lembut #fbfdf8 dengan border #d1d5db atau #dfe5dc.
+- Card item/list tidak boleh terlalu tinggi jika data bisa ditampilkan compact.
+- Card bukan alat untuk membuat semua section terlihat terpisah; gunakan card hanya ketika frame membantu pemahaman alur.
+- Jangan menaruh card di dalam card. Pengecualian hanya untuk modal, empty state kecil, highlight total, atau grup pilihan yang benar-benar perlu frame sendiri.
+- Pada mobile, card full width, padding 12px sampai 16px, dan tidak boleh membuat scroll horizontal.
 
 Panel lembut/empty state:
 - Background #fbfdf8
@@ -329,6 +514,36 @@ Checkbox:
 - Gunakan accent-color: auto agar kondisi terpilih memakai aksen biru native browser, bukan aksen hijau
 - Posisi checkbox harus sejajar vertikal dengan label atau isi baris
 
+Validasi form:
+- Field wajib diberi label jelas. Tanda wajib boleh memakai teks kecil "Wajib" atau asterisk, tetapi jangan membuat label menjadi merah sebelum ada error.
+- Pesan error berada tepat di bawah field terkait dengan jarak 6px.
+- Pesan error memakai 14px / 400 / #ef1f2d dan line-height 1.35.
+- Field error memakai border #ef1f2d dan focus ring rgba(239, 31, 45, 0.10).
+- Helper text memakai 14px / 400 / #707971 dan diletakkan di bawah field sebelum error muncul.
+- Jika error muncul, helper text boleh disembunyikan agar tidak terlalu ramai.
+- Submit utama disabled sampai data minimal valid jika validasi bisa diketahui di sisi UI.
+- Setelah submit gagal, fokus diarahkan ke field error pertama jika memungkinkan.
+- Pesan error halaman/form umum boleh tampil di atas form, tetapi error spesifik tetap wajib dekat field.
+- Jangan memakai alert browser default untuk validasi utama jika halaman sudah memiliki pola validasi sendiri.
+
+Readonly dan disabled:
+- Readonly dipakai untuk data yang boleh disalin/dibaca tetapi tidak boleh diedit. Tampilan tetap terbaca, background boleh #f9fafb, teks #404942.
+- Disabled dipakai untuk kontrol yang benar-benar tidak bisa dipakai. Gunakan opacity 0.55, cursor not-allowed, dan jangan memunculkan hover aktif.
+- Jangan menyamakan readonly dengan disabled untuk field penting seperti nominal, NIS, kode, atau rekening yang mungkin perlu disalin.
+
+Format data:
+- Rupiah layar: `Rp. 50.000,-` mengikuti pola aplikasi saat ini. Nominal di input boleh tanpa `Rp.` selama sedang diedit, misalnya `50.000`.
+- Rupiah tabel dan ringkasan wajib rata kanan.
+- Tanggal layar: `19/06/2026` untuk data tabel/riwayat; tanggal panjang boleh `19 Juni 2026` untuk dokumen atau tampilan detail.
+- Jam transaksi: `09.45 WIB`.
+- Periode bulan: `Juli 2026`.
+- Rentang periode: `Juli 2025 - Juli 2026`.
+- Nama siswa boleh uppercase jika data sumber sudah uppercase, tetapi jangan menaikkan ukuran atau bold hanya karena uppercase.
+- Kode unit mengikuti penulisan resmi, misalnya `PAUD`, `MI`, `MTs`, `MA`, dan `PONPES`. Jangan mengubah `MTs` menjadi `MTS`.
+- Kelas memakai format ringkas sesuai data, misalnya `7B`, `VII A`, atau `11A`; jangan menambahkan label "Kelas" di dalam nilai jika label sudah tersedia.
+- NIS, NISN, nomor HP, rekening, dan kode lain memakai tabular-nums jika tersedia.
+- Nomor HP boleh ditampilkan dengan spasi kelompok jika kebutuhan baca lebih penting, tetapi data mentah tetap disimpan normal.
+
 Tombol dan Aksi
 
 Ukuran dasar semua tombol:
@@ -343,6 +558,24 @@ Ukuran dasar semua tombol:
 - Tombol aksi halaman boleh memakai shadow halus standar Data Siswa: normal 0 4px 12px rgba(0, 0, 0, .05), hover 0 10px 20px rgba(0, 69, 40, .16)
 - Label tombol harus singkat dan memakai kata kerja yang jelas, misalnya Tambah, Simpan, Cari, Tampilkan, Import, Konfirmasi, atau Hapus
 
+Standar bahasa UI dan microcopy:
+- Gunakan bahasa Indonesia yang ringkas, jelas, dan konsisten.
+- Hindari campuran istilah Inggris jika sudah ada padanan yang umum di aplikasi, kecuali istilah teknis seperti Import, Export, atau PDF.
+- Label tombol utama memakai kata kerja singkat: Tambah, Simpan, Terapkan, Reset, Import, Export, Cetak, Unduh, Bayar, Konfirmasi, Hapus, Batal, Kembali.
+- Jangan memakai label generik seperti OK, Submit, Proses, Kirim, atau Ya jika konteksnya bisa dibuat lebih jelas.
+- Tombol hapus memakai "Hapus", bukan "Delete".
+- Tombol batal memakai "Batal", bukan "Cancel".
+- Tombol kembali memakai "Kembali", bukan ikon saja jika berada di halaman detail/dokumen.
+- Judul halaman memakai nama menu atau pekerjaan utama, misalnya Data Siswa, Pembayaran, Tagihan Siswa, Laporan Pembayaran.
+- Deskripsi halaman satu kalimat pendek dan menjelaskan alur kerja, bukan promosi fitur.
+- Empty state memakai kalimat netral, misalnya "Belum ada data." atau "Belum ada riwayat pembayaran untuk siswa ini."
+- Error memakai kalimat aktif dan membantu, misalnya "Data gagal disimpan. Periksa kembali field yang ditandai."
+- Success memakai kalimat pendek, misalnya "Data berhasil disimpan." atau "Pembayaran berhasil diproses."
+- Konfirmasi aksi harus menyebut objek yang terdampak, misalnya "Hapus pembayaran SPP PAUD Maret 2026?"
+- Jangan memakai tanda seru berlebihan pada pesan sistem.
+- Jangan memakai teks instruksi panjang di dalam card jika label dan kontrol sudah jelas.
+- Nama menu, label, dan status memakai Title Case secukupnya; isi kalimat tetap memakai kapital normal.
+
 Tombol primer:
 - Background #004528
 - Teks #ffffff
@@ -353,7 +586,7 @@ Tombol primer:
 
 Standar tombol aksi halaman Data Siswa:
 - Pola tombol Data Siswa menjadi acuan utama untuk tombol aksi kanan di heading halaman, seperti Tambah, Import, Export, dan aksi utama setara.
-- Markup tombol memakai class dasar `button` dan class aksi spesifik. Untuk tombol import file gunakan pola `button action-purple`; class tambahan per halaman boleh ditambahkan setelahnya, misalnya `button action-purple payment-import-action`.
+- Markup tombol memakai class dasar `button` dan class aksi spesifik yang netral terhadap warna, misalnya `button button-primary` atau `button action-primary`. Jangan memakai nama class yang menyebut warna lama seperti purple jika tampilan finalnya hijau.
 - Teks tombol import file memakai label `Import` sesuai standar Data Siswa. Jangan membungkus teks tombol dengan elemen tambahan seperti `<span>` jika tombol standar Data Siswa tidak membutuhkannya.
 - Tinggi 40px, min-height 40px, padding 0 14px, radius 8px, font 14px / 700, line-height 1, display inline-flex, align-items center, justify-content center, gap 8px, min-width 88px.
 - Warna normal: background #004528, border 1px solid #004528, teks #ffffff, ikon #ffffff.
@@ -390,6 +623,17 @@ Tombol ikon:
 - Aksi hapus memakai ikon merah #ef1f2d dengan hover background #fff4f4, bukan hover hijau
 - Gunakan ikon yang sudah umum; tombol ikon tanpa teks wajib memiliki tooltip dan aria-label
 
+Standar ikon global:
+- Gunakan ikon dari library yang konsisten jika tersedia, misalnya lucide atau ikon bawaan aplikasi.
+- Ukuran ikon tombol teks: 16px sampai 18px.
+- Ukuran ikon tombol icon-only standar: 18px.
+- Ukuran ikon aksi tabel compact: 16px sampai 18px di dalam tombol 28px sampai 32px.
+- Ikon mengikuti warna teks tombol melalui currentColor jika memungkinkan.
+- Ikon dekoratif murni harus disembunyikan dari screen reader dengan `aria-hidden="true"`.
+- Tombol icon-only wajib memiliki `aria-label` dan `title` yang menjelaskan aksi, misalnya Cetak, Unduh, Hapus, Detail, atau Bayar.
+- Jangan memakai ikon yang artinya ambigu untuk aksi keuangan. Cetak memakai printer, unduh memakai download, hapus memakai trash, detail/struk memakai document/receipt.
+- Ikon status tidak boleh menjadi satu-satunya penanda status; tetap sediakan teks atau label jika status penting.
+
 Keadaan tombol:
 - Focus-visible tombol memakai outline/ring 2px #004528 dengan offset 2px; focus tidak boleh hanya ditandai perubahan warna
 - Disabled memakai opacity 0.55, cursor not-allowed, dan warna hover tidak berubah
@@ -405,6 +649,20 @@ Susunan dan prioritas aksi:
 - Jika field dan tombol masih muat dalam satu baris mobile, pertahankan tinggi 40px dan jarak 12px tanpa memaksa tombol full-width
 
 Edit dan hapus memakai tombol ikon, bukan tombol teks panjang. Aksi berisiko wajib memakai confirm/modal.
+
+Standar konfirmasi aksi:
+- Aksi berisiko wajib memakai modal konfirmasi, bukan confirm browser default.
+- Aksi berisiko meliputi Hapus, Batalkan Transaksi, Bayar, Konfirmasi Import, Reset Data, Naik Kelas, Pindah Kelas massal, dan perubahan status penting.
+- Judul konfirmasi menyebut aksi dan objek, misalnya "Hapus Data Siswa?" atau "Konfirmasi Pembayaran?"
+- Isi konfirmasi menjelaskan dampak dalam satu sampai dua kalimat.
+- Jika aksi tidak bisa dibatalkan, tuliskan dengan jelas.
+- Tombol utama modal memakai warna sesuai risiko: primer hijau untuk konfirmasi positif, merah untuk hapus/batal/reset berisiko.
+- Tombol Batal selalu tersedia dan menjadi aksi aman.
+- Untuk aksi keuangan, tampilkan ringkasan nominal, siswa, periode, dan metode sebelum user konfirmasi.
+- Untuk import massal, tampilkan jumlah baris valid, jumlah baris gagal, dan konteks import sebelum tombol Konfirmasi Import aktif.
+- Saat konfirmasi sedang diproses, tombol utama loading dan tombol lain disabled agar tidak klik ganda.
+- Setelah berhasil, modal ditutup dan tampilkan toast/alert singkat.
+- Setelah gagal, modal tetap terbuka jika user perlu memperbaiki atau membaca error.
 
 Badge dan Chip
 
@@ -440,6 +698,69 @@ Empty state wajib jelas, misalnya:
 
 Jangan memakai teks instruksi panjang di dalam UI jika kontrolnya sudah jelas.
 
+State UI:
+- Loading halaman memakai skeleton atau area kosong terstruktur, bukan spinner besar tanpa konteks.
+- Loading tombol mempertahankan ukuran tombol agar layout tidak bergeser.
+- Loading tabel/list tampil di area data yang sedang dimuat, bukan mengganti seluruh halaman.
+- Empty state harus menjawab apa yang kosong dan apa langkah berikutnya jika ada.
+- Empty state memakai background #fbfdf8, border #d1d5db atau #dfe5dc, teks #707971, padding 16px sampai 24px, radius 8px.
+- Error state harus singkat, jelas, dan memberi aksi pemulihan seperti Coba Lagi, Kembali, atau Hubungi Admin jika relevan.
+- Success state cukup memakai toast atau alert ringkas; jangan menambah card sukses besar kecuali prosesnya selesai dan halaman butuh konfirmasi resmi.
+- Disabled state tidak boleh terlihat seperti error. Gunakan opacity/netral, bukan merah.
+- Data kosong bukan error. Jangan memakai warna merah untuk empty state.
+- Jika proses menyimpan data keuangan, cegah klik ganda dan tampilkan loading pada tombol submit.
+
+Standar hak akses dan role:
+- UI wajib mengikuti izin user aktif. Jangan menampilkan aksi yang tidak boleh dipakai hanya untuk kemudian gagal di server.
+- Aksi utama seperti Tambah, Edit, Hapus, Bayar, Import, Export, Cetak, dan Konfirmasi hanya tampil jika user punya izin.
+- Jika aksi disembunyikan membuat alur membingungkan, boleh tampil disabled dengan tooltip/alasan singkat, misalnya "Tidak memiliki akses".
+- Jangan memakai warna merah untuk tombol disabled karena disabled bukan error.
+- Kolom Aksi pada tabel boleh disembunyikan jika tidak ada satu pun aksi yang bisa dilakukan user.
+- Menu sidebar yang tidak diizinkan tidak perlu ditampilkan.
+- Data sensitif keuangan hanya tampil sesuai role; jika role hanya boleh melihat ringkasan, jangan tampilkan tombol detail/cetak transaksi.
+- Server tetap menjadi sumber keamanan utama. Standar UI ini hanya untuk kejelasan pengalaman, bukan pengganti validasi permission server.
+- Jika user kehilangan akses saat berada di halaman, tampilkan pesan netral dan tombol Kembali, bukan halaman kosong.
+- Audit aksi penting seperti hapus, import, dan pembayaran harus mencatat user/petugas jika sistem mendukung.
+
+Modal dan dialog:
+- Modal dipakai untuk konfirmasi, form pendek, atau pilihan yang tidak perlu halaman baru.
+- Proses panjang, tabel besar, detail resmi, atau dokumen cetak lebih baik memakai halaman sendiri.
+- Backdrop memakai rgba(2, 6, 23, 0.38) pada mode terang.
+- Panel modal background #ffffff, border #d1d5db, radius 8px, shadow halus, width sesuai konteks.
+- Lebar modal kecil 420px, modal form 560px, modal besar maksimal 720px. Jangan memakai modal terlalu lebar untuk data tabel besar.
+- Padding modal 24px desktop dan 16px mobile.
+- Judul modal 16px / 700 / #020617.
+- Deskripsi modal 14px / 400 / #707971.
+- Footer modal memakai jarak atas 20px, tombol sejajar kanan pada desktop, dan full width/stack pada mobile jika ruang sempit.
+- Tombol primer modal berada paling kanan; tombol batal di kiri dari tombol primer.
+- Modal konfirmasi hapus memakai judul jelas, isi menyebut objek yang akan dihapus, tombol bahaya sebagai aksi utama, dan tombol Batal sebagai aksi sekunder.
+- Modal harus bisa ditutup dengan tombol close atau Batal. Escape/backdrop boleh aktif kecuali tindakan sedang loading.
+- Saat modal terbuka, fokus masuk ke modal; setelah modal ditutup, fokus kembali ke tombol pemicu jika memungkinkan.
+
+Alert dan toast:
+- Toast dipakai untuk feedback singkat setelah aksi berhasil/gagal, misalnya data tersimpan, transaksi berhasil, atau import selesai.
+- Alert inline dipakai untuk informasi yang perlu dibaca sebelum user lanjut, misalnya error validasi umum atau peringatan import.
+- Toast posisi kanan atas pada desktop dan atas penuh/center pada mobile jika ruang sempit.
+- Toast maksimal 1 sampai 2 baris teks, font 14px / 500, radius 8px, padding 12px 14px.
+- Toast sukses memakai #157144 di atas #e9f8ef.
+- Toast error memakai #ef1f2d di atas #fff4f4.
+- Toast warning memakai #92400e di atas #fff7ed.
+- Toast info memakai #2563eb di atas #eff6ff dan hanya untuk informasi murni.
+- Durasi toast normal 3 sampai 5 detik. Error penting boleh tetap tampil sampai ditutup.
+- Jangan menampilkan toast dan alert dengan pesan yang sama secara bersamaan.
+- Teks toast memakai kalimat aktif dan singkat, misalnya "Pembayaran berhasil disimpan." atau "Data gagal dihapus."
+
+Aksesibilitas dasar:
+- Semua tombol icon-only wajib punya `aria-label`.
+- Semua input wajib punya label yang terhubung atau label visual yang jelas.
+- Focus-visible wajib terlihat pada tombol, link, input, select, textarea, sidebar, pagination, dan item menu.
+- Jangan menghapus outline fokus tanpa pengganti yang jelas.
+- Target klik minimal 32px untuk tabel compact dan 40px untuk tombol/form utama.
+- Warna tidak boleh menjadi satu-satunya pembeda status. Gunakan teks, label, atau ikon pendamping.
+- Kontras teks utama dan teks sekunder harus tetap terbaca di atas background putih maupun panel lembut.
+- Dialog/modal harus memiliki judul yang jelas dan fokus tidak boleh berpindah ke belakang modal saat modal aktif.
+- Link harus terlihat sebagai link atau aksi, bukan hanya teks hijau biasa di antara paragraf.
+
 Standar Responsif
 
 Breakpoint yang umum dipakai:
@@ -456,9 +777,62 @@ Aturan mobile:
 - Text tidak boleh tumpang tindih
 - Nominal dan aksi harus tetap mudah dipindai
 
+Standar Dashboard dan Chart
+
+- Dashboard dipakai untuk ringkasan dan prioritas kerja, bukan untuk menggantikan halaman laporan lengkap.
+- Urutan dashboard: heading ringkas, ringkasan angka utama, chart/visual jika membantu, daftar prioritas/aktivitas terbaru.
+- Card statistik memakai background #ffffff, border #d1d5db, radius 8px, padding 16px sampai 20px.
+- Label statistik memakai 14px / 400 / #707971.
+- Angka statistik memakai 20px / 700 / #020617 atau #004528 jika angka itu menjadi fokus utama.
+- Maksimal satu angka paling dominan dalam satu card statistik.
+- Chart memakai warna terbatas dan konsisten. Hijau untuk data utama/positif, merah untuk bahaya/tunggakan, kuning untuk peringatan, biru hanya untuk info murni.
+- Chart tidak boleh memakai palet warna acak atau terlalu banyak warna dalam satu visual.
+- Legend memakai 14px / 400 dan warna teks #404942 atau #707971.
+- Tooltip chart memakai background #ffffff, border #d1d5db, radius 8px, teks 14px, dan shadow halus.
+- Label sumbu dan angka chart harus tetap terbaca, minimal 14px jika tampil sebagai teks UI.
+- Empty chart memakai empty state standar, misalnya "Belum ada data untuk periode ini."
+- Jika chart tidak membantu keputusan cepat, gunakan tabel/ringkasan angka saja.
+- Dashboard mobile harus menumpuk satu kolom; chart tidak boleh menyebabkan scroll horizontal halaman.
+- Jangan membuat dashboard terasa seperti landing page dengan hero besar, ilustrasi dekoratif, atau angka raksasa tanpa konteks kerja.
+
+Standar Audit Log dan Riwayat Aktivitas
+
+- Audit log dipakai untuk melacak aksi penting pada data siswa, keuangan, import, hapus, perubahan status, pindah kelas, naik kelas, dan pengaturan sistem.
+- Item audit minimal mencatat waktu, petugas/user, aksi, objek/data terdampak, dan hasil aksi.
+- Jika relevan, audit mencatat nilai sebelum dan sesudah perubahan.
+- Format waktu audit mengikuti standar data: tanggal `19/06/2026`, jam `09.45 WIB`.
+- Nama aksi memakai bahasa kerja yang jelas, misalnya Membuat, Mengubah, Menghapus, Mengimport, Membayar, Mencetak, Membatalkan, atau Mengubah Status.
+- Riwayat terbaru di halaman detail cukup menampilkan 5 sampai 10 aktivitas terakhir.
+- Riwayat lengkap ditampilkan di halaman laporan/audit khusus jika datanya panjang.
+- Audit log tampil sebagai list compact atau tabel, bukan card besar berulang.
+- Kolom audit umum: Waktu, Petugas, Aksi, Objek, Keterangan, Status.
+- Status audit memakai badge standar: sukses, gagal, peringatan, atau netral.
+- Teks keterangan audit memakai 14px / 400 / #707971; aksi/objek penting boleh 14px / 500 atau 700 sesuai kebutuhan.
+- Aksi audit tidak boleh bisa diedit dari UI biasa. Jika ada koreksi, buat catatan koreksi baru.
+- Data audit sensitif mengikuti hak akses role.
+
 Standar Halaman Transaksi dan Pembayaran
 
 Halaman transaksi harus operasional dan langsung usable. Jangan membuat landing page atau hero.
+
+Standar import dan export global:
+- Import dipakai untuk memasukkan data massal dan wajib memiliki konteks yang jelas sebelum file diproses.
+- Flow import standar: pilih konteks, pilih file, preview, validasi, ringkasan valid/gagal, konfirmasi import, hasil import.
+- Tombol Download Template ditampilkan jika format file tidak sederhana atau rawan salah.
+- File upload menerima tipe file yang jelas, misalnya `.xlsx` atau `.csv`, dan menolak tipe lain dengan pesan error.
+- Setelah file dipilih, tampilkan nama file, ukuran jika tersedia, dan tombol ganti/hapus file.
+- Preview import wajib menampilkan baris valid dan baris bermasalah sebelum data disimpan permanen.
+- Error import per baris harus menyebut nomor baris dan alasan yang bisa diperbaiki.
+- Ringkasan import minimal menampilkan total baris, valid, gagal, dan duplikat jika ada.
+- Tombol Konfirmasi Import disabled jika tidak ada baris valid.
+- Import massal wajib memakai konfirmasi sebelum simpan akhir.
+- Setelah import berhasil, tampilkan ringkasan hasil dan arahkan user kembali ke halaman data terkait atau tampilkan hasil di halaman yang sama.
+- Export dipakai untuk mengambil data sesuai filter aktif, bukan selalu seluruh data, kecuali tombolnya jelas menyebut Export Semua.
+- Tombol Export/Cetak berada di kanan heading atau toolbar sesuai konteks halaman.
+- Export Excel untuk data mentah/tabel; PDF/Cetak untuk dokumen resmi, laporan, surat, struk, atau kwitansi.
+- Nama file export memakai format jelas, misalnya `laporan-pembayaran-2026-07.xlsx`.
+- Export tidak boleh mengabaikan permission user.
+- Jika data kosong, tombol export boleh disabled atau menampilkan pesan "Tidak ada data untuk diexport."
 
 Standar import SPP bulanan:
 - Import SPP dilakukan per Unit Pendidikan, Bulan, dan Tahun dari form sebelum file Excel dipreview.
@@ -521,6 +895,25 @@ Standar halaman Tagihan Siswa:
 - Surat Tagihan Siswa memakai halaman A4 portrait, background putih, font cetak serif, judul resmi "Penertiban Administrasi Keuangan", identitas siswa, tabel rincian No, Uraian, Tahun, Rp., Jml Bulan, Jumlah, total keseluruhan, terbilang, tanggal, dan tanda tangan. Toolbar layar hanya berisi Kembali, Bayar, dan Cetak, lalu wajib hilang saat print.
 - Pagination bawah Tagihan Siswa tidak ditampilkan. Jangan memakai teks default "Showing ... results", nomor halaman berjajar, tombol Sebelumnya, atau tombol Berikutnya; cukup gunakan toolbar ringkasan jumlah data di atas tabel.
 - Menu Tagihan Siswa wajib responsif mobile: halaman tidak boleh melebar ke kanan; parent grid/section tabel wajib `min-width:0`, hanya `.table-wrap` yang boleh scroll horizontal, filter menjadi satu kolom, tombol filter menjadi dua kolom atau full width jika ruang tidak cukup, dan dialog detail berubah satu kolom. Tabel ringkasan per unit di mobile memakai min-width sekitar 520px, sedangkan tabel siswa boleh sekitar 760px.
+
+Standar Print, PDF, Struk, dan Kwitansi
+
+- Tampilan print/PDF mengutamakan keterbacaan resmi, bukan gaya card aplikasi.
+- Background print selalu putih, teks utama hitam, dan aksen warna dipakai sangat terbatas.
+- Toolbar layar seperti Kembali, Cetak, Unduh, dan Bayar wajib hilang saat print.
+- Margin dokumen A4 mengikuti kebutuhan surat resmi; gunakan ruang cukup untuk kop, isi, total, tanda tangan, dan catatan.
+- Font print boleh lebih kecil dari standar UI, misalnya 11.5px, 12.5px, 14px, dan 18px, karena kebutuhan cetak berbeda.
+- Judul dokumen resmi memakai ukuran paling dominan tetapi tetap wajar, bukan gaya hero.
+- Kop surat, identitas lembaga, nomor surat, tanggal, dan tanda tangan harus konsisten antar dokumen resmi.
+- Tabel print memakai garis tipis hitam/abu, padding cell cukup, dan nominal rata kanan.
+- Total akhir pada dokumen keuangan harus jelas, tebal, dan berada dekat rincian nominal.
+- Terbilang ditampilkan jika dokumen menjadi bukti atau surat resmi pembayaran/tagihan.
+- Struk transaksi lebih ringkas daripada surat resmi: identitas transaksi, siswa, rincian pembayaran, total, metode, waktu, petugas, dan nomor referensi jika ada.
+- Kwitansi/struk tidak memakai warna UI seperti button hijau atau background panel.
+- Print tidak boleh memotong tabel penting di tengah tanpa header lanjutan jika dokumen lebih dari satu halaman.
+- Hindari elemen interaktif, ikon tombol, shadow, radius besar, dan card dekoratif pada dokumen print.
+- Format nominal print tetap konsisten dengan aplikasi, misalnya `Rp. 50.000,-`.
+- Semua dokumen keuangan harus bisa dibaca dalam hitam-putih.
 
 Standar Mode Terang dan Gelap
 

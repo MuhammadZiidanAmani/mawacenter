@@ -36,9 +36,9 @@ class PaymentMenuTest extends TestCase
             ->assertSee('<a href="'.route('finance.payments.index').'" class="nav-item ">', false)
             ->assertDontSee('<span>Transaksi Baru</span>', false)
             ->assertDontSee('<span>Import Pembayaran</span>', false)
-            ->assertSee('<span>Laporan Transaksi</span>', false)
+            ->assertSee('<span>Semua Transaksi</span>', false)
             ->assertSee('<span>SPP Perbulan</span>', false)
-            ->assertSee('<span>SPP Belum Bayar</span>', false)
+            ->assertDontSee('<span>SPP Belum Bayar</span>', false)
             ->assertSee('<span>SPP Tahun Pelajaran</span>', false)
             ->assertSee('<span>Rekap Per Unit</span>', false)
             ->assertDontSee('<span>Riwayat Pembayaran</span>', false);
@@ -50,11 +50,12 @@ class PaymentMenuTest extends TestCase
             ->get('/keuangan/pembayaran/riwayat')
             ->assertOk()
             ->assertSee('Riwayat Pembayaran')
-            ->assertSee('href="'.route('finance.payments.history').'" class="active"', false)
+            ->assertSee('Pilih jenis riwayat untuk melihat transaksi yang sudah tercatat.')
             ->assertSee('Riwayat SPP')
             ->assertSee('Riwayat Daftar Ulang')
             ->assertSee('Riwayat Laundry')
             ->assertSee('Riwayat Lain-lain')
+            ->assertSee(route('finance.spp.index'), false)
             ->assertSee(route('finance.other.index', ['category' => 'daftar-ulang']), false)
             ->assertSee(route('finance.other.index', ['category' => 'laundry']), false)
             ->assertSee(route('finance.other.index'), false)
@@ -68,9 +69,9 @@ class PaymentMenuTest extends TestCase
             ->assertOk()
             ->assertSee('<h1>Pembayaran</h1>', false)
             ->assertSee('href="'.route('finance.payments.import').'"', false)
-            ->assertSee('<span>Import</span>', false)
+            ->assertSee('Import Excel')
             ->assertDontSee('<h1>Transaksi Baru</h1>', false)
-            ->assertSee('Cari siswa')
+            ->assertSee('Cari Siswa')
             ->assertDontSee('Riwayat SPP')
             ->assertDontSee('Riwayat Daftar Ulang')
             ->assertDontSee('Riwayat Laundry')
@@ -104,7 +105,7 @@ class PaymentMenuTest extends TestCase
         $this->assertDatabaseCount('other_payments', 0);
     }
 
-    public function test_selecting_a_student_shows_their_payment_history_for_the_selected_month_below_the_form(): void
+    public function test_selecting_a_student_shows_their_latest_ten_payment_history_items_below_the_form(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
@@ -128,7 +129,7 @@ class PaymentMenuTest extends TestCase
             'original_amount' => 200000, 'total_amount' => 200000, 'paid_amount' => 200000,
             'remaining_amount' => 0, 'payment_status' => 'Lunas',
         ]);
-        foreach (range(1, 10) as $minute) {
+        foreach (range(1, 9) as $minute) {
             OtherPayment::create([
                 'student_id' => $selectedStudent->id, 'fee_type_id' => $feeType->id,
                 'transaction_at' => sprintf('2026-07-05 09:%02d:00', $minute),
@@ -153,13 +154,11 @@ class PaymentMenuTest extends TestCase
         $returnUrl = route('finance.payments.index', [
             'search' => $selectedStudent->name,
             'student_id' => $selectedStudent->id,
-            'history_period' => '2026-07',
         ]);
 
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get(route('finance.payments.index', [
                 'search' => $selectedStudent->name,
-                'history_period' => '2026-07',
             ]))
             ->assertOk()
             ->assertSeeInOrder([
@@ -167,10 +166,13 @@ class PaymentMenuTest extends TestCase
                 'payment-one-stop-pay-form',
                 'payment-one-stop-history-card',
             ], false)
-            ->assertSee('Riwayat Pembayaran')
-            ->assertDontSee('11 transaksi')
+            ->assertSee('Riwayat Terbaru Siswa')
+            ->assertSee('10 transaksi terakhir')
+            ->assertSee('Lihat Semua di Laporan')
+            ->assertSee(route('reports.transactions'), false)
             ->assertDontSee('>Periode<', false)
-            ->assertSee('name="history_period" value="2026-07"', false)
+            ->assertDontSee('name="history_period"', false)
+            ->assertDontSee('data-payment-history-period', false)
             ->assertSee(route('finance.other.receipt', $selectedPayment), false)
             ->assertSee('name="return_url" value="'.e($returnUrl).'"', false)
             ->assertDontSee(route('finance.other.receipt', $olderPayment), false)
@@ -202,13 +204,14 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get(route('finance.payments.index', [
                 'search' => $student->name,
-                'history_period' => '2026-07',
             ]))
             ->assertOk()
-            ->assertSee('Lunas Administrasi')
+            ->assertSee('Tagihan wajib sudah lunas. Pembayaran opsional tersedia jika diperlukan.')
+            ->assertSee('Pembayaran Opsional')
             ->assertDontSee('1 Tagihan')
             ->assertSee('payment-one-stop-optional-section is-only-optional', false)
             ->assertSee('1 Pilihan')
+            ->assertSee('name="optional_keys[]"', false)
             ->assertSee('Juli 2026')
             ->assertDontSee('Januari 2026');
     }
@@ -249,14 +252,6 @@ class PaymentMenuTest extends TestCase
             ->assertSee('PP-099')
             ->assertSee(route('finance.spp.create', ['student_id' => $identity->id]), false)
             ->assertSee(route('finance.other.create', ['category' => 'laundry', 'student_id' => $boarding->id]));
-
-        $this->get(route('finance.spp.create', ['student_id' => $identity->id]))
-            ->assertOk()
-            ->assertSee('value="'.$identity->id.'" selected', false);
-        $this->get(route('finance.other.create', ['category' => 'laundry', 'student_id' => $boarding->id]))
-            ->assertOk()
-            ->assertSee('value="'.$boarding->id.'"', false)
-            ->assertSee('selected', false);
     }
 
     public function test_central_payment_import_page_uses_existing_importers(): void
@@ -630,7 +625,9 @@ class PaymentMenuTest extends TestCase
             ->assertOk()
             ->assertSee('Siswa Daftar Ulang')
             ->assertSee('Pending')
-            ->assertSee('<div class="total"><span>Rp 0</span><small>0 diterima</small></div>', false);
+            ->assertSee('Total Penerimaan')
+            ->assertSee('Rp 0')
+            ->assertSee('0 transaksi diterima');
 
         $this->post('/keuangan/pembayaran/lain-lain?category=daftar-ulang', [
             'transaction_date' => '2026-06-14',

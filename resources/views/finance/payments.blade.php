@@ -33,6 +33,7 @@
                             'arrow-left' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path><path d="M9 12h10"></path></svg>',
                             'copy' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
                             'receipt' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2v20l3-2 3 2 3-2 3 2 4-2V2z"></path><path d="M8 7h8"></path><path d="M8 11h8"></path><path d="M8 15h5"></path></svg>',
+                            'printer' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path><path d="M18 13h.01"></path></svg>',
                             'download' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>',
                             'trash' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 15H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg>',
                             default => '',
@@ -51,8 +52,21 @@
                         $createdReceipts = collect(session('payment_receipts', []));
                     @endphp
                     @if(session('success') && $createdReceipts->isNotEmpty())
-                        <div hidden data-auto-receipts>
+                        <div data-auto-receipts>
                             <script type="application/json" data-receipt-urls>@json($createdReceipts->pluck('receipt_url')->filter()->values())</script>
+                            <script type="application/json" data-receipt-download-urls>@json($createdReceipts->pluck('download_url')->filter()->values())</script>
+                            <div class="result-modal-backdrop payment-receipt-fallback-modal" data-auto-receipt-modal hidden>
+                                <div class="result-modal success-result">
+                                    <span class="result-icon">✓</span>
+                                    <strong>Pembayaran Berhasil</strong>
+                                    <p>{{ session('success') }}</p>
+                                    <div class="payment-receipt-fallback-actions">
+                                        <button type="button" class="button button-primary" data-open-receipts>Cetak Struk</button>
+                                        <button type="button" class="button button-secondary" data-download-receipts>Download PDF</button>
+                                        <button type="button" class="button button-secondary" data-alert-close>Bayar Lagi</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     @elseif(session('success'))
                         <div class="result-modal-backdrop show" data-alert>
@@ -64,14 +78,19 @@
                             </div>
                         </div>
                     @endif
-                    <div class="payment-one-stop-layout">
-                        <section class="payment-one-stop-main">
-                            <div class="payment-one-stop-heading">
+                    <div class="payment-prd-page-head">
+                        <div>
+                            <h1>Pembayaran</h1>
+                            <p>Cari siswa, pilih tagihan, lalu proses pembayaran.</p>
+                        </div>
+                        <a href="{{ route('finance.payments.import') }}" class="button button-primary payment-import-action">{!! $icon('upload') !!} Import Excel</a>
+                    </div>
+                    <div class="payment-one-stop-layout payment-prd-layout">
+                        <section class="payment-one-stop-main payment-prd-search-panel">
+                            <div class="payment-one-stop-heading payment-prd-panel-heading">
                                 <div>
-                                    <h1>Pembayaran</h1>
-                                    <p>Cari siswa, pilih tagihan, lalu proses pembayaran.</p>
+                                    <h2>Cari Siswa</h2>
                                 </div>
-                                <a href="{{ route('finance.payments.import') }}" class="button action-purple payment-import-action">{!! $icon('upload') !!} Import</a>
                             </div>
                             <form method="GET" action="{{ route('finance.payments.index') }}" class="payment-one-stop-search">
                                 <label>
@@ -121,14 +140,14 @@
                                     </div>
                                 @elseif(! $selectedRegistrations)
                                     <div class="payment-one-stop-empty-state">
-                                        <strong>Belum ada siswa yang dipilih</strong>
-                                        <span>Pilih salah satu siswa dari hasil pencarian untuk melihat unit dan pilihan pembayaran.</span>
+                                        <strong>Belum Ada Siswa Dipilih</strong>
+                                        <span>Pilih siswa dari hasil pencarian untuk melihat tagihan pembayaran.</span>
                                     </div>
                                 @else
                                     @php
                                         $nisSummary = $selectedRegistrations->pluck('nis')->filter()->unique()->join('/');
                                         $unitNames = $selectedRegistrations
-                                            ->map(fn ($student) => $student->schoolClass?->educationUnit?->name ?? $student->schoolClass?->educationUnit?->code)
+                                            ->map(fn ($student) => $student->schoolClass?->educationUnit?->code ?? $student->schoolClass?->educationUnit?->name)
                                             ->filter()
                                             ->unique()
                                             ->values();
@@ -204,37 +223,42 @@
                                         $oldPaidLabel = $oldPaidDigits !== '' ? number_format((int) $oldPaidDigits, 0, ',', '.') : '';
                                         $oldPaymentMethod = $cashOnly ? 'Cash' : old('payment_method', $isEditingSppPayment ? $editSppPayment->payment_method : 'Cash');
                                         $paymentFormAction = $isEditingSppPayment ? route('finance.spp.update', $editSppPayment) : route('finance.payments.store');
-                                        $paymentReturnUrl = $returnUrl ?: route('reports.transactions', request()->except(['edit_payment', 'student_id', 'search', 'return_url']));
+                                        $paymentReturnUrl = $returnUrl ?: route('reports.transactions', request()->except(['edit_payment', 'student_id', 'search', 'history_period', 'return_url']));
+                                        $canDeleteHistory = auth()->user()?->hasPermission('payments.verify_transfer') ?? false;
                                     @endphp
                                     <article class="payment-one-stop-person">
                                         <div class="payment-one-stop-person-head payment-one-stop-profile-card">
+                                            <div class="payment-prd-profile-title">
+                                                <h2>Data Siswa</h2>
+                                            </div>
                                             <span class="payment-one-stop-student-icon" aria-hidden="true">
                                                 <svg class="icon" viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0"></path><circle cx="12" cy="7" r="4"></circle></svg>
                                             </span>
-                                            <div class="payment-one-stop-simple-profile">
-                                                <div class="payment-one-stop-profile-row payment-one-stop-simple-nis">
+                                            <div class="payment-prd-profile-list">
+                                                <div class="payment-prd-profile-item">
                                                     <span>NIS</span>
                                                     <span>:</span>
                                                     <strong>{{ $nisSummary ?: '-' }}</strong>
                                                 </div>
-                                                <div class="payment-one-stop-profile-row payment-one-stop-simple-name">
+                                                <div class="payment-prd-profile-item">
                                                     <span>Nama Siswa</span>
                                                     <span>:</span>
                                                     <strong>{{ strtoupper($selectedIdentity->name) }}</strong>
                                                 </div>
-                                                <div class="payment-one-stop-profile-row payment-one-stop-simple-unit" aria-label="Unit pendidikan">
+                                                <div class="payment-prd-profile-item" aria-label="Unit pendidikan">
                                                     <span>Unit Pendidikan</span>
                                                     <span>:</span>
-                                                    <strong>
-                                                        @foreach($unitNames as $item)
-                                                            <span>{{ strtoupper($item) }}</span>
-                                                        @endforeach
-                                                    </strong>
+                                                    <strong>{{ $unitNames->join(' / ') ?: '-' }}</strong>
                                                 </div>
-                                                <div class="payment-one-stop-profile-row payment-one-stop-simple-class">
+                                                <div class="payment-prd-profile-item">
                                                     <span>Kelas</span>
                                                     <span>:</span>
                                                     <strong>{{ $classSummary ?: '-' }}</strong>
+                                                </div>
+                                                <div class="payment-prd-profile-item">
+                                                    <span>Status</span>
+                                                    <span>:</span>
+                                                    <strong>{{ $studentStatusLabel }}</strong>
                                                 </div>
                                             </div>
                                         </div>
@@ -251,7 +275,9 @@
                                             <input type="hidden" name="student_id" value="{{ $isEditingSppPayment ? $editSppPayment->student_id : $selectedIdentity->id }}">
                                             <input type="hidden" name="search" value="{{ $search }}">
 
-                                            <section class="payment-one-stop-bills-card">
+                                            <div class="payment-prd-payment-panel">
+                                            <div class="payment-prd-pay-grid">
+                                            <section class="payment-one-stop-bills-card payment-prd-bill-card">
                                                 <div class="payment-one-stop-bills-head">
                                                     <h2>{{ $isEditingSppPayment ? 'Edit Pembayaran SPP' : 'Daftar Tagihan' }}</h2>
                                                 </div>
@@ -262,44 +288,118 @@
 
                                                 @if($billRows->isEmpty())
                                                     <div class="payment-one-stop-empty">Tidak ada tagihan aktif untuk siswa ini.</div>
-                                                @elseif($mandatoryBillRows->isEmpty())
-                                                    <div class="payment-one-stop-empty">Tidak ada tagihan administrasi wajib untuk siswa ini.</div>
                                                 @else
-                                                    <div class="payment-one-stop-bill-modern-list">
+                                                    @if($mandatoryBillRows->isEmpty())
+                                                        <div class="payment-one-stop-empty">Tagihan wajib sudah lunas. Pembayaran opsional tersedia jika diperlukan.</div>
+                                                    @else
+                                                        <div class="payment-prd-bill-section">
+                                                            <div class="payment-prd-bill-section-title">
+                                                                <strong>Tagihan Wajib</strong>
+                                                                <span>{{ $mandatoryBillRows->count() }} Tagihan</span>
+                                                            </div>
+                                                            <div class="payment-one-stop-bill-modern-list payment-prd-bill-list">
                                                         @foreach($mandatoryBillRows as $row)
                                                             @php
+                                                                $checked = $hasOldSelection ? $oldBillKeys->contains($row['key']) : true;
                                                                 $selectedMonthCount = (int) $oldPaymentMonthCounts->get($row['mode_key'], $row['default_period_count']);
                                                                 $selectedPeriodOption = collect($row['period_options'])->firstWhere('count', $selectedMonthCount);
                                                                 $displayAmount = (int) ($selectedPeriodOption['amount'] ?? $row['amount']);
                                                                 $displayDetail = $selectedPeriodOption['card_detail'] ?? $selectedPeriodOption['detail'] ?? $row['detail'];
                                                             @endphp
-                                                            <div class="payment-one-stop-bill-modern-row" data-payment-display-row="{{ $row['key'] }}" data-amount="{{ $displayAmount }}">
-                                                                <div class="payment-one-stop-bill-modern-copy">
+                                                            <label class="payment-one-stop-bill-modern-row payment-prd-bill-row" data-payment-source-url="{{ $row['url'] }}" data-payment-display-row="{{ $row['key'] }}" data-payment-bill-row data-payment-summary-bill-key="{{ $row['key'] }}" data-amount="{{ $displayAmount }}">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    name="{{ $row['name'] }}"
+                                                                    value="{{ $row['key'] }}"
+                                                                    data-payment-bill
+                                                                    data-amount="{{ $displayAmount }}"
+                                                                    @checked($checked)
+                                                                >
+                                                                <span class="payment-one-stop-bill-modern-copy payment-prd-bill-copy">
                                                                     <strong>{{ $row['title'] }}</strong>
                                                                     <span data-payment-bill-detail>{{ $displayDetail ?: 'Tagihan aktif' }}</span>
-                                                                </div>
-                                                                <div class="payment-one-stop-bill-modern-amount">
+                                                                    @if($row['period_options'] !== [])
+                                                                        <span class="payment-prd-period-field">
+                                                                            <span>Bayar sampai</span>
+                                                                            <select name="{{ $isEditingSppPayment && $row['key'] === $editSppBillKey ? 'month_count' : 'payment_month_counts['.$row['mode_key'].']' }}" data-payment-period-select>
+                                                                                @foreach($row['period_options'] as $periodOption)
+                                                                                    <option value="{{ $periodOption['count'] }}" data-amount="{{ $periodOption['amount'] }}" data-detail="{{ $periodOption['card_detail'] ?? $periodOption['detail'] }}" @selected($selectedMonthCount === $periodOption['count'])>{{ $periodOption['detail'] }}</option>
+                                                                                @endforeach
+                                                                            </select>
+                                                                        </span>
+                                                                    @endif
+                                                                </span>
+                                                                <span class="payment-one-stop-bill-modern-amount payment-prd-bill-amount">
                                                                     <span>Rp.</span>
                                                                     <strong data-payment-bill-amount>{{ number_format($displayAmount, 0, ',', '.') }},-</strong>
-                                                                </div>
-                                                            </div>
+                                                                </span>
+                                                            </label>
                                                         @endforeach
-                                                        <div class="payment-one-stop-bill-modern-total">
+                                                            </div>
+                                                        </div>
+                                                    @endif
+
+                                                    @if($optionalBillRows->isNotEmpty())
+                                                        <div class="payment-prd-bill-section payment-one-stop-optional-section{{ $mandatoryBillRows->isEmpty() ? ' is-only-optional' : '' }}">
+                                                            <div class="payment-prd-bill-section-title">
+                                                                <strong>Pembayaran Opsional</strong>
+                                                                <span>{{ $optionalBillRows->count() }} Pilihan</span>
+                                                            </div>
+                                                            <div class="payment-one-stop-bill-modern-list payment-prd-bill-list">
+                                                                @foreach($optionalBillRows as $row)
+                                                                    @php
+                                                                        $checked = $hasOldSelection ? $oldOptionalKeys->contains($row['key']) : false;
+                                                                        $selectedMonthCount = (int) $oldPaymentMonthCounts->get($row['mode_key'], $row['default_period_count']);
+                                                                        $selectedPeriodOption = collect($row['period_options'])->firstWhere('count', $selectedMonthCount);
+                                                                        $displayAmount = (int) ($selectedPeriodOption['amount'] ?? $row['amount']);
+                                                                        $displayDetail = $selectedPeriodOption['card_detail'] ?? $selectedPeriodOption['detail'] ?? $row['detail'];
+                                                                    @endphp
+                                                                    <label class="payment-one-stop-bill-modern-row payment-prd-bill-row is-optional" data-payment-source-url="{{ $row['url'] }}" data-payment-display-row="{{ $row['key'] }}" data-payment-bill-row data-payment-summary-bill-key="{{ $row['key'] }}" data-amount="{{ $displayAmount }}">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            name="{{ $row['name'] }}"
+                                                                            value="{{ $row['key'] }}"
+                                                                            data-payment-bill
+                                                                            data-amount="{{ $displayAmount }}"
+                                                                            @checked($checked)
+                                                                        >
+                                                                        <span class="payment-one-stop-bill-modern-copy payment-prd-bill-copy">
+                                                                            <strong>{{ $row['title'] }}</strong>
+                                                                            <span data-payment-bill-detail>{{ $displayDetail ?: 'Pembayaran opsional' }}</span>
+                                                                            @if($row['period_options'] !== [])
+                                                                                <span class="payment-prd-period-field">
+                                                                                    <span>Bayar sampai</span>
+                                                                                    <select name="payment_month_counts[{{ $row['mode_key'] }}]" data-payment-period-select>
+                                                                                        @foreach($row['period_options'] as $periodOption)
+                                                                                            <option value="{{ $periodOption['count'] }}" data-amount="{{ $periodOption['amount'] }}" data-detail="{{ $periodOption['card_detail'] ?? $periodOption['detail'] }}" @selected($selectedMonthCount === $periodOption['count'])>{{ $periodOption['detail'] }}</option>
+                                                                                        @endforeach
+                                                                                    </select>
+                                                                                </span>
+                                                                            @endif
+                                                                        </span>
+                                                                        <span class="payment-one-stop-bill-modern-amount payment-prd-bill-amount">
+                                                                            <span>Rp.</span>
+                                                                            <strong data-payment-bill-amount>{{ number_format($displayAmount, 0, ',', '.') }},-</strong>
+                                                                        </span>
+                                                                    </label>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    @endif
+
+                                                    <div class="payment-one-stop-bill-modern-list payment-prd-bill-list">
+                                                        <div class="payment-one-stop-bill-modern-total payment-prd-bill-total">
                                                             <span>Total Tagihan</span>
                                                             <div class="payment-one-stop-bill-modern-amount">
                                                                 <span>Rp.</span>
-                                                                <strong data-payment-mandatory-total>{{ number_format($mandatoryBillRows->sum(function ($row) use ($oldPaymentMonthCounts) {
-                                                                    $count = (int) $oldPaymentMonthCounts->get($row['mode_key'], $row['default_period_count']);
-                                                                    $option = collect($row['period_options'])->firstWhere('count', $count);
-                                                                    return (int) ($option['amount'] ?? $row['amount']);
-                                                                }), 0, ',', '.') }},-</strong>
+                                                                <strong data-payment-mandatory-total>{{ number_format($defaultTotal, 0, ',', '.') }},-</strong>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 @endif
                                             </section>
 
-                                            <section class="payment-one-stop-payment-card">
+                                            <section class="payment-one-stop-payment-card payment-prd-summary-card">
                                                 <div class="payment-one-stop-payment-head">
                                                     <h2>Ringkasan Pembayaran</h2>
                                                 </div>
@@ -310,105 +410,29 @@
                                                 @endif
 
                                                 <div class="payment-one-stop-form-controls">
-                                                    @if($mandatoryBillRows->isNotEmpty())
-                                                        <label>
-                                                            <span>Tagihan Dibayar</span>
-                                                            <select data-payment-bill-choice>
-                                                                <option value="all" @selected($initialBillChoice === 'all')>Semua Tagihan</option>
-                                                                @foreach($mandatoryBillRows as $row)
-                                                                    <option value="{{ $row['key'] }}" @selected($initialBillChoice === $row['key'])>{{ $row['title'] }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </label>
-
-                                                        <div class="payment-one-stop-summary-periods" data-payment-summary-periods>
-                                                            @foreach($mandatoryBillRows as $row)
-                                                                @php
-                                                                    $checked = $hasOldSelection ? $oldBillKeys->contains($row['key']) : true;
-                                                                    $selectedMonthCount = (int) $oldPaymentMonthCounts->get($row['mode_key'], $row['default_period_count']);
-                                                                    $selectedPeriodOption = collect($row['period_options'])->firstWhere('count', $selectedMonthCount);
-                                                                    $displayAmount = (int) ($selectedPeriodOption['amount'] ?? $row['amount']);
-                                                                    $displayDetail = $selectedPeriodOption['card_detail'] ?? $selectedPeriodOption['detail'] ?? $row['detail'];
-                                                                @endphp
-                                                                <div class="payment-one-stop-summary-bill-row" data-payment-source-url="{{ $row['url'] }}" data-payment-bill-row data-payment-summary-bill-key="{{ $row['key'] }}">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        name="{{ $row['name'] }}"
-                                                                        value="{{ $row['key'] }}"
-                                                                        data-payment-bill
-                                                                        data-amount="{{ $displayAmount }}"
-                                                                        @checked($checked)
-                                                                        hidden
-                                                                    >
-                                                                    @if($row['period_options'] !== [])
-                                                                        <label class="payment-one-stop-period-select">
-                                                                            <span>{{ $row['title'] }}</span>
-                                                                            <select name="{{ $isEditingSppPayment && $row['key'] === $editSppBillKey ? 'month_count' : 'payment_month_counts['.$row['mode_key'].']' }}" data-payment-period-select>
-                                                                                @foreach($row['period_options'] as $periodOption)
-                                                                                    <option value="{{ $periodOption['count'] }}" data-amount="{{ $periodOption['amount'] }}" data-detail="{{ $periodOption['card_detail'] ?? $periodOption['detail'] }}" @selected($selectedMonthCount === $periodOption['count'])>{{ $periodOption['detail'] }}</option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </label>
-                                                                    @else
-                                                                        <div class="payment-one-stop-summary-fixed">
-                                                                            <span>{{ $row['title'] }}</span>
-                                                                            <strong data-payment-bill-detail>{{ $displayDetail ?: 'Tagihan aktif' }}</strong>
-                                                                        </div>
-                                                                    @endif
-                                                                    <span class="payment-one-stop-summary-row-amount">
-                                                                        <span>Rp.</span>
-                                                                        <strong data-payment-bill-amount>{{ number_format($displayAmount, 0, ',', '.') }},-</strong>
-                                                                    </span>
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
-                                                    @endif
-
-                                                    @if($optionalBillRows->isNotEmpty())
-                                                        <div class="payment-one-stop-summary-optional-section">
-                                                            <div class="payment-one-stop-summary-optional-title">
-                                                                <span>Tambahan Opsional</span>
-                                                                <small>Laundry tidak otomatis ikut saat memilih semua tagihan.</small>
-                                                            </div>
-                                                            @foreach($optionalBillRows as $row)
-                                                                @php
-                                                                    $checked = $hasOldSelection ? $oldOptionalKeys->contains($row['key']) : false;
-                                                                    $selectedMonthCount = (int) $oldPaymentMonthCounts->get($row['mode_key'], $row['default_period_count']);
-                                                                    $selectedPeriodOption = collect($row['period_options'])->firstWhere('count', $selectedMonthCount);
-                                                                    $displayAmount = (int) ($selectedPeriodOption['amount'] ?? $row['amount']);
-                                                                    $displayDetail = $selectedPeriodOption['card_detail'] ?? $selectedPeriodOption['detail'] ?? $row['detail'];
-                                                                @endphp
-                                                                <label class="payment-one-stop-summary-bill-row is-optional" data-payment-source-url="{{ $row['url'] }}" data-payment-bill-row>
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        name="{{ $row['name'] }}"
-                                                                        value="{{ $row['key'] }}"
-                                                                        data-payment-bill
-                                                                        data-amount="{{ $displayAmount }}"
-                                                                        @checked($checked)
-                                                                    >
-                                                                    <span class="payment-one-stop-summary-optional-copy">
-                                                                        <strong>{{ $row['title'] }}</strong>
-                                                                        <span data-payment-bill-detail>{{ $displayDetail ?: 'Pembayaran opsional' }}</span>
-                                                                    </span>
-                                                                    @if($row['period_options'] !== [])
-                                                                        <select name="payment_month_counts[{{ $row['mode_key'] }}]" data-payment-period-select>
-                                                                            @foreach($row['period_options'] as $periodOption)
-                                                                                <option value="{{ $periodOption['count'] }}" data-amount="{{ $periodOption['amount'] }}" data-detail="{{ $periodOption['card_detail'] ?? $periodOption['detail'] }}" @selected($selectedMonthCount === $periodOption['count'])>{{ $periodOption['detail'] }}</option>
-                                                                            @endforeach
-                                                                        </select>
-                                                                    @endif
-                                                                    <span class="payment-one-stop-summary-row-amount">
-                                                                        <span>Rp.</span>
-                                                                        <strong data-payment-bill-amount>{{ number_format($displayAmount, 0, ',', '.') }},-</strong>
-                                                                    </span>
-                                                                </label>
-                                                            @endforeach
-                                                        </div>
-                                                    @endif
+                                                    <div class="payment-one-stop-bill-total payment-prd-total-box">
+                                                        <span>Total Dibayar Sekarang</span>
+                                                        <span class="payment-one-stop-bill-total-amount">
+                                                            <span>Rp.</span>
+                                                            <b data-payment-total>{{ number_format($defaultTotal, 0, ',', '.') }},-</b>
+                                                        </span>
+                                                    </div>
 
                                                     <label>
-                                                        <span>Pilih Metode Pembayaran</span>
+                                                        <span>Tipe Pembayaran</span>
+                                                        <select data-payment-type>
+                                                            <option value="full" @selected((int) ($oldPaidDigits ?: 0) >= $defaultTotal)>Lunas</option>
+                                                            <option value="partial" @selected((int) ($oldPaidDigits ?: 0) < $defaultTotal)>Cicil</option>
+                                                        </select>
+                                                    </label>
+
+                                                    <label>
+                                                        <span>Nominal Dibayar</span>
+                                                        <input type="text" name="paid_amount" value="{{ $oldPaidLabel }}" inputmode="numeric" data-currency-input data-payment-paid-display>
+                                                    </label>
+
+                                                    <label>
+                                                        <span>Metode Bayar</span>
                                                         <select name="payment_method" data-payment-method>
                                                             <option value="Cash" @selected($oldPaymentMethod === 'Cash')>Tunai</option>
                                                             @unless($cashOnly)
@@ -443,44 +467,24 @@
                                                     </div>
                                                     @endunless
 
-                                                    <label>
-                                                        <span>Tipe Pembayaran</span>
-                                                        <select data-payment-type>
-                                                            <option value="full" @selected((int) ($oldPaidDigits ?: 0) >= $defaultTotal)>Lunas</option>
-                                                            <option value="partial" @selected((int) ($oldPaidDigits ?: 0) < $defaultTotal)>Cicil</option>
-                                                        </select>
-                                                    </label>
-
-                                                    <label>
-                                                        <span>Input Nominal Pembayaran (Rp)</span>
-                                                        <input type="text" name="paid_amount" value="{{ $oldPaidLabel }}" inputmode="numeric" data-currency-input data-payment-paid-display>
-                                                    </label>
-
-                                                    <div class="payment-one-stop-bill-total">
-                                                        <span>Total Dibayar:</span>
-                                                        <span class="payment-one-stop-bill-total-amount">
-                                                            <span>Rp.</span>
-                                                            <b data-payment-total>{{ number_format($defaultTotal, 0, ',', '.') }},-</b>
-                                                        </span>
-                                                    </div>
-
-                                                    <button class="payment-one-stop-pay-button" data-payment-submit @disabled($billRows->isEmpty())>{{ $isEditingSppPayment ? 'Simpan Perubahan' : 'Bayar Sekarang' }}</button>
+                                                    <button class="payment-one-stop-pay-button" data-payment-submit @disabled($billRows->isEmpty())>{{ $isEditingSppPayment ? 'Simpan Perubahan' : 'Bayar & Cetak Struk' }}</button>
                                                 </div>
                                             </section>
+                                            </div>
+                                            </div>
                                         </form>
 
                                         <section class="payment-one-stop-history-card">
                                             <div class="payment-one-stop-history-head">
-                                                <h2>Riwayat Pembayaran</h2>
-                                                <form method="GET" action="{{ route('finance.payments.index') }}" class="payment-one-stop-history-filter">
-                                                    <input type="hidden" name="search" value="{{ $search }}">
-                                                    <input type="hidden" name="student_id" value="{{ $selectedIdentity->id }}">
-                                                    <input type="month" name="history_period" value="{{ $historyPeriod }}" aria-label="Periode riwayat pembayaran" data-payment-history-period required>
-                                                </form>
+                                                <div class="payment-prd-history-title">
+                                                    <h2>Riwayat Terbaru Siswa</h2>
+                                                    <span>10 transaksi terakhir siswa ini</span>
+                                                </div>
+                                                <a class="payment-prd-history-link" href="{{ route('reports.transactions') }}">Lihat Semua di Laporan</a>
                                             </div>
                                             @if($paymentHistory->isEmpty())
                                                 <div class="payment-one-stop-history-empty">
-                                                    Belum ada riwayat pembayaran pada periode {{ $historyPeriodLabel }}.
+                                                    Belum ada riwayat pembayaran untuk siswa ini.
                                                 </div>
                                             @else
                                                 <div class="payment-one-stop-history-list">
@@ -488,35 +492,56 @@
                                                         <div class="payment-one-stop-history-item">
                                                             <span class="payment-one-stop-history-copy">
                                                                 <strong>{{ $history['title'] }}</strong>
-                                                                <span>{{ $history['detail'] }}</span>
-                                                                <small>{{ $history['date'] }} · {{ $history['method'] }}</small>
+                                                                <span class="payment-prd-history-meta">
+                                                                    <span>{{ $history['detail'] }}</span>
+                                                                    <small>{{ $history['date'] }} · {{ $history['method'] }}</small>
+                                                                </span>
                                                             </span>
                                                             <span class="payment-one-stop-history-amount">
                                                                 <span>Rp.</span>
                                                                 <strong>{{ $history['amount_label'] }}</strong>
                                                             </span>
                                                             <span class="payment-one-stop-history-actions">
-                                                                <a class="payment-one-stop-history-action" href="{{ $history['receipt_url'] }}" target="_blank" rel="noopener" title="Cetak struk" aria-label="Cetak struk">{!! $icon('receipt') !!}</a>
+                                                                <a class="payment-one-stop-history-action" href="{{ $history['receipt_url'] }}" target="_blank" rel="noopener" title="Cetak struk" aria-label="Cetak struk">{!! $icon('printer') !!}</a>
                                                                 <a class="payment-one-stop-history-action" href="{{ $history['download_url'] }}" title="Download kwitansi" aria-label="Download kwitansi">{!! $icon('download') !!}</a>
-                                                                <form method="POST" action="{{ $history['delete_url'] }}" onsubmit="return confirm('Hapus transaksi ini?');">
+                                                                @if($canDeleteHistory)
+                                                                <form method="POST" action="{{ $history['delete_url'] }}" data-payment-history-delete-form data-payment-delete-title="{{ $history['title'] }}" data-payment-delete-detail="{{ $history['detail'] }}" data-payment-delete-amount="Rp. {{ $history['amount_label'] }}">
                                                                     @csrf
                                                                     @method('DELETE')
-                                                                    <input type="hidden" name="return_url" value="{{ route('finance.payments.index', ['search' => $search, 'student_id' => $selectedIdentity->id, 'history_period' => $historyPeriod]) }}">
+                                                                    <input type="hidden" name="return_url" value="{{ route('finance.payments.index', ['search' => $search, 'student_id' => $selectedIdentity->id]) }}">
                                                                     <button class="payment-one-stop-history-action danger" type="submit" title="Hapus transaksi" aria-label="Hapus transaksi">{!! $icon('trash') !!}</button>
                                                                 </form>
+                                                                @endif
                                                             </span>
                                                         </div>
                                                     @endforeach
                                                 </div>
                                             @endif
                                         </section>
+                                        @if($canDeleteHistory)
+                                            <div class="modal-backdrop payment-history-delete-modal" data-payment-history-delete-modal hidden>
+                                                <div class="form-modal spp-delete-modal">
+                                                    <div class="spp-delete-icon">!</div>
+                                                    <h2>Hapus Transaksi?</h2>
+                                                    <p>
+                                                        Transaksi <strong data-payment-delete-name></strong>
+                                                        <span data-payment-delete-meta></span>
+                                                        akan dihapus dan sisa tagihan akan dihitung ulang.
+                                                    </p>
+                                                    <div class="form-actions">
+                                                        <button type="button" class="button button-secondary" data-payment-delete-cancel>Batal</button>
+                                                        <button type="button" class="button button-danger" data-payment-delete-confirm>Ya, Hapus Transaksi</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
 
                                     </article>
                                 @endif
                             @else
                                 <div class="payment-one-stop-empty-state">
-                                    <strong>Cari siswa terlebih dahulu</strong>
-                                    <span>Gunakan nama, NIS, atau NISN. Jika siswa terdaftar di beberapa unit, semua unit akan muncul sebagai pilihan pembayaran.</span>
+                                    <strong>Belum Ada Siswa Dipilih</strong>
+                                    <span>Pilih siswa dari hasil pencarian untuk melihat tagihan pembayaran.</span>
                                 </div>
                             @endif
                         </section>

@@ -40,12 +40,6 @@ class PaymentController extends Controller
                 $search = $editSppPayment->student?->nis ?: $editSppPayment->student?->name ?: '';
             }
         }
-        $historyPeriod = trim($request->string('history_period')->value());
-        if (! preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $historyPeriod)) {
-            $historyPeriod = now()->format('Y-m');
-        }
-        [$historyYear, $historyMonth] = array_map('intval', explode('-', $historyPeriod));
-        $historyPeriodLabel = $this->monthName($historyMonth).' '.$historyYear;
         $people = collect();
         $paymentHistory = collect();
         $unitIds = $request->user()?->accessibleUnitIds();
@@ -135,9 +129,8 @@ class PaymentController extends Controller
 
                 $sppHistory = SppPayment::with(['student.schoolClass.educationUnit', 'items'])
                     ->whereIn('student_id', $studentIds)
-                    ->whereYear('transaction_at', $historyYear)
-                    ->whereMonth('transaction_at', $historyMonth)
                     ->latest('transaction_at')
+                    ->limit(10)
                     ->get()
                     ->map(fn (SppPayment $payment) => [
                         'type' => 'spp',
@@ -147,7 +140,7 @@ class PaymentController extends Controller
                         'student' => $payment->student?->name,
                         'date' => $payment->transaction_at->format('d/m/Y H.i').' WIB',
                         'timestamp' => $payment->transaction_at->timestamp,
-                        'method' => $payment->payment_method,
+                        'method' => $this->paymentMethodLabel($payment->payment_method),
                         'status' => $payment->status,
                         'amount' => $payment->paid_amount,
                         'amount_label' => number_format($payment->paid_amount, 0, ',', '.').',-',
@@ -158,9 +151,8 @@ class PaymentController extends Controller
 
                 $otherHistory = OtherPayment::with(['student.schoolClass.educationUnit', 'feeType', 'items'])
                     ->whereIn('student_id', $studentIds)
-                    ->whereYear('transaction_at', $historyYear)
-                    ->whereMonth('transaction_at', $historyMonth)
                     ->latest('transaction_at')
+                    ->limit(10)
                     ->get()
                     ->map(fn (OtherPayment $payment) => [
                         'type' => 'other',
@@ -170,7 +162,7 @@ class PaymentController extends Controller
                         'student' => $payment->student?->name,
                         'date' => $payment->transaction_at->format('d/m/Y H.i').' WIB',
                         'timestamp' => $payment->transaction_at->timestamp,
-                        'method' => $payment->payment_method,
+                        'method' => $this->paymentMethodLabel($payment->payment_method),
                         'status' => $payment->status,
                         'amount' => $payment->paid_amount,
                         'amount_label' => number_format($payment->paid_amount, 0, ',', '.').',-',
@@ -182,6 +174,7 @@ class PaymentController extends Controller
                 $paymentHistory = $sppHistory
                     ->concat($otherHistory)
                     ->sortByDesc('timestamp')
+                    ->take(10)
                     ->values();
             }
         }
@@ -192,8 +185,6 @@ class PaymentController extends Controller
             'selectedStudentId' => $selectedStudentId,
             'people' => $people,
             'paymentHistory' => $paymentHistory,
-            'historyPeriod' => $historyPeriod,
-            'historyPeriodLabel' => $historyPeriodLabel,
             'transferAccount' => $this->transferAccount(),
             'cashOnly' => $request->user()?->isPetugas() ?? false,
             'editSppPayment' => $editSppPayment,
@@ -592,6 +583,15 @@ class PaymentController extends Controller
             'daftar-ulang' => 'DU',
             'laundry' => 'LD',
             default => 'LL',
+        };
+    }
+
+    private function paymentMethodLabel(?string $method): string
+    {
+        return match ($method) {
+            'Cash' => 'Tunai',
+            'Transfer' => 'Transfer Bank',
+            default => $method ?: '-',
         };
     }
 

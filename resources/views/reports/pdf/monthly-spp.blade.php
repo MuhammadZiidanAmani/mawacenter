@@ -103,6 +103,6 @@
         </tr>
     </table>
 @endforelse
-<div class="footer">&copy; 2026 Ma'wa Center</div>
+<div class="footer">&copy; {{ now()->year }} Ma'wa Center</div>
 </body>
 </html>
