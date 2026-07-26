@@ -158,7 +158,8 @@ Standar hierarki tipografi global:
 Kombinasi penggunaan:
 - 14px / 400 untuk deskripsi, teks bantuan, placeholder, metadata ringan, empty state, dan catatan kecil.
 - 14px / 500 untuk isi tabel, input, select, textarea, label form, label tabel, filter, dan metadata penting.
-- 14px / 700 untuk tombol, badge, status, chip, header tabel, dan aksi kecil yang harus jelas.
+- 14px / 700 untuk tombol, badge, status, chip, header tabel rekap/ringkasan, footer total, dan aksi kecil yang harus jelas.
+- 14px / 500 boleh dipakai untuk header tabel detail yang padat atau sortable agar header tidak terlihat terlalu tebal dan tidak mengalahkan isi tabel.
 - 16px / 500 untuk item penting yang masih bersifat isi, misalnya nama pada list, nominal biasa, atau ringkasan penting.
 - 16px / 700 untuk nama siswa, nama tagihan, judul card kecil, judul item, dan teks utama di dalam komponen.
 - 20px / 500 untuk pilihan role/akses login dan teks utama yang perlu terlihat besar tetapi tidak sekuat judul.
@@ -207,6 +208,8 @@ Standar alignment global:
 - Rata tengah dipakai hanya untuk kolom sempit seperti No, kode pendek, JK, status pendek, checkbox, ikon aksi, dan angka jumlah kecil.
 - Rata kanan dipakai untuk nominal, total uang, angka finansial, dan ringkasan angka yang perlu dibandingkan secara vertikal.
 - Header tabel rata tengah, kecuali header kolom teks utama boleh rata kiri jika tabelnya sangat padat dan lebih mudah dibaca.
+- Semua header tabel aplikasi memakai 14px / 500 agar kolom seperti `No`, nama, nominal, dan kolom sortable terlihat konsisten dan tidak terlalu tebal.
+- Footer total memakai 14px / 700 agar agregat akhir tetap mudah dipindai tanpa membuat header tabel terlalu berat.
 - Isi kolom nama, deskripsi, pembayaran, kategori, alamat, keterangan, dan teks panjang rata kiri.
 - Isi kolom nominal, total, sisa tagihan, dan nilai uang rata kanan.
 - Tombol aksi utama di header halaman rata kanan pada desktop dan turun full width pada mobile jika ruang sempit.
@@ -305,12 +308,19 @@ Template jenis halaman:
 - Halaman form tambah/edit: Heading, deskripsi singkat, card/form utama, field berurutan dari konteks besar ke detail, tombol Batal dan Simpan di akhir form.
 - Halaman detail: Heading, aksi kanan jika perlu, ringkasan identitas utama, detail data berkelompok, riwayat/aktivitas jika relevan, tombol kembali.
 - Halaman transaksi: Heading, konteks/pencarian, data objek terpilih, daftar pilihan transaksi, ringkasan/proses pembayaran, riwayat terbaru jika membantu.
-- Halaman laporan: Heading, filter periode/konteks, ringkasan angka utama, tabel/detail laporan, aksi Export/Cetak.
+- Halaman laporan: Heading, filter periode/konteks, ringkasan yang benar-benar dibutuhkan, tabel/detail laporan, aksi Export/Cetak.
 - Halaman dashboard: Heading ringkas, ringkasan angka penting, chart/daftar prioritas, aktivitas terbaru, tanpa form panjang.
 - Halaman pengaturan: Heading, section pengaturan per kelompok, kontrol yang jelas, simpan perubahan per section jika risikonya rendah atau satu tombol simpan global jika saling terkait.
 - Halaman import: Heading, konteks import, upload file, preview data, ringkasan valid/gagal, daftar error per baris, tombol Konfirmasi Import.
 - Halaman print/dokumen: Toolbar layar, dokumen resmi, tombol Kembali/Cetak/Unduh; toolbar hilang saat print.
 - Jangan memakai template dashboard untuk halaman operasional transaksi atau data utama. Halaman kerja harus langsung membantu user menyelesaikan tugas.
+
+Standar ringkasan laporan:
+- Jangan menampilkan card ringkasan jika angka yang sama sudah jelas terjawab di tabel rekap dan footer total.
+- Untuk laporan operasional, dahulukan tabel rekap dengan footer `Total Keseluruhan` dibanding card angka berulang.
+- Card ringkasan hanya dipakai jika membantu memahami data sebelum tabel, misalnya status besar yang tidak muncul langsung di baris tabel.
+- Jika laporan sudah memiliki kolom `Jumlah Transaksi`, `Cash`, `Transfer`, `Jumlah Penerimaan`, dan footer total, jangan ulangi nilai yang sama sebagai card di atas tabel.
+- Ringkasan jenis pembayaran seperti SPP, Daftar Ulang, Laundry, dan Lain-lain lebih baik tampil sebagai kolom/tabel yang bisa dibandingkan atau masuk laporan khusus, bukan card terpisah yang mengulang data.
 
 Standar search, filter, dan reset:
 - Search tunggal dipakai jika user hanya perlu mencari satu objek utama, misalnya siswa, kategori, atau nomor transaksi.
@@ -339,7 +349,7 @@ Toolbar ringkasan jumlah data:
 - Select jumlah data memakai width 78px, min-width 78px, height 34px, min-height 34px, padding 0 10px, border 1px solid #d1d5db, radius 8px, background #ffffff, teks #111c2c, font 14px / 500, line-height 34px.
 - Opsi standar jumlah data: 10, 25, 50, 100, 500, dan All.
 - Default jumlah data mengikuti Data Siswa yaitu 10, kecuali ada kebutuhan halaman yang benar-benar berbeda dan disetujui sebagai pengecualian.
-- Ringkasan kanan memakai format "Menampilkan 1-10 dari 1.847 siswa" atau sesuai jenis data.
+- Area kanan toolbar boleh dipakai untuk pencarian tabel atau aksi ringan jika tersedia; ringkasan "Menampilkan x-y dari z data" mengikuti standar navigasi halaman/pagination final di bawah tabel.
 - Pada mobile, toolbar boleh wrap atau grid satu kolom, tetapi select tetap 78px x 34px kecuali ruang tidak cukup.
 
 Filter dan form pencarian:
@@ -401,23 +411,76 @@ Pengecualian filter Keringanan Biaya:
 - Status aktif/nonaktif keringanan tetap dikelola di form tambah/edit dan tidak menjadi filter utama halaman.
 - Tabel Keringanan Biaya tidak boleh memaksa scroll kanan di desktop. Gunakan min-width 0 dengan table width 100%, lalu lebar kolom sekitar No 48px, Nama Siswa 300px, Unit 80px, Kelas 100px, Pembayaran 200px, dan Aksi 84px.
 
-Tabel:
-- Table-layout fixed jika kolom banyak
-- Header jelas
-- Aksi di kanan
-- Gunakan horizontal scroll saat layar sempit
-- Header background #f9fafb atau #fbfdf8
-- Border #d1d5db atau #e5e7eb
-- Hover row #fbfdf8
+Standar tabel final:
+- Semua tabel aplikasi memakai satu standar visual yang sama. Istilah tabel detail, tabel rekap, tabel master data, dan tabel transaksi hanya menjelaskan fungsi data, bukan membedakan tipografi dasar.
+- Tabel utama untuk data operasional memakai `width: 100%`, `border-collapse: collapse`, tanpa garis vertikal, dan hanya memakai garis horizontal halus.
+- Gunakan `table-layout: fixed` jika kolom banyak atau halaman perlu lebar stabil. Gunakan table auto hanya jika isi kolom sangat variatif dan tetap tidak merusak layout.
+- Wrapper tabel memakai background #ffffff, border 1px solid #d1d5db, radius 8px, shadow none, dan overflow tersembunyi/scroll sesuai kebutuhan.
+- Header tabel memakai background #fbfdf8 atau #f8faf7, teks #020617 atau #334155 sesuai kepadatan, dan border-bottom 1px solid #d1d5db atau #dbe5dd.
+- Isi tabel memakai teks #020617, border-bottom #e5e7eb atau #eef2f7, dan hover row #fbfdf8.
+- Tabel tidak boleh menampilkan card berulang untuk data yang lebih efektif dibaca sebagai baris.
+- Horizontal scroll hanya boleh terjadi di dalam wrapper tabel pada layar sempit atau kolom benar-benar banyak. Halaman utama tidak boleh melebar ke kanan.
+- Pada desktop, tabel yang kolomnya sedikit tidak boleh memunculkan scrollbar horizontal.
 
-Standar tabel data compact Data Siswa:
+Jenis tabel:
+- **Tabel Detail:** untuk transaksi, siswa, tagihan, riwayat, dan daftar data banyak baris.
+- **Tabel Rekap:** untuk ringkasan per unit, kelas, kategori, bulan, atau status.
+- **Tabel Master Data:** untuk unit, kelas, tahun pelajaran, kategori, dan data referensi.
+- **Tabel Transaksi:** tabel detail transaksi dengan kolom nominal rata kanan, tanggal/waktu boleh dua baris jika ruang terbatas, dan aksi detail/cetak/hapus memakai ikon kecil.
+- **Tabel Dokumen/Print/PDF:** boleh memakai ukuran cetak khusus dan warna hitam-putih resmi. Tidak mengikuti card UI aplikasi.
+
+Standar header tabel:
+- Semua header tabel aplikasi memakai 14px / 500.
+- Header rata tengah sebagai default.
+- Header kolom teks utama boleh rata kiri hanya jika tabel sangat padat dan lebih mudah dibaca.
+- Header memakai Title Case, bukan kapital semua, kecuali singkatan resmi seperti NIS, NISN, SPP, MTs, MA, dan PAUD.
+- Ikon sort hanya tampil pada kolom yang benar-benar bisa diurutkan. Ikon sort tidak boleh membuat tinggi header melebihi 40px.
+- Jika sebagian header sortable dan sebagian tidak, berat font visualnya harus tetap konsisten. Contoh: kolom `No` tidak boleh terlihat lebih tebal sendirian dibanding header sortable lain.
+
+Standar isi tabel:
+- Isi semua tabel aplikasi memakai 14px / 400 sebagai default.
+- Teks panjang seperti Nama Siswa, Unit Pendidikan, Nama Pembayaran, Alamat, Keterangan, dan Deskripsi rata kiri.
+- Kolom sempit seperti No, kode pendek, status pendek, checkbox, ikon, dan aksi rata tengah.
+- Kolom jumlah non-uang seperti Jumlah Siswa, Jumlah Transaksi, Lunas, Sebagian, dan Belum Bayar rata tengah.
+- Kolom uang seperti Nominal, Cash, Transfer, Terbayar, Sisa, Tunggakan, Total, dan Jumlah Penerimaan rata kanan.
+- Nominal di isi tabel memakai warna teks utama #020617 dan font 14px / 400. Nominal yang menjadi total akhir memakai standar footer total.
+- Aksi tabel berada di kolom kanan atau kolom aksi khusus, memakai tombol ikon compact, dan wajib memiliki `aria-label` dan `title`.
+
+Standar ukuran tabel:
+- Tinggi header tabel compact: 40px.
+- Tinggi isi baris tabel compact: 40px.
+- Tinggi isi baris tabel detail yang perlu dua baris: 44px sampai 56px, sesuai kebutuhan isi.
+- Padding cell compact: 8px 10px.
+- Padding cell desktop biasa: 10px sampai 14px.
+- Padding cell dengan ikon aksi compact boleh 4px 10px sampai 4px 12px agar baris tidak membesar.
+- Radius wrapper tabel: 8px.
+- Border wrapper: 1px solid #d1d5db.
+- Garis antar baris: 1px solid #e5e7eb atau #eef2f7.
+
+Standar footer total:
+- Jika tabel memiliki agregat keseluruhan, gunakan satu baris `tfoot` di bawah tabel.
+- Label footer memakai teks `Total Keseluruhan` jika menghitung semua hasil filter.
+- Label `Total Keseluruhan` boleh memakai `colspan` pada kolom awal dan rata tengah.
+- Angka jumlah non-uang di footer rata tengah, warna #020617, font 14px / 700.
+- Nominal footer rata kanan, warna #004528, font 14px / 700.
+- Footer memakai background #fbfdf8, border-top 1px solid #d1d5db, dan tidak memakai garis dobel.
+- Jangan menaruh total keseluruhan sebagai card terpisah jika sudah ada footer tabel yang jelas.
+
+Standar empty table:
+- Empty table memakai satu baris/area ringkas dengan teks 14px / 400 / #707971 dan background #fbfdf8.
+- Kalimat empty state harus netral, misalnya "Belum ada data pada filter ini."
+- Empty state tabel tidak boleh membuat tabel kosong memaksa horizontal scroll panjang jika tidak ada data.
+- Jika kolom banyak dan header tetap perlu terlihat, empty state boleh tampil dalam satu baris `colspan` penuh.
+- Empty state bukan error; jangan memakai warna merah atau ikon peringatan kecuali data gagal dimuat.
+
+Standar tabel data compact:
 - Pola tabel Data Siswa menjadi acuan untuk halaman yang menampilkan data operasional berbentuk daftar ke bawah, bukan card-card.
 - Gunakan tabel/list data ke bawah untuk data utama yang butuh dipindai cepat, dibandingkan card berulang yang memakan ruang.
-- Header tabel tinggi 40px, min-height 40px, padding 8px 10px, font 14px / 700, line-height 1.2, teks rata tengah.
+- Header tabel tinggi 40px, min-height 40px, padding 8px 10px, font 14px / 500, line-height 1.2, teks rata tengah.
 - Isi baris tinggi 40px, min-height 40px, font 14px / 400, line-height 1.2 sampai 1.25.
 - Untuk tabel compact yang memiliki tombol ikon 30px sampai 32px di dalam cell, gunakan padding isi 4px 12px agar tinggi visual baris tetap 40px. Padding 8px 12px hanya boleh dipakai jika isi cell tidak membuat tinggi baris melebihi 40px.
 - Untuk menjaga tinggi 40px secara visual, isi cell tabel compact tidak boleh membungkus ke baris kedua; gunakan white-space nowrap, overflow hidden, dan text-overflow ellipsis pada cell teks panjang.
-- Kolom teks utama seperti Nama boleh font 14px / 700 dan warna #004528 agar mudah dipindai.
+- Kolom teks utama seperti Nama tetap 14px / 400 dan warna #020617 sebagai default. Gunakan 14px / 500 hanya jika benar-benar perlu penekanan ringan.
 - Header semua kolom rata tengah, termasuk header Nama. Isi kolom Nama tetap rata kiri agar nama panjang mudah dibaca.
 - Kolom angka pendek, kode, JK, unit, kelas, dan aksi rata tengah.
 - Tabel compact Data Siswa menjadi standar garis tabel: tidak memakai garis vertikal, tidak memakai border luar tabel, dan hanya memakai garis horizontal tipis antar baris.
@@ -442,13 +505,35 @@ Standar tabel lanjutan:
 - Kolom teks panjang wajib memakai ellipsis pada tabel compact.
 - Kolom nominal wajib rata kanan di header dan isi, kecuali header tabel global memaksa rata tengah; jika begitu isi nominal tetap rata kanan.
 - Kolom aksi selalu di kanan dan memakai tombol ikon compact.
-- Pagination berada di bawah tabel dengan jarak 16px dari tabel.
-- Pagination memakai tombol 32px sampai 36px, radius 8px, font 14px / 500.
-- Pagination aktif memakai background #004528 dan teks #ffffff.
-- Pagination disabled memakai teks #707971, border #d1d5db, dan opacity 0.55.
+- Navigasi halaman/pagination final:
+- Toolbar atas tabel berisi kontrol jumlah data di kiri.
+- Area kanan toolbar atas boleh dipakai untuk pencarian tabel jika tersedia; jika belum ada fitur pencarian, area kanan boleh kosong.
+- Jangan menampilkan teks "Menampilkan x-y dari z data" di toolbar atas tabel.
+- Footer bawah tabel kiri menampilkan format "Menampilkan 1-10 dari 705 data".
+- Footer bawah tabel kanan menampilkan tombol navigasi halaman.
+- Jangan menampilkan teks duplikat "Halaman x dari y".
+- Tombol pagination tampil hanya jika total data lebih besar dari jumlah data per halaman.
+- Jika data tidak melebihi jumlah per halaman, cukup tampilkan teks hasil di footer bawah tanpa tombol halaman.
+- Tombol pagination memakai tinggi 36px, radius 8px, gap 8px, padding horizontal 12px, dan font 14px / 500.
+- Tombol halaman aktif memakai font 14px / 700, background #004528, border #004528, dan teks #ffffff.
+- Tombol normal memakai background #ffffff, border #d1d5db, dan teks #334155.
+- Tombol disabled memakai teks #707971, background #f9fafb, border #d1d5db, dan cursor not-allowed.
+- Desktop: info hasil rata kiri, tombol navigasi rata kanan.
+- Mobile: footer tabel menjadi 1 kolom; info hasil berada di atas tombol; tombol wrap rapi tanpa membuat halaman melebar.
 - Jangan menampilkan dua kontrol jumlah data dalam satu halaman. Jika sudah ada toolbar "Tampilkan ... data", jangan tambah select serupa di bawah tabel.
 - Pada mobile, hanya wrapper tabel yang scroll horizontal; halaman utama tidak boleh melebar ke kanan.
 - Sticky header boleh dipakai untuk tabel sangat panjang, tetapi tinggi header, warna, border, dan z-index harus dijaga agar tidak menutup topbar atau filter.
+
+Standar tabel ringkasan laporan:
+- Tabel ringkasan laporan memakai tabel compact 40px dengan header rata tengah, tanpa garis vertikal.
+- Kolom No rata tengah.
+- Kolom teks utama seperti Unit Pendidikan, Nama Siswa, Nama Pembayaran, dan Keterangan rata kiri.
+- Kolom angka jumlah pendek seperti Jumlah Siswa, Jumlah Transaksi, Lunas, Sebagian, dan Belum Bayar rata tengah.
+- Kolom uang seperti Cash, Transfer, SPP, Daftar Ulang, Laundry, Lain-lain, Sisa, Tunggakan, dan Jumlah Penerimaan rata kanan.
+- Label penerimaan di laporan memakai istilah `Jumlah Penerimaan`, bukan `Total Penerimaan`.
+- Jika tabel ringkasan memiliki agregat keseluruhan, tampilkan satu baris `tfoot` dengan label `Total Keseluruhan`.
+- Label `Total Keseluruhan` rata tengah pada area kolom teks awal, angka jumlah non-uang rata tengah memakai warna teks utama #020617, dan nominal uang rata kanan memakai hijau #004528.
+- Header tabel ringkasan tetap mengikuti standar header tabel 14px / 500. Footer total memakai font 14px / 700, background #fbfdf8, border-top 1px solid #d1d5db, dan tidak memakai garis dobel.
 
 Card dan Panel
 

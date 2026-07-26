@@ -20,11 +20,23 @@
         'edit' => '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>',
         'trash' => '<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="m7 6 1 15h8l1-15"/><path d="M10 11v5M14 11v5"/>',
         'printer' => '<path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/>',
+        'sort' => '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
+        'sort-up' => '<path d="m7 14 5-5 5 5"/>',
+        'sort-down' => '<path d="m7 10 5 5 5-5"/>',
     ];
     $icon = fn ($name, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$icons[$name].'</svg>';
     $rupiah = fn ($value) => 'Rp '.number_format((int) $value, 0, ',', '.');
     $number = fn ($value) => number_format((int) $value, 0, ',', '.');
     $query = fn (array $except = []) => collect(request()->except(array_merge($except, ['page'])))->filter(fn ($value) => is_scalar($value))->all();
+    $currentSort = request('sort');
+    $currentDirection = request('direction') === 'desc' ? 'desc' : 'asc';
+    $sortUrl = function (string $key) use ($query, $definition, $currentSort, $currentDirection) {
+        $params = $query(['sort', 'direction', 'page']);
+        $params['sort'] = $key;
+        $params['direction'] = $currentSort === $key && $currentDirection === 'asc' ? 'desc' : 'asc';
+
+        return route($definition['route']).'?'.http_build_query($params);
+    };
     $display = function (array $row, array $column) use ($rupiah, $number) {
         if ($column['key'] === 'no' || ($column['type'] ?? null) === 'actions') {
             return '';
@@ -62,10 +74,12 @@
                         <h1>{{ $definition['title'] }}</h1>
                         <p>{{ $definition['description'] }}</p>
                     </div>
-                    <div class="report-export-actions">
-                        <a href="{{ $xlsxUrl }}" class="button report-export-button">{!! $icon('download') !!} XLSX</a>
-                        <a href="{{ $pdfUrl }}" class="button report-export-button secondary">{!! $icon('file') !!} PDF</a>
-                    </div>
+                    @if($canExportReports)
+                        <div class="report-export-actions">
+                            <a href="{{ $xlsxUrl }}" class="button report-export-button">{!! $icon('download') !!} XLSX</a>
+                            <a href="{{ $pdfUrl }}" class="button report-export-button secondary">{!! $icon('file') !!} PDF</a>
+                        </div>
+                    @endif
                 </div>
 
                 <form method="GET" action="{{ route($definition['route']) }}" class="report-filter-card-v2 report-filter-{{ $reportKey }}">
@@ -106,7 +120,7 @@
                     </div>
                 </form>
 
-                @if($summaryCards && ! in_array($reportKey, ['transactions', 'monthly-spp'], true))
+                @if($summaryCards && $reportKey !== 'transactions')
                     <section class="report-summary-grid-v2" aria-label="Ringkasan laporan">
                         @foreach($summaryCards as $card)
                             <div>
@@ -130,7 +144,7 @@
                                 <div class="monthly-spp-chart-head">
                                     <div>
                                         <h2>Status Pembayaran per Unit</h2>
-                                        <p>Perbandingan siswa lunas, sebagian, dan belum bayar.</p>
+                                        <p>Perbandingan siswa lunas dan sebagian pada pembayaran yang sudah terjadi.</p>
                                     </div>
                                     <strong><span>Total Siswa</span>{{ $number($monthlyTotals['students'] ?? 0) }} siswa</strong>
                                 </div>
@@ -138,7 +152,6 @@
                                 <div class="monthly-spp-status-legend" aria-label="Legenda status SPP">
                                     <span class="paid">Lunas</span>
                                     <span class="partial">Sebagian</span>
-                                    <span class="unpaid">Belum Bayar</span>
                                 </div>
 
                                 <div class="monthly-spp-status-list">
@@ -155,12 +168,9 @@
                                                 @if(($row['partial_count'] ?? 0) > 0)
                                                     <b class="partial" style="--segment-width: {{ $row['partial_percent'] }}%;"></b>
                                                 @endif
-                                                @if(($row['unpaid_count'] ?? 0) > 0)
-                                                    <b class="unpaid" style="--segment-width: {{ $row['unpaid_percent'] }}%;"></b>
-                                                @endif
                                             </i>
                                             <small>
-                                                {{ $number($row['paid_count'] ?? 0) }} / {{ $number($row['partial_count'] ?? 0) }} / {{ $number($row['unpaid_count'] ?? 0) }}
+                                                {{ $number($row['paid_count'] ?? 0) }} lunas / {{ $number($row['partial_count'] ?? 0) }} sebagian
                                             </small>
                                         </div>
                                     @endforeach
@@ -199,7 +209,7 @@
                 @if($reportKey === 'transactions' && $summaryCards)
                     @php
                         $summaryByLabel = collect($summaryCards)->keyBy('label');
-                        $totalReceivedValue = (int) ($summaryByLabel->get('Total Penerimaan')['value'] ?? 0);
+                        $totalReceivedValue = (int) ($summaryByLabel->get('Jumlah Penerimaan')['value'] ?? 0);
                         $unitChartRows = collect($chartData['units'] ?? []);
                         $classChartRows = collect($chartData['classes'] ?? []);
                         $methodChartRows = collect($chartData['methods'] ?? []);
@@ -269,7 +279,7 @@
 
                                 <div class="report-payment-method-summary-v3" aria-label="Ringkasan cara bayar">
                                     <div class="report-payment-method-total-v3">
-                                        <span>Total Penerimaan</span>
+                                        <span>Jumlah Penerimaan</span>
                                         <strong>{{ $rupiah($totalReceivedValue) }}</strong>
                                         <small>{{ $number($methodTotalTransactions) }} transaksi diterima</small>
                                     </div>
@@ -314,10 +324,10 @@
                     @endif
                 @endif
 
-                @if($summaryColumns && $summaryRows->isNotEmpty() && ! in_array($reportKey, ['transactions', 'monthly-spp'], true))
+                @if($summaryColumns)
                     <section class="report-summary-table-section">
                         <div class="table-wrap">
-                            <table class="report-table-v2 report-summary-table-v2">
+                            <table @class(['report-table-v2', 'report-summary-table-v2', 'is-empty' => $summaryRows->isEmpty()])>
                                 <thead>
                                     <tr>
                                         @foreach($summaryColumns as $column)
@@ -326,10 +336,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($summaryRows as $row)
+                                    @forelse($summaryRows as $row)
                                         <tr>
                                             @foreach($summaryColumns as $column)
-                                                <td @class(['report-money-cell' => ($column['type'] ?? '') === 'money'])>
+                                                <td @class([
+                                                    'report-money-cell' => ($column['type'] ?? '') === 'money',
+                                                    'report-number-cell' => ($column['type'] ?? '') === 'number' || $column['key'] === 'no',
+                                                    'report-text-cell' => ! in_array(($column['type'] ?? 'text'), ['money', 'number'], true) && $column['key'] !== 'no',
+                                                ])>
                                                     @if($column['key'] === 'no')
                                                         {{ $loop->parent->iteration }}
                                                     @elseif(($column['type'] ?? '') === 'money')
@@ -342,13 +356,65 @@
                                                 </td>
                                             @endforeach
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr>
+                                            <td colspan="{{ count($summaryColumns) }}" class="empty-state">
+                                                {{ $reportKey === 'monthly-spp' ? 'Belum ada pembayaran SPP pada periode ini.' : 'Belum ada data pada filter ini.' }}
+                                            </td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
+                                @if(! empty($summaryTotals))
+                                    @php
+                                        $summaryTotalValues = $summaryTotals['values'] ?? [];
+                                        $summaryTotalLabelColspan = max(1, (int) ($summaryTotals['label_colspan'] ?? 1));
+                                        $summaryTotalColumns = collect($summaryColumns)->slice($summaryTotalLabelColspan);
+                                    @endphp
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="{{ $summaryTotalLabelColspan }}" class="report-total-label-cell">{{ $summaryTotals['label'] ?? 'Total Keseluruhan' }}</td>
+                                            @foreach($summaryTotalColumns as $column)
+                                                <td @class([
+                                                    'report-money-cell' => ($column['type'] ?? '') === 'money',
+                                                    'report-number-cell' => ($column['type'] ?? '') === 'number',
+                                                    'report-text-cell' => ! in_array(($column['type'] ?? 'text'), ['money', 'number'], true),
+                                                ])>
+                                                    @if(($column['type'] ?? '') === 'money')
+                                                        {{ $rupiah($summaryTotalValues[$column['key']] ?? 0) }}
+                                                    @elseif(($column['type'] ?? '') === 'number')
+                                                        {{ $number($summaryTotalValues[$column['key']] ?? 0) }}
+                                                    @else
+                                                        {{ $summaryTotalValues[$column['key']] ?? '-' }}
+                                                    @endif
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    </tfoot>
+                                @endif
                             </table>
                         </div>
                     </section>
                 @endif
 
+                @php
+                    $reportResultSummary = 'Menampilkan 0 data';
+                    if ($rowsPaginator && $rowsPaginator->total() > 0) {
+                        $reportResultSummary = 'Menampilkan '
+                            .number_format($rowsPaginator->firstItem(), 0, ',', '.')
+                            .'-'
+                            .number_format($rowsPaginator->lastItem(), 0, ',', '.')
+                            .' dari '
+                            .number_format($rowsPaginator->total(), 0, ',', '.')
+                            .' data';
+                    }
+                    $studentSearchValue = trim((string) ($filters['student_search'] ?? ''));
+                    $studentClearQuery = $query(['student_search', 'page']);
+                    $studentClearUrl = route($definition['route']).($studentClearQuery ? '?'.http_build_query($studentClearQuery) : '');
+                    $selectedStudentLabel = $studentSearchValue;
+                    if ($selectedReportStudent) {
+                        $selectedStudentLabel = trim($selectedReportStudent->name.' · '.$selectedReportStudent->nis);
+                    }
+                @endphp
                 <div class="report-table-toolbar-v2">
                     <form method="GET" action="{{ route($definition['route']) }}" class="report-page-size-form">
                         @foreach($query(['per_page']) as $key => $value)
@@ -364,22 +430,60 @@
                             data
                         </label>
                     </form>
-                    <span>
-                        @if($rowsPaginator && $rowsPaginator->total() > 0)
-                            Menampilkan {{ $rowsPaginator->firstItem() }}-{{ $rowsPaginator->lastItem() }} dari {{ number_format($rowsPaginator->total(), 0, ',', '.') }} data
+                    @if($studentSearchEnabled)
+                        @if($studentSearchValue !== '')
+                            <div class="report-student-search-card is-selected">
+                                <span>Cari Siswa</span>
+                                <div class="report-student-selected">
+                                    <strong>{{ $selectedStudentLabel }}</strong>
+                                    <a href="{{ $studentClearUrl }}" aria-label="Hapus filter siswa" title="Hapus filter siswa">&times;</a>
+                                </div>
+                            </div>
                         @else
-                            Menampilkan 0 data
+                            <form method="GET" action="{{ route($definition['route']) }}" class="report-student-search-card">
+                                @foreach($query(['student_search', 'page']) as $key => $value)
+                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endforeach
+                                <label>
+                                    <span>Cari Siswa</span>
+                                    <span class="report-student-search-input">
+                                        {!! $icon('search') !!}
+                                        <input type="search" name="student_search" value="" placeholder="Nama / NIS / NISN" autocomplete="off">
+                                    </span>
+                                </label>
+                            </form>
                         @endif
-                    </span>
+                    @else
+                        <span class="report-table-toolbar-spacer" aria-hidden="true"></span>
+                    @endif
                 </div>
 
                 <section class="report-table-section-v2">
                     <div class="table-wrap">
-                        <table class="report-table-v2 report-main-table-v2">
+                        <table @class(['report-table-v2', 'report-main-table-v2', 'is-empty' => $rows->isEmpty()])>
                             <thead>
                                 <tr>
                                     @foreach($columns as $column)
-                                        <th>{{ $column['label'] }}</th>
+                                        @php
+                                            $isSortable = in_array($column['key'], $sortableColumns ?? [], true);
+                                            $isCurrentSort = $currentSort === $column['key'];
+                                            $nextSortDirection = $isCurrentSort && $currentDirection === 'asc' ? 'desc' : 'asc';
+                                            $sortDirectionLabel = $nextSortDirection === 'asc' ? 'naik' : 'turun';
+                                            $sortIcon = $isCurrentSort ? ($currentDirection === 'asc' ? 'sort-up' : 'sort-down') : 'sort';
+                                        @endphp
+                                        <th @class(['report-sortable-heading' => $isSortable, 'is-sorted' => $isCurrentSort])>
+                                            @if($isSortable)
+                                                <a class="report-sort-link" href="{{ $sortUrl($column['key']) }}" aria-label="Urutkan {{ $column['label'] }} {{ $sortDirectionLabel }}" title="Urutkan {{ $column['label'] }} {{ $sortDirectionLabel }}">
+                                                    <span>{{ $column['label'] }}</span>
+                                                    <span class="report-sort-indicator" aria-hidden="true">{!! $icon($sortIcon) !!}</span>
+                                                    @if($isCurrentSort)
+                                                        <span class="report-sr-only">Sedang diurutkan {{ $currentDirection === 'asc' ? 'naik' : 'turun' }}</span>
+                                                    @endif
+                                                </a>
+                                            @else
+                                                {{ $column['label'] }}
+                                            @endif
+                                        </th>
                                     @endforeach
                                 </tr>
                             </thead>
@@ -484,15 +588,99 @@
                                         </tr>
                                     @endif
                                 @empty
-                                    <tr><td colspan="{{ count($columns) }}" class="empty-state">Belum ada data pada filter ini.</td></tr>
+                                    <tr>
+                                        <td colspan="{{ count($columns) }}" class="empty-state">
+                                            {{ $reportKey === 'monthly-spp' ? 'Belum ada pembayaran SPP pada periode ini.' : 'Belum ada data pada filter ini.' }}
+                                        </td>
+                                    </tr>
                                 @endforelse
                             </tbody>
+                            @if($reportKey === 'unit-recap')
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2" class="report-total-label-cell">Total Keseluruhan</td>
+                                        @foreach(collect($columns)->slice(2) as $column)
+                                            <td @class([
+                                                'report-money-cell' => ($column['type'] ?? '') === 'money',
+                                                'report-number-cell' => ($column['type'] ?? '') === 'number',
+                                                'report-text-cell' => ! in_array(($column['type'] ?? 'text'), ['money', 'number'], true),
+                                            ])>
+                                                @php
+                                                    $totalValue = $tableTotals[$column['key']] ?? $rows->sum($column['key']);
+                                                @endphp
+                                                @if(($column['type'] ?? '') === 'money')
+                                                    {{ $rupiah($totalValue) }}
+                                                @elseif(($column['type'] ?? '') === 'number')
+                                                    {{ $number($totalValue) }}
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                </tfoot>
+                            @endif
                         </table>
                     </div>
                 </section>
 
-                @if($rowsPaginator && $rowsPaginator->hasPages() && ! in_array($reportKey, ['transactions', 'monthly-spp'], true))
-                    <div class="pagination-wrap">{{ $rowsPaginator->links() }}</div>
+                @if($rowsPaginator)
+                    @php
+                        $currentPage = $rowsPaginator->currentPage();
+                        $lastPage = $rowsPaginator->lastPage();
+                        $startPage = max(1, $currentPage - 1);
+                        $endPage = min($lastPage, $currentPage + 1);
+                        if ($currentPage <= 2) {
+                            $endPage = min($lastPage, 3);
+                        }
+                        if ($currentPage >= $lastPage - 1) {
+                            $startPage = max(1, $lastPage - 2);
+                        }
+                    @endphp
+                    @if($rowsPaginator->hasPages())
+                        <nav class="pagination-wrap report-pagination" aria-label="Navigasi halaman laporan">
+                            <p>{{ $reportResultSummary }}</p>
+                            <div class="report-pagination-links">
+                                @if($rowsPaginator->onFirstPage())
+                                    <span class="report-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                                @else
+                                    <a class="report-page-button" href="{{ $rowsPaginator->previousPageUrl() }}" rel="prev">Sebelumnya</a>
+                                @endif
+
+                                @if($startPage > 1)
+                                    <a class="report-page-button is-number" href="{{ $rowsPaginator->url(1) }}" aria-label="Halaman 1">1</a>
+                                    @if($startPage > 2)
+                                        <span class="report-page-ellipsis" aria-hidden="true">...</span>
+                                    @endif
+                                @endif
+
+                                @for($page = $startPage; $page <= $endPage; $page++)
+                                    @if($page === $currentPage)
+                                        <span class="report-page-button is-number is-active" aria-current="page">{{ $page }}</span>
+                                    @else
+                                        <a class="report-page-button is-number" href="{{ $rowsPaginator->url($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                    @endif
+                                @endfor
+
+                                @if($endPage < $lastPage)
+                                    @if($endPage < $lastPage - 1)
+                                        <span class="report-page-ellipsis" aria-hidden="true">...</span>
+                                    @endif
+                                    <a class="report-page-button is-number" href="{{ $rowsPaginator->url($lastPage) }}" aria-label="Halaman {{ $lastPage }}">{{ $lastPage }}</a>
+                                @endif
+
+                                @if($rowsPaginator->hasMorePages())
+                                    <a class="report-page-button" href="{{ $rowsPaginator->nextPageUrl() }}" rel="next">Berikutnya</a>
+                                @else
+                                    <span class="report-page-button is-disabled" aria-disabled="true">Berikutnya</span>
+                                @endif
+                            </div>
+                        </nav>
+                    @else
+                        <div class="report-pagination report-pagination-summary-only">
+                            <p>{{ $reportResultSummary }}</p>
+                        </div>
+                    @endif
                 @endif
             </section>
 

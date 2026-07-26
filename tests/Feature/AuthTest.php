@@ -20,9 +20,9 @@ class AuthTest extends TestCase
         $this->get('/login')
             ->assertOk()
             ->assertSee("MA'WA", false)
-            ->assertSee('Petugas')
-            ->assertSee('Bendahara')
-            ->assertSee('Wali Santri');
+            ->assertSee('Username')
+            ->assertSee('Kata Sandi')
+            ->assertSee('Saya Wali Santri? Masuk di sini');
     }
 
     public function test_user_can_login_and_logout(): void

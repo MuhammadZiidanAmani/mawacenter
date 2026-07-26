@@ -40,11 +40,6 @@ class ReportController extends Controller
         return $this->render($request, 'monthly-spp');
     }
 
-    public function outstandingSpp(Request $request): View
-    {
-        return $this->render($request, 'outstanding-spp');
-    }
-
     public function yearlySpp(Request $request): View
     {
         return $this->render($request, 'yearly-spp');
@@ -118,7 +113,10 @@ class ReportController extends Controller
         $result = $this->result($report, $filters);
         $columns = $this->columns($report, $result);
         $rows = $this->searchRows($result['rows'], $filters['search'] ?? null);
+        $rows = $this->sortRows($rows, $request, $report, $columns);
         $paginatedRows = $allRows ? null : $this->paginateRows($rows, $request);
+        $canExport = $request->user()?->hasPermission('reports.export') ?? false;
+        $studentSearchEnabled = in_array($report, ['transactions', 'monthly-spp', 'yearly-spp'], true);
 
         return [
             'activeAcademicYear' => $options['activeAcademicYear'],
@@ -133,10 +131,16 @@ class ReportController extends Controller
             'summaryCards' => $result['summaryCards'],
             'summaryColumns' => $result['summaryColumns'],
             'summaryRows' => $result['summaryRows'],
+            'summaryTotals' => $result['summaryTotals'] ?? null,
             'chartData' => $result['chartData'] ?? [],
+            'tableTotals' => $result['tableTotals'] ?? [],
+            'studentSearchEnabled' => $studentSearchEnabled,
+            'selectedReportStudent' => $studentSearchEnabled ? $this->reports->studentForSearch($filters) : null,
             'resetRoute' => route($definition['route']),
             'xlsxUrl' => route('reports.export.xlsx', ['report' => $this->reportSlug($report)] + $request->query()),
             'pdfUrl' => route('reports.export.pdf', ['report' => $this->reportSlug($report)] + $request->query()),
+            'canExportReports' => $canExport,
+            'sortableColumns' => $this->sortableColumns($report, $columns),
             'options' => $options,
         ];
     }
@@ -145,7 +149,6 @@ class ReportController extends Controller
     {
         return match ($report) {
             'monthly-spp' => $this->reports->monthlySpp($filters),
-            'outstanding-spp' => $this->reports->outstandingSpp($filters),
             'yearly-spp' => $this->reports->yearlySpp($filters),
             'unit-recap' => $this->reports->unitRecap($filters),
             default => $this->reports->transactions($filters),
@@ -156,29 +159,22 @@ class ReportController extends Controller
     {
         $definitions = [
             'transactions' => [
-                'title' => 'Semua Transaksi',
-                'description' => 'Rekap penerimaan dan riwayat transaksi berdasarkan periode, unit, kategori, metode bayar, dan siswa.',
+                'title' => 'Transaksi Pembayaran',
+                'description' => 'Rekap pembayaran harian berdasarkan periode, unit, kelas, dan petugas.',
                 'route' => 'reports.transactions',
                 'view' => 'reports.transactions',
                 'menu' => 'transactions',
             ],
             'monthly-spp' => [
                 'title' => 'SPP Perbulan',
-                'description' => 'Pantau status SPP siswa pada bulan tertentu: sudah bayar, sebagian, atau belum bayar.',
+                'description' => 'Rekap pembayaran SPP siswa yang sudah terjadi pada bulan tertentu.',
                 'route' => 'reports.monthly_spp',
                 'view' => 'reports.monthly-spp',
                 'menu' => 'monthly-spp',
             ],
-            'outstanding-spp' => [
-                'title' => 'SPP Belum Bayar',
-                'description' => 'Daftar tunggakan SPP lintas bulan untuk kebutuhan penagihan per unit, kelas, dan siswa.',
-                'route' => 'reports.outstanding_spp',
-                'view' => 'reports.outstanding-spp',
-                'menu' => 'outstanding-spp',
-            ],
             'yearly-spp' => [
-                'title' => 'SPP Tahun Pelajaran',
-                'description' => 'Rekap status SPP satu tahun pelajaran dari Juli sampai Juni.',
+                'title' => 'SPP Pertahun',
+                'description' => 'Rekap tanggal pembayaran SPP siswa dari Juli sampai Juni.',
                 'route' => 'reports.yearly_spp',
                 'view' => 'reports.yearly-spp',
                 'menu' => 'yearly-spp',
@@ -202,7 +198,6 @@ class ReportController extends Controller
         return [
             'transaksi' => 'transactions',
             'spp-perbulan' => 'monthly-spp',
-            'spp-belum-bayar' => 'outstanding-spp',
             'spp-tahun-pelajaran' => 'yearly-spp',
             'rekap-unit' => 'unit-recap',
         ][$report] ?? $report;
@@ -213,7 +208,6 @@ class ReportController extends Controller
         return [
             'transactions' => 'transaksi',
             'monthly-spp' => 'spp-perbulan',
-            'outstanding-spp' => 'spp-belum-bayar',
             'yearly-spp' => 'spp-tahun-pelajaran',
             'unit-recap' => 'rekap-unit',
         ][$report] ?? $report;
@@ -231,34 +225,22 @@ class ReportController extends Controller
                 ['key' => 'no', 'label' => 'No', 'type' => 'number'],
                 ['key' => 'nis', 'label' => 'NIS'],
                 ['key' => 'student', 'label' => 'Nama Siswa', 'class' => 'name'],
-                ['key' => 'unit', 'label' => 'Unit'],
-                ['key' => 'class', 'label' => 'Kelas'],
-            ], $monthColumns, [
-                ['key' => 'total_paid', 'label' => 'Total Terbayar', 'type' => 'money'],
-                ['key' => 'remaining', 'label' => 'Sisa', 'type' => 'money'],
-            ]);
+            ], $monthColumns);
         }
 
         return match ($report) {
             'monthly-spp' => [
                 ['key' => 'no', 'label' => 'No', 'type' => 'number'],
+                ['key' => 'date', 'label' => 'Tanggal'],
                 ['key' => 'nis', 'label' => 'NIS'],
                 ['key' => 'student', 'label' => 'Nama Siswa', 'class' => 'name'],
                 ['key' => 'unit', 'label' => 'Unit'],
                 ['key' => 'class', 'label' => 'Kelas'],
                 ['key' => 'month', 'label' => 'Bulan'],
                 ['key' => 'year', 'label' => 'Tahun'],
-                ['key' => 'status', 'label' => 'Status', 'type' => 'status'],
-            ],
-            'outstanding-spp' => [
-                ['key' => 'no', 'label' => 'No', 'type' => 'number'],
-                ['key' => 'nis', 'label' => 'NIS'],
-                ['key' => 'student', 'label' => 'Nama Siswa', 'class' => 'name'],
-                ['key' => 'unit', 'label' => 'Unit'],
-                ['key' => 'class', 'label' => 'Kelas'],
-                ['key' => 'months', 'label' => 'Bulan Tunggakan'],
-                ['key' => 'remaining', 'label' => 'Total Tunggakan', 'type' => 'money'],
-                ['key' => 'actions', 'label' => 'Aksi', 'type' => 'actions'],
+                ['key' => 'nominal', 'label' => 'Nominal', 'type' => 'money'],
+                ['key' => 'method', 'label' => 'Cara Bayar'],
+                ['key' => 'operator', 'label' => 'Petugas'],
             ],
             'unit-recap' => [
                 ['key' => 'no', 'label' => 'No', 'type' => 'number'],
@@ -267,17 +249,20 @@ class ReportController extends Controller
                 ['key' => 'daftar_ulang', 'label' => 'Daftar Ulang', 'type' => 'money'],
                 ['key' => 'laundry', 'label' => 'Laundry', 'type' => 'money'],
                 ['key' => 'lain_lain', 'label' => 'Lain-lain', 'type' => 'money'],
-                ['key' => 'total', 'label' => 'Total Penerimaan', 'type' => 'money'],
+                ['key' => 'total', 'label' => 'Jumlah Penerimaan', 'type' => 'money'],
                 ['key' => 'outstanding_spp', 'label' => 'Total Tunggakan SPP', 'type' => 'money'],
             ],
             default => [
                 ['key' => 'no', 'label' => 'No', 'type' => 'number'],
+                ['key' => 'date', 'label' => 'Tanggal'],
                 ['key' => 'nis', 'label' => 'NIS'],
                 ['key' => 'student', 'label' => 'Nama Siswa', 'class' => 'name'],
                 ['key' => 'unit', 'label' => 'Unit'],
                 ['key' => 'class', 'label' => 'Kelas'],
+                ['key' => 'type', 'label' => 'Jenis Pembayaran'],
+                ['key' => 'method', 'label' => 'Cara Bayar'],
+                ['key' => 'operator', 'label' => 'Petugas'],
                 ['key' => 'amount', 'label' => 'Nominal', 'type' => 'money'],
-                ['key' => 'actions', 'label' => 'Aksi', 'type' => 'actions'],
             ],
         };
     }
@@ -288,49 +273,32 @@ class ReportController extends Controller
             ['name' => 'date_from', 'label' => 'Tanggal Dari', 'type' => 'date', 'value' => $filters['date_from']->format('Y-m-d')],
             ['name' => 'date_to', 'label' => 'Tanggal Sampai', 'type' => 'date', 'value' => $filters['date_to']->format('Y-m-d')],
         ];
-        $unitClassSearch = [
-            ['name' => 'unit_id', 'label' => 'Unit Pendidikan', 'type' => 'select', 'value' => $filters['unit_id'], 'options' => $this->unitOptions($options)],
-            ['name' => 'class_id', 'label' => 'Kelas', 'type' => 'select', 'value' => $filters['class_id'], 'options' => $this->classOptions($options), 'classFilter' => true],
-            ['name' => 'student_search', 'label' => 'Cari Siswa', 'type' => 'search', 'value' => $filters['student_search'], 'placeholder' => 'Nama atau NIS...'],
-        ];
         $yearField = ['name' => 'academic_year_id', 'label' => 'Tahun Pelajaran', 'type' => 'select', 'value' => $filters['academic_year_id'], 'options' => $this->academicYearOptions($options)];
+        $calendarYearField = ['name' => 'year', 'label' => 'Tahun', 'type' => 'select', 'value' => $filters['year'], 'options' => $this->yearOptions($options)];
 
         return match ($report) {
             'monthly-spp' => array_merge([
+                $calendarYearField,
                 ['name' => 'month', 'label' => 'Bulan', 'type' => 'select', 'value' => $filters['month'], 'options' => $this->monthOptions()],
-                ['name' => 'year', 'label' => 'Tahun', 'type' => 'select', 'value' => $filters['year'], 'options' => $this->yearOptions($options)],
-                ['name' => 'unit_id', 'label' => 'Unit', 'type' => 'select', 'value' => $filters['unit_id'], 'options' => $this->unitOptions($options)],
+                ['name' => 'unit_id', 'label' => 'Unit Pendidikan', 'type' => 'select', 'value' => $filters['unit_id'], 'options' => $this->unitOptions($options)],
                 ['name' => 'class_id', 'label' => 'Kelas', 'type' => 'select', 'value' => $filters['class_id'], 'options' => $this->classOptions($options), 'classFilter' => true],
                 ['name' => 'spp_status', 'label' => 'Status Pembayaran', 'type' => 'select', 'value' => $filters['spp_status'], 'options' => [
                     '' => 'Semua',
                     'paid' => 'Lunas',
                     'partial' => 'Sebagian',
-                    'unpaid' => 'Belum Bayar',
                 ]],
-                ['name' => 'student_search', 'label' => 'Cari Siswa', 'type' => 'search', 'value' => $filters['student_search'], 'placeholder' => 'Nama atau NIS...'],
             ]),
-            'outstanding-spp' => array_merge([
+            'yearly-spp' => [
                 $yearField,
-                ['name' => 'until_month', 'label' => 'Sampai Bulan', 'type' => 'select', 'value' => $filters['until_month'], 'options' => $this->monthOptions()],
-            ], $unitClassSearch),
-            'yearly-spp' => array_merge([$yearField], $unitClassSearch),
+                ['name' => 'unit_id', 'label' => 'Unit Pendidikan', 'type' => 'select', 'value' => $filters['unit_id'], 'options' => $this->unitOptions($options)],
+                ['name' => 'class_id', 'label' => 'Kelas', 'type' => 'select', 'value' => $filters['class_id'], 'options' => $this->classOptions($options), 'classFilter' => true],
+            ],
             'unit-recap' => array_merge($dateFields, [$yearField]),
             default => array_merge($dateFields, [
-                ['name' => 'payment_method', 'label' => 'Cara Bayar', 'type' => 'select', 'value' => $filters['payment_method'], 'options' => [
-                    '' => 'Semua',
-                    'Cash' => 'Cash',
-                    'Transfer' => 'Transfer',
-                ]],
-                ['name' => 'type', 'label' => 'Kategori Pembayaran', 'type' => 'select', 'value' => $filters['type'], 'options' => [
-                    '' => 'Semua',
-                    'spp' => 'SPP',
-                    'daftar-ulang' => 'Daftar Ulang',
-                    'laundry' => 'Laundry',
-                    'lain-lain' => 'Lain-lain',
-                ]],
-                ['name' => 'fee_type_id', 'label' => 'Nama Pembayaran', 'type' => 'select', 'value' => $filters['fee_type_id'], 'options' => $this->feeTypeOptions($options)],
+                ['name' => 'unit_id', 'label' => 'Unit Pendidikan', 'type' => 'select', 'value' => $filters['unit_id'], 'options' => $this->unitOptions($options)],
+                ['name' => 'class_id', 'label' => 'Kelas', 'type' => 'select', 'value' => $filters['class_id'], 'options' => $this->classOptions($options), 'classFilter' => true],
                 ['name' => 'operator_name', 'label' => 'Petugas', 'type' => 'select', 'value' => $filters['operator_name'], 'options' => $this->operatorOptions($options)],
-            ], $unitClassSearch),
+            ]),
         };
     }
 
@@ -346,6 +314,49 @@ class ReportController extends Controller
             $page,
             ['path' => $request->url(), 'query' => $request->query()],
         );
+    }
+
+    private function sortRows(Collection $rows, Request $request, string $report, array $columns): Collection
+    {
+        $sort = $request->string('sort')->value();
+        $sortableColumns = $this->sortableColumns($report, $columns);
+
+        if (! in_array($sort, $sortableColumns, true)) {
+            return $rows->values();
+        }
+
+        $direction = $request->string('direction')->value() === 'desc' ? 'desc' : 'asc';
+
+        return $rows
+            ->sortBy(fn (array $row) => $this->sortValue($row, $sort), SORT_REGULAR, $direction === 'desc')
+            ->values();
+    }
+
+    private function sortValue(array $row, string $key): mixed
+    {
+        if ($key === 'date') {
+            $date = $row['date_sort'] ?? null;
+
+            return is_object($date) && method_exists($date, 'getTimestamp') ? $date->getTimestamp() : 0;
+        }
+
+        return $row[$key] ?? '';
+    }
+
+    private function sortableColumns(string $report, array $columns): array
+    {
+        $safeColumns = collect($columns)
+            ->reject(fn (array $column) => ($column['key'] ?? null) === 'no' || ($column['type'] ?? null) === 'actions')
+            ->pluck('key')
+            ->all();
+
+        return match ($report) {
+            'transactions' => array_values(array_intersect($safeColumns, ['date', 'nis', 'student', 'unit', 'class', 'type', 'method', 'operator', 'amount'])),
+            'monthly-spp' => array_values(array_intersect($safeColumns, ['date', 'nis', 'student', 'unit', 'class', 'month', 'year', 'nominal', 'method', 'operator'])),
+            'yearly-spp' => $safeColumns,
+            'unit-recap' => array_values(array_intersect($safeColumns, ['unit', 'spp', 'daftar_ulang', 'laundry', 'lain_lain', 'total', 'outstanding_spp'])),
+            default => [],
+        };
     }
 
     private function reportPerPage(Request $request): int|string
@@ -376,9 +387,22 @@ class ReportController extends Controller
                 [
                     'name' => 'Sheet1',
                     'styled' => true,
-                    'widths' => [6, 7.8, 31.2, 24.7, 20.8, 16.9, 13, 9.1, 6.5, 24.7, 11],
-                    'mergeCells' => ['A1:K1'],
+                    'widths' => [6, 10, 31, 10, 14, 14, 14, 14, 14],
+                    'mergeCells' => ['A1:I1'],
                     'rows' => $this->monthlySppRowsForExport($data),
+                ],
+            ];
+        }
+
+        if (($data['reportKey'] ?? null) === 'unit-recap') {
+            return [
+                [
+                    'name' => 'Data',
+                    'rows' => $this->unitRecapRowsForExport($data),
+                ],
+                [
+                    'name' => 'Ringkasan',
+                    'rows' => $this->summaryRowsForExport($data),
                 ],
             ];
         }
@@ -426,6 +450,20 @@ class ReportController extends Controller
             foreach ($data['summaryRows'] as $index => $row) {
                 $rows[] = collect($data['summaryColumns'])->map(fn (array $column) => $column['key'] === 'no' ? $index + 1 : ($row[$column['key']] ?? ''))->all();
             }
+            if (! empty($data['summaryTotals'])) {
+                $totalValues = $data['summaryTotals']['values'] ?? [];
+                $rows[] = collect($data['summaryColumns'])->map(function (array $column) use ($data, $totalValues) {
+                    if ($column['key'] === 'no') {
+                        return $data['summaryTotals']['label'] ?? 'Total Keseluruhan';
+                    }
+
+                    if ($column['key'] === 'unit') {
+                        return '';
+                    }
+
+                    return $totalValues[$column['key']] ?? '';
+                })->all();
+            }
         }
 
         return $rows;
@@ -435,24 +473,48 @@ class ReportController extends Controller
     {
         $rows = [
             [$this->monthlySppExportTitle()],
-            ['No', 'NIS', 'Nama', 'Jenis Pendidikan', 'Kelas', 'Petugas', 'Cara bayar', 'Bulan', 'Tahun', 'Waktu', 'Nominal'],
+            ['No', 'Tanggal', 'NIS', 'Nama Siswa', 'Unit', 'Kelas', 'Bulan', 'Tahun', 'Nominal', 'Cara Bayar', 'Petugas'],
         ];
 
         foreach ($data['rows'] as $index => $row) {
             $rows[] = [
                 $index + 1,
+                $row['date'] ?? '',
                 (string) ($row['nis'] ?? ''),
                 $row['student'] ?? '',
-                $row['unit_name'] ?? '',
+                $row['unit'] ?? '',
                 $row['class'] ?? '',
-                $row['operator'] ?? '-',
-                $this->lowerText($row['method'] ?? '-'),
-                $this->lowerText($row['month'] ?? ''),
-                (int) ($row['year'] ?? 0),
-                $row['payment_time'] ?? '-',
+                $row['month'] ?? '',
+                $row['year'] ?? '',
                 (int) ($row['nominal'] ?? 0),
+                $row['method'] ?? '',
+                $row['operator'] ?? '',
             ];
         }
+
+        return $rows;
+    }
+
+    private function unitRecapRowsForExport(array $data): array
+    {
+        $rows = $this->tableRowsForExport($data['columns'], $data['rows']);
+        $columns = collect($data['columns']);
+
+        $rows[] = $columns->map(function (array $column, int $index) use ($data) {
+            if ($index === 0) {
+                return 'Total Keseluruhan';
+            }
+
+            if ($index === 1) {
+                return '';
+            }
+
+            if (in_array($column['type'] ?? null, ['money', 'number'], true)) {
+                return (int) $data['rows']->sum($column['key']);
+            }
+
+            return '';
+        })->all();
 
         return $rows;
     }
@@ -460,11 +522,6 @@ class ReportController extends Controller
     private function monthlySppExportTitle(): string
     {
         return 'Data_Laporan_SPP_perbulan_'.now()->format('dmY');
-    }
-
-    private function lowerText(string $value): string
-    {
-        return mb_strtolower($value, 'UTF-8');
     }
 
     private function exportFilename(string $title, string $extension): string
@@ -507,15 +564,5 @@ class ReportController extends Controller
     private function operatorOptions(array $options): array
     {
         return ['' => 'Semua'] + $options['operators']->mapWithKeys(fn ($operator) => [$operator => $operator])->all();
-    }
-
-    private function feeTypeOptions(array $options): array
-    {
-        return ['' => 'Semua'] + $options['feeTypes']->mapWithKeys(fn ($feeType) => [
-            $feeType->id => [
-                'label' => trim($feeType->name.' - '.($feeType->educationUnit?->code ?? '-')),
-                'payment_group' => $feeType->payment_group,
-            ],
-        ])->all();
     }
 }

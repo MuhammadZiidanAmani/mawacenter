@@ -33,6 +33,9 @@ const setWaliMode = (active) => {
 
 waliToggle?.addEventListener('click', () => setWaliMode(true));
 waliReset?.addEventListener('click', () => setWaliMode(false));
+if (loginForm) {
+    setWaliMode(loginForm.classList.contains('wali-mode'));
+}
 // ============================================================
 
 const themeStorageKey = 'mawacenter-theme';

@@ -961,29 +961,24 @@ class MasterDataTest extends TestCase
 
         $this->get('/keuangan/pembayaran/spp/create?student_id='.$student->id)
             ->assertOk()
-            ->assertSee('class="spp-year-control"', false)
+            ->assertSee('data-spp-month-count-input', false)
             ->assertSee('data-spp-arrears-notice', false);
-        $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$student->id.'&year=2026')
+        $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$student->id)
             ->assertOk()
             ->assertJsonPath('oldest_outstanding.year', 2025)
             ->assertJsonPath('oldest_outstanding.month', 11)
-            ->assertJsonPath('oldest_outstanding.month_name', 'November');
-        $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$student->id.'&year=2025')
-            ->assertOk()
-            ->assertJsonPath('first_payable_month', 11);
+            ->assertJsonPath('oldest_outstanding.month_name', 'November')
+            ->assertJsonPath('periods.0.month', 11);
 
         $newStudent = Student::create([
             'nis' => '4011', 'name' => 'Siswa Mulai Juli', 'gender' => 'P',
             'school_class_id' => $class->id, 'academic_year_id' => $academicYear->id,
             'entry_date' => '2025-07-10', 'is_active' => true,
         ]);
-        $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$newStudent->id.'&year=2025')
+        $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$newStudent->id)
             ->assertOk()
-            ->assertJsonPath('first_payable_month', 8)
-            ->assertJsonPath('months.0.applicable', false)
-            ->assertJsonPath('months.6.applicable', false)
-            ->assertJsonPath('months.6.included_in_registration', true)
-            ->assertJsonPath('months.7.applicable', true);
+            ->assertJsonPath('oldest_outstanding.month', 8)
+            ->assertJsonPath('periods.0.month', 8);
     }
 
     public function test_mts_and_ma_july_spp_is_included_in_registration_payment_only(): void
@@ -1643,7 +1638,7 @@ class MasterDataTest extends TestCase
         $this->get('/laporan?start_date=2026-06-01&end_date=2026-06-30&per_page=25&sort=amount&direction=desc')
             ->assertOk()
             ->assertSee('report-page-v2', false)
-            ->assertSee('Laporan Transaksi')
+            ->assertSee('Transaksi Pembayaran')
             ->assertSee('XLSX')
             ->assertSee('PDF')
             ->assertSee('type="date" name="date_from"', false)
@@ -1653,12 +1648,10 @@ class MasterDataTest extends TestCase
             ->assertSee('Tampilkan')
             ->assertSee('Unit')
             ->assertSee('Cara Bayar')
-            ->assertSee('Status')
             ->assertSee('Rp 500.000')
             ->assertSee('Siswa Laporan')
             ->assertSee('Lain-lain')
-            ->assertSee('Transfer')
-            ->assertSee('Diterima');
+            ->assertSee('Transfer');
         $this->get('/laporan?start_date=2026-06-01&end_date=2026-06-30&type=spp')
             ->assertOk()->assertSee('Rp 300.000')->assertDontSee('Rp 200.000');
         $this->get('/laporan/export?start_date=2026-06-01&end_date=2026-06-30')

@@ -66,32 +66,32 @@
         <thead>
             <tr>
                 <th style="width:4%;">No</th>
+                <th style="width:11%;">Tanggal</th>
                 <th style="width:7%;">NIS</th>
-                <th style="width:19%;">Nama</th>
-                <th style="width:15%;">Jenis Pendidikan</th>
-                <th style="width:11%;">Kelas</th>
-                <th style="width:11%;">Petugas</th>
-                <th style="width:8%;">Cara bayar</th>
-                <th style="width:7%;">Bulan</th>
-                <th style="width:5%;">Tahun</th>
-                <th style="width:10%;">Waktu</th>
-                <th style="width:8%;">Nominal</th>
+                <th style="width:20%;">Nama Siswa</th>
+                <th style="width:8%;">Unit</th>
+                <th style="width:9%;">Kelas</th>
+                <th style="width:9%;">Bulan</th>
+                <th style="width:6%;">Tahun</th>
+                <th style="width:10%;">Nominal</th>
+                <th style="width:8%;">Cara Bayar</th>
+                <th style="width:8%;">Petugas</th>
             </tr>
         </thead>
         <tbody>
             @foreach($chunk as $row)
                 <tr>
                     <td class="center">{{ ($chunkIndex * 28) + $loop->iteration }}</td>
+                    <td class="center">{{ $row['date'] ?? '-' }}</td>
                     <td class="center">{{ $row['nis'] ?? '-' }}</td>
                     <td>{{ $row['student'] ?? '-' }}</td>
-                    <td>{{ $row['unit_name'] ?? '-' }}</td>
+                    <td class="center">{{ $row['unit'] ?? '-' }}</td>
                     <td>{{ $row['class'] ?? '-' }}</td>
-                    <td>{{ $row['operator'] ?? '-' }}</td>
-                    <td class="center">{{ mb_strtolower($row['method'] ?? '-', 'UTF-8') }}</td>
-                    <td class="center">{{ mb_strtolower($row['month'] ?? '-', 'UTF-8') }}</td>
+                    <td class="center">{{ $row['month'] ?? '-' }}</td>
                     <td class="center">{{ $row['year'] ?? '-' }}</td>
-                    <td class="center">{{ $row['payment_time'] ?? '-' }}</td>
                     <td class="right">{{ number_format((int) ($row['nominal'] ?? 0), 0, ',', '.') }}</td>
+                    <td class="center">{{ $row['method'] ?? '-' }}</td>
+                    <td>{{ $row['operator'] ?? '-' }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -99,7 +99,7 @@
 @empty
     <table class="data">
         <tr>
-            <td class="center">Belum ada data pada filter ini.</td>
+            <td class="center">Belum ada pembayaran SPP pada periode ini.</td>
         </tr>
     </table>
 @endforelse

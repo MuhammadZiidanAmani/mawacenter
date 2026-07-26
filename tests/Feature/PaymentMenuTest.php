@@ -36,10 +36,10 @@ class PaymentMenuTest extends TestCase
             ->assertSee('<a href="'.route('finance.payments.index').'" class="nav-item ">', false)
             ->assertDontSee('<span>Transaksi Baru</span>', false)
             ->assertDontSee('<span>Import Pembayaran</span>', false)
-            ->assertSee('<span>Semua Transaksi</span>', false)
+            ->assertSee('<span>Transaksi Pembayaran</span>', false)
             ->assertSee('<span>SPP Perbulan</span>', false)
             ->assertDontSee('<span>SPP Belum Bayar</span>', false)
-            ->assertSee('<span>SPP Tahun Pelajaran</span>', false)
+            ->assertSee('<span>SPP Pertahun</span>', false)
             ->assertSee('<span>Rekap Per Unit</span>', false)
             ->assertDontSee('<span>Riwayat Pembayaran</span>', false);
     }
@@ -625,7 +625,7 @@ class PaymentMenuTest extends TestCase
             ->assertOk()
             ->assertSee('Siswa Daftar Ulang')
             ->assertSee('Pending')
-            ->assertSee('Total Penerimaan')
+            ->assertSee('Jumlah Penerimaan')
             ->assertSee('Rp 0')
             ->assertSee('0 transaksi diterima');
 

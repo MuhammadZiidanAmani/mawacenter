@@ -76,7 +76,7 @@
                     @foreach($reportQuery(['date_from', 'date_to', 'start_date', 'end_date', 'type', 'payment_method', 'status', 'operator_name', 'unit_id', 'class_id', 'student_id', 'student_search']) as $key => $value)
                         <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                     @endforeach
-                    <span class="report-summary-label">Total Penerimaan</span>
+                    <span class="report-summary-label">Jumlah Penerimaan</span>
                     <div class="report-summary-strip">
                         <div class="total"><span>{{ $rupiah($stats['total']) }}</span><small>{{ number_format($stats['accepted_transactions'], 0, ',', '.') }} diterima</small></div>
                         <div><span>SPP</span><small>{{ $rupiah($stats['spp']) }}</small></div>

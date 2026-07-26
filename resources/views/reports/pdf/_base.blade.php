@@ -71,6 +71,24 @@
             <tr><td colspan="{{ $shownColumns->count() }}" class="center">Belum ada data pada filter ini.</td></tr>
         @endforelse
     </tbody>
+    @if($reportKey === 'unit-recap' && $rows->isNotEmpty())
+        <tfoot>
+            <tr>
+                <td colspan="2"><strong>Total Keseluruhan</strong></td>
+                @foreach($shownColumns->slice(2) as $column)
+                    <td class="{{ ($column['type'] ?? '') === 'money' ? 'money' : (($column['type'] ?? '') === 'number' ? 'center' : '') }}">
+                        @if(($column['type'] ?? '') === 'money')
+                            <strong>{{ $rupiah($rows->sum($column['key'])) }}</strong>
+                        @elseif(($column['type'] ?? '') === 'number')
+                            <strong>{{ $number($rows->sum($column['key'])) }}</strong>
+                        @else
+                            -
+                        @endif
+                    </td>
+                @endforeach
+            </tr>
+        </tfoot>
+    @endif
 </table>
 <div class="footer">&copy; {{ now()->year }} Ma'wa Center</div>
 </body>

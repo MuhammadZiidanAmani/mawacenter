@@ -20,11 +20,10 @@ Route::middleware(['auth', 'role.access'])->group(function () {
     Route::prefix('laporan')->name('reports.')->controller(ReportController::class)->group(function () {
         Route::get('/transaksi', 'transactions')->name('transactions');
         Route::get('/spp-perbulan', 'monthlySpp')->name('monthly_spp');
-        Route::get('/spp-belum-bayar', 'outstandingSpp')->name('outstanding_spp');
         Route::get('/spp-tahun-pelajaran', 'yearlySpp')->name('yearly_spp');
         Route::get('/rekap-unit', 'unitRecap')->name('unit_recap');
-        Route::get('/{report}/export/xlsx', 'exportXlsx')->whereIn('report', ['transaksi', 'spp-perbulan', 'spp-belum-bayar', 'spp-tahun-pelajaran', 'rekap-unit'])->name('export.xlsx');
-        Route::get('/{report}/export/pdf', 'exportPdf')->whereIn('report', ['transaksi', 'spp-perbulan', 'spp-belum-bayar', 'spp-tahun-pelajaran', 'rekap-unit'])->name('export.pdf');
+        Route::get('/{report}/export/xlsx', 'exportXlsx')->whereIn('report', ['transaksi', 'spp-perbulan', 'spp-tahun-pelajaran', 'rekap-unit'])->name('export.xlsx');
+        Route::get('/{report}/export/pdf', 'exportPdf')->whereIn('report', ['transaksi', 'spp-perbulan', 'spp-tahun-pelajaran', 'rekap-unit'])->name('export.pdf');
     });
     Route::get('/pengaturan', [SettingController::class, 'index'])->name('settings.index');
     Route::put('/pengaturan', [SettingController::class, 'update'])->name('settings.update');
