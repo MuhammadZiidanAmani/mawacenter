@@ -259,6 +259,11 @@ html body .app-shell .main-panel main.report-page-v2 .report-filter-monthly-spp 
     grid-column: span 2 !important;
 }
 
+html body .app-shell .main-panel main.report-page-v2 .report-filter-monthly-spp > label:nth-child(3),
+html body .app-shell .main-panel main.report-page-v2 .report-filter-monthly-spp > label:nth-child(4) {
+    grid-column: span 3 !important;
+}
+
 html body .app-shell .main-panel main.report-page-v2 .report-filter-yearly-spp > label,
 html body .app-shell .main-panel main.report-page-v2 .report-filter-unit-recap > label,
 html body .app-shell .main-panel main.report-page-v2 .report-filter-yearly-spp .report-filter-actions-v2,
@@ -610,6 +615,32 @@ html body .app-shell .main-panel main.report-page-v2 .report-status {
     white-space: nowrap !important;
 }
 
+html body .app-shell .main-panel main.report-page-v2 .report-yearly-spp-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 26px !important;
+    padding: 0 10px !important;
+    border: 1px solid transparent !important;
+    border-radius: 999px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-yearly-spp-badge.is-danger {
+    color: #b42318 !important;
+    background: #fff4f4 !important;
+    border-color: #ffd7d7 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-yearly-spp-badge.is-neutral {
+    color: #707971 !important;
+    background: #f9fafb !important;
+    border-color: #d1d5db !important;
+}
+
 html body .app-shell .main-panel main.report-page-v2 .empty-state {
     height: 96px !important;
     padding: 24px !important;
@@ -704,7 +735,7 @@ html body .app-shell .main-panel main.report-page-monthly-spp .report-main-table
 html body .app-shell .main-panel main.report-page-monthly-spp .report-main-table-v2 td:nth-child(11) { width: 130px !important; }
 
 html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 {
-    min-width: 1540px !important;
+    min-width: 1700px !important;
 }
 
 html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 th:nth-child(1),
@@ -716,8 +747,14 @@ html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-
 html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 th:nth-child(3),
 html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 td:nth-child(3) { width: 230px !important; }
 
-html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 th:nth-child(n+4),
-html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 td:nth-child(n+4) { width: 100px !important; text-align: center !important; }
+html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 th:nth-child(4),
+html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 td:nth-child(4) { width: 76px !important; text-align: center !important; }
+
+html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 th:nth-child(5),
+html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 td:nth-child(5) { width: 100px !important; text-align: center !important; }
+
+html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 th:nth-child(n+6),
+html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 td:nth-child(n+6) { width: 100px !important; text-align: center !important; }
 
 html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 th,
 html body .app-shell .main-panel main.report-page-yearly-spp .report-main-table-v2 td,
@@ -730,7 +767,7 @@ html body .app-shell .main-panel main.report-page-unit-recap .report-main-table-
 }
 
 html body .app-shell .main-panel main.report-page-unit-recap .report-main-table-v2 {
-    min-width: 1040px !important;
+    min-width: 920px !important;
 }
 
 html body .app-shell .main-panel main.report-page-unit-recap .report-main-table-v2 th:nth-child(1),

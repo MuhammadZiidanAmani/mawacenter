@@ -181,7 +181,7 @@ class ReportController extends Controller
             ],
             'unit-recap' => [
                 'title' => 'Rekap Per Unit',
-                'description' => 'Ringkasan total penerimaan dan tunggakan SPP berdasarkan unit pendidikan.',
+                'description' => 'Ringkasan total penerimaan berdasarkan unit pendidikan.',
                 'route' => 'reports.unit_recap',
                 'view' => 'reports.unit-recap',
                 'menu' => 'unit-recap',
@@ -225,6 +225,8 @@ class ReportController extends Controller
                 ['key' => 'no', 'label' => 'No', 'type' => 'number'],
                 ['key' => 'nis', 'label' => 'NIS'],
                 ['key' => 'student', 'label' => 'Nama Siswa', 'class' => 'name'],
+                ['key' => 'unit', 'label' => 'Unit'],
+                ['key' => 'class', 'label' => 'Kelas'],
             ], $monthColumns);
         }
 
@@ -250,7 +252,6 @@ class ReportController extends Controller
                 ['key' => 'laundry', 'label' => 'Laundry', 'type' => 'money'],
                 ['key' => 'lain_lain', 'label' => 'Lain-lain', 'type' => 'money'],
                 ['key' => 'total', 'label' => 'Jumlah Penerimaan', 'type' => 'money'],
-                ['key' => 'outstanding_spp', 'label' => 'Total Tunggakan SPP', 'type' => 'money'],
             ],
             default => [
                 ['key' => 'no', 'label' => 'No', 'type' => 'number'],
@@ -282,18 +283,13 @@ class ReportController extends Controller
                 ['name' => 'month', 'label' => 'Bulan', 'type' => 'select', 'value' => $filters['month'], 'options' => $this->monthOptions()],
                 ['name' => 'unit_id', 'label' => 'Unit Pendidikan', 'type' => 'select', 'value' => $filters['unit_id'], 'options' => $this->unitOptions($options)],
                 ['name' => 'class_id', 'label' => 'Kelas', 'type' => 'select', 'value' => $filters['class_id'], 'options' => $this->classOptions($options), 'classFilter' => true],
-                ['name' => 'spp_status', 'label' => 'Status Pembayaran', 'type' => 'select', 'value' => $filters['spp_status'], 'options' => [
-                    '' => 'Semua',
-                    'paid' => 'Lunas',
-                    'partial' => 'Sebagian',
-                ]],
             ]),
             'yearly-spp' => [
                 $yearField,
                 ['name' => 'unit_id', 'label' => 'Unit Pendidikan', 'type' => 'select', 'value' => $filters['unit_id'], 'options' => $this->unitOptions($options)],
                 ['name' => 'class_id', 'label' => 'Kelas', 'type' => 'select', 'value' => $filters['class_id'], 'options' => $this->classOptions($options), 'classFilter' => true],
             ],
-            'unit-recap' => array_merge($dateFields, [$yearField]),
+            'unit-recap' => $dateFields,
             default => array_merge($dateFields, [
                 ['name' => 'unit_id', 'label' => 'Unit Pendidikan', 'type' => 'select', 'value' => $filters['unit_id'], 'options' => $this->unitOptions($options)],
                 ['name' => 'class_id', 'label' => 'Kelas', 'type' => 'select', 'value' => $filters['class_id'], 'options' => $this->classOptions($options), 'classFilter' => true],
@@ -354,7 +350,7 @@ class ReportController extends Controller
             'transactions' => array_values(array_intersect($safeColumns, ['date', 'nis', 'student', 'unit', 'class', 'type', 'method', 'operator', 'amount'])),
             'monthly-spp' => array_values(array_intersect($safeColumns, ['date', 'nis', 'student', 'unit', 'class', 'month', 'year', 'nominal', 'method', 'operator'])),
             'yearly-spp' => $safeColumns,
-            'unit-recap' => array_values(array_intersect($safeColumns, ['unit', 'spp', 'daftar_ulang', 'laundry', 'lain_lain', 'total', 'outstanding_spp'])),
+            'unit-recap' => array_values(array_intersect($safeColumns, ['unit', 'spp', 'daftar_ulang', 'laundry', 'lain_lain', 'total'])),
             default => [],
         };
     }
@@ -387,8 +383,8 @@ class ReportController extends Controller
                 [
                     'name' => 'Sheet1',
                     'styled' => true,
-                    'widths' => [6, 10, 31, 10, 14, 14, 14, 14, 14],
-                    'mergeCells' => ['A1:I1'],
+                    'widths' => [6, 14, 12, 31, 10, 14, 14, 10, 14, 14, 16],
+                    'mergeCells' => ['A1:K1'],
                     'rows' => $this->monthlySppRowsForExport($data),
                 ],
             ];
@@ -399,10 +395,6 @@ class ReportController extends Controller
                 [
                     'name' => 'Data',
                     'rows' => $this->unitRecapRowsForExport($data),
-                ],
-                [
-                    'name' => 'Ringkasan',
-                    'rows' => $this->summaryRowsForExport($data),
                 ],
             ];
         }

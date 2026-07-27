@@ -54,6 +54,11 @@
         'Belum Bayar', 'Jatuh Tempo' => 'danger',
         default => 'neutral',
     };
+    $yearlySppBadgeClass = fn ($value) => match ($value) {
+        'Belum Bayar' => 'danger',
+        'Tidak Ditagih' => 'neutral',
+        default => null,
+    };
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'reports', 'activeReportMenu' => $activeReportMenu])
@@ -110,7 +115,7 @@
                         </label>
                     @endforeach
 
-                    @foreach($query(collect($filterFields)->pluck('name')->push('payment_status')->push('spp_status')->push('academic_year_id')->all()) as $key => $value)
+                    @foreach($query(collect($filterFields)->pluck('name')->push('payment_status')->push('academic_year_id')->all()) as $key => $value)
                         <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                     @endforeach
 
@@ -544,7 +549,15 @@
                                                         @endif
                                                     </div>
                                                 @else
-                                                    {{ $display($row, $column) }}
+                                                    @php
+                                                        $cellValue = $display($row, $column);
+                                                        $yearlyBadgeClass = $reportKey === 'yearly-spp' ? $yearlySppBadgeClass($cellValue) : null;
+                                                    @endphp
+                                                    @if($yearlyBadgeClass)
+                                                        <span class="report-yearly-spp-badge is-{{ $yearlyBadgeClass }}">{{ $cellValue }}</span>
+                                                    @else
+                                                        {{ $cellValue }}
+                                                    @endif
                                                 @endif
                                             </td>
                                         @endforeach

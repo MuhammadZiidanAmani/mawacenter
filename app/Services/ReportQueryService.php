@@ -63,7 +63,7 @@ class ReportQueryService
         $academicPeriod = collect($this->academicMonths($activeYear))->firstWhere('month', $month);
         $defaultSppYear = (int) ($academicPeriod['year'] ?? now()->year);
         $year = $request->integer('year') ?: $defaultSppYear;
-        $defaultDateFrom = $report === 'transactions'
+        $defaultDateFrom = in_array($report, ['transactions', 'unit-recap'], true)
             ? CarbonImmutable::now()->startOfDay()
             : CarbonImmutable::now()->startOfMonth()->startOfDay();
 
@@ -80,7 +80,6 @@ class ReportQueryService
             'fee_type_id' => $request->integer('fee_type_id') ?: null,
             'payment_method' => in_array($request->string('payment_method')->value(), ['Cash', 'Transfer'], true) ? $request->string('payment_method')->value() : null,
             'payment_status' => in_array($request->string('payment_status')->value(), ['Diterima', 'Pending'], true) ? $request->string('payment_status')->value() : null,
-            'spp_status' => in_array($request->string('spp_status')->value(), ['paid', 'partial'], true) ? $request->string('spp_status')->value() : null,
             'operator_name' => $request->string('operator_name')->value() ?: null,
             'student_search' => $report !== 'unit-recap' ? ($request->string('student_search')->value() ?: null) : null,
             'search' => $request->string('search')->value() ?: null,
@@ -192,7 +191,6 @@ class ReportQueryService
         })
             ->filter(fn (array $row) => $row['paid'] > 0)
             ->filter(fn (array $row) => in_array($row['status_key'], ['paid', 'partial'], true))
-            ->filter(fn (array $row) => ! $filters['spp_status'] || $row['status_key'] === $filters['spp_status'])
             ->values();
 
         return [
@@ -204,60 +202,20 @@ class ReportQueryService
                 ['key' => 'students', 'label' => 'Jumlah Siswa', 'type' => 'number'],
                 ['key' => 'paid_count', 'label' => 'Lunas', 'type' => 'number'],
                 ['key' => 'partial_count', 'label' => 'Sebagian', 'type' => 'number'],
-                ['key' => 'paid', 'label' => 'Total Terbayar', 'type' => 'money'],
+                ['key' => 'paid', 'label' => 'Jumlah Penerimaan', 'type' => 'money'],
             ],
             'summaryRows' => $this->monthlySppUnitSummary($rows),
+            'summaryTotals' => [
+                'label' => 'Total Keseluruhan',
+                'label_colspan' => 2,
+                'values' => [
+                    'students' => $rows->count(),
+                    'paid_count' => $rows->where('status_key', 'paid')->count(),
+                    'partial_count' => $rows->where('status_key', 'partial')->count(),
+                    'paid' => (int) $rows->sum('paid'),
+                ],
+            ],
             'chartData' => ['units' => collect(), 'payments' => collect(), 'totals' => ['students' => 0, 'paid' => 0]],
-        ];
-    }
-
-    public function outstandingSpp(array $filters): array
-    {
-        $period = $this->selectedSppPeriod($filters, true);
-        $studentIds = $this->filteredStudents($filters)->pluck('students.id')->all();
-        $bills = Bill::with('student.schoolClass.educationUnit')
-            ->where('source_type', 'spp')
-            ->where('remaining_amount', '>', 0)
-            ->whereIn('student_id', $studentIds)
-            ->where(function ($query) use ($period) {
-                $query->where('year', '<', $period['year'])
-                    ->orWhere(fn ($query) => $query->where('year', $period['year'])->where('month', '<=', $period['month']));
-            })
-            ->orderBy('year')
-            ->orderBy('month')
-            ->get();
-
-        $rows = $bills->groupBy('student_id')->map(function (Collection $studentBills) {
-            $student = $studentBills->first()->student;
-
-            return [
-                'student_id' => $student?->id,
-                'nis' => $student?->nis,
-                'student' => $student?->name,
-                'unit' => $student?->schoolClass?->educationUnit?->code ?? '-',
-                'unit_name' => $student?->schoolClass?->educationUnit?->name ?? 'Tanpa Unit',
-                'class' => $student?->schoolClass?->name ?? '-',
-                'months' => $studentBills->map(fn (Bill $bill) => self::MONTHS[(int) $bill->month].' '.$bill->year)->join(', '),
-                'month_count' => $studentBills->count(),
-                'remaining' => (int) $studentBills->sum('remaining_amount'),
-            ];
-        })->values();
-
-        return [
-            'rows' => $rows,
-            'summaryCards' => [
-                ['label' => 'Siswa Menunggak', 'value' => $rows->count(), 'type' => 'number'],
-                ['label' => 'Jumlah Bulan Tunggakan', 'value' => (int) $rows->sum('month_count'), 'type' => 'number'],
-                ['label' => 'Total Tunggakan', 'value' => (int) $rows->sum('remaining'), 'type' => 'money'],
-            ],
-            'summaryColumns' => [
-                ['key' => 'no', 'label' => 'No'],
-                ['key' => 'unit', 'label' => 'Unit Pendidikan'],
-                ['key' => 'students', 'label' => 'Siswa Menunggak', 'type' => 'number'],
-                ['key' => 'month_count', 'label' => 'Jumlah Bulan Tunggakan', 'type' => 'number'],
-                ['key' => 'remaining', 'label' => 'Total Tunggakan', 'type' => 'money'],
-            ],
-            'summaryRows' => $this->outstandingSppUnitSummary($rows),
         ];
     }
 
@@ -265,7 +223,10 @@ class ReportQueryService
     {
         $academicYear = AcademicYear::find($filters['academic_year_id']);
         $months = $this->academicMonths($academicYear);
-        $students = $this->filteredStudents($filters)->get();
+        $studentFilters = array_merge($filters, ['academic_year_id' => null]);
+        $students = $this->filteredStudents($studentFilters)
+            ->where('is_active', true)
+            ->get();
         $bills = Bill::where('source_type', 'spp')
             ->whereIn('student_id', $students->pluck('id')->all())
             ->where(function ($query) use ($months) {
@@ -327,21 +288,10 @@ class ReportQueryService
 
             return $row;
         })->values();
-        $paidMonthCount = (int) $rows->sum('paid_month_count');
-        $partialMonthCount = (int) $rows->sum('partial_month_count');
-        $unpaidMonthCount = (int) $rows->sum('unpaid_month_count');
-
         return [
             'rows' => $rows,
             'months' => $months,
-            'summaryCards' => [
-                ['label' => 'Jumlah Siswa', 'value' => $rows->count(), 'type' => 'number'],
-                ['label' => 'Total Terbayar', 'value' => (int) $rows->sum('total_paid'), 'type' => 'money'],
-                ['label' => 'Total Sisa', 'value' => (int) $rows->sum('remaining'), 'type' => 'money'],
-                ['label' => 'Jumlah Bulan Lunas', 'value' => $paidMonthCount, 'type' => 'number'],
-                ['label' => 'Jumlah Bulan Sebagian', 'value' => $partialMonthCount, 'type' => 'number'],
-                ['label' => 'Jumlah Bulan Belum Bayar', 'value' => $unpaidMonthCount, 'type' => 'number'],
-            ],
+            'summaryCards' => [],
             'summaryColumns' => [],
             'summaryRows' => collect(),
         ];
@@ -355,9 +305,8 @@ class ReportQueryService
             ->orderBy('name')
             ->get();
         $transactions = $this->transactionRows($filters)->where('status', 'Diterima');
-        $outstandingByUnitId = $this->academicYearOutstandingSppByUnit($filters);
 
-        $rows = $units->map(function (EducationUnit $unit) use ($transactions, $outstandingByUnitId) {
+        $rows = $units->map(function (EducationUnit $unit) use ($transactions) {
             $unitTransactions = $transactions->where('unit_id', $unit->id);
 
             return [
@@ -368,20 +317,12 @@ class ReportQueryService
                 'laundry' => (int) $unitTransactions->where('group', 'laundry')->sum('amount'),
                 'lain_lain' => (int) $unitTransactions->where('group', 'lain-lain')->sum('amount'),
                 'total' => (int) $unitTransactions->sum('amount'),
-                'outstanding_spp' => (int) ($outstandingByUnitId->get($unit->id) ?? 0),
             ];
         })->values();
 
         return [
             'rows' => $rows,
-            'summaryCards' => [
-                ['label' => 'Jumlah Penerimaan', 'value' => (int) $rows->sum('total'), 'type' => 'money'],
-                ['label' => 'Total SPP', 'value' => (int) $rows->sum('spp'), 'type' => 'money'],
-                ['label' => 'Total Daftar Ulang', 'value' => (int) $rows->sum('daftar_ulang'), 'type' => 'money'],
-                ['label' => 'Total Laundry', 'value' => (int) $rows->sum('laundry'), 'type' => 'money'],
-                ['label' => 'Total Lain-lain', 'value' => (int) $rows->sum('lain_lain'), 'type' => 'money'],
-                ['label' => 'Total Tunggakan SPP', 'value' => (int) $rows->sum('outstanding_spp'), 'type' => 'money'],
-            ],
+            'summaryCards' => [],
             'summaryColumns' => [],
             'summaryRows' => collect(),
             'tableTotals' => $this->unitRecapTotals($rows),
@@ -684,7 +625,7 @@ class ReportQueryService
             return trim('Sebagian '.($paymentDate ? '· '.$paymentDate : ''));
         }
 
-        return '-';
+        return 'Belum Bayar';
     }
 
     private function sppStatusKey(string $status): string
@@ -845,40 +786,6 @@ class ReportQueryService
         ];
     }
 
-    private function outstandingSppUnitSummary(Collection $rows): Collection
-    {
-        return $rows->groupBy('unit_name')->map(fn (Collection $unitRows, string $unitName) => [
-            'unit' => $unitName,
-            'students' => $unitRows->count(),
-            'month_count' => (int) $unitRows->sum('month_count'),
-            'remaining' => (int) $unitRows->sum('remaining'),
-        ])->values();
-    }
-
-    private function academicYearOutstandingSppByUnit(array $filters): Collection
-    {
-        $academicYear = AcademicYear::find($filters['academic_year_id']);
-        $months = $this->academicMonths($academicYear);
-        $studentIds = $this->filteredStudents($filters)->pluck('students.id')->all();
-
-        if ($studentIds === []) {
-            return collect();
-        }
-
-        return Bill::with('student.schoolClass.educationUnit')
-            ->where('source_type', 'spp')
-            ->where('remaining_amount', '>', 0)
-            ->whereIn('student_id', $studentIds)
-            ->where(function ($query) use ($months) {
-                foreach ($months as $index => $month) {
-                    $query->{$index === 0 ? 'where' : 'orWhere'}(fn ($query) => $query->where('year', $month['year'])->where('month', $month['month']));
-                }
-            })
-            ->get()
-            ->groupBy(fn (Bill $bill) => $bill->student?->schoolClass?->educationUnit?->id)
-            ->map(fn (Collection $unitBills) => (int) $unitBills->sum('remaining_amount'));
-    }
-
     private function unitRecapTotals(Collection $rows): array
     {
         return [
@@ -887,7 +794,6 @@ class ReportQueryService
             'laundry' => (int) $rows->sum('laundry'),
             'lain_lain' => (int) $rows->sum('lain_lain'),
             'total' => (int) $rows->sum('total'),
-            'outstanding_spp' => (int) $rows->sum('outstanding_spp'),
         ];
     }
 

@@ -140,6 +140,69 @@ class ReportMenuTest extends TestCase
         }
     }
 
+    public function test_unit_recap_defaults_date_from_to_today(): void
+    {
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-06-15 09:00:00'));
+
+        try {
+            $this->actingAs(User::factory()->create(['role' => 'admin']));
+            [$year, $unit, $class] = $this->schoolContext();
+            $earlyStudent = Student::create([
+                'nis' => '9017',
+                'name' => 'Siswa Rekap Awal Bulan',
+                'gender' => 'L',
+                'school_class_id' => $class->id,
+                'academic_year_id' => $year->id,
+                'is_active' => true,
+            ]);
+            $todayStudent = Student::create([
+                'nis' => '9018',
+                'name' => 'Siswa Rekap Hari Ini',
+                'gender' => 'P',
+                'school_class_id' => $class->id,
+                'academic_year_id' => $year->id,
+                'is_active' => true,
+            ]);
+
+            SppPayment::create([
+                'student_id' => $earlyStudent->id,
+                'transaction_at' => '2026-06-01 08:00:00',
+                'payment_method' => 'Cash',
+                'status' => 'Diterima',
+                'original_amount' => 100000,
+                'discount_amount' => 0,
+                'total_amount' => 100000,
+                'paid_amount' => 100000,
+                'remaining_amount' => 0,
+                'payment_status' => 'Lunas',
+            ]);
+            SppPayment::create([
+                'student_id' => $todayStudent->id,
+                'transaction_at' => '2026-06-15 08:00:00',
+                'payment_method' => 'Cash',
+                'status' => 'Diterima',
+                'original_amount' => 100000,
+                'discount_amount' => 0,
+                'total_amount' => 100000,
+                'paid_amount' => 100000,
+                'remaining_amount' => 0,
+                'payment_status' => 'Lunas',
+            ]);
+
+            $this->get('/laporan/rekap-unit')
+                ->assertOk()
+                ->assertSee('name="date_from"', false)
+                ->assertSee('value="2026-06-15"', false)
+                ->assertDontSee('name="academic_year_id"', false)
+                ->assertSee('Rp 100.000')
+                ->assertDontSee('Rp 200.000')
+                ->assertDontSee('report-summary-grid-v2', false)
+                ->assertDontSee('Total Tunggakan SPP');
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
+    }
+
     public function test_transaction_unit_summary_shows_cash_and_transfer_totals(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']));
@@ -389,10 +452,13 @@ class ReportMenuTest extends TestCase
         $this->get('/laporan/spp-perbulan?year=2026&month=7')
             ->assertOk()
             ->assertSee('report-summary-table-v2', false)
+            ->assertDontSee('Status Pembayaran')
             ->assertSee('Unit Pendidikan')
             ->assertSee('Lunas')
             ->assertSee('Sebagian')
-            ->assertSee('Total Terbayar')
+            ->assertSee('Jumlah Penerimaan')
+            ->assertSee('Total Keseluruhan')
+            ->assertDontSee('Total Terbayar')
             ->assertDontSee('Total Sisa')
             ->assertDontSee('report-summary-grid-v2', false)
             ->assertDontSee('monthly-spp-chart-card', false)
@@ -513,17 +579,110 @@ class ReportMenuTest extends TestCase
 
         $this->get('/laporan/spp-tahun-pelajaran?academic_year_id='.$year->id)
             ->assertOk()
-            ->assertSee('Jumlah Bulan Lunas')
-            ->assertSee('Jumlah Bulan Sebagian')
-            ->assertSee('Jumlah Bulan Belum Bayar')
+            ->assertDontSee('report-summary-grid-v2', false)
+            ->assertDontSee('Jumlah Bulan Lunas')
+            ->assertDontSee('Jumlah Bulan Sebagian')
+            ->assertDontSee('Jumlah Bulan Belum Bayar')
             ->assertDontSee('Total Tagihan SPP')
+            ->assertSee('Unit')
+            ->assertSee('Kelas')
             ->assertSee('19/07/2025')
             ->assertSee('Sebagian')
-            ->assertSee('Rp 150.000')
-            ->assertSee('Rp 150.000');
+            ->assertSee('Belum Bayar');
     }
 
-    public function test_unit_recap_footer_and_outstanding_use_full_filtered_result(): void
+    public function test_yearly_spp_uses_academic_year_only_as_period_not_student_scope(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $oldYear = AcademicYear::create(['name' => '2025/2026', 'is_active' => false]);
+        $currentYear = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $paud = EducationUnit::create(['code' => 'PAUD', 'name' => 'PAUD Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $paud->id, 'name' => 'Kelompok Bermain', 'level' => 'PAUD']);
+        $student = Student::create([
+            'nis' => '9501',
+            'name' => 'Siswa PAUD Riwayat',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $currentYear->id,
+            'is_active' => true,
+        ]);
+        $inactiveStudent = Student::create([
+            'nis' => '9502',
+            'name' => 'Siswa PAUD Nonaktif',
+            'gender' => 'P',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $currentYear->id,
+            'is_active' => false,
+        ]);
+
+        Bill::create([
+            'student_id' => $student->id,
+            'academic_year_id' => $oldYear->id,
+            'source_type' => 'spp',
+            'generation_key' => 'spp-9501-2025-7',
+            'year' => 2025,
+            'month' => 7,
+            'title' => 'SPP Juli 2025',
+            'issue_date' => '2025-07-01',
+            'due_date' => '2025-07-31',
+            'original_amount' => 50000,
+            'discount_amount' => 0,
+            'total_amount' => 50000,
+            'paid_amount' => 50000,
+            'remaining_amount' => 0,
+            'status' => 'Lunas',
+        ]);
+        Bill::create([
+            'student_id' => $inactiveStudent->id,
+            'academic_year_id' => $oldYear->id,
+            'source_type' => 'spp',
+            'generation_key' => 'spp-9502-2025-7',
+            'year' => 2025,
+            'month' => 7,
+            'title' => 'SPP Juli 2025',
+            'issue_date' => '2025-07-01',
+            'due_date' => '2025-07-31',
+            'original_amount' => 50000,
+            'discount_amount' => 0,
+            'total_amount' => 50000,
+            'paid_amount' => 50000,
+            'remaining_amount' => 0,
+            'status' => 'Lunas',
+        ]);
+        $payment = SppPayment::create([
+            'student_id' => $student->id,
+            'transaction_at' => '2025-07-20 08:15:00',
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'original_amount' => 50000,
+            'discount_amount' => 0,
+            'total_amount' => 50000,
+            'paid_amount' => 50000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+        SppPaymentItem::create([
+            'spp_payment_id' => $payment->id,
+            'student_id' => $student->id,
+            'year' => 2025,
+            'month' => 7,
+            'original_amount' => 50000,
+            'discount_amount' => 0,
+            'total_amount' => 50000,
+            'paid_amount' => 50000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+
+        $this->get('/laporan/spp-tahun-pelajaran?academic_year_id='.$oldYear->id.'&unit_id='.$paud->id)
+            ->assertOk()
+            ->assertSee('Siswa PAUD Riwayat')
+            ->assertDontSee('Siswa PAUD Nonaktif')
+            ->assertSee('PAUD')
+            ->assertSee('20/07/2025');
+    }
+
+    public function test_unit_recap_footer_uses_full_filtered_result_without_tunggakan(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']));
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
@@ -587,7 +746,8 @@ class ReportMenuTest extends TestCase
             ->assertOk()
             ->assertSee('pagination-wrap', false)
             ->assertSeeInOrder(['Total Keseluruhan', 'Rp 1.100.000'])
-            ->assertSee('Rp 70.000');
+            ->assertDontSee('Total Tunggakan SPP')
+            ->assertDontSee('Rp 70.000');
     }
 
     private function schoolContext(): array

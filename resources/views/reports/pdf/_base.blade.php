@@ -32,16 +32,18 @@
     Dicetak: {{ now()->format('d/m/Y H:i') }}<br>
     Tahun Pelajaran Aktif: {{ $activeAcademicYear?->name ?? 'Belum diatur' }}
 </div>
-<table class="summary">
-    <tr>
-        @foreach($summaryCards as $card)
-            <td>
-                {{ $card['label'] }}
-                <strong>{{ ($card['type'] ?? '') === 'money' ? $rupiah($card['value']) : $number($card['value']) }}</strong>
-            </td>
-        @endforeach
-    </tr>
-</table>
+@if($summaryCards)
+    <table class="summary">
+        <tr>
+            @foreach($summaryCards as $card)
+                <td>
+                    {{ $card['label'] }}
+                    <strong>{{ ($card['type'] ?? '') === 'money' ? $rupiah($card['value']) : $number($card['value']) }}</strong>
+                </td>
+            @endforeach
+        </tr>
+    </table>
+@endif
 <table class="data">
     <thead>
         <tr>

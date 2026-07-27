@@ -54,8 +54,6 @@
         <td>{{ $filterLabel('unit_id') }}</td>
         <td class="label">Kelas</td>
         <td>{{ $filterLabel('class_id') }}</td>
-        <td class="label">Status</td>
-        <td>{{ $filterLabel('spp_status') }}</td>
     </tr>
 </table>
 @forelse($chunks as $chunkIndex => $chunk)

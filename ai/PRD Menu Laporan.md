@@ -199,9 +199,9 @@ Filter utama:
 Catatan:
 
 - SPP Perbulan memakai `Tahun` kalender, bukan `Tahun Pelajaran`, karena periode SPP disimpan sebagai kombinasi bulan dan tahun.
-- Tahun Pelajaran tetap dipakai di SPP Pertahun dan Rekap Per Unit.
+- Tahun Pelajaran tetap dipakai di SPP Pertahun.
 - Unit Pendidikan dan Kelas menjadi filter utama sesuai kebutuhan operasional.
-- Status SPP boleh ditambahkan sebagai filter lanjutan jika dibutuhkan, tetapi hanya untuk status pembayaran yang sudah ada aktivitas bayar.
+- SPP Perbulan tidak memakai filter `Status Pembayaran`; status hanya menjadi penanda data transaksi yang sudah terjadi.
 - Cari Siswa tersedia di toolbar tabel untuk melihat status SPP siswa tertentu berdasarkan Nama, NIS, atau NISN.
 - Siswa yang belum membayar SPP tidak ditampilkan di SPP Perbulan; data tersebut menjadi tanggung jawab Menu Tagihan.
 
@@ -214,7 +214,15 @@ Kolom ringkasan:
 - Jumlah Siswa
 - Lunas
 - Sebagian
-- Total Terbayar
+- Jumlah Penerimaan
+
+Footer tabel rekap:
+
+- Total Keseluruhan
+- Jumlah siswa yang membayar
+- Jumlah lunas
+- Jumlah sebagian
+- Jumlah penerimaan SPP pada filter aktif
 
 ### Tabel Detail
 
@@ -285,14 +293,16 @@ Melihat rekap SPP satu tahun pelajaran, dari Juli sampai Juni. Halaman ini dipak
 
 Cari Siswa tersedia di toolbar tabel untuk melihat rekap SPP satu siswa tertentu berdasarkan Nama, NIS, atau NISN.
 
+Catatan:
+
+- Tahun Pelajaran pada SPP Pertahun hanya menentukan periode bulan Juli sampai Juni.
+- Tahun Pelajaran tidak boleh dipakai untuk membatasi `students.academic_year_id`, agar transaksi tahun pelajaran lama tetap tampil meskipun data siswa sudah berpindah tahun aktif.
+- Filter Unit Pendidikan dan Kelas tetap memakai relasi kelas/unit siswa saat ini.
+- Siswa nonaktif tidak ditampilkan di SPP Pertahun walaupun memiliki bill atau riwayat pembayaran pada periode tersebut.
+
 ### Ringkasan
 
-- Jumlah Siswa
-- Total Terbayar
-- Total Sisa
-- Jumlah Bulan Lunas
-- Jumlah Bulan Sebagian
-- Jumlah Bulan Belum Bayar
+SPP Pertahun tidak memakai card ringkasan dan tidak memakai tabel rekap tambahan. Halaman ini fokus pada tabel matriks Juli sampai Juni per siswa agar pembacaan status tahunan tetap ringan.
 
 ### Tabel Detail
 
@@ -301,6 +311,8 @@ Kolom tabel final:
 - No
 - NIS
 - Nama Siswa
+- Unit
+- Kelas
 - Juli
 - Agustus
 - September
@@ -318,8 +330,8 @@ Aturan isi kolom bulan:
 
 - Jika sudah lunas: tampilkan tanggal pembayaran, contoh `19/06/2026`.
 - Jika sebagian/cicil: tampilkan `Sebagian` dan tanggal bayar terakhir jika ada, contoh `Sebagian · 19/06/2026`.
-- Jika belum bayar: tampilkan `-`.
-- Jika tidak ditagih: tampilkan `Tidak Ditagih` hanya jika memang tidak ada tagihan SPP untuk bulan tersebut.
+- Jika belum bayar: tampilkan badge tipis merah lembut `Belum Bayar`.
+- Jika tidak ditagih: tampilkan badge tipis abu-abu `Tidak Ditagih` hanya jika memang tidak ada tagihan SPP untuk bulan tersebut.
 
 Aturan tabel:
 
@@ -348,28 +360,21 @@ Utama dari tabel `bills` dan item pembayaran SPP:
 
 ### Tujuan
 
-Memberi ringkasan besar untuk admin/pimpinan: penerimaan dan tunggakan per unit pendidikan.
+Memberi ringkasan penerimaan per unit pendidikan berdasarkan periode transaksi yang dipilih.
 
 ### Filter
 
 - Tanggal Dari
 - Tanggal Sampai
-- Tahun Pelajaran
 
 Catatan:
 
+- Default `Tanggal Dari` dan `Tanggal Sampai` pada Rekap Per Unit adalah tanggal hari ini.
 - Rekap Per Unit tidak menampilkan Cari Siswa karena outputnya agregat per unit pendidikan.
 
 ### Ringkasan Atas
 
-Ringkasan atas wajib ada:
-
-- Jumlah Penerimaan
-- Total SPP
-- Total Daftar Ulang
-- Total Laundry
-- Total Lain-lain
-- Total Tunggakan SPP
+Rekap Per Unit tidak memakai card ringkasan angka di atas tabel jika data yang sama sudah dijawab oleh tabel dan footer `Total Keseluruhan`. Halaman ini fokus pada tabel rekap per unit agar mudah dibandingkan.
 
 ### Tabel
 
@@ -382,7 +387,6 @@ Kolom tabel:
 - Laundry
 - Lain-lain
 - Jumlah Penerimaan
-- Total Tunggakan SPP
 
 Footer tabel:
 
@@ -394,12 +398,6 @@ Aturan footer:
 - Semua nominal footer adalah total dari semua baris unit yang tampil.
 - Label `Total Keseluruhan` rata tengah pada kolom teks awal.
 - Nominal footer rata kanan dan bold.
-
-Definisi `Total Tunggakan SPP`:
-
-- Menghitung sisa tagihan SPP (`remaining_amount`) pada Tahun Pelajaran yang dipilih.
-- Periode tunggakan mengikuti bulan Tahun Pelajaran penuh, yaitu Juli sampai Juni.
-- Filter tanggal hanya memengaruhi penerimaan/transaksi masuk, bukan sisa tagihan SPP.
 
 ### Export
 
@@ -560,7 +558,7 @@ app/Support/SimpleXlsxWriter.php
 
 Catatan:
 
-- Jika masih ada route/view/method `outstanding-spp` atau `spp-belum-bayar`, statusnya legacy dan harus dipindahkan ke konsep Menu Tagihan saat Menu Tagihan dirapikan.
+- Route/view/method laporan untuk `outstanding-spp` atau `spp-belum-bayar` tidak dipakai lagi di Menu Laporan. Konsep belum bayar/tunggakan menjadi ranah Menu Tagihan.
 
 ## Prinsip Query dan Performa
 
@@ -584,6 +582,7 @@ Tambahkan test feature untuk:
 - Transaksi Pembayaran menampilkan transaksi SPP, daftar ulang, laundry, dan pembayaran lain.
 - Filter Transaksi Pembayaran berdasarkan unit, kelas, dan petugas bekerja.
 - SPP Perbulan menampilkan kolom final: No, Tanggal, NIS, Nama Siswa, Unit, Kelas, Bulan, Tahun, Nominal, Cara Bayar, Petugas.
+- SPP Perbulan tidak menampilkan filter Status Pembayaran.
 - SPP Perbulan menampilkan status Lunas dan Sebagian saja; Belum Bayar masuk Menu Tagihan.
 - SPP Pertahun menampilkan bulan Juli sampai Juni.
 - SPP Pertahun menampilkan tanggal pembayaran pada bulan yang sudah dibayar.
