@@ -12,7 +12,11 @@
             --muted: #707971;
             --border: #d1d5db;
             --paper: #ffffff;
-            --canvas: #f5f7f4;
+            --canvas: #ffffff;
+            --notice-paper-width: 165mm;
+            --notice-paper-height: 215mm;
+            --notice-paper-padding-y: 7mm;
+            --notice-paper-padding-x: 9mm;
         }
 
         * {
@@ -22,7 +26,7 @@
         body {
             margin: 0;
             color: #000000;
-            background: #f5f7f4;
+            background: #ffffff;
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             font-size: 14px;
             line-height: 1.25;
@@ -31,7 +35,7 @@
         }
 
         .notice-actions {
-            width: min(165mm, calc(100% - 24px));
+            width: min(var(--notice-paper-width), calc(100% - 24px));
             margin: 16px auto 10px;
             display: flex;
             justify-content: flex-end;
@@ -66,18 +70,19 @@
         }
 
         .notice-page {
-            width: 165mm;
-            min-height: 210mm;
+            width: var(--notice-paper-width);
+            min-height: var(--notice-paper-height);
             margin: 0 auto 14mm;
-            padding: 8mm 9mm 7mm;
+            padding: var(--notice-paper-padding-y) var(--notice-paper-padding-x);
             display: block;
             background: #ffffff;
             border: 1px solid #d1d5db;
             box-shadow: 0 10px 28px rgba(15, 23, 42, .10);
+            font-size: 12.5px;
         }
 
         .notice-header {
-            padding-bottom: 2.4mm;
+            padding-bottom: 1.6mm;
             border-bottom: 2px solid #004528;
             text-align: left;
         }
@@ -89,7 +94,7 @@
         }
 
         .notice-header-logo-cell {
-            width: 16mm;
+            width: 13mm;
             vertical-align: middle;
         }
 
@@ -105,8 +110,8 @@
         }
 
         .notice-logo {
-            width: 13mm;
-            height: 13mm;
+            width: 11mm;
+            height: 11mm;
             object-fit: contain;
         }
 
@@ -114,7 +119,7 @@
             margin: 0;
             color: #000000;
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             line-height: 1.15;
             text-transform: uppercase;
@@ -122,11 +127,11 @@
         }
 
         .notice-brand p {
-            margin: 1mm 0 0;
+            margin: .5mm 0 0;
             color: #000000;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 400;
-            line-height: 1.25;
+            line-height: 1.2;
         }
 
         .notice-brand .notice-address {
@@ -134,7 +139,7 @@
         }
 
         .notice-title {
-            margin: 3mm 0 4mm;
+            margin: 2mm 0 2.2mm;
             text-align: center;
         }
 
@@ -146,21 +151,21 @@
             color: #000000;
             border-bottom: 1px solid #020617;
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             line-height: 1.2;
             text-transform: uppercase;
         }
 
         .notice-title p {
-            margin: 1mm 0 0;
+            margin: .6mm 0 0;
             color: #000000;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: 500;
         }
 
         .notice-info {
-            margin: 0 0 2.4mm;
+            margin: 0 0 1.8mm;
             padding: 0;
             background: transparent;
             border: 0;
@@ -179,11 +184,11 @@
         }
 
         .notice-info-left {
-            padding-right: 3mm !important;
+            padding-right: 2.5mm !important;
         }
 
         .notice-info-right {
-            padding-left: 3mm !important;
+            padding-left: 2.5mm !important;
         }
 
         .notice-info-table {
@@ -192,22 +197,22 @@
         }
 
         .notice-info-table td {
-            padding: .55mm 0;
+            padding: .3mm 0;
             border: 0;
-            font-size: 14px;
+            font-size: 12.5px;
             line-height: 1.25;
             vertical-align: top;
         }
 
         .notice-info-table td:first-child {
-            width: 28mm;
+            width: 23mm;
             color: #000000;
             font-weight: 500;
             white-space: nowrap;
         }
 
         .notice-info-table td:nth-child(2) {
-            width: 4mm;
+            width: 3mm;
             color: #000000;
             text-align: left;
         }
@@ -226,11 +231,11 @@
         }
 
         .notice-copy {
-            margin: 0 0 2.5mm;
+            margin: 0 0 1.8mm;
             color: #000000;
-            font-size: 14px;
+            font-size: 12.5px;
             font-weight: 400;
-            line-height: 1.45;
+            line-height: 1.35;
             text-align: justify;
         }
 
@@ -247,9 +252,9 @@
         .notice-table th,
         .notice-table td {
             border: 1px solid #9ca3af;
-            padding: 1.05mm 1.15mm;
+            padding: .65mm .9mm;
             color: #000000;
-            font-size: 14px;
+            font-size: 12.5px;
             font-weight: 400;
             line-height: 1.2;
             vertical-align: middle;
@@ -263,7 +268,7 @@
         }
 
         .notice-table .col-no {
-            width: 8mm;
+            width: 7mm;
             text-align: center;
         }
 
@@ -278,7 +283,7 @@
         }
 
         .notice-table .col-year {
-            width: 16mm;
+            width: 13mm;
             text-align: center;
         }
 
@@ -289,12 +294,12 @@
         }
 
         .notice-table .col-months {
-            width: 15mm;
+            width: 14mm;
             text-align: center;
         }
 
         .notice-table .col-total {
-            width: 28mm;
+            width: 27mm;
             text-align: right;
             white-space: nowrap;
         }
@@ -319,9 +324,9 @@
         }
 
         .amount-words {
-            margin: 2mm 0 0;
+            margin: 1.5mm 0 0;
             color: #000000;
-            font-size: 14px;
+            font-size: 12.5px;
             font-weight: 400;
             font-style: italic;
             line-height: 1.35;
@@ -334,8 +339,8 @@
         }
 
         .notice-footer {
-            margin-top: 6mm;
-            padding-top: 2mm;
+            margin-top: 3.5mm;
+            padding-top: 1mm;
             border-top: 0;
         }
 
@@ -370,9 +375,9 @@
         .signature {
             text-align: center;
             color: #000000;
-            font-size: 14px;
+            font-size: 12.5px;
             font-weight: 400;
-            line-height: 1.35;
+            line-height: 1.25;
         }
 
         .signature p {
@@ -380,7 +385,7 @@
         }
 
         .signature-space {
-            height: 11mm;
+            height: 10mm;
         }
 
         .signature-name {
@@ -390,25 +395,24 @@
         }
 
         .empty-row {
-            height: 13mm;
+            height: 9mm;
             text-align: center;
             color: #000000;
         }
 
         .notice-pdf-mode {
-            width: 165mm;
-            min-height: 210mm;
+            width: var(--notice-paper-width);
+            min-height: var(--notice-paper-height);
             margin: 0;
             padding: 0;
             background: #ffffff;
         }
 
         .notice-pdf-mode .notice-page {
-            width: 165mm;
-            height: 210mm;
-            min-height: 210mm;
+            width: var(--notice-paper-width);
+            min-height: var(--notice-paper-height);
             margin: 0;
-            padding: 8mm 9mm 7mm;
+            padding: var(--notice-paper-padding-y) var(--notice-paper-padding-x);
             border: 0;
             border-radius: 0;
             box-shadow: none;
@@ -416,7 +420,7 @@
         }
 
         .notice-pdf-mode .notice-header-logo-cell {
-            width: 16mm;
+            width: 13mm;
             text-align: left;
             vertical-align: middle;
         }
@@ -432,8 +436,8 @@
         }
 
         .notice-pdf-mode .notice-logo {
-            width: 13mm;
-            height: 13mm;
+            width: 11mm;
+            height: 11mm;
         }
 
         .notice-pdf-mode .notice-info-table {
@@ -443,11 +447,11 @@
         }
 
         .notice-pdf-mode .notice-info-table td:first-child {
-            width: 28mm;
+            width: 23mm;
         }
 
         .notice-pdf-mode .notice-info-table td:nth-child(2) {
-            width: 4mm;
+            width: 3mm;
         }
 
         .notice-pdf-mode .notice-footer-table td:first-child {
@@ -458,85 +462,11 @@
             width: 44%;
         }
 
-        .notice-web-mode {
-            background: #ffffff;
-        }
-
-        .notice-web-mode .notice-actions {
-            width: min(1120px, calc(100% - 48px));
-            margin: 24px auto 16px;
-        }
-
-        .notice-web-mode .notice-page {
-            width: min(1120px, calc(100% - 48px));
-            min-height: auto;
-            margin: 0 auto 40px;
-            padding: 24px;
-            border-radius: 8px;
-            box-shadow: none;
-        }
-
-        .notice-web-mode .notice-header {
-            padding-bottom: 16px;
-        }
-
-        .notice-web-mode .notice-header-logo-cell {
-            width: 72px;
-        }
-
-        .notice-web-mode .notice-header-spacer-cell {
-            width: 0;
-            padding: 0;
-        }
-
-        .notice-web-mode .notice-logo {
-            width: 56px;
-            height: 56px;
-        }
-
-        .notice-web-mode .notice-title {
-            margin: 20px 0 30px;
-        }
-
-        .notice-web-mode .notice-info {
-            margin-bottom: 18px;
-        }
-
-        .notice-web-mode .notice-info-left {
-            padding-right: 24px !important;
-        }
-
-        .notice-web-mode .notice-info-right {
-            padding-left: 24px !important;
-        }
-
-        .notice-web-mode .notice-info-table td {
-            padding: 5px 0;
-        }
-
-        .notice-web-mode .notice-copy {
-            margin-bottom: 18px;
-        }
-
-        .notice-web-mode .notice-table th,
-        .notice-web-mode .notice-table td {
-            padding: 10px 12px;
-        }
-
-        .notice-web-mode .notice-footer {
-            margin-top: 32px;
-            padding-top: 20px;
-        }
-
-        .notice-web-mode .signature-space {
-            height: 56px;
-        }
-
         body.notice-web-mode {
             min-height: 100vh;
             padding-top: 76px;
-            background: #f5f7f4;
-            overflow-x: auto;
+            background: #ffffff;
+            overflow-x: hidden;
         }
 
         .notice-web-mode .notice-actions {
@@ -556,7 +486,7 @@
             gap: 14px;
             background: #ffffff;
             border-bottom: 1px solid #d1d5db;
-            box-shadow: 0 6px 18px rgba(15, 23, 42, .06);
+            box-shadow: none;
         }
 
         .notice-web-mode .notice-toolbar-title {
@@ -575,21 +505,6 @@
             flex: 1 1 auto;
         }
 
-        .notice-web-mode .notice-toolbar-meta,
-        .notice-web-mode .notice-toolbar-zoom {
-            min-height: 32px;
-            padding: 0 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: #334155;
-            font-size: 14px;
-            font-weight: 700;
-            background: #f5f7f4;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-        }
-
         .notice-web-mode .notice-toolbar-controls {
             display: flex;
             align-items: center;
@@ -601,24 +516,22 @@
             min-width: 88px;
             min-height: 40px;
             padding: 0 14px;
-            color: #0d5f36;
-            background: #f3fbf6;
-            border-color: #b9dcc7;
+            color: #334155;
+            background: #ffffff;
+            border-color: #d1d5db;
             border-radius: 8px;
             font-size: 14px;
             font-weight: 700;
             line-height: 1;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
-            transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease, border-color .16s ease, color .16s ease;
+            box-shadow: none;
+            transition: background-color .16s ease, border-color .16s ease, color .16s ease;
         }
 
         .notice-web-mode .notice-actions a:hover,
         .notice-web-mode .notice-actions button:hover {
             color: #004528;
-            background: #e9f8ef;
-            border-color: #157144;
-            box-shadow: 0 10px 20px rgba(0, 69, 40, .16);
-            transform: translateY(-2px);
+            background: #f3fbf6;
+            border-color: #004528;
         }
 
         .notice-web-mode .notice-actions .primary {
@@ -634,10 +547,10 @@
         }
 
         .notice-web-mode .notice-page {
-            width: 165mm;
-            min-height: 210mm;
+            width: var(--notice-paper-width);
+            min-height: var(--notice-paper-height);
             margin: 0 auto 32px;
-            padding: 8mm 9mm 7mm;
+            padding: var(--notice-paper-padding-y) var(--notice-paper-padding-x);
             overflow: hidden;
             border: 0;
             border-radius: 0;
@@ -645,11 +558,11 @@
         }
 
         .notice-web-mode .notice-header {
-            padding-bottom: 2.4mm;
+            padding-bottom: 1.6mm;
         }
 
         .notice-web-mode .notice-header-logo-cell {
-            width: 16mm;
+            width: 13mm;
         }
 
         .notice-web-mode .notice-header-spacer-cell {
@@ -658,81 +571,114 @@
         }
 
         .notice-web-mode .notice-logo {
-            width: 13mm;
-            height: 13mm;
+            width: 11mm;
+            height: 11mm;
         }
 
         .notice-web-mode .notice-title {
-            margin: 3mm 0 4mm;
+            margin: 2mm 0 2.2mm;
         }
 
         .notice-web-mode .notice-info {
-            margin-bottom: 2.4mm;
+            margin-bottom: 1.8mm;
         }
 
         .notice-web-mode .notice-info-left {
-            padding-right: 3mm !important;
+            padding-right: 2.5mm !important;
         }
 
         .notice-web-mode .notice-info-right {
-            padding-left: 3mm !important;
+            padding-left: 2.5mm !important;
         }
 
         .notice-web-mode .notice-info-table td {
-            padding: .55mm 0;
+            padding: .3mm 0;
         }
 
         .notice-web-mode .notice-copy {
-            margin-bottom: 2.5mm;
+            margin-bottom: 1.8mm;
         }
 
         .notice-web-mode .notice-table th,
         .notice-web-mode .notice-table td {
-            padding: 1.05mm 1.15mm;
+            padding: .65mm .9mm;
         }
 
         .notice-web-mode .notice-footer {
-            margin-top: 6mm;
-            padding-top: 2mm;
+            margin-top: 3.5mm;
+            padding-top: 1mm;
         }
 
         .notice-web-mode .notice-footer-left {
-            padding-right: 7mm !important;
+            padding-right: 3mm !important;
         }
 
         .notice-web-mode .notice-footer-right {
-            padding-left: 7mm !important;
+            padding-left: 3mm !important;
         }
 
         .notice-web-mode .signature-space {
-            height: 11mm;
+            height: 10mm;
         }
 
         @media screen and (max-width: 760px) {
+            html,
             body {
-                background: #ffffff;
-            }
-
-            .notice-actions {
                 width: 100%;
-                margin: 0;
-                padding: 12px;
-                justify-content: stretch;
-            }
-
-            .notice-actions a,
-            .notice-actions button {
-                flex: 1 1 0;
+                max-width: 100%;
                 min-width: 0;
+                overflow-x: hidden;
             }
 
-            .notice-page {
+            body.notice-web-mode {
+                position: relative;
+                padding-top: 0;
+                overflow-x: hidden;
+            }
+
+            .notice-web-mode .notice-actions {
+                position: sticky;
+                top: 0;
+                right: auto;
+                left: auto;
+                width: min(100%, 390px);
+                max-width: 390px;
+                min-width: 0;
+                height: auto;
+                min-height: 56px;
+                margin: 0 auto 0 0;
+                padding: 12px 16px;
+                display: block;
+                overflow: hidden;
+            }
+
+            .notice-web-mode .notice-toolbar-title {
+                display: block;
                 width: 100%;
-                min-height: auto;
-                margin: 0;
-                padding: 16px;
-                border: 0;
-                box-shadow: none;
+                max-width: none;
+                white-space: normal;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .notice-web-mode .notice-toolbar-spacer {
+                display: none;
+            }
+
+            .notice-web-mode .notice-toolbar-controls {
+                width: 100%;
+                max-width: 100%;
+                margin-top: 8px;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+            }
+
+            .notice-web-mode .notice-actions a,
+            .notice-web-mode .notice-actions button {
+                width: 100%;
+                min-width: 0;
+                min-height: 40px;
             }
 
             .notice-header-table,
@@ -764,6 +710,24 @@
                 text-align: center;
             }
 
+            .notice-brand h1,
+            .notice-brand p,
+            .notice-brand .notice-address {
+                white-space: normal;
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
+
+            .notice-brand h1 {
+                font-size: 15px;
+                line-height: 1.25;
+            }
+
+            .notice-brand p {
+                font-size: 14px;
+                line-height: 1.35;
+            }
+
             .notice-info-left,
             .notice-info-right,
             .notice-footer-left,
@@ -777,19 +741,65 @@
                 margin-top: 12px;
             }
 
-            .notice-web-mode .notice-actions {
-                width: 100%;
-                margin: 0;
+            .notice-web-mode .notice-page {
+                display: flow-root;
+                width: min(100%, 390px);
+                max-width: 390px;
+                min-width: 0;
+                min-height: auto;
+                margin: 0 auto 0 0;
+                padding: 16px;
+                overflow-x: hidden;
+                overflow-y: visible;
+                border: 0;
+                border-radius: 0;
+                box-shadow: none;
             }
 
-            .notice-web-mode .notice-page {
-                width: 100%;
-                margin: 0;
-                border-radius: 0;
+            .notice-header,
+            .notice-title,
+            .notice-info,
+            .notice-copy,
+            .amount-words,
+            .notice-footer {
+                max-width: 100%;
             }
 
             .notice-web-mode .notice-title {
-                margin: 18px 0 24px;
+                margin: 18px 0 16px;
+            }
+
+            .notice-web-mode .notice-title h2 {
+                display: block;
+                border-bottom: 0;
+                font-size: 15px;
+                line-height: 1.25;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                text-decoration: underline;
+                text-underline-offset: 2px;
+            }
+
+            .notice-info-table {
+                width: 100%;
+            }
+
+            .notice-info-table td:first-child {
+                width: 104px;
+            }
+
+            .notice-info-table td:nth-child(2) {
+                width: 14px;
+            }
+
+            .notice-info-table td:last-child {
+                min-width: 0;
+                overflow-wrap: anywhere;
+            }
+
+            .notice-web-mode .notice-copy {
+                text-align: left;
+                overflow-wrap: anywhere;
             }
 
             .notice-web-mode .notice-info-left,
@@ -801,24 +811,47 @@
             }
 
             .notice-table-wrap {
+                display: block;
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
                 overflow-x: auto;
+                overflow-y: hidden;
+                -webkit-overflow-scrolling: touch;
+                contain: inline-size;
             }
 
-            .notice-table {
+            table.notice-table {
+                width: 680px;
                 min-width: 680px;
+                max-width: none;
+            }
+
+            .notice-web-mode .notice-footer {
+                margin-top: 20px;
+                padding-top: 0;
+            }
+
+            .notice-web-mode .signature-space {
+                height: 28px;
+            }
+
+            .signature-name {
+                white-space: normal;
+                overflow-wrap: anywhere;
             }
         }
 
         @media print {
             @page {
-                size: 165mm 210mm;
+                size: 165mm 215mm;
                 margin: 0;
             }
 
             html,
             body {
-                width: 165mm;
-                min-height: 210mm;
+                width: var(--notice-paper-width);
+                min-height: var(--notice-paper-height);
                 margin: 0;
                 padding: 0;
                 background: #ffffff;
@@ -873,11 +906,10 @@
             .notice-web-mode .notice-page,
             .notice-pdf-mode .notice-page,
             .notice-page {
-                width: 165mm;
-                height: 210mm;
-                min-height: 210mm;
+                width: var(--notice-paper-width);
+                min-height: var(--notice-paper-height);
                 margin: 0;
-                padding: 8mm 9mm 7mm;
+                padding: var(--notice-paper-padding-y) var(--notice-paper-padding-x);
                 border: 0;
                 border-radius: 0;
                 box-shadow: none;
@@ -886,7 +918,7 @@
 
             .notice-web-mode .notice-header-logo-cell,
             .notice-header-logo-cell {
-                width: 16mm;
+                width: 13mm;
                 text-align: left;
                 vertical-align: middle;
             }
@@ -905,32 +937,32 @@
             }
 
             .notice-web-mode .notice-logo {
-                width: 13mm;
-                height: 13mm;
+                width: 11mm;
+                height: 11mm;
             }
 
             .notice-web-mode .notice-title {
-                margin: 3mm 0 4mm;
+                margin: 2mm 0 2.2mm;
             }
 
             .notice-web-mode .notice-info {
-                margin-bottom: 2.4mm;
+                margin-bottom: 1.8mm;
             }
 
             .notice-web-mode .notice-info-left,
             .notice-info-left {
-                padding-right: 3mm !important;
+                padding-right: 2.5mm !important;
             }
 
             .notice-web-mode .notice-info-right,
             .notice-info-right {
-                padding-left: 3mm !important;
+                padding-left: 2.5mm !important;
                 margin-top: 0 !important;
             }
 
             .notice-web-mode .notice-info-table td,
             .notice-info-table td {
-                padding: .55mm 0;
+                padding: .3mm 0;
             }
 
             .notice-info-layout > tbody > tr > td {
@@ -939,26 +971,26 @@
             }
 
             .notice-info-table td:first-child {
-                width: 28mm !important;
+                width: 23mm !important;
             }
 
             .notice-info-table td:nth-child(2) {
-                width: 4mm !important;
+                width: 3mm !important;
                 text-align: left;
             }
 
             .notice-web-mode .notice-copy {
-                margin-bottom: 2.5mm;
+                margin-bottom: 1.8mm;
             }
 
             .notice-web-mode .notice-table th,
             .notice-web-mode .notice-table td {
-                padding: 1.05mm 1.15mm;
+                padding: .65mm .9mm;
             }
 
             .notice-web-mode .notice-footer {
-                margin-top: 6mm;
-                padding-top: 2mm;
+                margin-top: 3.5mm;
+                padding-top: 1mm;
             }
 
             .notice-web-mode .notice-footer-left,
@@ -986,7 +1018,7 @@
 
             .notice-web-mode .signature-space,
             .signature-space {
-                height: 11mm;
+                height: 10mm;
             }
         }
     </style>
@@ -996,8 +1028,6 @@
         <div class="notice-actions">
             <div class="notice-toolbar-title">Detail Tagihan {{ $student->nis }} - {{ strtoupper($student->name) }}</div>
             <div class="notice-toolbar-spacer"></div>
-            <div class="notice-toolbar-meta">1 / 1</div>
-            <div class="notice-toolbar-zoom">100%</div>
             <div class="notice-toolbar-controls">
                 <a href="{{ $backUrl }}">Kembali</a>
                 <a href="{{ route('finance.payments.index', ['student_id' => $student->id, 'search' => $student->nis]) }}">Bayar</a>
@@ -1027,7 +1057,7 @@
         </header>
 
         <section class="notice-title">
-            <h2>Surat Tagihan Administrasi</h2>
+            <h2>Penertiban Administrasi Keuangan</h2>
         </section>
 
         <section class="notice-info">
@@ -1068,7 +1098,7 @@
                         <th class="col-no">No</th>
                         <th class="col-title">Uraian</th>
                         <th class="col-year">Tahun</th>
-                        <th class="col-amount">Nominal</th>
+                        <th class="col-amount">Rp.</th>
                         <th class="col-months">Jml<br>Bulan</th>
                         <th class="col-total">Jumlah</th>
                     </tr>

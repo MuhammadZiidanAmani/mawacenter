@@ -174,7 +174,7 @@ class BillQueryService
             ->orderBy('month')
             ->orderBy('title');
 
-        $this->applyBillScope($query, $year, $untilMonth, 'bills', 'outstanding');
+        $this->applyBillScope($query, $year, $untilMonth, 'bills');
 
         $bills = $query->get();
         $lines = $this->statementLines($bills);
@@ -193,7 +193,7 @@ class BillQueryService
             ->leftJoin('school_classes', 'school_classes.id', '=', 'students.school_class_id')
             ->leftJoin('education_units', 'education_units.id', '=', 'school_classes.education_unit_id');
 
-        $this->applyBillScope($query, $year, $untilMonth, 'bills', $filters['status'] ?? 'outstanding');
+        $this->applyBillScope($query, $year, $untilMonth, 'bills');
 
         $query
             ->when($filters['unit_id'] ?? null, fn ($query, $id) => $query->where('school_classes.education_unit_id', $id))
@@ -205,6 +205,7 @@ class BillQueryService
                 $query->where(function ($query) use ($search) {
                     $query->where('students.name', 'like', "%{$search}%")
                         ->orWhere('students.nis', 'like', "%{$search}%")
+                        ->orWhere('students.nisn', 'like', "%{$search}%")
                         ->orWhere('education_units.code', 'like', "%{$search}%");
                 });
             })
@@ -218,7 +219,8 @@ class BillQueryService
                 $search = trim($search);
                 $query->where(function ($query) use ($search) {
                     $query->where('students.name', 'like', "%{$search}%")
-                        ->orWhere('students.nis', 'like', "%{$search}%");
+                        ->orWhere('students.nis', 'like', "%{$search}%")
+                        ->orWhere('students.nisn', 'like', "%{$search}%");
                 });
             });
 
@@ -237,44 +239,6 @@ class BillQueryService
         }
 
         return $query;
-    }
-
-    private function details(int $year, int $untilMonth, array $studentIds): Collection
-    {
-        if ($studentIds === []) {
-            return collect();
-        }
-
-        $query = Bill::with('feeType:id,name,payment_group')
-            ->whereIn('student_id', $studentIds)
-            ->orderByRaw("CASE WHEN source_type = 'spp' THEN 0 ELSE 1 END")
-            ->orderBy('year')
-            ->orderBy('month')
-            ->orderBy('title');
-        $this->applyBillScope($query, $year, $untilMonth, 'bills', 'all');
-
-        return $query->get()
-            ->groupBy('student_id')
-            ->map(function (Collection $bills) {
-                return [
-                    'spp' => $bills->where('source_type', 'spp')->map(fn (Bill $bill) => [
-                        'year' => $bill->year,
-                        'month' => $bill->month,
-                        'month_name' => self::MONTHS[$bill->month] ?? '-',
-                        'total' => (int) $bill->total_amount,
-                        'paid' => (int) $bill->paid_amount,
-                        'remaining' => (int) $bill->remaining_amount,
-                        'status' => $bill->displayStatus(),
-                    ]),
-                    'other' => $bills->where('source_type', '!=', 'spp')->map(fn (Bill $bill) => [
-                        'name' => $bill->title,
-                        'total' => (int) $bill->total_amount,
-                        'paid' => (int) $bill->paid_amount,
-                        'remaining' => (int) $bill->remaining_amount,
-                        'status' => $bill->displayStatus(),
-                    ]),
-                ];
-            });
     }
 
     private function statementLines(Collection $bills): Collection
@@ -378,7 +342,7 @@ class BillQueryService
         return $names->first().' - '.$names->last();
     }
 
-    private function applyBillScope($query, int $year, int $untilMonth, string $table, string $status = 'outstanding'): void
+    private function applyBillScope($query, int $year, int $untilMonth, string $table): void
     {
         $query
             ->where($table.'.status', '!=', 'Dibatalkan')
@@ -416,7 +380,7 @@ class BillQueryService
                     });
             });
 
-        $this->applyStatusFilter($query, $table, $status);
+        $this->applyOutstandingScope($query, $table);
     }
 
     private function applySorting($query, string $sort, string $direction): void
@@ -430,29 +394,8 @@ class BillQueryService
         };
     }
 
-    private function applyStatusFilter($query, string $table, string $status): void
+    private function applyOutstandingScope($query, string $table): void
     {
-        match ($status) {
-            'all' => null,
-            'paid' => $query->where($table.'.remaining_amount', '<=', 0),
-            'partial' => $query->where($table.'.remaining_amount', '>', 0)->where($table.'.paid_amount', '>', 0),
-            'overdue' => $query->where($table.'.remaining_amount', '>', 0)
-                ->whereNotNull($table.'.due_date')
-                ->where($table.'.due_date', '<', now()->toDateString()),
-            default => $query->where($table.'.remaining_amount', '>', 0),
-        };
-    }
-
-    private function summaryStatus(int $remaining, int $paid, int $overdue): string
-    {
-        if ($remaining <= 0) {
-            return 'Lunas';
-        }
-
-        if ($overdue > 0) {
-            return 'Jatuh Tempo';
-        }
-
-        return $paid > 0 ? 'Sebagian' : 'Belum Bayar';
+        $query->where($table.'.remaining_amount', '>', 0);
     }
 }

@@ -124,6 +124,21 @@ Standar Identitas, Footer, dan Copyright
 - Footer tidak boleh mengalahkan konten utama, tidak perlu card, dan tidak perlu border kecuali layout halaman memang membutuhkan pemisah halus.
 - Copyright dokumen print/PDF boleh lebih kecil mengikuti kebutuhan cetak, tetapi tetap netral, ringan, dan tidak dominan.
 
+Standar CSS Global Foundation
+
+- `resources/css/app.css` adalah tempat fondasi global aplikasi, bukan tempat menumpuk CSS final semua menu.
+- `app.css` wajib memuat import Tailwind/source utama dan import module final seperti `resources/css/modules/reports.css` dan `resources/css/modules/bills.css`.
+- Token warna global disimpan di `:root`, minimal mencakup kanvas, surface, panel lembut, border, teks utama, teks sekunder, brand, hover brand, dan aksen.
+- Fondasi global yang boleh tinggal di `app.css`: `body`, `app-shell`, `sidebar`, `main-panel`, `topbar`, `.button`, `.button-primary`, `.button-secondary`, `.icon`, `.icon-button`, `.table-wrap`, `.app-footer`, `.modal-backdrop`, `.form-modal`, `.form-modal-header`, `.form-actions`, `.result-modal-backdrop`, serta dasar `input`, `select`, dan `textarea`.
+- Class global tersebut wajib dipertahankan karena dipakai lintas menu. Jangan menghapus `.modal-backdrop`, `.form-modal`, `.app-footer`, `.button`, `.icon-button`, `.table-wrap`, atau `.result-modal-backdrop` tanpa audit pemakaian di Blade dan test visual minimal.
+- CSS menu yang sudah final wajib scoped di module masing-masing. Contoh: Menu Laporan di `resources/css/modules/reports.css`, Menu Tagihan di `resources/css/modules/bills.css`, dan menu berikutnya memakai module sendiri saat mulai dirapikan serius.
+- Selector module wajib memakai scope halaman menu, misalnya `.report-page-v2`, `.bill-flat-page`, `.guardian-bill-page`, atau class halaman khusus lain yang stabil.
+- Jangan menambahkan selector global agresif seperti `body *`, `td`, `th`, `strong`, `button`, atau semua elemen dengan `!important` untuk mengatur tipografi, warna, spacing, atau visibility lintas aplikasi.
+- Jangan memakai aturan global `font-weight` yang memaksa semua `strong`, `th`, `button`, `label`, atau `span` menjadi satu ketebalan. Ketebalan mengikuti peran komponen: 400, 500, atau 700 sesuai standar tipografi.
+- Jika perlu memperbaiki menu lama, scope perbaikannya ke class halaman menu tersebut. Jangan membuat override global baru hanya untuk menyelesaikan satu menu.
+- Jika ada CSS lama/minified di `app.css`, bersihkan bertahap per menu setelah module menu tersebut siap, bukan dengan hapus massal tanpa pembuktian visual.
+- Setelah mengubah fondasi global, wajib menjalankan build dan test menu yang terdampak minimal, lalu cek bahwa modal tersembunyi saat belum dibuka, footer tetap putih/transparan, dan module Laporan/Tagihan tidak berubah tampilan.
+
 Standar Tipografi
 
 Jenis font utama memakai system sans: Inter jika tersedia, lalu ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif.
@@ -508,6 +523,7 @@ Standar tabel lanjutan:
 - Navigasi halaman/pagination final:
 - Toolbar atas tabel berisi kontrol jumlah data di kiri.
 - Area kanan toolbar atas boleh dipakai untuk pencarian tabel jika tersedia; jika belum ada fitur pencarian, area kanan boleh kosong.
+- Pencarian siswa di toolbar tabel memakai pola final yang sama di Menu Laporan dan Menu Tagihan: pada desktop label `Cari Siswa` sejajar di samping input-card, input tinggi 36px, radius 8px, lebar acuan 280px, placeholder `Nama / NIS / NISN`; pada mobile label dan input menjadi satu kolom full width.
 - Jangan menampilkan teks "Menampilkan x-y dari z data" di toolbar atas tabel.
 - Footer bawah tabel kiri menampilkan format "Menampilkan 1-10 dari 705 data".
 - Footer bawah tabel kanan menampilkan tombol navigasi halaman.
@@ -961,24 +977,25 @@ Daftar tagihan:
 - Baris Total Tagihan memakai padding vertikal 12px, rata tengah vertikal, dan dipisahkan dengan satu garis atas yang sejajar dengan garis lainnya.
 
 Standar halaman Tagihan Siswa:
-- Halaman Tagihan Siswa memakai kanvas data maksimal 1200px, rata tengah, background putih, dan urutan Heading, Tabel Ringkasan Per Unit tanpa judul/subdeskripsi, Card Filter, Toolbar jumlah data, Tabel, lalu Pagination.
+- Halaman Tagihan Siswa memakai kanvas data maksimal 1200px, rata tengah, background putih, dan urutan Heading, Tabel Ringkasan Per Unit tanpa judul/subdeskripsi, Card Filter, Toolbar tabel, Tabel Tagihan Siswa, Pagination jika diperlukan, lalu footer copyright.
 - Judul halaman memakai 20px / 700, deskripsi 14px / 400, jarak judul ke deskripsi 4px, jarak blok heading ke tabel ringkasan 16px, dan jarak tabel ringkasan ke card filter 16px.
 - Card filter Tagihan Siswa mengikuti standar card filter Data Siswa: background #ffffff, border #d1d5db, radius 12px, padding 16px, gap 12px, field 40px, label 14px / 400, tombol Terapkan primer #004528, dan tombol Reset putih border #d1d5db.
-- Card filter Tagihan Siswa diletakkan setelah tabel ringkasan per unit dan tepat sebelum toolbar/tabel siswa. Urutan filter Tagihan Siswa: Unit Pendidikan, Kelas, Cari Siswa, lalu tombol aksi.
+- Card filter Tagihan Siswa diletakkan setelah tabel ringkasan per unit dan tepat sebelum toolbar/tabel siswa. Urutan filter Tagihan Siswa: Unit Pendidikan, Kelas, Terapkan, lalu Reset. Cari Siswa tidak masuk card filter.
 - Filter Tahun Tagihan, Sampai Bulan, Status Tagihan, dan Kategori tidak ditampilkan di card filter Tagihan agar panel tetap ringkas untuk admin/bendahara.
 - Ringkasan Tagihan Siswa tidak dibuat card-card besar dan tidak memakai strip total di atas tabel. Nominal pembayaran masuk seperti Terbayar ditempatkan di menu Laporan, bukan di menu Tagihan.
 - Tampilkan tabel ringkasan per unit tanpa judul atau subdeskripsi tambahan. Kolom acuan: No, Unit Pendidikan, Siswa, Jumlah Tagihan.
 - Tabel Ringkasan Per Unit mengikuti standar tabel compact 40px: header rata tengah, No rata tengah, Unit Pendidikan rata kiri dan menampilkan nama unit tanpa kode unit, jumlah siswa rata tengah, dan nominal rata kanan. Total ditampilkan sebagai satu baris `tfoot` compact: label Total Keseluruhan rata tengah memakai `colspan="2"` pada area kolom No dan Unit Pendidikan, total siswa berupa angka saja di kolom Siswa, dan total nominal langsung di kolom Jumlah Tagihan tanpa label bertumpuk.
-- Toolbar "Tampilkan 10/25/50/100/500/All data" mengikuti standar toolbar Data Siswa dengan select 78px x 34px dan teks kanan "Menampilkan 1-10 dari ... siswa". Jarak toolbar ke tabel siswa wajib 16px, dihitung dari bawah toolbar/select ke atas header tabel. Jika parent workspace sudah memakai gap 16px, toolbar tidak boleh menambah margin-bottom lagi agar jarak tidak dobel.
+- Toolbar tabel Tagihan Siswa menampilkan kontrol jumlah data di kiri dan Cari Siswa di kanan. Cari Siswa menerima Nama/NIS/NISN dan mempertahankan filter Unit Pendidikan, Kelas, `per_page`, `sort`, dan `direction`. Pada desktop, label `Cari Siswa` sejajar di samping input-card, bukan di atas; input memakai tinggi 36px, radius 8px, dan lebar acuan 280px seperti pola toolbar laporan. Pada mobile, label dan input menjadi satu kolom full width. Select jumlah data memakai opsi 10/25/50/100/500/Semua dengan ukuran 78px x 34px. Pada mode tanpa pagination, info kanan boleh menampilkan "Menampilkan 1-10 dari ... siswa". Pada mode dengan pagination, info hasil ditempatkan di footer bawah tabel sesuai standar pagination. Jarak toolbar ke tabel siswa wajib 16px, dihitung dari bawah toolbar/select/input ke atas header tabel. Jika parent workspace sudah memakai gap 16px, toolbar tidak boleh menambah margin-bottom lagi agar jarak tidak dobel.
 - Setelah toolbar jumlah data, langsung tampilkan tabel siswa. Jangan menampilkan subjudul duplikat seperti "Daftar Tagihan Siswa" atau ringkasan ulang "Total ... SPP ... Lain-lain ..." di atas tabel siswa.
 - Tabel utama Tagihan Siswa memakai tabel compact ke bawah, bukan card siswa berulang. Header dan baris utama tinggi 40px, header rata tengah, isi nama siswa rata kiri, nominal rata kanan, dan baris terakhir tidak boleh memiliki garis bawah penutup.
 - Kolom tabel Tagihan Siswa: No, NIS, Nama Siswa, Unit, Kelas, Total Tagihan, Aksi.
-- Header tabel Tagihan Siswa memakai teks polos Title Case rata tengah tanpa ikon/panah sort agar header tetap rapi. Jangan memakai kapital semua kecuali singkatan resmi seperti NIS.
+- Header tabel Tagihan Siswa memakai Title Case rata tengah. Kolom sortable memakai ikon sort kecil standar seperti Menu Laporan; kolom No dan Aksi tetap teks polos tanpa ikon. Jangan memakai kapital semua kecuali singkatan resmi seperti NIS.
 - Kolom Aksi berisi ikon transparan tanpa card/border, ukuran tombol sekitar 28px: ikon Detail dan ikon Bayar, masing-masing wajib memiliki `aria-label`/`title`. Jangan memakai teks di tombol aksi tabel Tagihan agar kolom Kelas tetap longgar.
 - Lebar kolom tabel Tagihan Siswa acuan desktop: No 48px, NIS 84px, Unit 74px, Kelas sekitar 168px, Total Tagihan sekitar 136px, Aksi sekitar 60px, dan Nama Siswa memakai ruang fleksibel tersisa.
 - Rincian SPP dan Lain-lain tidak ditampilkan sebagai kolom/baris detail di tabel utama. Tombol Detail membuka halaman Surat Tagihan Siswa siap cetak, bukan modal kecil, agar admin/bendahara bisa melihat rincian resmi dan mencetak pemberitahuan untuk wali murid.
-- Surat Tagihan Siswa memakai halaman A4 portrait, background putih, font cetak serif, judul resmi "Penertiban Administrasi Keuangan", identitas siswa, tabel rincian No, Uraian, Tahun, Rp., Jml Bulan, Jumlah, total keseluruhan, terbilang, tanggal, dan tanda tangan. Toolbar layar hanya berisi Kembali, Bayar, dan Cetak, lalu wajib hilang saat print.
-- Pagination bawah Tagihan Siswa tidak ditampilkan. Jangan memakai teks default "Showing ... results", nomor halaman berjajar, tombol Sebelumnya, atau tombol Berikutnya; cukup gunakan toolbar ringkasan jumlah data di atas tabel.
+- Surat Tagihan Siswa memakai ukuran setengah F4 portrait, yaitu 16.5cm x 21.5cm (165mm x 215mm), background putih, font cetak resmi, judul resmi "Penertiban Administrasi Keuangan", identitas siswa, tabel rincian No, Uraian, Tahun, Rp., Jml Bulan, Jumlah, total keseluruhan, terbilang, tanggal, dan tanda tangan. Toolbar layar hanya berisi Kembali, Bayar, Unduh, dan Cetak, lalu wajib hilang saat print.
+- Pagination Tagihan Siswa tampil jika total data lebih dari `per_page`, karena data tagihan bisa besar. Gunakan standar pagination aplikasi: tidak memakai teks Inggris bawaan seperti "Showing ... results", tidak memakai teks "Halaman x dari y", tombol normal 14px / 500, tombol aktif 14px / 700, tinggi tombol 36px, radius 8px, gap 8px, aktif background #004528 dan teks #ffffff, normal background #ffffff border #d1d5db teks #334155, disabled background #f9fafb border #d1d5db teks #707971.
+- Pada desktop, footer pagination Tagihan menampilkan info hasil di kiri dan tombol navigasi di kanan. Pada mobile, footer pagination menjadi satu kolom: info hasil di atas tombol, tombol boleh wrap rapi, dan tidak boleh membuat halaman melebar.
 - Menu Tagihan Siswa wajib responsif mobile: halaman tidak boleh melebar ke kanan; parent grid/section tabel wajib `min-width:0`, hanya `.table-wrap` yang boleh scroll horizontal, filter menjadi satu kolom, tombol filter menjadi dua kolom atau full width jika ruang tidak cukup, dan dialog detail berubah satu kolom. Tabel ringkasan per unit di mobile memakai min-width sekitar 520px, sedangkan tabel siswa boleh sekitar 760px.
 
 Standar Print, PDF, Struk, dan Kwitansi
@@ -986,7 +1003,7 @@ Standar Print, PDF, Struk, dan Kwitansi
 - Tampilan print/PDF mengutamakan keterbacaan resmi, bukan gaya card aplikasi.
 - Background print selalu putih, teks utama hitam, dan aksen warna dipakai sangat terbatas.
 - Toolbar layar seperti Kembali, Cetak, Unduh, dan Bayar wajib hilang saat print.
-- Margin dokumen A4 mengikuti kebutuhan surat resmi; gunakan ruang cukup untuk kop, isi, total, tanda tangan, dan catatan.
+- Margin dokumen resmi mengikuti ukuran kertas yang dipakai; untuk Surat Tagihan setengah F4 portrait gunakan padding ringkas agar kop, isi, total, terbilang, tanggal, dan tanda tangan tetap muat tanpa terpotong.
 - Font print boleh lebih kecil dari standar UI, misalnya 11.5px, 12.5px, 14px, dan 18px, karena kebutuhan cetak berbeda.
 - Judul dokumen resmi memakai ukuran paling dominan tetapi tetap wajar, bukan gaya hero.
 - Kop surat, identitas lembaga, nomor surat, tanggal, dan tanda tangan harus konsisten antar dokumen resmi.

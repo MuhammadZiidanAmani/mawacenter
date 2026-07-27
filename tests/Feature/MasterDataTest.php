@@ -1552,8 +1552,11 @@ class MasterDataTest extends TestCase
             ->assertSee('Tagihan Siswa')
             ->assertSee('Menampilkan 1-1 dari 1 siswa')
             ->assertSee('Total Tagihan')
-            ->assertSee('Tagihan per Unit')
-            ->assertSee('Daftar Ulang')
+            ->assertSee('Unit Pendidikan')
+            ->assertSee('Jumlah Tagihan')
+            ->assertSee('Total Keseluruhan')
+            ->assertDontSee('Tagihan per Unit')
+            ->assertDontSee('Daftar Ulang')
             ->assertDontSee('Daftar Tagihan Siswa')
             ->assertSee('Detail tagihan')
             ->assertSee('Rp 7.100.000');
@@ -1562,11 +1565,11 @@ class MasterDataTest extends TestCase
             ->assertOk()
             ->assertSee('Penertiban Administrasi Keuangan')
             ->assertSee('Tagihan Siswa')
-            ->assertSee('SPP Agustus - Desember')
-            ->assertSee('SPP Januari - Juni')
+            ->assertSee('SPP AGUSTUS - DESEMBER')
+            ->assertSee('SPP JANUARI - JUNI')
             ->assertSee('Daftar Ulang')
             ->assertSee('Total Keseluruhan')
-            ->assertSee('Terbilang :')
+            ->assertSee('Terbilang:')
             ->assertSee('Rp. 7.100.000,-');
 
         $this->assertDatabaseHas('bills', [

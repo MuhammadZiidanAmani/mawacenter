@@ -25,6 +25,9 @@
         'package' => '<path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/>',
         'coins' => '<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1.5a1.5 1.5 0 0 1 0 3H7V6Zm0 3h2a1.5 1.5 0 0 1 0 3H7V9Z"/>',
         'bars' => '<path d="M3 3v18h18"/><path d="M7 16V9M12 16V5M17 16v-3"/>',
+        'sort' => '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
+        'sort-up' => '<path d="m7 14 5-5 5 5"/>',
+        'sort-down' => '<path d="m7 10 5 5 5-5"/>',
     ];
     $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
     $rupiah = fn ($amount) => 'Rp '.number_format($amount, 0, ',', '.');
@@ -34,6 +37,17 @@
     $billQuery = fn (array $except = []) => collect(request()->except(array_merge($except, ['page'])))
         ->filter(fn ($value) => is_scalar($value))
         ->all();
+    $currentSort = request('sort');
+    $currentDirection = request('direction') === 'desc' ? 'desc' : 'asc';
+    $billSortUrl = function (string $key) use ($currentSort, $currentDirection) {
+        $params = collect(request()->except(['sort', 'direction', 'page']))
+            ->filter(fn ($value) => is_scalar($value))
+            ->all();
+        $params['sort'] = $key;
+        $params['direction'] = $currentSort === $key && $currentDirection === 'asc' ? 'desc' : 'asc';
+
+        return route('finance.bills.index').'?'.http_build_query($params);
+    };
     $showingFrom = $studentsWithBills->total() > 0 ? $studentsWithBills->firstItem() : 0;
     $showingTo = $studentsWithBills->total() > 0 ? $studentsWithBills->lastItem() : 0;
     $isGuardianView = $isGuardianView ?? false;
@@ -61,19 +75,10 @@
 
             <section class="bill-workspace">
                 <div class="bill-page-heading">
-                    @unless($isGuardianView)
-                        <span class="bill-heading-icon" aria-hidden="true">{!! $icon('file') !!}</span>
-                    @endunless
                     <div>
                         <h1>{{ $isGuardianView ? 'Tagihan' : 'Tagihan Siswa' }}</h1>
-                        <p>{{ $isGuardianView ? 'Lihat tagihan siswa yang terhubung dan kirim bukti pembayaran transfer.' : 'Pantau tagihan semua siswa, rincian SPP, pembayaran lain-lain, dan sisa kewajiban.' }}</p>
+                        <p>{{ $isGuardianView ? 'Lihat tagihan siswa yang terhubung dan kirim bukti pembayaran transfer.' : 'Pantau kewajiban siswa yang belum selesai dan lanjutkan ke pembayaran.' }}</p>
                     </div>
-                    @unless($isGuardianView)
-                        <span class="bill-heading-date">
-                            <small>Terakhir diperbarui</small>
-                            <strong>{{ now()->format('d/m/Y') }}</strong>
-                        </span>
-                    @endunless
                 </div>
 
                 @if($isGuardianView)
@@ -321,77 +326,59 @@
                 @php
                     $unitSummaryTotals = [
                         'students' => (int) $unitSummaries->sum('students'),
-                        'spp' => (int) $unitSummaries->sum('spp'),
-                        'daftar_ulang' => (int) $unitSummaries->sum('daftar_ulang'),
-                        'lain_lain' => (int) $unitSummaries->sum('lain_lain'),
                         'remaining' => (int) $unitSummaries->sum('remaining'),
                     ];
-                    $billOverviewCards = [
-                        ['label' => 'Total Siswa', 'value' => number_format($unitSummaryTotals['students'], 0, ',', '.'), 'icon' => 'users', 'tone' => 'neutral'],
-                        ['label' => 'SPP', 'value' => $rupiah($unitSummaryTotals['spp']), 'icon' => 'file', 'tone' => 'primary'],
-                        ['label' => 'Daftar Ulang', 'value' => $rupiah($unitSummaryTotals['daftar_ulang']), 'icon' => 'clipboard', 'tone' => 'gold'],
-                        ['label' => 'Lain-lain', 'value' => $rupiah($unitSummaryTotals['lain_lain']), 'icon' => 'package', 'tone' => 'muted'],
-                        ['label' => 'Total Tagihan', 'value' => $rupiah($unitSummaryTotals['remaining']), 'icon' => 'coins', 'tone' => 'total'],
-                    ];
-                    $totalUnitRemaining = max(1, (int) $unitSummaryTotals['remaining']);
                 @endphp
 
-                <section class="bill-visual-overview" aria-label="Ringkasan tagihan">
-                    @foreach($billOverviewCards as $card)
-                        <article class="bill-overview-card is-{{ $card['tone'] }}">
-                            <span class="bill-overview-icon">{!! $icon($card['icon']) !!}</span>
-                            <span class="bill-overview-copy">
-                                <small>{{ $card['label'] }}</small>
-                                <strong>{{ $card['value'] }}</strong>
-                            </span>
-                        </article>
-                    @endforeach
-                </section>
-
-                <section class="bill-unit-progress-card" aria-label="Tagihan per unit">
-                    <div class="bill-unit-progress-head">
-                        <span class="bill-overview-icon">{!! $icon('bars') !!}</span>
-                        <div>
-                            <h2>Tagihan per Unit</h2>
-                            <p>Total sisa kewajiban berdasarkan unit pendidikan.</p>
-                        </div>
-                    </div>
-                    <div class="bill-unit-progress-list">
-                        @forelse($unitSummaries as $unitSummary)
-                            @php
-                                $unitRemaining = (int) $unitSummary['remaining'];
-                                $unitPercentRaw = $totalUnitRemaining > 0 ? ($unitRemaining / $totalUnitRemaining) * 100 : 0;
-                                $unitPercent = min(100, max(0, round($unitPercentRaw)));
-                                $unitBarPercent = $unitRemaining > 0 ? max(1, $unitPercent) : 0;
-                                $unitPercentLabel = $unitRemaining > 0 && $unitPercentRaw < 1 ? '<1%' : $unitPercent.'%';
-                            @endphp
-                            <div class="bill-unit-progress-row">
-                                <div class="bill-unit-progress-meta">
-                                    <strong>{{ $unitSummary['unit_name'] }}</strong>
-                                    <b>{{ $unitPercentLabel }} <em>({{ $rupiah($unitRemaining) }})</em></b>
-                                </div>
-                                <div class="bill-unit-progress-track" aria-hidden="true">
-                                    <span style="width: {{ $unitBarPercent }}%"></span>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="empty-state">Belum ada ringkasan tagihan per unit.</div>
-                        @endforelse
+                <section class="bill-unit-summary bill-unit-summary-card" aria-label="Ringkasan tagihan per unit">
+                    <div class="bill-unit-table-wrap">
+                        <table class="bill-unit-table">
+                            <colgroup>
+                                <col class="bill-unit-col-no">
+                                <col class="bill-unit-col-unit">
+                                <col class="bill-unit-col-students">
+                                <col class="bill-unit-col-total">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Unit Pendidikan</th>
+                                    <th>Siswa</th>
+                                    <th>Jumlah Tagihan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($unitSummaries as $unitSummary)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $unitSummary['unit_name'] }}</td>
+                                        <td>{{ number_format((int) $unitSummary['students'], 0, ',', '.') }}</td>
+                                        <td><span class="bill-money remaining">{{ $rupiah((int) $unitSummary['remaining']) }}</span></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="4" class="empty-state">Belum ada tagihan pada filter ini.</td></tr>
+                                @endforelse
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="2" class="bill-unit-total-caption">Total Keseluruhan</td>
+                                    <td>{{ number_format($unitSummaryTotals['students'], 0, ',', '.') }}</td>
+                                    <td><span class="bill-money remaining">{{ $rupiah($unitSummaryTotals['remaining']) }}</span></td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </section>
-                @endif
 
-                @unless($isGuardianView)
                 <form method="GET" action="{{ route('finance.bills.index') }}" class="bills-filter-panel">
-                    <label class="bill-search-field"><span>Cari Siswa</span><span class="bill-search-input">{!! $icon('search') !!}<input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Nama atau NIS..."></span></label>
                     <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                     <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
                     <input type="hidden" name="per_page" value="{{ request('per_page') }}">
                     <input type="hidden" name="sort" value="{{ request('sort') }}">
                     <input type="hidden" name="direction" value="{{ request('direction') }}">
                     <div class="bill-filter-actions">
-                        <a href="{{ route('finance.bills.index') }}" class="button bill-filter-reset">Reset</a>
                         <button class="button bill-filter-apply">Terapkan</button>
+                        <a href="{{ route('finance.bills.index') }}" class="button bill-filter-reset">Reset</a>
                     </div>
                 </form>
 
@@ -407,52 +394,69 @@
                                 @foreach([10, 25, 50, 100, 500] as $size)
                                     <option value="{{ $size }}" @selected(request('per_page', 10) == $size)>{{ $size }}</option>
                                 @endforeach
-                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                <option value="all" @selected(request('per_page') === 'all')>Semua</option>
                             </select>
                             data
                         </label>
                     </form>
-                    <span>Menampilkan {{ number_format($showingFrom, 0, ',', '.') }}-{{ number_format($showingTo, 0, ',', '.') }} dari {{ number_format($studentsWithBills->total(), 0, ',', '.') }} siswa</span>
+                    <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-toolbar-search-form">
+                        @foreach(request()->except(['student_search', 'student_id', 'page']) as $key => $value)
+                            @if(is_scalar($value))
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endif
+                        @endforeach
+                        <label class="bill-search-field"><span>Cari Siswa</span><span class="bill-search-input">{!! $icon('search') !!}<input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Nama, NIS, atau NISN..."></span></label>
+                    </form>
                 </div>
 
                 <section class="bills-data-card">
                     <div class="table-wrap">
                         <table class="bill-flat-table bill-stitch-table">
                             <colgroup>
+                                <col class="bill-stitch-col-no">
+                                <col class="bill-stitch-col-nis">
                                 <col class="bill-stitch-col-name">
                                 <col class="bill-stitch-col-unit">
                                 <col class="bill-stitch-col-class">
-                                <col class="bill-stitch-col-register">
-                                <col class="bill-stitch-col-spp">
-                                <col class="bill-stitch-col-other">
                                 <col class="bill-stitch-col-total">
                                 <col class="bill-stitch-col-action">
                             </colgroup>
                             <thead>
                                 <tr>
-                                    <th>Nama Siswa</th>
-                                    <th>Unit</th>
-                                    <th>Kelas</th>
-                                    <th>Daftar Ulang</th>
-                                    <th>SPP</th>
-                                    <th>Lain-lain</th>
-                                    <th>Total Tagihan</th>
+                                    <th>No</th>
+                                    @foreach(['nis' => 'NIS', 'name' => 'Nama Siswa', 'unit' => 'Unit', 'class' => 'Kelas', 'total' => 'Total Tagihan'] as $sortKey => $sortLabel)
+                                        @php
+                                            $isCurrentSort = $currentSort === $sortKey;
+                                            $nextSortDirection = $isCurrentSort && $currentDirection === 'asc' ? 'desc' : 'asc';
+                                            $sortDirectionLabel = $nextSortDirection === 'asc' ? 'naik' : 'turun';
+                                            $sortIcon = $isCurrentSort ? ($currentDirection === 'asc' ? 'sort-up' : 'sort-down') : 'sort';
+                                        @endphp
+                                        <th @class(['bill-sortable-heading', 'is-sorted' => $isCurrentSort])>
+                                            <a class="bill-sort-link" href="{{ $billSortUrl($sortKey) }}" aria-label="Urutkan {{ $sortLabel }} {{ $sortDirectionLabel }}" title="Urutkan {{ $sortLabel }} {{ $sortDirectionLabel }}">
+                                                <span>{{ $sortLabel }}</span>
+                                                <span class="bill-sort-indicator" aria-hidden="true">{!! $icon($sortIcon) !!}</span>
+                                                @if($isCurrentSort)
+                                                    <span class="bill-sr-only">Sedang diurutkan {{ $currentDirection === 'asc' ? 'naik' : 'turun' }}</span>
+                                                @endif
+                                            </a>
+                                        </th>
+                                    @endforeach
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($studentsWithBills as $summary)
-                                    @php($student = $summary['student'])
+                                    @php
+                                        $student = $summary['student'];
+                                    @endphp
                                     <tr class="bill-main-row">
+                                        <td>{{ $studentsWithBills->firstItem() + $loop->index }}</td>
+                                        <td>{{ $student?->nis ?: '-' }}</td>
                                         <td>
                                             <span class="bill-student-name">{{ $student?->name }}</span>
-                                            <small>{{ $student?->nis ?: '-' }}</small>
                                         </td>
                                         <td><span class="bill-unit-chip">{{ $student?->schoolClass?->educationUnit?->code ?? '-' }}</span></td>
                                         <td>{{ $student?->schoolClass?->name ?? '-' }}</td>
-                                        <td><span class="bill-money remaining">{{ $rupiah($summary['daftar_ulang']) }}</span></td>
-                                        <td><span class="bill-money remaining">{{ $rupiah($summary['spp']) }}</span></td>
-                                        <td><span class="bill-money remaining">{{ $rupiah($summary['lain_lain']) }}</span></td>
                                         <td><span class="bill-money remaining">{{ $rupiah($summary['total_remaining']) }}</span></td>
                                         <td>
                                             <div class="bill-table-actions">
@@ -462,13 +466,71 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="8" class="empty-state">Belum ada tagihan pada filter ini.</td></tr>
+                                    <tr><td colspan="7" class="empty-state">Belum ada tagihan pada filter ini.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
                 </section>
-                @endunless
+                @if($studentsWithBills->total() > 0)
+                    <div class="bill-pagination-footer">
+                        <span>Menampilkan {{ number_format($showingFrom, 0, ',', '.') }}-{{ number_format($showingTo, 0, ',', '.') }} dari {{ number_format($studentsWithBills->total(), 0, ',', '.') }} siswa</span>
+                        @if($studentsWithBills->hasPages())
+                            <nav class="bill-pagination" aria-label="Navigasi halaman tagihan">
+                                @php
+                                    $currentPage = (int) $studentsWithBills->currentPage();
+                                    $lastPage = (int) $studentsWithBills->lastPage();
+                                    $pageStart = max(1, $currentPage - 1);
+                                    $pageEnd = min($lastPage, $currentPage + 1);
+                                    $pageItems = [];
+
+                                    if ($pageStart > 1) {
+                                        $pageItems[1] = $studentsWithBills->url(1);
+
+                                        if ($pageStart > 2) {
+                                            $pageItems['ellipsis-start'] = null;
+                                        }
+                                    }
+
+                                    for ($page = $pageStart; $page <= $pageEnd; $page++) {
+                                        $pageItems[$page] = $studentsWithBills->url($page);
+                                    }
+
+                                    if ($pageEnd < $lastPage) {
+                                        if ($pageEnd < $lastPage - 1) {
+                                            $pageItems['ellipsis-end'] = null;
+                                        }
+
+                                        $pageItems[$lastPage] = $studentsWithBills->url($lastPage);
+                                    }
+                                @endphp
+
+                                @if($studentsWithBills->onFirstPage())
+                                    <span class="bill-page-link is-disabled" aria-disabled="true">Sebelumnya</span>
+                                @else
+                                    <a class="bill-page-link" href="{{ $studentsWithBills->previousPageUrl() }}" rel="prev">Sebelumnya</a>
+                                @endif
+
+                                @foreach($pageItems as $page => $url)
+                                    @if($url === null)
+                                        <span class="bill-page-link is-ellipsis" aria-hidden="true">...</span>
+                                    @elseif((int) $page === $currentPage)
+                                        <span class="bill-page-link is-active" aria-current="page">{{ $page }}</span>
+                                    @else
+                                        <a class="bill-page-link" href="{{ $url }}">{{ $page }}</a>
+                                    @endif
+                                @endforeach
+
+                                @if($studentsWithBills->hasMorePages())
+                                    <a class="bill-page-link" href="{{ $studentsWithBills->nextPageUrl() }}" rel="next">Berikutnya</a>
+                                @else
+                                    <span class="bill-page-link is-disabled" aria-disabled="true">Berikutnya</span>
+                                @endif
+                            </nav>
+                        @endif
+                    </div>
+                @endif
+                @endif
             </section>
         </main>
         @include('partials.app-footer')

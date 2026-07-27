@@ -764,6 +764,7 @@ class BillService
                 $query->where(function ($query) use ($search) {
                     $query->where('name', 'like', "%{$search}%")
                         ->orWhere('nis', 'like', "%{$search}%")
+                        ->orWhere('nisn', 'like', "%{$search}%")
                         ->orWhereHas('schoolClass.educationUnit', fn ($unit) => $unit->where('code', 'like', "%{$search}%"));
                 });
             })

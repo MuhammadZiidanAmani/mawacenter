@@ -19,10 +19,9 @@ class BillController extends Controller
 {
     private const MONTHS = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
 
-    public function index(Request $request, BillQueryService $bills, BillService $billService)
+    public function index(Request $request, BillQueryService $bills)
     {
         [$year, $untilMonth] = $this->period($request);
-        $status = $this->statusFilter($request);
         $user = $request->user();
         $isGuardian = $user?->isGuardian() ?? false;
         $filters = [
@@ -30,14 +29,13 @@ class BillController extends Controller
             'class_id' => $request->integer('class_id') ?: null,
             'student_id' => $request->integer('student_id') ?: null,
             'fee_type_id' => $request->integer('fee_type_id') ?: null,
-            'status' => $status,
+            'status' => 'outstanding',
             'student_search' => $request->string('student_search')->value() ?: null,
             'student_name' => $request->string('student_name')->value() ?: null,
             'nis' => $request->string('nis')->value() ?: null,
             'search' => $request->string('search')->value() ?: null,
         ];
         $this->applyUserScope($request, $filters);
-        $this->syncMissingFeeTypeBills($request, $billService);
         $guardianStudents = collect();
         $guardianBills = collect();
         $guardianTransfers = collect();
@@ -59,6 +57,14 @@ class BillController extends Controller
                 ->when($selectedGuardianStudentId, fn ($query) => $query->where('student_id', $selectedGuardianStudentId))
                 ->where('status', '!=', 'Dibatalkan')
                 ->where('remaining_amount', '>', 0)
+                ->where(function ($query) {
+                    $query->where('source_type', '!=', 'fee_type')
+                        ->orWhereNull('fee_type_id')
+                        ->orWhereHas('feeType', function ($query) {
+                            $query->whereNull('payment_group')
+                                ->orWhere('payment_group', '!=', 'laundry');
+                        });
+                })
                 ->orderBy('student_id')
                 ->orderByRaw("CASE WHEN source_type = 'spp' THEN 0 ELSE 1 END")
                 ->orderBy('year')
@@ -77,11 +83,6 @@ class BillController extends Controller
         $direction = $request->string('direction')->value() === 'desc' ? 'desc' : 'asc';
         $perPage = $this->perPage($request);
         $students = $bills->summaries($year, $untilMonth, $filters, $perPage, $sort, $direction);
-        $overviewFilters = array_merge($filters, [
-            'unit_id' => null,
-            'class_id' => null,
-            'student_id' => null,
-        ]);
         $unitIds = $request->user()?->accessibleUnitIds();
 
         return view('finance.bills', [
@@ -89,8 +90,8 @@ class BillController extends Controller
             'studentsWithBills' => $students,
             'year' => $year,
             'untilMonth' => $untilMonth,
-            'overviewStats' => $bills->stats($year, $untilMonth, $overviewFilters),
-            'unitSummaries' => $bills->unitBreakdown($year, $untilMonth, $overviewFilters),
+            'overviewStats' => $bills->stats($year, $untilMonth, $filters),
+            'unitSummaries' => $bills->unitBreakdown($year, $untilMonth, $filters),
             'isGuardianView' => $isGuardian,
             'guardianStudents' => $guardianStudents,
             'selectedGuardianStudentId' => $selectedGuardianStudentId,
@@ -156,7 +157,15 @@ class BillController extends Controller
             $this->browserExecutable(),
             '--headless=new',
             '--disable-gpu',
+            '--disable-gpu-compositing',
+            '--disable-software-rasterizer',
+            '--disable-dev-shm-usage',
+            '--disable-features=VizDisplayCompositor,UseSkiaRenderer',
+            '--in-process-gpu',
             '--no-sandbox',
+            '--disable-crash-reporter',
+            '--no-first-run',
+            '--no-default-browser-check',
             '--allow-file-access-from-files',
             '--user-data-dir='.$profilePath,
             '--print-to-pdf='.$pdfPath,
@@ -165,6 +174,11 @@ class BillController extends Controller
         ]);
         $process->setTimeout(30);
         $process->run();
+
+        for ($attempt = 0; $attempt < 10 && ! file_exists($pdfPath); $attempt++) {
+            usleep(100000);
+            clearstatcache(true, $pdfPath);
+        }
 
         @unlink($htmlPath);
         $this->deleteDirectory($profilePath);
@@ -287,7 +301,7 @@ class BillController extends Controller
             'class_id' => $request->integer('class_id') ?: null,
             'student_id' => $request->integer('student_id') ?: null,
             'fee_type_id' => $request->integer('fee_type_id') ?: null,
-            'status' => $this->statusFilter($request),
+            'status' => 'outstanding',
             'student_search' => $request->string('student_search')->value() ?: null,
             'student_name' => $request->string('student_name')->value() ?: null,
             'nis' => $request->string('nis')->value() ?: null,
@@ -307,7 +321,7 @@ class BillController extends Controller
         $this->mergeResult($result, $bills->generateFeeTypes($academicYear, $feeTypes, $year, $untilMonth, $filters));
 
         return redirect()
-            ->route('finance.bills.index', $request->only(['year', 'until_month', 'unit_id', 'class_id', 'student_id', 'fee_type_id', 'status', 'student_search', 'student_name', 'nis', 'search', 'per_page', 'sort', 'direction']))
+            ->route('finance.bills.index', $request->only(['year', 'until_month', 'unit_id', 'class_id', 'student_id', 'fee_type_id', 'student_search', 'student_name', 'nis', 'search', 'per_page', 'sort', 'direction']))
             ->with('success', 'Sinkron tagihan selesai. Baru: '.number_format($result['created'], 0, ',', '.').', sudah ada: '.number_format($result['existing'], 0, ',', '.').', dilewati: '.number_format($result['skipped'], 0, ',', '.').'.');
     }
 
@@ -343,56 +357,10 @@ class BillController extends Controller
         return [$year, $untilMonth];
     }
 
-    private function statusFilter(Request $request): string
-    {
-        $status = $request->string('status')->value();
-
-        return in_array($status, ['all', 'outstanding', 'partial', 'paid', 'overdue'], true)
-            ? $status
-            : 'outstanding';
-    }
-
     private function mergeResult(array &$base, array $addition): void
     {
         foreach (['created', 'existing', 'skipped'] as $key) {
             $base[$key] += $addition[$key] ?? 0;
-        }
-    }
-
-    private function syncMissingFeeTypeBills(Request $request, BillService $bills): void
-    {
-        $academicYear = AcademicYear::where('is_active', true)->first();
-        if (! $academicYear) {
-            return;
-        }
-
-        $unitIds = $request->user()?->accessibleUnitIds();
-        $feeTypes = FeeType::where('is_active', true)
-            ->where('creates_bill', true)
-            ->where(function ($query) {
-                $query->whereNull('payment_group')->orWhereNotIn('payment_group', ['spp', 'laundry']);
-            })
-            ->where(function ($query) use ($academicYear) {
-                $query->whereNull('academic_year_id')->orWhere('academic_year_id', $academicYear->id);
-            })
-            ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
-            ->whereNotIn('id', Bill::where('source_type', 'fee_type')
-                ->whereNotNull('fee_type_id')
-                ->where('status', '!=', 'Dibatalkan')
-                ->select('fee_type_id'))
-            ->orderBy('id')
-            ->get();
-
-        if ($feeTypes->isEmpty()) {
-            return;
-        }
-
-        $endYear = now()->year;
-        $endMonth = now()->month;
-        foreach ($feeTypes as $feeType) {
-            $bills->generateFeeType($feeType->academicYear ?: $academicYear, $feeType, $endYear, $endMonth, [
-                'unit_id' => $feeType->education_unit_id,
-            ]);
         }
     }
 
