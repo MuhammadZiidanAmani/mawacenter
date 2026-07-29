@@ -1,0 +1,1026 @@
+/* Menu Pembayaran final: consolidated PRD styles, scoped to /keuangan/pembayaran. */
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 24px 32px 32px !important;
+    color: #020617 !important;
+    background: #ffffff !important;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page *,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page *::before,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page *::after {
+    box-sizing: border-box !important;
+    letter-spacing: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-transaction-workspace {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-page-head {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    margin: 0 0 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-page-head h1 {
+    margin: 0 !important;
+    color: #020617 !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-page-head p {
+    max-width: 560px !important;
+    margin: 4px 0 0 !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-import-action,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 16px !important;
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-import-action {
+    min-width: 148px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-button {
+    width: 100% !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-import-action:hover,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-button:hover {
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-button:disabled {
+    cursor: not-allowed !important;
+    opacity: .6 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-import-action .icon {
+    width: 18px !important;
+    height: 18px !important;
+    stroke: currentColor !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-layout {
+    display: grid !important;
+    grid-template-columns: minmax(280px, 370px) minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 16px 32px !important;
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-side,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person {
+    display: contents !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-main,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-form,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-payment-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-search-panel,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person-head.payment-one-stop-profile-card,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-card,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-summary-card,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-card,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-search-panel {
+    display: grid !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    gap: 18px !important;
+    max-width: 370px !important;
+    min-height: 150px !important;
+    padding: 22px 28px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-heading,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-panel-heading,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-title,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-payment-head,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-panel-heading h2,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-title h2,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head h2,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-payment-head h2,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-title h2 {
+    margin: 0 !important;
+    color: #020617 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search label {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-field {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 314px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-field input[type="search"],
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls select,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls input[type="text"] {
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    color: #020617 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-field input[type="search"] {
+    padding: 0 46px 0 12px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls select,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls input[type="text"] {
+    padding: 0 12px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page input::placeholder {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page input:focus,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page select:focus,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page textarea:focus {
+    border-color: #157144 !important;
+    outline: 0 !important;
+    box-shadow: 0 0 0 3px rgba(21, 113, 68, .14) !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-reset {
+    position: absolute !important;
+    right: 6px !important;
+    top: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    color: #707971 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    transform: translateY(-50%) !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-reset .icon {
+    width: 18px !important;
+    height: 18px !important;
+    stroke: currentColor !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-list {
+    display: grid !important;
+    gap: 8px !important;
+    width: 100% !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    padding: 12px !important;
+    color: #020617 !important;
+    background: #fbfdf8 !important;
+    border: 1px solid #dfe5dc !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-card:hover,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-card.is-selected {
+    border-color: #157144 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy strong {
+    color: #020617 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy small,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-unit-count {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
+    display: grid !important;
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    align-content: center !important;
+    gap: 12px !important;
+    min-height: 150px !important;
+    padding: 24px 48px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state strong {
+    color: #020617 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state span {
+    max-width: 520px !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person-head.payment-one-stop-profile-card {
+    position: relative !important;
+    display: grid !important;
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px !important;
+    min-height: 0 !important;
+    padding: 24px 48px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-icon {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-list {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+    width: min(560px, 100%) !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-item {
+    display: grid !important;
+    grid-template-columns: 220px 16px minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 12px !important;
+    min-height: 22px !important;
+    color: #020617 !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-item > span:first-child,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-item > span:nth-child(2) {
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-item > strong {
+    min-width: 0 !important;
+    color: #020617 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    overflow-wrap: anywhere !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-payment-panel {
+    display: block !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-form {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-form .payment-prd-pay-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr) !important;
+    align-items: start !important;
+    gap: 20px !important;
+    width: 100% !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-card,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-summary-card {
+    display: block !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-payment-head {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 58px !important;
+    padding: 0 28px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-error,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty {
+    margin: 16px 24px !important;
+    padding: 12px 14px !important;
+    color: #707971 !important;
+    background: #fbfdf8 !important;
+    border: 1px solid #dfe5dc !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-error {
+    color: #ef1f2d !important;
+    background: #fff4f4 !important;
+    border-color: #f2cfd2 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-section {
+    padding: 18px 24px 0 !important;
+    border-top: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-optional-section {
+    margin-top: 16px !important;
+    padding-top: 16px !important;
+    border-top: 1px solid #e5e7eb !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-section-title {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin: 0 0 12px !important;
+    padding: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-section-title strong {
+    color: #020617 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-section-title span {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-list {
+    display: grid !important;
+    gap: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-row {
+    display: grid !important;
+    grid-template-columns: 28px minmax(0, 1fr) minmax(128px, max-content) !important;
+    align-items: start !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 16px 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-bottom: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-row:first-child {
+    padding-top: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-row + .payment-one-stop-bill-modern-row {
+    border-top: 1px solid #e5e7eb !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-row input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 2px 0 0 !important;
+    accent-color: #004528 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-copy {
+    display: grid !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-copy strong {
+    color: #020617 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-copy > span {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-period-field {
+    display: grid !important;
+    grid-template-columns: max-content 168px !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-top: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-period-field > span {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-period-field select {
+    width: 168px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 10px !important;
+    color: #020617 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-amount,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-amount,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-amount {
+    display: inline-flex !important;
+    align-items: baseline !important;
+    justify-content: flex-end !important;
+    gap: 4px !important;
+    min-width: 128px !important;
+    color: #004528 !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-total {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    align-items: center !important;
+    gap: 16px !important;
+    margin: 0 24px !important;
+    padding: 14px 0 16px !important;
+    color: #020617 !important;
+    background: transparent !important;
+    border-top: 1px solid #e5e7eb !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-total > span:first-child {
+    color: #020617 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-total strong {
+    color: #004528 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls {
+    display: grid !important;
+    gap: 12px !important;
+    padding: 24px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls > label {
+    display: grid !important;
+    gap: 8px !important;
+    margin: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls > label > span,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-upload > span {
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls input[data-payment-paid-display] {
+    background: #fbfdf8 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-total-box {
+    display: grid !important;
+    gap: 6px !important;
+    padding: 16px 18px !important;
+    background: #fbfdf8 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-total-box > span:first-child {
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-total-box .payment-one-stop-bill-total-amount {
+    display: inline-flex !important;
+    align-items: baseline !important;
+    gap: 4px !important;
+    color: #004528 !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-total-box b {
+    color: #004528 !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 10px !important;
+    padding: 14px 16px !important;
+    color: #020617 !important;
+    background: #fbfdf8 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card[hidden],
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-upload[hidden] {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card span,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card small {
+    display: block !important;
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card strong {
+    display: block !important;
+    margin: 6px 0 2px !important;
+    color: #020617 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    overflow-wrap: anywhere !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    justify-self: start !important;
+    gap: 8px !important;
+    width: fit-content !important;
+    min-width: 168px !important;
+    height: 40px !important;
+    padding: 0 12px !important;
+    color: #004528 !important;
+    background: #e9f8ef !important;
+    border: 1px solid #dfe5dc !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-upload {
+    display: grid !important;
+    gap: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-field {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: 34px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-height: 58px !important;
+    padding: 12px !important;
+    background: #fbfdf8 !important;
+    border: 1px dashed #d1d5db !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-field input[type="file"] {
+    position: absolute !important;
+    inset: 0 !important;
+    opacity: 0 !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-icon {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 34px !important;
+    height: 34px !important;
+    color: #004528 !important;
+    background: #e9f8ef !important;
+    border-radius: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-copy {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-copy strong {
+    color: #020617 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-copy small {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-card {
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+    margin-top: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    min-height: 64px !important;
+    padding: 0 42px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-title {
+    display: grid !important;
+    gap: 4px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-title span {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 40px !important;
+    padding: 0 16px !important;
+    color: #004528 !important;
+    background: #fbfdf8 !important;
+    border: 1px solid #dfe5dc !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-list {
+    display: grid !important;
+    gap: 8px !important;
+    padding: 24px 28px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-item {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(132px, max-content) 116px !important;
+    align-items: center !important;
+    gap: 16px !important;
+    min-height: 64px !important;
+    padding: 12px 16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-copy {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-copy strong {
+    color: #020617 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-meta {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 4px 8px !important;
+    color: #707971 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-meta > span,
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-meta > small {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-actions form {
+    display: inline-flex !important;
+    margin: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-action {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    padding: 0 !important;
+    color: #004528 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-action .icon {
+    width: 18px !important;
+    height: 18px !important;
+    stroke: currentColor !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-action.danger {
+    color: #ef1f2d !important;
+}
+
+html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-empty {
+    margin: 24px 28px !important;
+    padding: 24px !important;
+    color: #707971 !important;
+    background: #fbfdf8 !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+html body .payment-receipt-fallback-modal[hidden],
+html body .payment-history-delete-modal[hidden] {
+    display: none !important;
+}
+
+html body .payment-receipt-fallback-modal.show,
+html body .payment-history-delete-modal.show {
+    display: grid !important;
+}
+
+html body .payment-receipt-fallback-actions,
+html body .payment-history-delete-modal .form-actions {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 10px !important;
+}
+
+html body .payment-history-delete-modal .form-modal {
+    max-width: 420px !important;
+}
+
+@media (width <= 1180px) {
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-form .payment-prd-pay-grid {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+}
+
+@media (width <= 960px) {
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-layout {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-search-panel,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person-head.payment-one-stop-profile-card,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-form,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-card {
+        grid-column: 1 / -1 !important;
+        grid-row: auto !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-search-panel {
+        max-width: none !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-field {
+        max-width: none !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page {
+        padding: 16px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-page-head,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-import-action,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-link {
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-search-panel,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person-head.payment-one-stop-profile-card,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
+        padding: 20px 18px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-item {
+        grid-template-columns: minmax(0, 1fr) 12px minmax(0, 1.3fr) !important;
+        gap: 8px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-payment-head,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-head,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-section,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-total,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-list {
+        padding-inline: 18px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-total {
+        margin-inline: 18px !important;
+        padding-inline: 0 !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-row {
+        grid-template-columns: 24px minmax(0, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-amount {
+        grid-column: 2 !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-period-field {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-period-field select {
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-item {
+        grid-template-columns: minmax(0, 1fr) !important;
+        align-items: start !important;
+    }
+
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-amount,
+    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-actions {
+        justify-content: flex-start !important;
+    }
+
+    html body .payment-receipt-fallback-actions,
+    html body .payment-history-delete-modal .form-actions {
+        flex-direction: column !important;
+    }
+}
+
+
+html body .app-shell .main-panel main.payment-hub-page + .app-footer,
+html body .app-shell .main-panel main.payment-flat-page + .app-footer {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0 auto;
+    padding: 8px 16px 12px;
+    color: #707971;
+    background: transparent;
+    border: 0;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
