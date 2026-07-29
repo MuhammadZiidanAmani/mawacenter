@@ -1,0 +1,102 @@
+/* Menu Keuangan shared styles.
+   Pembayaran and Tagihan stay in modules/payments.css and modules/bills.css. */
+
+/* Verifikasi Transfer */
+.transfer-verification-page {
+    gap: 16px;
+}
+
+.transfer-filter {
+    display: grid;
+    grid-template-columns: minmax(0, 320px);
+    gap: 12px;
+    margin: 0;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+.transfer-filter label {
+    display: grid;
+    gap: 8px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.transfer-filter select {
+    min-height: 40px;
+    padding: 8px 12px;
+    color: #020617;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.transfer-verification-table td:nth-child(1),
+.transfer-verification-table th:nth-child(1) {
+    width: 64px;
+    text-align: center;
+}
+
+.transfer-verification-table td,
+.transfer-verification-table th {
+    height: 40px;
+    min-height: 40px;
+    vertical-align: middle;
+}
+
+.transfer-verification-table td small {
+    display: block;
+    margin-top: 2px;
+    color: #707971;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.transfer-actions {
+    display: inline-flex;
+    gap: 8px;
+}
+
+.transfer-actions form {
+    margin: 0;
+}
+
+.transfer-proof-link,
+.transfer-accept-button,
+.transfer-reject-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
+    border-radius: 8px;
+}
+
+.transfer-proof-link,
+.transfer-accept-button {
+    color: #ffffff;
+    background: #157144;
+    border: 1px solid #157144;
+}
+
+.transfer-reject-button {
+    color: #b42318;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+}
+
+@media (max-width: 760px) {
+    .transfer-filter {
+        grid-template-columns: 1fr;
+    }
+
+    .transfer-filter select {
+        width: 100%;
+    }
+}

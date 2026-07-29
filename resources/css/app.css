@@ -3,6 +3,7 @@
 @import "./modules/reports.css";
 @import "./modules/bills.css";
 @import "./modules/payments.css";
+@import "./modules/finance.css";
 @import "./modules/master.css";
 @import "./modules/student-management.css";
 
@@ -18290,34 +18291,7 @@ html body .app-shell .main-panel form#student-data-filter.student-filter-panel.s
     }
 }
 
-/* Transfer verification and shared form inputs. */
-.transfer-verification-page {
-    gap: 16px;
-}
-
-.transfer-filter {
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    display: grid;
-    gap: 12px;
-    margin: 0;
-    padding: 16px;
-}
-
-.transfer-filter {
-    grid-template-columns: minmax(0, 320px);
-}
-
-.transfer-filter label {
-    color: #334155;
-    display: grid;
-    font-size: 14px;
-    font-weight: 500;
-    gap: 8px;
-}
-
-.transfer-filter select,
+/* Shared form inputs. */
 .login-form select,
 .data-user-create-page select[multiple],
 .data-user-edit-modal select[multiple] {
@@ -18334,72 +18308,6 @@ html body .app-shell .main-panel form#student-data-filter.student-filter-panel.s
     border: 0;
     outline: 0;
     width: 100%;
-}
-
-.transfer-verification-table td:nth-child(1),
-.transfer-verification-table th:nth-child(1) {
-    text-align: center;
-    width: 64px;
-}
-
-.transfer-verification-table td,
-.transfer-verification-table th {
-    height: 40px;
-    min-height: 40px;
-    vertical-align: middle;
-}
-
-.transfer-verification-table td small {
-    color: #707971;
-    display: block;
-    font-size: 12px;
-    font-weight: 400;
-    margin-top: 2px;
-}
-
-.transfer-actions {
-    display: inline-flex;
-    gap: 8px;
-}
-
-.transfer-actions form {
-    margin: 0;
-}
-
-.transfer-proof-link,
-.transfer-accept-button,
-.transfer-reject-button {
-    align-items: center;
-    border-radius: 8px;
-    display: inline-flex;
-    height: 36px;
-    justify-content: center;
-    min-height: 36px;
-    padding: 0;
-    width: 40px;
-}
-
-.transfer-proof-link,
-.transfer-accept-button {
-    background: #157144;
-    border: 1px solid #157144;
-    color: #fff;
-}
-
-.transfer-reject-button {
-    background: #fff;
-    border: 1px solid #d1d5db;
-    color: #b42318;
-}
-
-@media (max-width: 760px) {
-    .transfer-filter {
-        grid-template-columns: 1fr;
-    }
-
-    .transfer-filter select {
-        width: 100%;
-    }
 }
 
 /* DARK THEME FINAL LOCK: keep this block at the end of the stylesheet. */
