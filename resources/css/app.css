@@ -1218,8 +1218,6 @@ html body .app-shell .main-panel form#student-data-filter.student-filter-panel.s
     width: 100%;
 }
 
-@import "./themes/dark.css";
-
 html body .app-footer {
     margin: 0;
     padding: 8px 16px 12px;

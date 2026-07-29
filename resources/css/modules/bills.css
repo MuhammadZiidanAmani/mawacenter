@@ -817,32 +817,6 @@ html body .app-shell .main-panel main.bill-flat-page .bill-page-heading h1 {
     color:#020617 !important;
 }
 
-html[data-theme="dark"] body .app-shell .main-panel main.bill-flat-page .bills-data-card {
-    background:#0b1b14 !important;
-    border-color:#335247 !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main.bill-flat-page .bill-table-toolbar h2,
-html[data-theme="dark"] body .app-shell .main-panel main.bill-flat-page .bill-stitch-table .bill-student-name,
-html[data-theme="dark"] body .app-shell .main-panel main.bill-flat-page .bill-stitch-table .bill-money.remaining {
-    color:#e7f0ea !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main.bill-flat-page .bill-unit-class-badges b {
-    color:#a7f3c4 !important;
-    background:#143d2a !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main.bill-flat-page .bill-unit-class-badges em {
-    color:#cfe0d6 !important;
-    background:#102419 !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main.bill-flat-page .bill-unit-chip {
-    color:#a7f3c4 !important;
-    background:#143d2a !important;
-}
-
 /* Tagihan Siswa PRD stage 1: final structure lock. */
 html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card {
     width:100% !important;

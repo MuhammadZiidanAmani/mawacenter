@@ -29,9 +29,4 @@ html body .app-shell .main-panel main.dashboard-page .target-value strong{displa
     color: #004528 !important;
     background: #e9f8ef !important;
     border-color: #157144 !important;
-}html[data-theme="dark"] body .app-shell .main-panel main.dashboard-page .metric-card,
-html[data-theme="dark"] body .app-shell .main-panel main.dashboard-page .dashboard-hero {
-    background: var(--mawa-dark-panel) !important;
-    border-color: var(--mawa-dark-border) !important;
-    box-shadow: none !important;
 }

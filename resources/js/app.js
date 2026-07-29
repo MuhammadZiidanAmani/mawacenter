@@ -38,43 +38,6 @@ if (loginForm) {
 }
 // ============================================================
 
-const themeStorageKey = 'mawacenter-theme';
-const themeIcons = {
-    light: '<svg class="icon theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
-    dark: '<svg class="icon theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z"/></svg>',
-};
-const storedTheme = () => {
-    try {
-        return localStorage.getItem(themeStorageKey);
-    } catch {
-        return null;
-    }
-};
-const storeTheme = (theme) => {
-    try {
-        localStorage.setItem(themeStorageKey, theme);
-    } catch {
-        // Theme still changes for the current page if storage is unavailable.
-    }
-};
-const preferredTheme = () => {
-    const saved = storedTheme();
-    if (saved === 'dark' || saved === 'light') return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
-const applyTheme = (theme) => {
-    const nextTheme = theme === 'dark' ? 'dark' : 'light';
-    document.documentElement.dataset.theme = nextTheme;
-    document.documentElement.style.colorScheme = nextTheme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', nextTheme === 'dark' ? '#07140f' : '#157144');
-    document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
-        const dark = nextTheme === 'dark';
-        button.setAttribute('aria-label', dark ? 'Gunakan mode terang' : 'Gunakan mode gelap');
-        button.setAttribute('title', dark ? 'Mode terang' : 'Mode gelap');
-        button.innerHTML = dark ? themeIcons.dark : themeIcons.light;
-    });
-};
-applyTheme(preferredTheme());
 const digitsOnly = (value) => String(value ?? '').replace(/\D/g, '');
 const formatThousands = (value) => {
     const digits = digitsOnly(value).replace(/^0+(?=\d)/, '');
@@ -123,38 +86,6 @@ passwordToggle?.addEventListener('click', () => {
 document.querySelectorAll('.logout-button').forEach((button) => {
     button.addEventListener('click', () => { window.location.href = '/logout'; });
 });
-
-document.querySelectorAll('.topbar').forEach((topbar) => {
-    if (topbar.querySelector('[data-theme-toggle]')) return;
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'icon-button theme-toggle-button';
-    button.dataset.themeToggle = 'true';
-    button.addEventListener('click', () => {
-        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        storeTheme(nextTheme);
-        applyTheme(nextTheme);
-    });
-
-    const notificationButton = topbar.querySelector('.notification-button');
-    topbar.insertBefore(button, notificationButton ?? topbar.querySelector('.logout-button'));
-    applyTheme(document.documentElement.dataset.theme);
-});
-
-if (document.querySelector('.login-page') && !document.querySelector('[data-theme-toggle]')) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'icon-button theme-toggle-button login-theme-toggle';
-    button.dataset.themeToggle = 'true';
-    button.addEventListener('click', () => {
-        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        storeTheme(nextTheme);
-        applyTheme(nextTheme);
-    });
-    document.body.appendChild(button);
-    applyTheme(document.documentElement.dataset.theme);
-}
 
 document.querySelectorAll('[data-indonesian-date]').forEach((input) => {
     input.value = formatDateInput(input.value);
