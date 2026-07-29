@@ -1,0 +1,505 @@
+/* Dark mode theme overrides. Keep imported after modules/global page locks. */
+/* DARK THEME FINAL LOCK: keep this block at the end of the stylesheet. */
+html[data-theme="dark"],
+html[data-theme="dark"] body,
+html[data-theme="dark"] body .app-shell,
+html[data-theme="dark"] body .main-panel,
+html[data-theme="dark"] body main,
+html[data-theme="dark"] body footer {
+    background: #07140f !important;
+    color: #e7f0ea !important;
+}
+
+html[data-theme="dark"] body .topbar,
+html[data-theme="dark"] body .sidebar,
+html[data-theme="dark"] body .sidebar .brand,
+html[data-theme="dark"] body .student-workspace,
+html[data-theme="dark"] body .student-list-filter-card,
+html[data-theme="dark"] body .student-data-card,
+html[data-theme="dark"] body .student-list-table-card,
+html[data-theme="dark"] body .master-card,
+html[data-theme="dark"] body .card,
+html[data-theme="dark"] body .table-wrap,
+html[data-theme="dark"] body .student-fee-card-filter,
+html[data-theme="dark"] body .student-filter-panel,
+html[data-theme="dark"] body .student-reference-filter,
+html[data-theme="dark"] body .payment-transaction-workspace,
+html[data-theme="dark"] body .payment-one-stop-main,
+html[data-theme="dark"] body .payment-one-stop-side,
+html[data-theme="dark"] body .login-card {
+    background: #0b1b14 !important;
+    border-color: #284337 !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body .topbar {
+    background: #0b1b14 !important;
+    border-bottom: 1px solid #284337 !important;
+}
+
+html[data-theme="dark"] body .sidebar {
+    background: #07140f !important;
+    border-right: 1px solid #284337 !important;
+}
+
+html[data-theme="dark"] body .sidebar-overlay {
+    background: rgba(0, 0, 0, .56) !important;
+}
+
+html[data-theme="dark"] body h1,
+html[data-theme="dark"] body h2,
+html[data-theme="dark"] body h3,
+html[data-theme="dark"] body h4,
+html[data-theme="dark"] body th,
+html[data-theme="dark"] body strong,
+html[data-theme="dark"] body label,
+html[data-theme="dark"] body .student-master-heading h1,
+html[data-theme="dark"] body .student-page .student-master-heading h1,
+html[data-theme="dark"] body .master-hero h1,
+html[data-theme="dark"] body .payment-page-heading h1,
+html[data-theme="dark"] body .brand strong,
+html[data-theme="dark"] body .brand strong span {
+    color: #e7f0ea !important;
+}
+
+html[data-theme="dark"] body p,
+html[data-theme="dark"] body small,
+html[data-theme="dark"] body .student-master-heading p,
+html[data-theme="dark"] body .student-page .student-master-heading p,
+html[data-theme="dark"] body .master-hero p,
+html[data-theme="dark"] body .payment-page-heading p,
+html[data-theme="dark"] body .student-reference-card-count,
+html[data-theme="dark"] body .student-reference-card-count span {
+    color: #b9c9c0 !important;
+}
+
+html[data-theme="dark"] body .nav-item,
+html[data-theme="dark"] body .nav-submenu a,
+html[data-theme="dark"] body .icon-button,
+html[data-theme="dark"] body .student-ghost-actions .icon-button,
+html[data-theme="dark"] body .student-ghost-actions .icon-button .icon {
+    color: #cfe0d6 !important;
+}
+
+html[data-theme="dark"] body .nav-item.active,
+html[data-theme="dark"] body .nav-item:hover,
+html[data-theme="dark"] body .nav-submenu a.active,
+html[data-theme="dark"] body .nav-submenu a:hover {
+    color: #e7f0ea !important;
+    background: #123323 !important;
+}
+
+html[data-theme="dark"] body .theme-toggle-button,
+html[data-theme="dark"] body .notification-button,
+html[data-theme="dark"] body .logout-button,
+html[data-theme="dark"] body .menu-toggle,
+html[data-theme="dark"] body .active-year-pill,
+html[data-theme="dark"] body .login-theme-toggle {
+    color: #a7f3c4 !important;
+    background: #0f241a !important;
+    border-color: #335247 !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body .active-year-pill small,
+html[data-theme="dark"] body .active-year-pill strong {
+    color: #cfe0d6 !important;
+}
+
+html[data-theme="dark"] body input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+html[data-theme="dark"] body select,
+html[data-theme="dark"] body textarea,
+html[data-theme="dark"] body .student-fee-filter-search,
+html[data-theme="dark"] body .student-fee-filter-search input,
+html[data-theme="dark"] body .login-input {
+    color: #e7f0ea !important;
+    background: #0f241a !important;
+    border-color: #335247 !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body input::placeholder,
+html[data-theme="dark"] body textarea::placeholder {
+    color: #8ea199 !important;
+}
+
+html[data-theme="dark"] body input:focus,
+html[data-theme="dark"] body select:focus,
+html[data-theme="dark"] body textarea:focus {
+    border-color: #57c785 !important;
+    box-shadow: 0 0 0 3px rgba(87, 199, 133, .16) !important;
+    outline: 0 !important;
+}
+
+html[data-theme="dark"] body table,
+html[data-theme="dark"] body .data-table,
+html[data-theme="dark"] body .student-flat-table,
+html[data-theme="dark"] body .payment-transaction-table {
+    background: #0b1b14 !important;
+    color: #e7f0ea !important;
+}
+
+html[data-theme="dark"] body table thead th,
+html[data-theme="dark"] body .data-table thead th,
+html[data-theme="dark"] body .student-flat-table thead th,
+html[data-theme="dark"] body .payment-transaction-table thead th {
+    color: #e7f0ea !important;
+    background: #102419 !important;
+    border-color: #284337 !important;
+}
+
+html[data-theme="dark"] body table tbody td,
+html[data-theme="dark"] body table tfoot td,
+html[data-theme="dark"] body .data-table tbody td,
+html[data-theme="dark"] body .data-table tfoot td,
+html[data-theme="dark"] body .student-flat-table tbody td,
+html[data-theme="dark"] body .student-flat-table tfoot td,
+html[data-theme="dark"] body .payment-transaction-table tbody td,
+html[data-theme="dark"] body .payment-transaction-table tfoot td {
+    color: #dbe8e1 !important;
+    background: #0b1b14 !important;
+    border-color: #284337 !important;
+}
+
+html[data-theme="dark"] body table tbody tr:hover td,
+html[data-theme="dark"] body .data-table tbody tr:hover td,
+html[data-theme="dark"] body .student-flat-table tbody tr:hover td,
+html[data-theme="dark"] body .payment-transaction-table tbody tr:hover td {
+    background: #10281d !important;
+}
+
+html[data-theme="dark"] body .student-fee-card-search-button,
+html[data-theme="dark"] body .fee-type-card-search-button,
+html[data-theme="dark"] body .student-search-button,
+html[data-theme="dark"] body .button-primary,
+html[data-theme="dark"] body .login-submit {
+    color: #ffffff !important;
+    background: #00693d !important;
+    border-color: #00693d !important;
+}
+
+html[data-theme="dark"] body .student-fee-card-reset-button,
+html[data-theme="dark"] body .fee-type-card-reset-button,
+html[data-theme="dark"] body .student-filter-reset,
+html[data-theme="dark"] body .button-secondary,
+html[data-theme="dark"] body .login-access-reset {
+    color: #dbe8e1 !important;
+    background: #0f241a !important;
+    border-color: #335247 !important;
+}
+
+/* DARK THEME OVERRIDE V2: higher specificity for page-level rules that use !important. */
+html[data-theme="dark"] {
+    color-scheme: dark !important;
+    --mawa-dark-canvas: #07140f;
+    --mawa-dark-panel: #0b1b14;
+    --mawa-dark-panel-soft: #0f241a;
+    --mawa-dark-header: #102419;
+    --mawa-dark-hover: #10281d;
+    --mawa-dark-border: #284337;
+    --mawa-dark-field-border: #335247;
+    --mawa-dark-text: #e7f0ea;
+    --mawa-dark-muted: #b9c9c0;
+    --mawa-dark-placeholder: #8ea199;
+    --mawa-dark-accent: #57c785;
+    --mawa-dark-primary: #00693d;
+    --mawa-dark-primary-hover: #0d7c4a;
+}
+
+html[data-theme="dark"],
+html[data-theme="dark"] body,
+html[data-theme="dark"] body.login-body,
+html[data-theme="dark"] body .app-shell,
+html[data-theme="dark"] body .app-shell .main-panel,
+html[data-theme="dark"] body .app-shell .main-panel main,
+html[data-theme="dark"] body .app-shell .main-panel footer,
+html[data-theme="dark"] body .login-page {
+    background: var(--mawa-dark-canvas) !important;
+    color: var(--mawa-dark-text) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel .topbar,
+html[data-theme="dark"] body .app-shell > .sidebar,
+html[data-theme="dark"] body .app-shell .sidebar .brand {
+    background: var(--mawa-dark-panel) !important;
+    border-color: var(--mawa-dark-border) !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body .app-shell > .sidebar {
+    border-right: 1px solid var(--mawa-dark-border) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel .topbar {
+    border-bottom: 1px solid var(--mawa-dark-border) !important;
+}
+
+html[data-theme="dark"] body .brand strong,
+html[data-theme="dark"] body .brand strong span,
+html[data-theme="dark"] body .brand small,
+html[data-theme="dark"] body .login-brand h1,
+html[data-theme="dark"] body .login-brand h1 span,
+html[data-theme="dark"] body .app-shell .main-panel main h1,
+html[data-theme="dark"] body .app-shell .main-panel main h2,
+html[data-theme="dark"] body .app-shell .main-panel main h3,
+html[data-theme="dark"] body .app-shell .main-panel main h4,
+html[data-theme="dark"] body .app-shell .main-panel main th,
+html[data-theme="dark"] body .app-shell .main-panel main label,
+html[data-theme="dark"] body .app-shell .main-panel main strong,
+html[data-theme="dark"] body .app-shell .main-panel main .student-master-heading h1,
+html[data-theme="dark"] body .app-shell .main-panel main .master-hero h1,
+html[data-theme="dark"] body .app-shell .main-panel main .payment-page-heading h1 {
+    color: var(--mawa-dark-text) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main p,
+html[data-theme="dark"] body .app-shell .main-panel main small,
+html[data-theme="dark"] body .app-shell .main-panel main .student-master-heading p,
+html[data-theme="dark"] body .app-shell .main-panel main .master-hero p,
+html[data-theme="dark"] body .app-shell .main-panel main .payment-page-heading p,
+html[data-theme="dark"] body .app-shell .main-panel main .student-reference-card-count,
+html[data-theme="dark"] body .app-shell .main-panel main .list-toolbar,
+html[data-theme="dark"] body .app-shell .main-panel main .list-toolbar span {
+    color: var(--mawa-dark-muted) !important;
+}
+
+html[data-theme="dark"] body .app-shell .nav-item,
+html[data-theme="dark"] body .app-shell .nav-submenu a,
+html[data-theme="dark"] body .app-shell .nav-item .icon,
+html[data-theme="dark"] body .app-shell .nav-submenu a .icon,
+html[data-theme="dark"] body .app-shell .nav-chevron {
+    color: #cfe0d6 !important;
+    stroke: currentColor !important;
+}
+
+html[data-theme="dark"] body .app-shell .nav-item:hover,
+html[data-theme="dark"] body .app-shell .nav-item.active,
+html[data-theme="dark"] body .app-shell .nav-submenu a:hover,
+html[data-theme="dark"] body .app-shell .nav-submenu a.active {
+    color: var(--mawa-dark-text) !important;
+    background: #123323 !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel .topbar .icon-button,
+html[data-theme="dark"] body .app-shell .main-panel .topbar .theme-toggle-button,
+html[data-theme="dark"] body .app-shell .main-panel .topbar .notification-button,
+html[data-theme="dark"] body .app-shell .main-panel .topbar .logout-button,
+html[data-theme="dark"] body .app-shell .main-panel .topbar .menu-toggle,
+html[data-theme="dark"] body .app-shell .main-panel .topbar .active-year-pill,
+html[data-theme="dark"] body .login-theme-toggle {
+    color: #a7f3c4 !important;
+    background: var(--mawa-dark-panel-soft) !important;
+    border-color: var(--mawa-dark-field-border) !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel .topbar .active-year-pill small,
+html[data-theme="dark"] body .app-shell .main-panel .topbar .active-year-pill strong {
+    color: #cfe0d6 !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .student-list-filter-card,html[data-theme="dark"] body .app-shell .main-panel main .student-data-card,html[data-theme="dark"] body .app-shell .main-panel main .student-list-table-card,html[data-theme="dark"] body .app-shell .main-panel main .master-create-card,html[data-theme="dark"] body .app-shell .main-panel main .master-card,html[data-theme="dark"] body .app-shell .main-panel main .card,html[data-theme="dark"] body .app-shell .main-panel main .table-wrap,html[data-theme="dark"] body .app-shell .main-panel main .student-fee-card-filter,html[data-theme="dark"] body .app-shell .main-panel main .student-filter-panel,html[data-theme="dark"] body .app-shell .main-panel main .student-reference-filter,html[data-theme="dark"] body .app-shell .main-panel main .identity-cleanup-canvas,html[data-theme="dark"] body .app-shell .main-panel main .dashboard-card,html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-workspace,html[data-theme="dark"] body .app-shell .main-panel main .payment-one-stop-main,html[data-theme="dark"] body .app-shell .main-panel main .payment-one-stop-side,html[data-theme="dark"] body .app-shell .main-panel main .payment-registration-summary,html[data-theme="dark"] body .app-shell .main-panel main .payment-form-body,html[data-theme="dark"] body .app-shell .main-panel main .fee-type-card,html[data-theme="dark"] body .app-shell .main-panel main .setting-card,html[data-theme="dark"] body .login-card,html[data-theme="dark"] body .login-role-card,html[data-theme="dark"] body .login-selected-role-box {
+    background: var(--mawa-dark-panel) !important;
+    border-color: var(--mawa-dark-border) !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body .login-role-card:hover,
+html[data-theme="dark"] body .login-type-radio:checked + .login-type-radio + .login-type-radio + .login-role-grid .login-role-card,
+html[data-theme="dark"] body .login-role-icon,
+html[data-theme="dark"] body .app-shell .main-panel main .metric-icon,
+html[data-theme="dark"] body .app-shell .main-panel main .badge,
+html[data-theme="dark"] body .app-shell .main-panel main .chip {
+    background: #143d2a !important;
+    color: #a7f3c4 !important;
+    border-color: var(--mawa-dark-field-border) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+html[data-theme="dark"] body .app-shell .main-panel main select,
+html[data-theme="dark"] body .app-shell .main-panel main textarea,
+html[data-theme="dark"] body .app-shell .main-panel main output,
+html[data-theme="dark"] body .app-shell .main-panel main .student-fee-filter-search,
+html[data-theme="dark"] body .app-shell .main-panel main .student-fee-filter-search input,
+html[data-theme="dark"] body .login-input,
+html[data-theme="dark"] body .login-input input,
+html[data-theme="dark"] body .login-input select {
+    color: var(--mawa-dark-text) !important;
+    background: var(--mawa-dark-panel-soft) !important;
+    border-color: var(--mawa-dark-field-border) !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main input::placeholder,
+html[data-theme="dark"] body .app-shell .main-panel main textarea::placeholder,
+html[data-theme="dark"] body .login-input input::placeholder {
+    color: var(--mawa-dark-placeholder) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main input:focus,
+html[data-theme="dark"] body .app-shell .main-panel main select:focus,
+html[data-theme="dark"] body .app-shell .main-panel main textarea:focus,
+html[data-theme="dark"] body .login-input:focus-within {
+    border-color: var(--mawa-dark-accent) !important;
+    box-shadow: 0 0 0 3px rgba(87, 199, 133, .16) !important;
+    outline: 0 !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main table,
+html[data-theme="dark"] body .app-shell .main-panel main .data-table,
+html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table,
+html[data-theme="dark"] body .app-shell .main-panel main .student-master-table,
+html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-table {
+    background: var(--mawa-dark-panel) !important;
+    color: var(--mawa-dark-text) !important;
+    border-color: var(--mawa-dark-border) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main table thead th,
+html[data-theme="dark"] body .app-shell .main-panel main .data-table thead th,
+html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table thead th,
+html[data-theme="dark"] body .app-shell .main-panel main .student-master-table thead th,
+html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-table thead th {
+    color: var(--mawa-dark-text) !important;
+    background: var(--mawa-dark-header) !important;
+    border-color: var(--mawa-dark-border) !important;
+    border-bottom-color: var(--mawa-dark-border) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main table tbody td,
+html[data-theme="dark"] body .app-shell .main-panel main table tfoot td,
+html[data-theme="dark"] body .app-shell .main-panel main .data-table tbody td,
+html[data-theme="dark"] body .app-shell .main-panel main .data-table tfoot td,
+html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table tbody td,
+html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table tfoot td,
+html[data-theme="dark"] body .app-shell .main-panel main .student-master-table tbody td,
+html[data-theme="dark"] body .app-shell .main-panel main .student-master-table tfoot td,
+html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-table tbody td,
+html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-table tfoot td {
+    color: #dbe8e1 !important;
+    background: var(--mawa-dark-panel) !important;
+    border-color: var(--mawa-dark-border) !important;
+    border-bottom-color: var(--mawa-dark-border) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main table tbody tr:hover td,
+html[data-theme="dark"] body .app-shell .main-panel main .data-table tbody tr:hover td,
+html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table tbody tr:hover td,
+html[data-theme="dark"] body .app-shell .main-panel main .student-master-table tbody tr:hover td,
+html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-table tbody tr:hover td {
+    background: var(--mawa-dark-hover) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .student-name,
+html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table td strong,
+html[data-theme="dark"] body .app-shell .main-panel main .student-master-table td strong,
+html[data-theme="dark"] body .app-shell .main-panel main .payment-student-name,
+html[data-theme="dark"] body .app-shell .main-panel main .money,
+html[data-theme="dark"] body .app-shell .main-panel main .amount,
+html[data-theme="dark"] body .app-shell .main-panel main .currency,
+html[data-theme="dark"] body .app-shell .main-panel main [class*="total"] strong {
+    color: #9ff0bd !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .button-primary,
+html[data-theme="dark"] body .app-shell .main-panel main .student-search-button,
+html[data-theme="dark"] body .app-shell .main-panel main .student-fee-card-search-button,
+html[data-theme="dark"] body .app-shell .main-panel main .fee-type-card-search-button,
+html[data-theme="dark"] body .app-shell .main-panel main .payment-submit-button,
+html[data-theme="dark"] body .login-submit {
+    color: #ffffff !important;
+    background: var(--mawa-dark-primary) !important;
+    border-color: var(--mawa-dark-primary) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .button-primary:hover,
+html[data-theme="dark"] body .app-shell .main-panel main .student-search-button:hover,
+html[data-theme="dark"] body .app-shell .main-panel main .student-fee-card-search-button:hover,
+html[data-theme="dark"] body .app-shell .main-panel main .fee-type-card-search-button:hover,
+html[data-theme="dark"] body .app-shell .main-panel main .payment-submit-button:hover,
+html[data-theme="dark"] body .login-submit:hover {
+    background: var(--mawa-dark-primary-hover) !important;
+    border-color: var(--mawa-dark-primary-hover) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .button-secondary,
+html[data-theme="dark"] body .app-shell .main-panel main .student-filter-reset,
+html[data-theme="dark"] body .app-shell .main-panel main .student-fee-card-reset-button,
+html[data-theme="dark"] body .app-shell .main-panel main .fee-type-card-reset-button,
+html[data-theme="dark"] body .login-access-reset {
+    color: #dbe8e1 !important;
+    background: var(--mawa-dark-panel-soft) !important;
+    border-color: var(--mawa-dark-field-border) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .icon-button,
+html[data-theme="dark"] body .app-shell .main-panel main .student-ghost-actions .icon-button {
+    color: #cfe0d6 !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .icon-button:hover,
+html[data-theme="dark"] body .app-shell .main-panel main .student-ghost-actions .icon-button:hover {
+    color: #a7f3c4 !important;
+    background: #123323 !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .delete-button,
+html[data-theme="dark"] body .app-shell .main-panel main .danger,
+html[data-theme="dark"] body .app-shell .main-panel main .text-danger {
+    color: #ff9aa2 !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .alert,
+html[data-theme="dark"] body .app-shell .main-panel main .empty-state {
+    background: var(--mawa-dark-panel-soft) !important;
+    color: var(--mawa-dark-muted) !important;
+    border-color: var(--mawa-dark-field-border) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .pagination,
+html[data-theme="dark"] body .app-shell .main-panel main .pagination a,
+html[data-theme="dark"] body .app-shell .main-panel main .pagination span {
+    background: var(--mawa-dark-panel) !important;
+    color: var(--mawa-dark-muted) !important;
+    border-color: var(--mawa-dark-border) !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .chart-bar,
+html[data-theme="dark"] body .app-shell .main-panel main [class*="bar-fill"] {
+    background: #188556 !important;
+    border-color: #188556 !important;
+}
+
+html[data-theme="dark"] body .app-shell .main-panel main .chart-grid-line,
+html[data-theme="dark"] body .app-shell .main-panel main [class*="chart-grid"],
+html[data-theme="dark"] body .app-shell .main-panel main [class*="axis"] {
+    border-color: rgba(185, 201, 192, .22) !important;
+    color: var(--mawa-dark-muted) !important;
+}
+
+html[data-theme="dark"] body ::selection {
+    color: #06140e !important;
+    background: #9ff0bd !important;
+}
+
+html[data-theme="dark"] body ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+html[data-theme="dark"] body ::-webkit-scrollbar-track {
+    background: #07140f;
+}
+
+html[data-theme="dark"] body ::-webkit-scrollbar-thumb {
+    background: #335247;
+    border: 2px solid #07140f;
+    border-radius: 999px;
+}
+
+html[data-theme="dark"] body ::-webkit-scrollbar-thumb:hover {
+    background: #477064;
+}
