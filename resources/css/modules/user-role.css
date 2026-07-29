@@ -1,0 +1,1837 @@
+/* Data User dan Data Role CSS module. */
+/* DATA ROLE PAGE FINAL LOCK */
+html:has(.data-role-page),
+html:has(.data-role-page) body,
+html body:has(.data-role-page),
+html body:has(.data-role-page) .app-shell,
+html body:has(.data-role-page) .main-panel,
+html body .data-role-page {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+html body:has(.data-role-page) .data-role-page::before,
+html body:has(.data-role-page) .data-role-page::after,
+html body:has(.data-role-page) .main-panel::before,
+html body:has(.data-role-page) .main-panel::after {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+html body .data-role-page,
+html body .data-role-page * {
+    letter-spacing: 0 !important;
+}
+
+html body .data-role-page * {
+    font-size: 14px !important;
+}
+
+html body .data-role-page .master-flat-workspace {
+    margin:0 0 20px !important;
+    padding:0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .data-role-page .student-flat-header {
+    align-items: flex-end !important;
+    gap:16px !important;
+    margin:0 0 16px !important;
+    padding:0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .data-role-page .master-sample-heading {
+    display: grid !important;
+    gap:4px !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+html body .data-role-page .master-sample-heading h1 {
+    margin:0 !important;
+    color: #111c2c !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+}
+
+html body .data-role-page .master-sample-heading p {
+    margin:0 !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+}
+
+html body .data-role-page .student-title-actions > a.button.student-add-button.master-primary-add-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap:10px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    margin:0 !important;
+    padding:0 20px !important;
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    transform: translateY(0) !important;
+    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
+}
+
+html body .data-role-page .student-title-actions > a.button.student-add-button.master-primary-add-button svg,
+html body .data-role-page .student-title-actions > a.button.student-add-button.master-primary-add-button .icon {
+    width: 20px !important;
+    height: 20px !important;
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+html body .data-role-page .student-title-actions > a.button.student-add-button.master-primary-add-button:hover {
+    color: #ffffff !important;
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
+    transform: translateY(-2px) !important;
+}
+
+html body .app-shell .main-panel .data-role-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap:10px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    margin:0 !important;
+    padding:0 20px !important;
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    transform: translateY(0) !important;
+    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
+}
+
+html body .app-shell .main-panel .data-role-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button:hover {
+    color: #ffffff !important;
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
+    transform: translateY(-2px) !important;
+}
+
+html body .app-shell .main-panel .data-role-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button svg,
+html body .app-shell .main-panel .data-role-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button .icon {
+    width: 20px !important;
+    height: 20px !important;
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+html body .data-role-page .master-role-filter-panel {
+    display: grid !important;
+    grid-template-columns: minmax(260px, 420px) max-content !important;
+    align-items: end !important;
+    gap:12px !important;
+    width: 100% !important;
+    margin:0 !important;
+    padding:16px !important;
+    background: #f9fafb !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .data-role-page .data-role-filter-search {
+    position: relative !important;
+    display: block !important;
+    min-width: 0 !important;
+    margin:0 !important;
+}
+
+html body .data-role-page .data-role-filter-search .icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #707971 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body .data-role-page .master-role-filter-panel input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:0 12px 0 32px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .data-role-page .master-role-filter-panel input:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .data-role-page .master-role-filter-panel .student-filter-actions {
+    display: flex !important;
+    align-items: end !important;
+    gap:10px !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+html body .data-role-page .master-role-filter-panel .student-search-button,
+html body .data-role-page .master-role-filter-panel .student-filter-reset {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:0 14px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+html body .data-role-page .master-role-filter-panel .student-search-button {
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+}
+
+html body .data-role-page .master-role-filter-panel .student-search-button:hover {
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+}
+
+html body .data-role-page .master-role-filter-panel .student-filter-reset {
+    color: #404942 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+html body .data-role-page .data-role-card-filter {
+    display: grid !important;
+    grid-template-columns: minmax(260px, 420px) max-content !important;
+    align-items: end !important;
+    gap:12px !important;
+    width: 100% !important;
+    margin:0 !important;
+    padding:16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .data-role-page .data-role-card-filter .data-role-filter-search {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin:0 !important;
+}
+
+html body .data-role-page .data-role-card-filter .data-role-filter-search .icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #404942 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body .data-role-page .data-role-card-filter .data-role-filter-search input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:0 12px 0 32px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .data-role-page .data-role-card-filter .data-role-filter-search input:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .data-role-page .data-role-card-filter-actions {
+    display: flex !important;
+    align-items: end !important;
+    gap:10px !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+    justify-content: flex-start !important;
+}
+
+html body .data-role-page .data-role-card-search-button,
+html body .data-role-page .data-role-card-reset-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:0 14px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+html body .data-role-page .data-role-card-search-button {
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+}
+
+html body .data-role-page .data-role-card-search-button:hover {
+    color: #ffffff !important;
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+}
+
+html body .data-role-page .data-role-card-reset-button {
+    color: #404942 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+html body .data-role-page .data-role-card-count {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap:14px !important;
+    flex-wrap: wrap !important;
+    margin:-4px 0 0 !important;
+    padding:0 !important;
+    color: #707971 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0 !important;
+    text-align: left !important;
+}
+
+html body .data-role-page .data-role-card-length,
+html body .data-role-page .data-role-card-length label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap:8px !important;
+    margin:0 !important;
+    padding:0 !important;
+    color: #707971 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .data-role-page .data-role-card-length select {
+    box-sizing: border-box !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    margin:0 !important;
+    padding:0 10px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 34px !important;
+}
+
+html body .data-role-page .data-role-card-length select:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .data-role-page .data-role-card-count > span {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .data-role-card-section {
+    display: grid !important;
+    gap:16px !important;
+    margin:0 !important;
+    padding:0 !important;
+    background: #ffffff !important;
+}
+
+html body .data-role-card-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)) !important;
+    gap:16px !important;
+}
+
+html body .data-role-card-item {
+    display: grid !important;
+    gap:14px !important;
+    min-height: 212px !important;
+    padding:16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
+    transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease !important;
+}
+
+html body .data-role-card-item:hover {
+    border-color: #707971 !important;
+    box-shadow: 0 8px 18px rgba(17, 28, 44, .08) !important;
+    transform: translateY(-1px) !important;
+}
+
+html body .data-role-card-item.is-inactive {
+    opacity: .76 !important;
+}
+
+html body .data-role-card-top {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap:14px !important;
+}
+
+html body .data-role-card-title {
+    display: grid !important;
+    gap:4px !important;
+    min-width: 0 !important;
+}
+
+html body .data-role-card-heading {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap:8px !important;
+    min-width: 0 !important;
+}
+
+html body .data-role-card-heading strong {
+    color: #111c2c !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-role-code {
+    display: inline-flex !important;
+    align-items: center !important;
+    min-height: 26px !important;
+    padding:4px 10px !important;
+    color: #004528 !important;
+    background: #edf7f0 !important;
+    border: 1px solid rgba(0, 69, 40, .18) !important;
+    border-radius: 999px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    overflow-wrap: anywhere !important;
+}
+
+html body .data-role-card-title small {
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .data-role-card-actions .table-actions {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap:6px !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+html body .data-role-card-actions .table-actions form {
+    display: inline-flex !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+html body .data-role-card-actions .icon-button {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    margin:0 !important;
+    padding:0 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+html body .data-role-card-actions .edit-button {
+    color: #004528 !important;
+}
+
+html body .data-role-card-actions .delete-button {
+    color: #ba1a1a !important;
+    border-color: #ffdad6 !important;
+}
+
+html body .data-role-card-actions .icon-button:hover {
+    background: #fbfdf8 !important;
+}
+
+html body .data-role-card-actions .delete-button:hover {
+    background: #ffdad6 !important;
+}
+
+html body .data-role-card-actions .icon-button .icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+html body .data-role-card-access {
+    display: grid !important;
+    gap:4px !important;
+    min-width: 0 !important;
+}
+
+html body .data-role-access-count {
+    display: inline-flex !important;
+    align-items: center !important;
+    width: fit-content !important;
+    min-height: 24px !important;
+    padding:4px 12px !important;
+    color: #606a23 !important;
+    background: #deea95 !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+html body .data-role-card-access > span:not(.data-role-access-count) {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-role-card-access p {
+    margin:0 !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+    overflow-wrap: anywhere !important;
+}
+
+html body .data-role-card-footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap:14px !important;
+    padding-top:14px !important;
+    border-top: 1px solid #e5e7eb !important;
+}
+
+html body .data-role-card-footer div {
+    display: grid !important;
+    gap:4px !important;
+    min-width: 0 !important;
+}
+
+html body .data-role-card-footer div > span {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-role-card-footer strong {
+    color: #111c2c !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+}
+
+html body .data-role-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: fit-content !important;
+    min-height: 28px !important;
+    padding:4px 12px !important;
+    border-radius: 999px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+html body .data-role-status.is-active {
+    color: #0d5f36 !important;
+    background: #e9f8ef !important;
+}
+
+html body .data-role-status.is-inactive {
+    color: #404942 !important;
+    background: #fbfdf8 !important;
+}
+
+html body .data-role-card-empty {
+    display: grid !important;
+    place-items: center !important;
+    gap:6px !important;
+    min-height: 160px !important;
+    padding:24px !important;
+    color: #404942 !important;
+    background: #ffffff !important;
+    border: 1px dashed #d1d5db !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+}
+
+html body .data-role-card-empty strong {
+    color: #111c2c !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+}
+
+html body .data-role-card-empty span {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+html body .data-role-card-section .pagination-wrap {
+    margin-top:0 !important;
+    padding-top:0 !important;
+    border-top: 0 !important;
+    box-shadow: none !important;
+}
+
+@media (width <= 900px) {
+    html body .data-role-page .master-role-filter-panel {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .data-role-page .data-role-card-filter {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .data-role-page .data-role-card-filter-actions {
+        grid-column: 1 !important;
+        grid-row: auto !important;
+        justify-content: flex-start !important;
+    }
+
+    html body .data-role-page .master-role-filter-panel .student-filter-actions {
+        justify-content: flex-end !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .data-role-page .student-flat-header {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+
+    html body .data-role-page .master-role-filter-panel .student-filter-actions,
+    html body .data-role-page .master-role-filter-panel .student-search-button,
+    html body .data-role-page .master-role-filter-panel .student-filter-reset,
+    html body .data-role-page .data-role-card-filter-actions,
+    html body .data-role-page .data-role-card-search-button,
+    html body .data-role-page .data-role-card-reset-button {
+        width: 100% !important;
+    }
+
+    html body .data-role-card-list {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .data-role-card-top,
+    html body .data-role-card-footer {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+    }
+}
+
+/* TAMBAH DATA ROLE FINAL: samakan dengan standar menu master. */
+html:has(.data-role-create-page),
+html:has(.data-role-create-page) body,
+html body:has(.data-role-create-page),
+html body:has(.data-role-create-page) .app-shell,
+html body:has(.data-role-create-page) .main-panel,
+html body:has(.data-role-create-page) .data-role-create-page,
+html body:has(.data-role-create-page) .master-hero,
+html body:has(.data-role-create-page) .master-create-card,
+html body:has(.data-role-create-page) .master-form {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+html body:has(.data-role-create-page) .data-role-create-page::before,
+html body:has(.data-role-create-page) .data-role-create-page::after,
+html body:has(.data-role-create-page) .main-panel::before,
+html body:has(.data-role-create-page) .main-panel::after {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+html body .data-role-create-page,
+html body .data-role-create-page * {
+    letter-spacing: 0 !important;
+}
+
+html body .data-role-create-page * {
+    font-size: 14px !important;
+}
+
+html body .data-role-create-page .master-hero {
+    margin:0 0 20px !important;
+    padding:0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .data-role-create-page .master-hero > div {
+    display: grid !important;
+    gap:4px !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+html body .data-role-create-page .master-hero h1 {
+    margin:0 !important;
+    color: #111c2c !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+}
+
+html body .data-role-create-page .master-hero p {
+    margin:0 !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+}
+
+html body .data-role-create-page .master-create-card {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+}
+
+html body .data-role-create-page .master-create-heading {
+    display: none !important;
+}
+
+html body .data-role-create-page .master-create-form {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap:16px !important;
+    width: 100% !important;
+    margin:0 !important;
+    padding:20px 24px 0 !important;
+    background: #ffffff !important;
+}
+
+html body .data-role-create-page .master-create-form > label,
+html body .data-role-create-page .role-permission-field,
+html body .data-role-create-page .switch-field {
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-role-create-page .master-create-form > label {
+    display: grid !important;
+    gap:6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin:0 !important;
+}
+
+html body .data-role-create-page .master-create-form > label.span-2,
+html body .data-role-create-page .role-permission-field,
+html body .data-role-create-page .master-create-form > .form-actions {
+    grid-column: 1 / -1 !important;
+}
+
+html body .data-role-create-page .master-create-form input:not([type=checkbox]) {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:0 12px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .data-role-create-page .master-create-form input:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .data-role-create-page .role-permission-field {
+    display: grid !important;
+    gap:8px !important;
+    margin:0 !important;
+}
+
+html body .data-role-create-page .role-permission-field > span {
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-role-create-page .role-permission-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap:10px !important;
+}
+
+html body .data-role-create-page .role-permission-grid label {
+    display: flex !important;
+    align-items: center !important;
+    gap:8px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:10px 12px !important;
+    color: #334155 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+html body .data-role-create-page .role-permission-grid input {
+    width: 16px !important;
+    min-width: 16px !important;
+    height: 16px !important;
+    min-height: 16px !important;
+    margin:0 !important;
+}
+
+html body .data-role-create-page .master-create-form > .form-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap:12px !important;
+    margin:0 -24px !important;
+    padding:20px 24px 24px !important;
+    background: #ffffff !important;
+    border-top: 0 !important;
+}
+
+html body .data-role-create-page .master-create-form > .form-actions .button {
+    height: 40px !important;
+    min-height: 40px !important;
+    padding:0 16px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+@media (width <= 900px) {
+    html body .data-role-create-page .role-permission-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .data-role-create-page .master-hero,
+    html body .data-role-create-page .master-create-card {
+        max-width: none !important;
+    }
+
+    html body .data-role-create-page .master-create-form,
+    html body .data-role-create-page .role-permission-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .data-role-create-page .master-create-form {
+        padding:16px 16px 0 !important;
+    }
+
+    html body .data-role-create-page .master-create-form > .form-actions {
+        flex-direction: column !important;
+        margin:0 -18px !important;
+        padding:16px !important;
+    }
+
+    html body .data-role-create-page .master-create-form > .form-actions .button {
+        width: 100% !important;
+    }
+}
+
+/* DATA USER PAGE FINAL LOCK */
+html:has(.data-user-page),
+html:has(.data-user-page) body,
+html body:has(.data-user-page),
+html body:has(.data-user-page) .app-shell,
+html body:has(.data-user-page) .main-panel,
+html body .data-user-page {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+html body:has(.data-user-page) .data-user-page::before,
+html body:has(.data-user-page) .data-user-page::after,
+html body:has(.data-user-page) .main-panel::before,
+html body:has(.data-user-page) .main-panel::after {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+html body .data-user-page,
+html body .data-user-page * {
+    letter-spacing: 0 !important;
+}
+
+html body .data-user-page * {
+    font-size: 14px !important;
+}
+
+html body .data-user-page .master-flat-workspace {
+    margin:0 0 20px !important;
+    padding:0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .data-user-page .student-flat-header {
+    align-items: flex-end !important;
+    gap:16px !important;
+    margin:0 0 16px !important;
+    padding:0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .data-user-page .master-sample-heading {
+    display: grid !important;
+    gap:4px !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+html body .data-user-page .master-sample-heading h1 {
+    margin:0 !important;
+    color: #111c2c !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+}
+
+html body .data-user-page .master-sample-heading p {
+    margin:0 !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+}
+
+html body .data-user-page .student-title-actions > a.button.student-add-button.master-primary-add-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap:10px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    margin:0 !important;
+    padding:0 20px !important;
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    transform: translateY(0) !important;
+    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
+}
+
+html body .data-user-page .student-title-actions > a.button.student-add-button.master-primary-add-button svg,
+html body .data-user-page .student-title-actions > a.button.student-add-button.master-primary-add-button .icon {
+    width: 20px !important;
+    height: 20px !important;
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+html body .data-user-page .student-title-actions > a.button.student-add-button.master-primary-add-button:hover {
+    color: #ffffff !important;
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
+    transform: translateY(-2px) !important;
+}
+
+html body .app-shell .main-panel .data-user-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap:10px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    margin:0 !important;
+    padding:0 20px !important;
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    transform: translateY(0) !important;
+    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
+}
+
+html body .app-shell .main-panel .data-user-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button:hover {
+    color: #ffffff !important;
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
+    transform: translateY(-2px) !important;
+}
+
+html body .app-shell .main-panel .data-user-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button svg,
+html body .app-shell .main-panel .data-user-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button .icon {
+    width: 20px !important;
+    height: 20px !important;
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+}
+
+html body .data-user-page .master-user-filter-panel {
+    display: grid !important;
+    grid-template-columns: minmax(260px, 420px) 180px max-content !important;
+    align-items: end !important;
+    gap:12px !important;
+    width: 100% !important;
+    margin:0 !important;
+    padding:16px !important;
+    background: #f9fafb !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .data-user-page .master-user-filter-panel label {
+    display: grid !important;
+    gap:6px !important;
+    min-width: 0 !important;
+    margin:0 !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-user-page .master-user-filter-panel label > span {
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-user-page .data-user-filter-search {
+    position: relative !important;
+    display: block !important;
+}
+
+html body .data-user-page .data-user-filter-search .icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #707971 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body .data-user-page .master-user-filter-panel input,
+html body .data-user-page .master-user-filter-panel select {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:0 12px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .data-user-page .data-user-filter-search input {
+    padding-left:32px !important;
+}
+
+html body .data-user-page .master-user-filter-panel input:focus,
+html body .data-user-page .master-user-filter-panel select:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .data-user-page .master-user-filter-panel .student-filter-actions {
+    display: flex !important;
+    align-items: end !important;
+    gap:10px !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+html body .data-user-page .master-user-filter-panel .student-search-button,
+html body .data-user-page .master-user-filter-panel .student-filter-reset {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:0 14px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+html body .data-user-page .master-user-filter-panel .student-search-button {
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+}
+
+html body .data-user-page .master-user-filter-panel .student-search-button:hover {
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+}
+
+html body .data-user-page .master-user-filter-panel .student-filter-reset {
+    color: #404942 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+html body .data-user-page .data-user-card-filter {
+    display: grid !important;
+    grid-template-columns: minmax(260px, 420px) 180px max-content !important;
+    align-items: end !important;
+    gap:12px !important;
+    width: 100% !important;
+    margin:0 !important;
+    padding:16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+html body .data-user-page .data-user-card-filter label {
+    display: grid !important;
+    gap:6px !important;
+    min-width: 0 !important;
+    margin:0 !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-user-page .data-user-card-filter label > span {
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-user-page .data-user-card-filter .data-user-filter-search {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+}
+
+html body .data-user-page .data-user-card-filter .data-user-filter-search .icon {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    color: #404942 !important;
+    transform: translateY(-50%) !important;
+    pointer-events: none !important;
+}
+
+html body .data-user-page .data-user-card-filter input,
+html body .data-user-page .data-user-card-filter select {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:0 12px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .data-user-page .data-user-card-filter .data-user-filter-search input {
+    padding-left:32px !important;
+}
+
+html body .data-user-page .data-user-card-filter input:focus,
+html body .data-user-page .data-user-card-filter select:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .data-user-page .data-user-card-filter-actions {
+    display: flex !important;
+    align-items: end !important;
+    gap:10px !important;
+    justify-content: flex-start !important;
+}
+
+html body .data-user-page .data-user-card-search-button,
+html body .data-user-page .data-user-card-reset-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 96px !important;
+    min-width: 96px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:0 14px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+html body .data-user-page .data-user-card-search-button {
+    color: #ffffff !important;
+    background: #004528 !important;
+    border: 1px solid #004528 !important;
+}
+
+html body .data-user-page .data-user-card-search-button:hover {
+    color: #ffffff !important;
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+}
+
+html body .data-user-page .data-user-card-reset-button {
+    color: #404942 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+}
+
+html body .data-user-page .data-user-card-count {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap:14px !important;
+    flex-wrap: wrap !important;
+    margin:-4px 0 0 !important;
+    padding:0 !important;
+    color: #707971 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .data-user-page .data-user-card-length,
+html body .data-user-page .data-user-card-length label {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap:8px !important;
+    margin:0 !important;
+    padding:0 !important;
+    color: #707971 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .data-user-page .data-user-card-length select {
+    box-sizing: border-box !important;
+    width: 78px !important;
+    min-width: 78px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    margin:0 !important;
+    padding:0 10px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 34px !important;
+}
+
+html body .data-user-page .data-user-card-count > span {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .data-user-card-section {
+    display: grid !important;
+    gap:16px !important;
+    margin:0 !important;
+    padding:0 !important;
+    background: #ffffff !important;
+}
+
+html body .data-user-card-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)) !important;
+    gap:16px !important;
+}
+
+html body .data-user-card-item {
+    display: grid !important;
+    gap:14px !important;
+    min-height: 188px !important;
+    padding:16px !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
+    transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease !important;
+}
+
+html body .data-user-card-item:hover {
+    border-color: #707971 !important;
+    box-shadow: 0 8px 18px rgba(17, 28, 44, .08) !important;
+    transform: translateY(-1px) !important;
+}
+
+html body .data-user-card-top {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+    gap:14px !important;
+}
+
+html body .data-user-card-profile {
+    display: flex !important;
+    align-items: center !important;
+    gap:12px !important;
+    min-width: 0 !important;
+}
+
+html body .data-user-avatar {
+    display: inline-grid !important;
+    place-items: center !important;
+    flex: 0 0 48px !important;
+    width: 48px !important;
+    height: 48px !important;
+    color: #ffffff !important;
+    background: #0d5f36 !important;
+    border-radius: 999px !important;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3) !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+html body .data-user-card-profile > span:last-child {
+    display: grid !important;
+    gap:4px !important;
+    min-width: 0 !important;
+}
+
+html body .data-user-card-profile strong {
+    color: #111c2c !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere !important;
+}
+
+html body .data-user-card-profile small {
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere !important;
+}
+
+html body .data-user-role {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: fit-content !important;
+    min-height: 28px !important;
+    padding:4px 12px !important;
+    color: #0d5f36 !important;
+    background: #e9f8ef !important;
+    border: 1px solid rgba(27, 94, 60, .16) !important;
+    border-radius: 999px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+html body .data-user-card-meta {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.4fr) minmax(120px, .6fr) !important;
+    gap:14px !important;
+    min-width: 0 !important;
+}
+
+html body .data-user-card-meta div {
+    display: grid !important;
+    gap:4px !important;
+    min-width: 0 !important;
+}
+
+html body .data-user-card-meta span {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-user-card-meta strong {
+    color: #111c2c !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    overflow-wrap: anywhere !important;
+}
+
+html body .data-user-card-footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap:14px !important;
+    padding-top:14px !important;
+    border-top: 1px solid #e5e7eb !important;
+}
+
+html body .data-user-card-footer > span {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .data-user-card-actions .table-actions {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap:6px !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+html body .data-user-card-actions .table-actions form {
+    display: inline-flex !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+html body .data-user-card-actions .icon-button {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    margin:0 !important;
+    padding:0 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+html body .data-user-card-actions .edit-button {
+    color: #004528 !important;
+}
+
+html body .data-user-card-actions .delete-button {
+    color: #ba1a1a !important;
+    border-color: #ffdad6 !important;
+}
+
+html body .data-user-card-actions .icon-button:hover {
+    background: #fbfdf8 !important;
+}
+
+html body .data-user-card-actions .delete-button:hover {
+    background: #ffdad6 !important;
+}
+
+html body .data-user-card-actions .icon-button .icon {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+html body .data-user-card-empty {
+    display: grid !important;
+    place-items: center !important;
+    gap:6px !important;
+    min-height: 160px !important;
+    padding:24px !important;
+    color: #404942 !important;
+    background: #ffffff !important;
+    border: 1px dashed #d1d5db !important;
+    border-radius: 12px !important;
+    text-align: center !important;
+}
+
+html body .data-user-card-empty strong {
+    color: #111c2c !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+}
+
+html body .data-user-card-empty span {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+}
+
+html body .data-user-card-section .pagination-wrap {
+    margin-top:0 !important;
+    padding-top:0 !important;
+    border-top: 0 !important;
+    box-shadow: none !important;
+}
+
+@media (width <= 1080px) {
+    html body .data-user-page .master-user-filter-panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    html body .data-user-page .data-user-card-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    html body .data-user-page .data-user-card-filter-actions {
+        grid-column: 1 / -1 !important;
+        justify-content: flex-start !important;
+    }
+
+    html body .data-user-page .master-user-filter-panel .student-filter-actions {
+        grid-column: 1 / -1 !important;
+        justify-content: flex-end !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .data-user-page .student-flat-header {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+
+    html body .data-user-page .master-user-filter-panel,
+    html body .data-user-page .data-user-card-filter,
+    html body .data-user-card-list,
+    html body .data-user-card-meta {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .data-user-page .master-user-filter-panel .student-filter-actions,
+    html body .data-user-page .master-user-filter-panel .student-search-button,
+    html body .data-user-page .master-user-filter-panel .student-filter-reset,
+    html body .data-user-page .data-user-card-filter-actions,
+    html body .data-user-page .data-user-card-search-button,
+    html body .data-user-page .data-user-card-reset-button {
+        width: 100% !important;
+    }
+
+    html body .data-user-card-top,
+    html body .data-user-card-footer {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+    }
+}
+
+/* TAMBAH DATA USER FINAL: samakan dengan Data Role. */
+html:has(.data-user-create-page),
+html:has(.data-user-create-page) body,
+html body:has(.data-user-create-page),
+html body:has(.data-user-create-page) .app-shell,
+html body:has(.data-user-create-page) .main-panel,
+html body:has(.data-user-create-page) .data-user-create-page,
+html body:has(.data-user-create-page) .master-hero,
+html body:has(.data-user-create-page) .master-create-card,
+html body:has(.data-user-create-page) .master-form {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+html body:has(.data-user-create-page) .data-user-create-page::before,
+html body:has(.data-user-create-page) .data-user-create-page::after,
+html body:has(.data-user-create-page) .main-panel::before,
+html body:has(.data-user-create-page) .main-panel::after {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    background-image: none !important;
+}
+
+html body .data-user-create-page,
+html body .data-user-create-page * {
+    letter-spacing: 0 !important;
+}
+
+html body .data-user-create-page * {
+    font-size: 14px !important;
+}
+
+html body .data-user-create-page .master-hero {
+    margin:0 0 20px !important;
+    padding:0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .data-user-create-page .master-hero > div {
+    display: grid !important;
+    gap:4px !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+
+html body .data-user-create-page .master-hero h1 {
+    margin:0 !important;
+    color: #111c2c !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+}
+
+html body .data-user-create-page .master-hero p {
+    margin:0 !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+}
+
+html body .data-user-create-page .master-create-card {
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+}
+
+html body .data-user-create-page .master-create-heading {
+    display: none !important;
+}
+
+html body .data-user-create-page .master-create-form {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap:16px !important;
+    width: 100% !important;
+    margin:0 !important;
+    padding:20px 24px 0 !important;
+    background: #ffffff !important;
+}
+
+html body .data-user-create-page .master-create-form > label {
+    display: grid !important;
+    gap:6px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin:0 !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.25 !important;
+}
+
+html body .data-user-create-page .master-create-form > label.span-2,
+html body .data-user-create-page .master-create-form > .form-actions {
+    grid-column: 1 / -1 !important;
+}
+
+html body .data-user-create-page .master-create-form input,
+html body .data-user-create-page .master-create-form select {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin:0 !important;
+    padding:0 12px !important;
+    color: #111c2c !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 40px !important;
+}
+
+html body .data-user-create-page .master-create-form input:focus,
+html body .data-user-create-page .master-create-form select:focus {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+    outline: 0 !important;
+}
+
+html body .data-user-create-page .master-create-form > .form-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap:12px !important;
+    margin:0 -24px !important;
+    padding:20px 24px 24px !important;
+    background: #ffffff !important;
+    border-top: 0 !important;
+}
+
+html body .data-user-create-page .master-create-form > .form-actions .button {
+    height: 40px !important;
+    min-height: 40px !important;
+    padding:0 16px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+@media (width <= 760px) {
+    html body .data-user-create-page .master-hero,
+    html body .data-user-create-page .master-create-card {
+        max-width: none !important;
+    }
+
+    html body .data-user-create-page .master-create-form {
+        grid-template-columns: 1fr !important;
+        padding:16px 16px 0 !important;
+    }
+
+    html body .data-user-create-page .master-create-form > .form-actions {
+        flex-direction: column !important;
+        margin:0 -18px !important;
+        padding:16px !important;
+    }
+
+    html body .data-user-create-page .master-create-form > .form-actions .button {
+        width: 100% !important;
+    }
+}
