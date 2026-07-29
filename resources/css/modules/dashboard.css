@@ -1,0 +1,37 @@
+/* Menu Dashboard CSS module. */
+html body .app-shell .main-panel main.dashboard-page .metric-card small,
+html body .app-shell .main-panel main.dashboard-page .dashboard-chart-note,
+html body .app-shell .main-panel main.dashboard-page .dashboard-list-empty,
+html body .app-shell .main-panel main.dashboard-page .class-row small{font-size:14px;line-height:1.45}html body .app-shell .main-panel main.dashboard-page .metric-card h2{font-size:20px;line-height:1.2}html body .app-shell .main-panel main.dashboard-page .metric-card{border-color:var(--line)}html body .app-shell .main-panel main.dashboard-page .dashboard-hero .eyebrow{color:var(--leaf)}html body .app-shell .main-panel main.dashboard-page .dashboard-hero{background:linear-gradient(125deg, #183b10 0%, var(--blue) 58%, #6f913d 100%);border-color:#274717;box-shadow:0 18px 40px #2e511926}html body .app-shell .main-panel main.dashboard-page .dashboard-hero p:last-child{color:#e2eccd}html body .app-shell .main-panel main.dashboard-page .dashboard-action-primary{color:var(--blue-dark)}html body .app-shell .main-panel main.dashboard-page .student-avatar{background:linear-gradient(145deg, #9dbb59, var(--blue))}html body .app-shell .main-panel main.dashboard-page .student-avatar{color:var(--blue);background:var(--blue-soft);border-color:#c9ddb4}html body .app-shell .main-panel main.dashboard-page .class-badge.amber{color:#5f7826;background:#eef5dc}html body .app-shell .main-panel main.dashboard-page .check-circle{color:var(--green);background:#edf7e3}html body .app-shell .main-panel main.dashboard-page .bar-track{background-color:#edf3e6}html body .app-shell .main-panel main.dashboard-page .bar-track span{background:linear-gradient(180deg, var(--leaf), var(--blue));box-shadow:0 5px 12px #2e51191f}html body .app-shell .main-panel main.dashboard-page .donut{background:conic-gradient(var(--blue) calc(var(--progress) * 1%), #e4ecd9 0)}html body .app-shell .main-panel main.dashboard-page .blue-dot{background:var(--leaf)}html body .app-shell .main-panel main.dashboard-page .class-badge.blue{color:var(--blue);background:var(--blue-soft)}html body .app-shell .main-panel main.dashboard-page .dashboard-unit-item .class-row b{color:var(--green)!important}html body .app-shell .main-panel main.dashboard-page .dashboard-hero h1{font-weight:var(--weight-title)!important;letter-spacing:0!important}html body .app-shell .main-panel main.dashboard-page .metric-card p,
+html body .app-shell .main-panel main.dashboard-page .metric-card small,
+html body .app-shell .main-panel main.dashboard-page .dashboard-hero p:last-child,
+html body .app-shell .main-panel main.dashboard-page .dashboard-chart-note,
+html body .app-shell .main-panel main.dashboard-page .dashboard-unit-item .class-row b,
+html body .app-shell .main-panel main.dashboard-page .dashboard-list-empty,
+html body .app-shell .main-panel main.dashboard-page .chart-summary small,
+html body .app-shell .main-panel main.dashboard-page .bar-column small,
+html body .app-shell .main-panel main.dashboard-page .target-value span,
+html body .app-shell .main-panel main.dashboard-page .target-details span,
+html body .app-shell .main-panel main.dashboard-page .target-details strong,
+html body .app-shell .main-panel main.dashboard-page .class-row strong,
+html body .app-shell .main-panel main.dashboard-page .class-row small,
+html body .app-shell .main-panel main.dashboard-page .class-row b{font-size:var(--type-small)!important;font-weight:var(--weight-normal)!important;letter-spacing:0!important}html body .app-shell .main-panel main.dashboard-page .metric-card h2,
+html body .app-shell .main-panel main.dashboard-page .metric-card small strong,
+html body .app-shell .main-panel main.dashboard-page .chart-summary strong,
+html body .app-shell .main-panel main.dashboard-page .target-value strong{font-weight:var(--weight-normal)!important;letter-spacing:0!important}html body .app-shell .main-panel main.dashboard-page .metric-card h2,
+html body .app-shell .main-panel main.dashboard-page .chart-summary strong,
+html body .app-shell .main-panel main.dashboard-page .target-value strong{display:block!important;width:100%!important;max-width:1120px!important;margin:0!important;padding:0!important;background:transparent!important}html body .app-shell .main-panel main.dashboard-page .dashboard-action-secondary {
+    color: #0d5f36 !important;
+    background: #f3fbf6 !important;
+    border-color: #b9dcc7 !important;
+    box-shadow: none !important;
+}html body .app-shell .main-panel main.dashboard-page .dashboard-action-secondary:hover {
+    color: #004528 !important;
+    background: #e9f8ef !important;
+    border-color: #157144 !important;
+}html[data-theme="dark"] body .app-shell .main-panel main.dashboard-page .metric-card,
+html[data-theme="dark"] body .app-shell .main-panel main.dashboard-page .dashboard-hero {
+    background: var(--mawa-dark-panel) !important;
+    border-color: var(--mawa-dark-border) !important;
+    box-shadow: none !important;
+}
