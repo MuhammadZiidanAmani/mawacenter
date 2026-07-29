@@ -1036,7 +1036,8 @@ class MasterDataTest extends TestCase
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '10A', 'level' => 'Kelas 10']);
         $student = Student::create([
             'nis' => '220001', 'name' => 'ABDILLAH SAEFI HAMMAM', 'gender' => 'L',
-            'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true,
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-01-01', 'is_active' => true,
         ]);
         $otherUnit = EducationUnit::create(['code' => 'PAUD', 'name' => 'PAUD Mawa', 'is_active' => true]);
         $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'Kelompok Bermain', 'level' => 'PAUD']);
@@ -1095,8 +1096,8 @@ class MasterDataTest extends TestCase
         $monthResponse = $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$student->id.'&year=2026');
         $monthResponse
             ->assertOk()
-            ->assertJsonPath('oldest_outstanding.month', 7)
-            ->assertJsonPath('periods.6.month', 2);
+            ->assertJsonPath('oldest_outstanding.month', 2)
+            ->assertJsonPath('periods.0.month', 2);
         $this->assertFalse(collect($monthResponse->json('periods'))->contains(
             fn (array $period) => $period['year'] === 2026 && $period['month'] === 1,
         ));
@@ -1139,6 +1140,7 @@ class MasterDataTest extends TestCase
             'school_class_id' => $class->id,
             'academic_year_id' => $year->id,
             'entry_date' => '2026-06-23',
+            'billing_start_date' => '2025-08-01',
             'is_active' => true,
         ]);
         $this->createSppCategory($unit, 60000);
@@ -1155,6 +1157,45 @@ class MasterDataTest extends TestCase
                 'unit_id' => $unit->id,
                 'month' => 8,
                 'year' => 2025,
+            ]);
+        } finally {
+            @unlink($path);
+        }
+
+        $this->assertSame(1, $preview['total']);
+        $this->assertSame(1, $preview['valid']);
+        $this->assertSame([], $preview['failures']);
+        $this->assertDatabaseCount('spp_payments', 0);
+    }
+
+    public function test_spp_import_uses_entry_date_as_first_billing_month_when_billing_start_is_empty(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PAUD', 'name' => 'PAUD MAMBAUL HIKMAH', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'PAUD A', 'level' => 'PAUD']);
+        Student::create([
+            'nis' => '260313',
+            'name' => 'ACHMAD ACHSIN SAKHO',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'entry_date' => '2026-07-13',
+            'is_active' => true,
+        ]);
+        $this->createSppCategory($unit, 50000);
+
+        $path = tempnam(sys_get_temp_dir(), 'spp-import-entry-date-');
+        StudentXlsx::write($path, [
+            ['Data Laporan SPP'],
+            ['No', 'NIS', 'Nama', 'Jenis Pendidikan', 'Kelas', 'Petugas', 'Cara bayar', 'Bulan', 'Tahun', 'Waktu', 'Nominal'],
+            [1, '260313', 'ACHMAD ACHSIN SAKHO', 'PAUD MAMBAUL HIKMAH', 'PAUD A', 'Ziidan Amani', 'cash', 'juli', 2026, '2026-07-13 08:30:00', 50000],
+        ]);
+
+        try {
+            $preview = app(SppPaymentImportService::class)->preview($path, 'laporan-spp-paud.xlsx', [
+                'unit_id' => $unit->id,
+                'month' => 7,
+                'year' => 2026,
             ]);
         } finally {
             @unlink($path);

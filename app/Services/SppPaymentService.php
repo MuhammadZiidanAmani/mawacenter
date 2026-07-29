@@ -796,11 +796,16 @@ class SppPaymentService
     private function billingStart(Student $student): CarbonImmutable
     {
         $defaultStart = CarbonImmutable::parse(self::DEFAULT_BILLING_START_DATE)->startOfMonth();
-        $studentStart = $student->billing_start_date
-            ? CarbonImmutable::parse($student->billing_start_date)->startOfMonth()
+
+        if ($student->billing_start_date) {
+            return CarbonImmutable::parse($student->billing_start_date)->startOfMonth();
+        }
+
+        $entryStart = $student->entry_date
+            ? CarbonImmutable::parse($student->entry_date)->startOfMonth()
             : null;
 
-        return $studentStart && $studentStart->gt($defaultStart) ? $studentStart : $defaultStart;
+        return $entryStart && $entryStart->gt($defaultStart) ? $entryStart : $defaultStart;
     }
 
     private function periodIsApplicable(Student $student, int $year, int $month): bool

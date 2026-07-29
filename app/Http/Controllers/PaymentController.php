@@ -157,7 +157,7 @@ class PaymentController extends Controller
                     ->map(fn (OtherPayment $payment) => [
                         'type' => 'other',
                         'id' => $payment->id,
-                        'title' => $payment->feeType?->name ?? 'Pembayaran Lainnya',
+                        'title' => $payment->feeType?->name ?? 'Pembayaran Lain-lain',
                         'detail' => $this->otherHistoryPeriod($payment),
                         'student' => $payment->student?->name,
                         'date' => $payment->transaction_at->format('d/m/Y H.i').' WIB',
@@ -649,7 +649,7 @@ class PaymentController extends Controller
         $definitions = [
             'spp' => ['label' => 'SPP', 'url' => route('finance.spp.create', ['student_id' => $student->id])],
             'daftar-ulang' => ['label' => 'Daftar Ulang', 'url' => route('finance.other.create', ['category' => 'daftar-ulang', 'student_id' => $student->id])],
-            'lain-lain' => ['label' => 'Lainnya', 'url' => route('finance.other.create', ['student_id' => $student->id])],
+            'lain-lain' => ['label' => 'Lain-lain', 'url' => route('finance.other.create', ['student_id' => $student->id])],
         ];
 
         return collect($definitions)

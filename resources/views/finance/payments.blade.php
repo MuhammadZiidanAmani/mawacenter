@@ -72,9 +72,9 @@
                         <div class="result-modal-backdrop show" data-alert>
                             <div class="result-modal success-result">
                                 <span class="result-icon">✓</span>
-                                <strong>Sukses!</strong>
+                                <strong>Pembayaran Berhasil</strong>
                                 <p>{{ session('success') }}</p>
-                                <button type="button" class="button button-primary" data-alert-close>OK</button>
+                                <button type="button" class="button button-primary" data-alert-close>Bayar Lagi</button>
                             </div>
                         </div>
                     @endif
@@ -166,7 +166,7 @@
                                         foreach ($selectedRegistrations as $student) {
                                             $unitCode = $student->schoolClass?->educationUnit?->code ?? '-';
                                             foreach (collect($student->payment_options ?? []) as $option) {
-                                                $label = $option['label'] === 'Lainnya' ? 'Lain-lain' : $option['label'];
+                                                $label = $option['label'];
                                                 $mandatoryRows->push([
                                                     'name' => 'bill_keys[]',
                                                     'key' => $option['bill_key'],
@@ -411,7 +411,7 @@
 
                                                 <div class="payment-one-stop-form-controls">
                                                     <div class="payment-one-stop-bill-total payment-prd-total-box">
-                                                        <span>Total Dibayar Sekarang</span>
+                                                        <span>Total Tagihan</span>
                                                         <span class="payment-one-stop-bill-total-amount">
                                                             <span>Rp.</span>
                                                             <b data-payment-total>{{ number_format($defaultTotal, 0, ',', '.') }},-</b>
@@ -442,32 +442,32 @@
                                                     </label>
 
                                                     @unless($cashOnly)
-                                                    <div class="payment-one-stop-transfer-card" data-payment-transfer-panel @hidden($oldPaymentMethod !== 'Transfer')>
+                                                    <div class="payment-one-stop-transfer-card" data-payment-transfer-panel @if($oldPaymentMethod !== 'Transfer') hidden @endif>
                                                         <div>
                                                             <span>Rekening Tujuan</span>
                                                             <strong>{{ $transferAccount['bank_name'] }} · {{ $transferAccount['account_number'] }}</strong>
                                                             <small>a.n. {{ $transferAccount['account_name'] }}</small>
                                                         </div>
-                                                        <button type="button" data-payment-copy-account data-account-number="{{ $transferAccount['account_number'] }}">
+                                                        <button type="button" class="button button-secondary payment-transfer-copy-button" data-payment-copy-account data-account-number="{{ $transferAccount['account_number'] }}" title="Salin rekening" aria-label="Salin rekening">
                                                             {!! $icon('copy') !!}
                                                             <span>Salin Rekening</span>
                                                         </button>
                                                     </div>
 
-                                                    <div class="payment-one-stop-transfer-upload" data-payment-transfer-upload @hidden($oldPaymentMethod !== 'Transfer')>
+                                                    <div class="payment-one-stop-transfer-upload" data-payment-transfer-upload @if($oldPaymentMethod !== 'Transfer') hidden @endif>
                                                         <span>Bukti Transfer</span>
                                                         <label class="payment-one-stop-upload-field">
                                                             <span class="payment-one-stop-upload-icon" aria-hidden="true">{!! $icon('upload') !!}</span>
                                                             <span class="payment-one-stop-upload-copy">
                                                                 <strong data-payment-upload-name>{{ $isEditingSppPayment && $editSppPayment->transfer_proof_path ? 'Bukti lama tersimpan, pilih file jika ingin mengganti' : 'Pilih file bukti transfer' }}</strong>
-                                                                <small>JPG, PNG, atau PDF maksimal 2 MB</small>
+                                                                <small>JPG, JPEG, PNG, atau PDF maksimal 2 MB</small>
                                                             </span>
                                                             <input type="file" name="transfer_proof" accept=".jpg,.jpeg,.png,.pdf" data-payment-transfer-file>
                                                         </label>
                                                     </div>
                                                     @endunless
 
-                                                    <button class="payment-one-stop-pay-button" data-payment-submit @disabled($billRows->isEmpty())>{{ $isEditingSppPayment ? 'Simpan Perubahan' : 'Bayar & Cetak Struk' }}</button>
+                                                    <button class="button button-primary payment-one-stop-pay-button" data-payment-submit @disabled($billRows->isEmpty())>{{ $isEditingSppPayment ? 'Simpan Perubahan' : 'Bayar & Cetak Struk' }}</button>
                                                 </div>
                                             </section>
                                             </div>
@@ -480,7 +480,7 @@
                                                     <h2>Riwayat Terbaru Siswa</h2>
                                                     <span>10 transaksi terakhir siswa ini</span>
                                                 </div>
-                                                <a class="payment-prd-history-link" href="{{ route('reports.transactions') }}">Lihat Semua di Laporan</a>
+                                                <a class="button button-secondary payment-prd-history-link" href="{{ route('reports.transactions') }}">Lihat Semua di Laporan</a>
                                             </div>
                                             @if($paymentHistory->isEmpty())
                                                 <div class="payment-one-stop-history-empty">
@@ -503,7 +503,7 @@
                                                             </span>
                                                             <span class="payment-one-stop-history-actions">
                                                                 <a class="payment-one-stop-history-action" href="{{ $history['receipt_url'] }}" target="_blank" rel="noopener" title="Cetak struk" aria-label="Cetak struk">{!! $icon('printer') !!}</a>
-                                                                <a class="payment-one-stop-history-action" href="{{ $history['download_url'] }}" title="Download kwitansi" aria-label="Download kwitansi">{!! $icon('download') !!}</a>
+                                                                <a class="payment-one-stop-history-action" href="{{ $history['download_url'] }}" title="Download PDF" aria-label="Download PDF">{!! $icon('download') !!}</a>
                                                                 @if($canDeleteHistory)
                                                                 <form method="POST" action="{{ $history['delete_url'] }}" data-payment-history-delete-form data-payment-delete-title="{{ $history['title'] }}" data-payment-delete-detail="{{ $history['detail'] }}" data-payment-delete-amount="Rp. {{ $history['amount_label'] }}">
                                                                     @csrf
@@ -576,7 +576,7 @@
                         <p>{{ $mode === 'import-preview' ? 'Periksa data gagal sebelum mengimpor transaksi valid.' : 'Unggah data pembayaran dari file Excel untuk diperiksa sebelum disimpan.' }}</p>
                     </div>
                     <div class="payment-hub-heading-actions">
-                        <a class="button button-secondary" href="{{ $mode === 'import-preview' ? route('finance.payments.import') : route('finance.payments.index') }}">{!! $icon('arrow-left') !!}<span>{{ $mode === 'import-preview' ? 'Kembali' : 'Pembayaran' }}</span></a>
+                        <a class="button button-secondary" href="{{ $mode === 'import-preview' ? route('finance.payments.import') : route('finance.payments.index') }}" title="{{ $mode === 'import-preview' ? 'Kembali' : 'Pembayaran' }}" aria-label="{{ $mode === 'import-preview' ? 'Kembali' : 'Pembayaran' }}">{!! $icon('arrow-left') !!}<span>{{ $mode === 'import-preview' ? 'Kembali' : 'Pembayaran' }}</span></a>
                     </div>
                 @endif
             </section>
@@ -587,7 +587,7 @@
                         ['spp', 'SPP', 'SPP', 'Pembayaran bulanan siswa.', route('finance.spp.import.preview')],
                         ['daftar-ulang', 'DU', 'Daftar Ulang', 'Pembayaran daftar ulang siswa.', route('finance.other.import.preview', ['category' => 'daftar-ulang'])],
                         ['laundry', 'LD', 'Laundry', 'Pembayaran laundry per bulan.', route('finance.other.import.preview', ['category' => 'laundry'])],
-                        ['lain-lain', 'LL', 'Pembayaran Lain', 'Kategori pembayaran lainnya.', route('finance.other.import.preview')],
+                        ['lain-lain', 'LL', 'Lain-lain', 'Kategori pembayaran lainnya.', route('finance.other.import.preview')],
                     ];
                     $importMonths = [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'];
                     $importYears = range(now()->year - 5, now()->year + 1);
