@@ -21,8 +21,8 @@
             <h1>MA'WA <span>CENTER</span></h1>
         </div>
 
-        <div class="login-hero-copy" style="text-align: center;">
-            <h2 style="font-size: 16px !important; font-weight: 400 !important; color: #6b7280 !important;">Masuk Dengan Akun Anda</h2>
+        <div class="login-hero-copy">
+            <h2>Masuk Dengan Akun Anda</h2>
         </div>
 
         @if (session('status'))

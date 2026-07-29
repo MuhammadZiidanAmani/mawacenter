@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./modules/login.css";
 @import "./modules/reports.css";
 @import "./modules/bills.css";
 
@@ -22312,78 +22313,3 @@ html body .app-shell .main-panel main.payment-flat-page + .app-footer {
     line-height: 1.4;
 }
 
-/* Login mode lock: keep petugas and wali forms readable after validation reloads. */
-body.login-body .login-form .login-guardian-field,
-body.login-body .login-form .login-wali-reset,
-body.login-body .login-form .password-icon-visible {
-    display: none !important;
-}
-
-body.login-body .login-form.wali-mode .login-guardian-field,
-body.login-body .login-form.wali-mode .login-wali-reset,
-body.login-body .login-form .password-toggle.active .password-icon-visible {
-    display: grid !important;
-}
-
-body.login-body .login-form.wali-mode .login-password-field,
-body.login-body .login-form.wali-mode .login-wali-toggle,
-body.login-body .login-form .password-toggle.active .password-icon-hidden {
-    display: none !important;
-}
-
-body.login-body .login-mode-switch {
-    display: grid !important;
-    gap: 8px !important;
-    margin: 0 !important;
-}
-
-body.login-body .login-wali-toggle,
-body.login-body .login-wali-reset {
-    width: 100% !important;
-    min-height: 40px !important;
-    padding: 0 !important;
-    color: #020617 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
-    text-align: left !important;
-    text-decoration: none !important;
-}
-
-body.login-body .login-wali-toggle {
-    display: grid !important;
-    grid-template-columns: 24px minmax(0, 1fr) 24px !important;
-    align-items: center !important;
-    gap: 8px !important;
-}
-
-body.login-body .login-wali-reset {
-    grid-template-columns: 24px minmax(0, 1fr) !important;
-    align-items: center !important;
-    gap: 8px !important;
-}
-
-body.login-body .login-wali-toggle .icon,
-body.login-body .login-wali-reset .icon {
-    width: 22px !important;
-    height: 22px !important;
-    color: #020617 !important;
-}
-
-body.login-body .login-wali-toggle span,
-body.login-body .login-wali-reset span {
-    min-width: 0 !important;
-}
-
-body.login-body .password-toggle {
-    display: inline-grid !important;
-    place-items: center !important;
-}
-
-body.login-body .password-toggle .icon {
-    width: 20px !important;
-    height: 20px !important;
-}
