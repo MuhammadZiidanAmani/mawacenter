@@ -172,6 +172,13 @@ class BillService
         return $result;
     }
 
+    public function refreshCurrentBillScope(AcademicYear $academicYear, array $filters = []): array
+    {
+        $studentIds = $this->students($academicYear, $filters)->pluck('id');
+
+        return $this->refreshBillsForStudents($studentIds)->all();
+    }
+
     public function generateFeeType(AcademicYear $academicYear, FeeType $feeType, ?int $year, ?int $month, array $filters = []): array
     {
         $result = ['created' => 0, 'existing' => 0, 'skipped' => 0];
@@ -302,6 +309,11 @@ class BillService
 
         DB::transaction(function () use ($payment) {
             foreach ($payment->items as $item) {
+                $period = CarbonImmutable::create((int) $item->year, (int) $item->month, 1)->startOfMonth();
+                if (! $this->eligible($payment->student, $period)) {
+                    continue;
+                }
+
                 if ($this->sppIsIncludedInRegistration($payment->student, $item->year, $item->month)) {
                     continue;
                 }
@@ -430,6 +442,11 @@ class BillService
 
     private function ensureSppBill(Student $student, AcademicYear $academicYear, int $year, int $month): array
     {
+        $period = CarbonImmutable::create($year, $month, 1)->startOfMonth();
+        if (! $this->eligible($student, $period)) {
+            throw ValidationException::withMessages(['bill' => 'Periode SPP tidak berlaku untuk siswa ini.']);
+        }
+
         if ($this->sppIsIncludedInRegistration($student, $year, $month)) {
             throw ValidationException::withMessages(['bill' => 'SPP bulan Juli untuk unit MTs/MA sudah termasuk Daftar Ulang.']);
         }

@@ -50,7 +50,15 @@ html body .app-shell .main-panel main.bill-flat-page .bill-page-heading p {
     line-height:1.45 !important;
 }
 
+html body .app-shell .main-panel main.bill-flat-page .bill-sync-form {
+    margin-left:auto !important;
+    display:flex !important;
+    align-items:center !important;
+    flex:0 0 auto !important;
+}
+
 html body .app-shell .main-panel main.bill-flat-page .bill-filter-apply,
+html body .app-shell .main-panel main.bill-flat-page .bill-sync-button,
 html body .app-shell .main-panel main.bill-flat-page .bill-detail-primary {
     box-sizing:border-box !important;
     display:inline-flex !important;
@@ -75,6 +83,7 @@ html body .app-shell .main-panel main.bill-flat-page .bill-detail-primary {
 }
 
 html body .app-shell .main-panel main.bill-flat-page .bill-filter-apply:hover,
+html body .app-shell .main-panel main.bill-flat-page .bill-sync-button:hover,
 html body .app-shell .main-panel main.bill-flat-page .bill-detail-primary:hover {
     background:#0d5f36 !important;
     border-color:#0d5f36 !important;
@@ -223,6 +232,12 @@ html body .app-shell .main-panel main.bill-flat-page .bill-unit-table-wrap {
     border:1px solid #d1d5db !important;
     border-radius:8px !important;
     box-shadow:none !important;
+}
+
+html body .app-shell .main-panel main.bill-flat-page .bill-sync-button .icon {
+    width:16px !important;
+    height:16px !important;
+    stroke:currentColor !important;
 }
 
 html body .app-shell .main-panel main.bill-flat-page .bill-unit-table {
@@ -753,6 +768,11 @@ html body .app-shell .main-panel main.bill-flat-page .pagination-wrap {
     html body .app-shell .main-panel main.bill-flat-page .bill-page-heading {
         flex-direction:column !important;
         align-items:stretch !important;
+    }
+
+    html body .app-shell .main-panel main.bill-flat-page .bill-sync-form,
+    html body .app-shell .main-panel main.bill-flat-page .bill-sync-button {
+        width:100% !important;
     }
 
     html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel {

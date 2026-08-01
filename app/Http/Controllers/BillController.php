@@ -307,7 +307,7 @@ class BillController extends Controller
             'nis' => $request->string('nis')->value() ?: null,
         ];
 
-        $result = ['created' => 0, 'existing' => 0, 'skipped' => 0];
+        $result = ['created' => 0, 'existing' => 0, 'skipped' => 0, 'refreshed' => 0];
         $this->mergeResult($result, $bills->generateSppFromEntryUntil($academicYear, $year, $untilMonth, $filters));
 
         $feeTypes = FeeType::where('is_active', true)
@@ -319,10 +319,11 @@ class BillController extends Controller
             ->get();
 
         $this->mergeResult($result, $bills->generateFeeTypes($academicYear, $feeTypes, $year, $untilMonth, $filters));
+        $this->mergeResult($result, $bills->refreshCurrentBillScope($academicYear, $filters));
 
         return redirect()
             ->route('finance.bills.index', $request->only(['year', 'until_month', 'unit_id', 'class_id', 'student_id', 'fee_type_id', 'student_search', 'student_name', 'nis', 'search', 'per_page', 'sort', 'direction']))
-            ->with('success', 'Sinkron tagihan selesai. Baru: '.number_format($result['created'], 0, ',', '.').', sudah ada: '.number_format($result['existing'], 0, ',', '.').', dilewati: '.number_format($result['skipped'], 0, ',', '.').'.');
+            ->with('success', 'Sinkron tagihan selesai. Baru: '.number_format($result['created'], 0, ',', '.').', sudah ada: '.number_format($result['existing'], 0, ',', '.').', dilewati: '.number_format($result['skipped'], 0, ',', '.').', diperbarui: '.number_format($result['refreshed'], 0, ',', '.').'.');
     }
 
     private function applyUserScope(Request $request, array &$filters): void
@@ -359,8 +360,11 @@ class BillController extends Controller
 
     private function mergeResult(array &$base, array $addition): void
     {
-        foreach (['created', 'existing', 'skipped'] as $key) {
+        foreach (['created', 'existing', 'skipped', 'refreshed'] as $key) {
             $base[$key] += $addition[$key] ?? 0;
+        }
+        if (isset($addition['updated'])) {
+            $base['refreshed'] += (int) $addition['updated'];
         }
     }
 

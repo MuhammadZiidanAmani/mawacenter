@@ -52,6 +52,7 @@
     $showingTo = $studentsWithBills->total() > 0 ? $studentsWithBills->lastItem() : 0;
     $isGuardianView = $isGuardianView ?? false;
     $guardianTotal = $isGuardianView ? (int) $guardianBills->sum('remaining_amount') : 0;
+    $canSyncBills = auth()->user()?->isSuperAdmin() || (auth()->user()?->hasPermission('payments.verify_transfer') ?? false);
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'bills'])
@@ -79,6 +80,17 @@
                         <h1>{{ $isGuardianView ? 'Tagihan' : 'Tagihan Siswa' }}</h1>
                         <p>{{ $isGuardianView ? 'Lihat tagihan siswa yang terhubung dan kirim bukti pembayaran transfer.' : 'Pantau kewajiban siswa yang belum selesai dan lanjutkan ke pembayaran.' }}</p>
                     </div>
+                    @if(! $isGuardianView && $canSyncBills)
+                        <form method="POST" action="{{ route('finance.bills.sync') }}" class="bill-sync-form">
+                            @csrf
+                            @foreach($billQuery() as $key => $value)
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endforeach
+                            <input type="hidden" name="year" value="{{ $year }}">
+                            <input type="hidden" name="until_month" value="{{ $untilMonth }}">
+                            <button type="submit" class="button bill-sync-button" title="Sinkron tagihan sesuai filter aktif" aria-label="Sinkron tagihan sesuai filter aktif">{!! $icon('refresh') !!}<span>Sinkron Tagihan</span></button>
+                        </form>
+                    @endif
                 </div>
 
                 @if($isGuardianView)
