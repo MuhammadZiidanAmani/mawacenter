@@ -58,7 +58,7 @@
 
             <section class="data-quality-grid" aria-label="Ringkasan kualitas data siswa">
                 @foreach ($qualityCards as $card)
-                    <article class="data-quality-card is-{{ $card['tone'] }}">
+                    <article class="data-quality-card is-{{ $card['tone'] }} {{ $selectedIndicator === $card['key'] ? 'is-selected' : '' }}">
                         <div class="data-quality-card-head">
                             <span class="data-quality-card-icon">{!! $icon($card['tone'] === 'danger' || $card['tone'] === 'warning' ? 'alert' : ($card['tone'] === 'neutral' ? 'users' : 'chart')) !!}</span>
                             <div>
@@ -69,7 +69,7 @@
                         <div class="data-quality-card-foot">
                             <strong>{{ $formatNumber($card['count']) }}</strong>
                             @if($card['action_url'])
-                                <a href="{{ $card['action_url'] }}">{{ $card['action_label'] }}</a>
+                                <a href="{{ $card['action_url'] }}" aria-label="{{ $card['action_label'] }} {{ $card['title'] }}">{{ $card['action_label'] }}</a>
                             @else
                                 <span>{{ $card['disabled_label'] ?? 'Tidak tersedia' }}</span>
                             @endif
@@ -78,61 +78,86 @@
                 @endforeach
             </section>
 
+            <section class="data-quality-filter-card">
+                <form method="GET" action="{{ route('student-management.data-quality.index') }}" class="data-quality-filter-form">
+                    <label>
+                        <span>Indikator</span>
+                        <select name="indicator">
+                            @foreach ($indicatorOptions as $key => $option)
+                                <option value="{{ $key }}" @selected($selectedIndicator === $key)>{{ $option['title'] }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <label>
+                        <span>Tampilkan</span>
+                        <select name="per_page">
+                            @foreach ([10, 25, 50, 100] as $size)
+                                <option value="{{ $size }}" @selected($perPage === (string) $size)>{{ $size }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <div class="data-quality-filter-actions">
+                        <button class="button button-primary" type="submit">Terapkan</button>
+                        <a class="button button-secondary" href="{{ route('student-management.data-quality.index') }}">Reset</a>
+                    </div>
+                </form>
+            </section>
+
             <section class="card master-card student-data-card data-quality-detail-card">
                 <div class="data-quality-section-head">
                     <div>
-                        <h2>Kandidat Duplikat Identitas</h2>
-                        <p>Contoh kandidat paling atas dari pencocokan identitas aktif. Tinjau sebelum digabungkan.</p>
+                        <h2>{{ $selectedDetail['title'] }}</h2>
+                        <p>{{ $selectedDetail['description'] }}</p>
                     </div>
-                    @if(auth()->user()?->hasPermission('students.identity_cleanup'))
+                    @if($selectedDetail['type'] === 'duplicates' && $canManageIdentityCleanup)
                         <a class="button button-secondary" href="{{ route('student-management.identity-cleanup.index') }}">Rapikan Identitas</a>
                     @endif
                 </div>
-                <div class="table-wrap data-quality-table-wrap">
-                    <table class="data-table student-flat-table data-quality-table">
-                        <thead>
-                            <tr>
-                                <th>Kandidat</th>
-                                <th>Alasan</th>
-                                <th>Confidence</th>
-                                <th>Data Terdampak</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($duplicateCandidates as $candidate)
-                                <tr>
-                                    <td><strong>{{ $candidate['name'] }}</strong></td>
-                                    <td>{{ $candidate['reason'] }}</td>
-                                    <td><span class="data-quality-badge">{{ $candidate['confidence'] }}</span></td>
-                                    <td>
-                                        @foreach ($candidate['students'] as $student)
-                                            <span class="data-quality-inline-item">{{ $student->nis ?: '-' }} - {{ $student->name }} ({{ $studentContext($student) }})</span>
-                                        @endforeach
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="data-quality-empty">
-                                        <strong>Tidak ada kandidat duplikat</strong>
-                                        <span>Data aktif belum menunjukkan pola identitas yang perlu digabung.</span>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            @foreach ($studentIssueSections as $section)
-                <section class="card master-card student-data-card data-quality-detail-card">
-                    <div class="data-quality-section-head">
-                        <div>
-                            <h2>{{ $section['title'] }}</h2>
-                            <p>{{ $section['description'] }}</p>
-                        </div>
-                    </div>
+                @if($selectedDetail['type'] === 'duplicates')
                     <div class="table-wrap data-quality-table-wrap">
-                        <table class="data-table student-flat-table data-quality-table">
+                        <table class="data-table student-flat-table data-quality-table data-quality-duplicate-table">
+                            <thead>
+                                <tr>
+                                    <th>Kandidat</th>
+                                    <th>Alasan</th>
+                                    <th>Confidence</th>
+                                    <th>Data Terdampak</th>
+                                    @if($canManageIdentityCleanup)
+                                        <th>Aksi</th>
+                                    @endif
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($selectedDetail['rows'] as $candidate)
+                                    <tr>
+                                        <td><strong>{{ $candidate['name'] }}</strong></td>
+                                        <td>{{ $candidate['reason'] }}</td>
+                                        <td><span class="data-quality-badge">{{ $candidate['confidence'] }}</span></td>
+                                        <td>
+                                            @foreach ($candidate['students'] as $student)
+                                                <span class="data-quality-inline-item">{{ $student->nis ?: '-' }} - {{ $student->name }} ({{ $studentContext($student) }})</span>
+                                            @endforeach
+                                        </td>
+                                        @if($canManageIdentityCleanup)
+                                            <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="{{ route('student-management.identity-cleanup.show', $candidate['key']) }}" aria-label="Tinjau kandidat {{ $candidate['name'] }}">Tinjau</a>
+                                            </td>
+                                        @endif
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="{{ $canManageIdentityCleanup ? 5 : 4 }}" class="data-quality-empty">
+                                            <strong>Tidak ada data perlu cek</strong>
+                                            <span>Indikator ini sedang bersih.</span>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="table-wrap data-quality-table-wrap">
+                        <table class="data-table student-flat-table data-quality-table data-quality-student-table">
                             <thead>
                                 <tr>
                                     <th>NIS</th>
@@ -147,7 +172,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($section['students'] as $student)
+                                @forelse ($selectedDetail['rows'] as $student)
                                     <tr>
                                         <td>{{ $student->nis ?: '-' }}</td>
                                         <td><strong>{{ $student->name }}</strong></td>
@@ -172,8 +197,29 @@
                             </tbody>
                         </table>
                     </div>
-                </section>
-            @endforeach
+                @endif
+
+                <div class="data-quality-pagination">
+                    <span>
+                        {{ $selectedDetail['rows']->total() > 0 ? 'Menampilkan '.$formatNumber($selectedDetail['rows']->firstItem()).'-'.$formatNumber($selectedDetail['rows']->lastItem()).' dari '.$formatNumber($selectedDetail['rows']->total()).' data' : 'Menampilkan 0 dari 0 data' }}
+                    </span>
+                    @if($selectedDetail['rows']->lastPage() > 1)
+                        <div class="data-quality-pagination-links" aria-label="Navigasi halaman kualitas data">
+                            @if($selectedDetail['rows']->onFirstPage())
+                                <span class="data-quality-page-button is-disabled">Sebelumnya</span>
+                            @else
+                                <a class="data-quality-page-button" href="{{ $selectedDetail['rows']->previousPageUrl() }}">Sebelumnya</a>
+                            @endif
+                            <span class="data-quality-page-current">Halaman {{ $formatNumber($selectedDetail['rows']->currentPage()) }} dari {{ $formatNumber($selectedDetail['rows']->lastPage()) }}</span>
+                            @if($selectedDetail['rows']->hasMorePages())
+                                <a class="data-quality-page-button" href="{{ $selectedDetail['rows']->nextPageUrl() }}">Berikutnya</a>
+                            @else
+                                <span class="data-quality-page-button is-disabled">Berikutnya</span>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </section>
         </main>
         @include('partials.app-footer')
     </div>

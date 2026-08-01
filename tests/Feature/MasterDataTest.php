@@ -212,6 +212,17 @@ class MasterDataTest extends TestCase
             'academic_year_id' => $year->id,
             'is_active' => false,
         ]);
+        foreach (range(1, 12) as $number) {
+            Student::create([
+                'nis' => 'DQ-NISN-'.str_pad((string) $number, 2, '0', STR_PAD_LEFT),
+                'name' => 'Tanpa Nisn '.str_pad((string) $number, 2, '0', STR_PAD_LEFT),
+                'gender' => 'P',
+                'school_class_id' => $class->id,
+                'academic_year_id' => $year->id,
+                'entry_date' => '2025-07-01',
+                'is_active' => true,
+            ]);
+        }
 
         Role::create([
             'key' => 'student_quality_viewer',
@@ -230,13 +241,29 @@ class MasterDataTest extends TestCase
             ->assertSee('Siswa aktif tanpa tanggal masuk')
             ->assertSee('Mulai tagihan perlu dicek')
             ->assertSee('Nonaktif belum lengkap')
+            ->assertSee('name="indicator"', false)
+            ->assertSee('value="active-without-nisn"', false)
+            ->assertSee('indicator=active-without-nisn', false)
             ->assertSee('Data Ganda Satu')
-            ->assertSee('Tanpa Nisn Aktif')
-            ->assertSee('Tanpa Tanggal Masuk')
-            ->assertSee('Masuk Tengah Tahun')
-            ->assertSee('Alumni Belum Lengkap')
-            ->assertSee('Butuh izin rapikan identitas')
+            ->assertSee('Menampilkan 1-1 dari 1 data')
             ->assertDontSee('title="Edit Tanpa Nisn Aktif"', false);
+
+        $this->actingAs($viewer)
+            ->get('/manajemen-siswa/kualitas-data?indicator=active-without-nisn&per_page=10')
+            ->assertOk()
+            ->assertSee('Siswa Aktif Tanpa NISN')
+            ->assertSee('<option value="active-without-nisn" selected>Siswa Aktif Tanpa NISN</option>', false)
+            ->assertSee('Menampilkan 1-10 dari 13 data')
+            ->assertSee('Tanpa Nisn 01')
+            ->assertDontSee('title="Edit Tanpa Nisn 01"', false)
+            ->assertDontSee('Tanpa Nisn 12');
+
+        $this->actingAs($viewer)
+            ->get('/manajemen-siswa/kualitas-data?indicator=active-without-nisn&per_page=10&page=2')
+            ->assertOk()
+            ->assertSee('Menampilkan 11-13 dari 13 data')
+            ->assertSee('Tanpa Nisn 12')
+            ->assertSee('Tanpa Nisn Aktif');
 
         Role::create([
             'key' => 'student_quality_editor',
@@ -247,10 +274,14 @@ class MasterDataTest extends TestCase
         $editor = User::factory()->create(['role' => 'student_quality_editor']);
 
         $this->actingAs($editor)
-            ->get('/manajemen-siswa/kualitas-data')
+            ->get('/manajemen-siswa/kualitas-data?indicator=active-without-nisn')
+            ->assertOk()
+            ->assertSee('title="Edit Tanpa Nisn 01"', false);
+
+        $this->get('/manajemen-siswa/kualitas-data?indicator=duplicate-identities')
             ->assertOk()
             ->assertSee('Rapikan Identitas')
-            ->assertSee('title="Edit Tanpa Nisn Aktif"', false);
+            ->assertSee('Tinjau');
 
         Role::create([
             'key' => 'student_quality_blocked',
