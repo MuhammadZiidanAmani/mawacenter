@@ -328,7 +328,7 @@ class OtherPaymentImportService
         $value = preg_replace('/\bT\.?\s*A\.?\s*\.?\s*20\d{2}\s*[\/-]\s*20\d{2}\b/iu', '', $value);
         $value = preg_replace('/\bT(?:AHUN)?\s*(?:PELAJARAN|AJARAN)\s*20\d{2}\s*[\/-]\s*20\d{2}\b/iu', '', $value);
         $value = preg_replace('/\b20\d{2}\s*[\/-]\s*20\d{2}\b/iu', '', $value);
-        $value = preg_replace('/\b1[34]\d{2}(?:\s*[\/-]\s*1[34]\d{2})?\s*H\b/iu', '', $value);
+        $value = preg_replace('/\b1[34]\d{2}(?:\s*[\/-]\s*1[34]\d{2})?\s*H?\b/iu', '', $value);
 
         return preg_replace('/h$/', '', $this->normalizeLookup($value));
     }

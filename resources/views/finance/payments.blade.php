@@ -596,8 +596,13 @@
                 @endphp
 
                 @if(session('success'))
-                    <div class="payment-import-success" role="status">
-                        {{ session('success') }}
+                    <div class="result-modal-backdrop show payment-import-success-modal" data-alert role="dialog" aria-modal="true" aria-labelledby="payment-import-success-title">
+                        <div class="result-modal success-result payment-import-success-card" role="document">
+                            <span class="result-icon payment-import-success-icon" aria-hidden="true">{!! $icon('check') !!}</span>
+                            <strong id="payment-import-success-title">Import Berhasil</strong>
+                            <p>{{ session('success') }}</p>
+                            <button type="button" class="button button-primary" data-alert-close>Selesai</button>
+                        </div>
                     </div>
                 @endif
 
