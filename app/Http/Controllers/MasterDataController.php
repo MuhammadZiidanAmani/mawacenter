@@ -19,6 +19,7 @@ use App\Models\SppPaymentCorrection;
 use App\Models\SppPaymentItem;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\AuditLogService;
 use App\Services\BillService;
 use App\Services\ChargeCalculator;
 use App\Services\StudentImportService;
@@ -53,12 +54,19 @@ class MasterDataController extends Controller
         $perPage = $this->perPage($request);
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
         $studentYearId = $request->integer('year_id') ?: $activeAcademicYear?->id;
-        $studentStatus = 'active';
+        $studentStatus = in_array($request->query('status', 'active'), ['active', 'inactive', 'all'], true)
+            ? $request->query('status', 'active')
+            : 'active';
         $classYearId = $tab === 'classes' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
         $classStatus = $tab === 'classes' ? $request->query('status', 'active') : null;
         $feeTypeYearId = $tab === 'fee-types' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
-        $feeTypeStatus = null;
+        $feeTypeStatus = $tab === 'fee-types' && in_array($request->query('status', 'active'), ['active', 'inactive', 'all'], true)
+            ? $request->query('status', 'active')
+            : null;
         $feeDiscountYearId = $tab === 'fee-discounts' ? ($request->integer('year_id') ?: $activeAcademicYear?->id) : null;
+        $feeDiscountStatus = $tab === 'fee-discounts' && in_array($request->query('status', 'active'), ['active', 'inactive', 'all'], true)
+            ? $request->query('status', 'active')
+            : null;
         $studentSort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'class'], true)
             ? $request->string('sort')->value()
             : 'name';
@@ -108,14 +116,28 @@ class MasterDataController extends Controller
 
                 return $query->paginate($classPerPage)->withQueryString();
             })(),
-            'fee-types' => (function () use ($request, $search, $feeTypeYearId, $listSort, $listDirection, $perPage) {
+            'fee-types' => (function () use ($request, $search, $feeTypeYearId, $feeTypeStatus, $listSort, $listDirection, $perPage) {
                 $query = FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
                     ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
                     ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->where('education_unit_id', $unitId))
+                    ->when($request->integer('class_id'), function ($query, $classId) {
+                        $class = SchoolClass::find($classId);
+                        $level = ClassLevel::key($class?->level ?: $class?->name);
+
+                        $query->where(function ($scope) use ($classId, $level) {
+                            $scope->where('school_class_id', $classId)
+                                ->orWhereNull('school_class_id');
+
+                            if ($level !== null) {
+                                $scope->orWhere('class_level', $level);
+                            }
+                        });
+                    })
                     ->when($feeTypeYearId, fn ($query, $yearId) => $query
                         ->where(fn ($feeType) => $feeType
                             ->where('academic_year_id', $yearId)
                             ->orWhereNull('academic_year_id')))
+                    ->when($feeTypeStatus !== null && $feeTypeStatus !== 'all', fn ($query) => $query->where('is_active', $feeTypeStatus === 'active'))
                     ->orderBy(match ($listSort) {
                         'name' => 'name', 'unit' => 'education_unit_id', 'class' => 'class_level',
                         'year' => 'academic_year_id', 'amount' => 'amount', 'is_active' => 'is_active',
@@ -129,12 +151,13 @@ class MasterDataController extends Controller
 
                 return $query->paginate($feeTypePerPage)->withQueryString();
             })(),
-            'fee-discounts' => (function () use ($request, $search, $feeDiscountYearId, $listSort, $listDirection, $perPage) {
+            'fee-discounts' => (function () use ($request, $search, $feeDiscountYearId, $feeDiscountStatus, $listSort, $listDirection, $perPage) {
                 $query = FeeDiscount::with(['student.schoolClass.educationUnit', 'feeType'])
                     ->when($search, fn ($query) => $query->whereHas('student', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")))
                     ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->whereHas('student.schoolClass', fn ($class) => $class->where('education_unit_id', $unitId)))
                     ->when($request->integer('class_id'), fn ($query, $classId) => $query->whereHas('student', fn ($student) => $student->where('school_class_id', $classId)))
                     ->when($feeDiscountYearId, fn ($query, $yearId) => $query->whereHas('student', fn ($student) => $student->where('academic_year_id', $yearId)))
+                    ->when($feeDiscountStatus !== null && $feeDiscountStatus !== 'all', fn ($query) => $query->where('is_active', $feeDiscountStatus === 'active'))
                     ->orderBy(match ($listSort) {
                         'student' => 'student_id', 'payment' => 'source_type',
                         'discount' => 'discount_value', 'is_active' => 'is_active',
@@ -186,8 +209,8 @@ class MasterDataController extends Controller
             default => Student::select('students.*')->with(['schoolClass.educationUnit'])
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('students.name', 'like', "%{$search}%")->orWhere('students.nis', 'like', "%{$search}%")->orWhere('students.nisn', 'like', "%{$search}%")))
                 ->when($request->integer('class_id'), fn ($query, $classId) => $query->where('students.school_class_id', $classId))
-                ->when($request->integer('year_id'), fn ($query, $yearId) => $query->where('students.academic_year_id', $yearId))
-                ->where('students.is_active', true)
+                ->when($studentYearId, fn ($query, $yearId) => $query->where('students.academic_year_id', $yearId))
+                ->when($studentStatus !== 'all', fn ($query) => $query->where('students.is_active', $studentStatus === 'active'))
                 ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->whereHas('schoolClass', fn ($q) => $q->where('education_unit_id', $unitId)))
                 ->when(in_array($studentSort, ['unit', 'class'], true), fn ($query) => $query
                     ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id'))
@@ -249,11 +272,14 @@ class MasterDataController extends Controller
             'activeAcademicYear' => $activeAcademicYear,
             'studentYearId' => $studentYearId,
             'studentStatus' => $studentStatus,
+            'studentSort' => $studentSort,
+            'studentSortDirection' => $studentSortDirection,
             'classYearId' => $classYearId,
             'classStatus' => $classStatus,
             'feeTypeYearId' => $feeTypeYearId,
             'feeTypeStatus' => $feeTypeStatus,
             'feeDiscountYearId' => $feeDiscountYearId,
+            'feeDiscountStatus' => $feeDiscountStatus,
             'studentOptions' => $this->studentOptions($tab, $showCreate),
             'existingStudentOptions' => $this->existingStudentOptions($tab, $showCreate),
             'feeTypeOptions' => $this->feeTypeOptions($tab, $showCreate),
@@ -401,12 +427,29 @@ class MasterDataController extends Controller
                 'class_id' => 'Tidak ada siswa aktif pada kelas dan tahun pelajaran yang dipilih.',
             ]);
         }
+        $studentRows = (clone $students)->with(['schoolClass.educationUnit', 'academicYear'])->get();
 
         $students->update([
             'is_active' => false,
             'exit_date' => $validated['exit_date'],
             'inactive_reason' => $validated['inactive_reason'],
         ]);
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.class_alumni',
+            $studentRows->pluck('id'),
+            [
+                'unit_id' => (int) $validated['unit_id'],
+                'class_id' => (int) $validated['class_id'],
+                'year_id' => (int) $validated['year_id'],
+                'exit_date' => $validated['exit_date'],
+                'inactive_reason' => $validated['inactive_reason'],
+            ],
+            ['students' => $studentRows->map(fn (Student $student) => $this->studentAuditSnapshot($student))->values()->all()],
+            ['is_active' => false, 'exit_date' => $validated['exit_date'], 'inactive_reason' => $validated['inactive_reason']],
+            $request,
+            SchoolClass::class,
+            (int) $validated['class_id'],
+        );
 
         return redirect()->route('student-management.students.index', [
             'unit_id' => $validated['unit_id'],
@@ -420,9 +463,10 @@ class MasterDataController extends Controller
     {
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
         $selectedUnitId = $request->integer('unit_id') ?: null;
+        $selectedClassId = $request->integer('class_id') ?: null;
         $selectedYearId = $request->integer('year_id') ?: null;
         $search = trim((string) $request->query('search', ''));
-        $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'year', 'exit_date'], true)
+        $sort = in_array($request->string('sort')->value(), ['nis', 'name', 'gender', 'unit', 'class', 'year', 'exit_date'], true)
             ? $request->string('sort')->value()
             : 'name';
         $direction = $request->query('direction') === 'desc' ? 'desc' : 'asc';
@@ -433,6 +477,7 @@ class MasterDataController extends Controller
             ->with(['schoolClass.educationUnit', 'academicYear'])
             ->where('students.is_active', false)
             ->when($selectedUnitId, fn ($query, $unitId) => $query->whereHas('schoolClass', fn ($class) => $class->where('education_unit_id', $unitId)))
+            ->when($selectedClassId, fn ($query, $classId) => $query->where('students.school_class_id', $classId))
             ->when($selectedYearId, fn ($query, $yearId) => $query->where('students.academic_year_id', $yearId))
             ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
             ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
@@ -443,6 +488,8 @@ class MasterDataController extends Controller
                 ->orWhere('students.name', 'like', "%{$search}%")
                 ->orWhere('students.inactive_reason', 'like', "%{$search}%")
                 ->orWhere('education_units.code', 'like', "%{$search}%")
+                ->orWhere('education_units.name', 'like', "%{$search}%")
+                ->orWhere('school_classes.name', 'like', "%{$search}%")
                 ->orWhere('academic_years.name', 'like', "%{$search}%")));
 
         match ($sort) {
@@ -452,6 +499,7 @@ class MasterDataController extends Controller
             'unit' => $alumniQuery
                 ->orderByRaw(str_replace('code', 'education_units.code', $this->educationUnitOrderExpression())." {$direction}")
                 ->orderBy('education_units.name', $direction),
+            'class' => $alumniQuery->orderBy('school_classes.name', $direction),
             'year' => $alumniQuery->orderBy('academic_years.name', $direction),
             'exit_date' => $alumniQuery->orderBy('students.exit_date', $direction),
             default => $alumniQuery->orderBy('students.name'),
@@ -459,15 +507,17 @@ class MasterDataController extends Controller
 
         $alumni = $alumniQuery
             ->paginate($perPage === 'all' ? PHP_INT_MAX : (int) $perPage)
-            ->appends($request->except(['page', 'class_id', 'reason', 'sort', 'direction']));
+            ->appends($request->except(['page']));
 
         return view('student-management.alumni', [
             'activeAcademicYear' => $activeAcademicYear,
             'academicYears' => $this->academicYearOptions(),
+            'classes' => $this->classOptions(),
             'educationUnits' => $this->educationUnitOptions(),
             'alumni' => $alumni,
             'filters' => [
                 'unit_id' => $selectedUnitId,
+                'class_id' => $selectedClassId,
                 'year_id' => $selectedYearId,
                 'search' => $search,
                 'per_page' => $perPage,
@@ -577,12 +627,24 @@ class MasterDataController extends Controller
 
         $student = Student::create($data);
         app(BillService::class)->syncStudentCurrentBills($student);
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.create',
+            [$student->id],
+            ['message' => 'Data siswa ditambahkan dari form Manajemen Siswa.'],
+            [],
+            $this->studentAuditSnapshot($student->refresh()),
+            $request,
+            Student::class,
+            $student->id,
+        );
 
         return $this->done('students', 'Data siswa berhasil ditambahkan.');
     }
 
     public function updateStudent(Request $request, Student $student): RedirectResponse
     {
+        $before = $this->studentAuditSnapshot($student->loadMissing(['schoolClass.educationUnit', 'academicYear']));
+        $wasInactive = ! $student->is_active;
         $data = $this->validateStudent($request, $student);
         $rootIdentityId = $student->identity_student_id ?: $student->id;
 
@@ -595,6 +657,17 @@ class MasterDataController extends Controller
                 ->update(collect($data)->only($this->studentPersonalFields())->all());
         });
         app(BillService::class)->syncStudentCurrentBills($student->refresh());
+        $student->loadMissing(['schoolClass.educationUnit', 'academicYear']);
+        app(AuditLogService::class)->recordStudentOperation(
+            $wasInactive && $student->is_active ? 'students.reactivate' : 'students.update',
+            [$student->id],
+            ['message' => $wasInactive && $student->is_active ? 'Siswa nonaktif diaktifkan kembali lewat edit.' : 'Data siswa diperbarui lewat form edit.'],
+            $before,
+            $this->studentAuditSnapshot($student),
+            $request,
+            Student::class,
+            $student->id,
+        );
 
         return $this->done('students', 'Data siswa berhasil diperbarui.');
     }
@@ -610,19 +683,41 @@ class MasterDataController extends Controller
                     : Rule::exists('school_classes', 'id'),
             ],
             'year_id' => ['nullable', 'exists:academic_years,id'],
-            'status' => ['nullable', Rule::in(['active', 'inactive'])],
+            'status' => ['nullable', Rule::in(['active', 'inactive', 'all'])],
             'search' => ['nullable', 'string', 'max:120'],
+            'sort' => ['nullable', Rule::in(['nis', 'name', 'gender', 'unit', 'class'])],
+            'direction' => ['nullable', Rule::in(['asc', 'desc'])],
         ]);
         $validated['status'] ??= 'active';
+        $validated['sort'] ??= 'name';
+        $validated['direction'] ??= 'asc';
         $yearId = $validated['year_id'] ?? AcademicYear::where('is_active', true)->value('id');
         $unit = isset($validated['unit_id']) ? EducationUnit::findOrFail($validated['unit_id']) : null;
-        $students = Student::with('schoolClass.educationUnit')
-            ->when($unit, fn ($query) => $query->whereHas('schoolClass', fn ($q) => $q->where('education_unit_id', $unit->id)))
-            ->when($validated['class_id'] ?? null, fn ($query, $classId) => $query->where('school_class_id', $classId))
-            ->when($yearId, fn ($query, $id) => $query->where('academic_year_id', $id))
-            ->when($validated['status'] ?? null, fn ($query, $status) => $query->where('is_active', $status === 'active'))
-            ->when($validated['search'] ?? null, fn ($query, $search) => $query->where(fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")->orWhere('nisn', 'like', "%{$search}%")))
-            ->orderBy('name')->get();
+        $class = isset($validated['class_id']) ? SchoolClass::findOrFail($validated['class_id']) : null;
+        $year = $yearId ? AcademicYear::find($yearId) : null;
+
+        $students = Student::select('students.*')
+            ->with(['schoolClass.educationUnit', 'academicYear'])
+            ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
+            ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+            ->leftJoin('academic_years', 'academic_years.id', '=', 'students.academic_year_id')
+            ->when($unit, fn ($query) => $query->where('education_units.id', $unit->id))
+            ->when($validated['class_id'] ?? null, fn ($query, $classId) => $query->where('students.school_class_id', $classId))
+            ->when($yearId, fn ($query, $id) => $query->where('students.academic_year_id', $id))
+            ->when(($validated['status'] ?? null) && $validated['status'] !== 'all', fn ($query) => $query->where('students.is_active', $validated['status'] === 'active'))
+            ->when($validated['search'] ?? null, fn ($query, $search) => $query->where(fn ($q) => $q->where('students.name', 'like', "%{$search}%")->orWhere('students.nis', 'like', "%{$search}%")->orWhere('students.nisn', 'like', "%{$search}%")));
+
+        match ($validated['sort']) {
+            'nis' => $students->orderBy('students.nis', $validated['direction']),
+            'gender' => $students->orderBy('students.gender', $validated['direction']),
+            'unit' => $students
+                ->orderByRaw(str_replace('code', 'education_units.code', $this->educationUnitOrderExpression()).' '.$validated['direction'])
+                ->orderBy('education_units.name', $validated['direction']),
+            'class' => $students->orderBy('school_classes.name', $validated['direction']),
+            default => $students->orderBy('students.name', $validated['direction']),
+        };
+
+        $students = $students->orderBy('students.name')->get();
 
         $headers = $this->studentImportHeaders();
         $rows = [$headers];
@@ -648,20 +743,57 @@ class MasterDataController extends Controller
                 $student->schoolClass?->name,
                 $student->entry_date?->format('Y-m-d'),
                 $student->billing_start_date?->format('Y-m-d'),
+                $student->intakeStatusLabel(),
                 $student->is_active ? 'Aktif' : 'Nonaktif',
                 $student->exit_date?->format('Y-m-d'),
                 $student->inactive_reason,
             ];
         }
 
-        $filenameScope = $unit ? Str::slug($unit->code) : 'semua';
+        $filenameParts = ['data-siswa', $unit ? Str::slug($unit->code) : 'semua'];
+        if ($class) {
+            $filenameParts[] = Str::slug($class->name);
+        }
+        if ($year && isset($validated['year_id'])) {
+            $filenameParts[] = Str::slug(str_replace('/', '-', $year->name));
+        }
+        if (($validated['status'] ?? 'active') !== 'active' || $request->has('status')) {
+            $filenameParts[] = match ($validated['status']) {
+                'inactive' => 'nonaktif',
+                'all' => 'semua-status',
+                default => 'aktif',
+            };
+        }
+        if (! empty($validated['search'])) {
+            $filenameParts[] = 'cari-'.Str::slug(Str::limit($validated['search'], 30, ''));
+        }
+        $filename = implode('-', array_filter($filenameParts)).'-'.now()->format('Y-m-d').'.xlsx';
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.export',
+            $students->pluck('id'),
+            [
+                'filename' => $filename,
+                'filters' => [
+                    'unit_id' => $validated['unit_id'] ?? null,
+                    'class_id' => $validated['class_id'] ?? null,
+                    'year_id' => $yearId,
+                    'status' => $validated['status'],
+                    'search' => $validated['search'] ?? null,
+                    'sort' => $validated['sort'],
+                    'direction' => $validated['direction'],
+                ],
+            ],
+            [],
+            [],
+            $request,
+        );
 
         return response()->streamDownload(function () use ($rows) {
             $path = tempnam(sys_get_temp_dir(), 'students-xlsx-');
             StudentXlsx::write($path, $rows);
             readfile($path);
             unlink($path);
-        }, 'data-siswa-'.$filenameScope.'-'.now()->format('Y-m-d').'.xlsx', ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
+        }, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
     }
 
     public function studentTemplate(): StreamedResponse
@@ -747,6 +879,20 @@ class MasterDataController extends Controller
             app(BillService::class)->syncStudentsCurrentBills($activeYear, $result['student_ids']);
             $message .= ' Tagihan siswa baru otomatis diperbarui.';
         }
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.import',
+            $result['student_ids'] ?? [],
+            [
+                'file_name' => $stored['name'] ?? null,
+                'academic_year_id' => $activeYear->id,
+                'imported' => $imported,
+                'created_classes' => $createdClasses,
+                'failed_rows' => count($failures),
+            ],
+            [],
+            [],
+            $request,
+        );
 
         return $this->done('students', $message);
     }
@@ -1100,6 +1246,30 @@ class MasterDataController extends Controller
         return ['No', 'NIS', 'NISN', 'Nama', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Kelamin', 'Nama Ayah', 'Nama Ibu', 'No. WA Ayah', 'No. WA Ibu', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Desa', 'Alamat', 'Unit Pendidikan', 'Kelas', 'Tanggal Masuk', 'Mulai Tagihan Khusus', 'Status Masuk', 'Status', 'Tanggal Keluar', 'Alasan Nonaktif'];
     }
 
+    private function studentAuditSnapshot(Student $student): array
+    {
+        $student->loadMissing(['schoolClass.educationUnit', 'academicYear']);
+
+        return [
+            'id' => $student->id,
+            'identity_student_id' => $student->identity_student_id,
+            'nis' => $student->nis,
+            'nisn' => $student->nisn,
+            'name' => $student->name,
+            'unit' => $student->schoolClass?->educationUnit?->code,
+            'class_id' => $student->school_class_id,
+            'class' => $student->schoolClass?->name,
+            'academic_year_id' => $student->academic_year_id,
+            'academic_year' => $student->academicYear?->name,
+            'entry_date' => $student->entry_date?->format('Y-m-d'),
+            'billing_start_date' => $student->billing_start_date?->format('Y-m-d'),
+            'intake_status' => $student->intake_status,
+            'is_active' => (bool) $student->is_active,
+            'exit_date' => $student->exit_date?->format('Y-m-d'),
+            'inactive_reason' => $student->inactive_reason,
+        ];
+    }
+
     private function studentImportPreview(Request $request): ?array
     {
         $token = $request->string('import_token')->value();
@@ -1299,6 +1469,9 @@ class MasterDataController extends Controller
         if ($legacyClassIds->isEmpty() && is_numeric($request->input('school_class_id'))) {
             $legacyClassIds = collect([(int) $request->input('school_class_id')]);
         }
+        if (is_numeric($request->input('school_class_id')) && ! SchoolClass::whereKey((int) $request->input('school_class_id'))->where('education_unit_id', $validated['education_unit_id'])->exists()) {
+            throw ValidationException::withMessages(['school_class_id' => 'Kelas tidak sesuai dengan unit pendidikan.']);
+        }
         $legacyLevels = SchoolClass::where('education_unit_id', $validated['education_unit_id'])
             ->whereIn('id', $legacyClassIds)
             ->get(['name', 'level'])
@@ -1441,6 +1614,7 @@ class MasterDataController extends Controller
                 'unit_id',
                 'class_id',
                 'year_id',
+                'status',
                 'search',
                 'per_page',
                 'sort',
@@ -1573,6 +1747,7 @@ class MasterDataController extends Controller
         }
         $studentIds = collect($validated['student_ids'])->map(fn ($id) => (int) $id)->unique()->values();
         $students = Student::whereIn('id', $studentIds)
+            ->with(['schoolClass.educationUnit', 'academicYear'])
             ->where('is_active', true)
             ->where('academic_year_id', $validated['source_year_id'])
             ->get();
@@ -1630,10 +1805,35 @@ class MasterDataController extends Controller
         if ($isPromotion) {
             $studentUpdates['intake_status'] = Student::INTAKE_RETURNING;
         }
+        $before = $students
+            ->map(fn (Student $student) => $this->studentAuditSnapshot($student))
+            ->values()
+            ->all();
 
         DB::transaction(function () use ($students, $studentUpdates) {
             Student::whereIn('id', $students->pluck('id'))->update($studentUpdates);
         });
+
+        app(BillService::class)->syncStudentsCurrentBills(
+            AcademicYear::findOrFail($targetYearId),
+            $studentIds
+        );
+        app(AuditLogService::class)->recordStudentOperation(
+            $isPromotion ? 'students.promote_class' : 'students.transfer_class',
+            $studentIds,
+            [
+                'source_year_id' => (int) $validated['source_year_id'],
+                'target_year_id' => $targetYearId,
+                'target_class_id' => $targetClassId,
+                'unit_id' => $validated['unit_id'] ?? null,
+                'class_id' => $validated['class_id'] ?? null,
+            ],
+            ['students' => $before],
+            ['updates' => $studentUpdates],
+            $request,
+            SchoolClass::class,
+            $targetClassId,
+        );
 
         $route = $isPromotion ? 'student-management.class-promotion.index' : 'student-management.class-transfer.index';
         $message = $isPromotion

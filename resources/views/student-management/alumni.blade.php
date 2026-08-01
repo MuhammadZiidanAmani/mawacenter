@@ -6,7 +6,7 @@
     <title>Data Alumni - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
+<body class="student-alumni-body">
 @php
     $icons = [
         'menu' => '<path d="M4 6h16M4 12h16M4 18h16"/>',
@@ -19,6 +19,7 @@
         'calendar' => '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
     ];
     $icon = fn ($name, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$icons[$name].'</svg>';
+    $selectedUnitId = $filters['unit_id'] ?? null;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', [
@@ -53,7 +54,25 @@
                             <select name="unit_id" data-student-filter-unit>
                                 <option value="">semua</option>
                                 @foreach ($educationUnits as $unit)
-                                    <option value="{{ $unit->id }}" @selected($filters['unit_id'] == $unit->id)>{{ $unit->code }}</option>
+                                    <option value="{{ $unit->id }}" @selected($selectedUnitId == $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label>
+                            <span>Kelas</span>
+                            <select name="class_id" data-student-filter-class>
+                                <option value="">semua</option>
+                                @foreach ($classes as $class)
+                                    <option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(($filters['class_id'] ?? null) == $class->id)>{{ $class->educationUnit?->code ? $class->educationUnit->code.' - ' : '' }}{{ $class->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label>
+                            <span>Tahun Pelajaran</span>
+                            <select name="year_id">
+                                <option value="">semua</option>
+                                @foreach ($academicYears as $year)
+                                    <option value="{{ $year->id }}" @selected(($filters['year_id'] ?? null) == $year->id)>{{ $year->name }}</option>
                                 @endforeach
                             </select>
                         </label>
@@ -61,7 +80,7 @@
                     <label class="student-reference-search student-fee-filter-search">
                         <span>Cari alumni</span>
                         {!! $icon('search') !!}
-                        <input name="search" value="{{ $filters['search'] }}" placeholder="Nama atau NIS..." aria-label="Cari alumni berdasarkan nama atau NIS">
+                        <input name="search" value="{{ $filters['search'] }}" placeholder="Nama, NIS, NISN, unit, kelas..." aria-label="Cari alumni berdasarkan nama, NIS, NISN, unit, kelas, tahun, atau alasan nonaktif">
                     </label>
                     <div class="student-filter-actions student-fee-card-filter-actions fee-type-card-filter-actions">
                         <button class="button student-fee-card-search-button fee-type-card-search-button" type="submit" aria-label="Tampilkan data alumni">Terapkan</button>
@@ -73,7 +92,7 @@
             <section class="card master-card student-data-card student-list-table-card">
                 <div class="student-reference-card-count">
                     <form method="GET" action="{{ route('student-management.alumni.index') }}" class="student-reference-card-length">
-                    @foreach(request()->except(['per_page', 'page', 'class_id', 'reason', 'sort', 'direction']) as $key => $value)
+                    @foreach(request()->except(['per_page', 'page']) as $key => $value)
                             @if(is_scalar($value))
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                             @endif
@@ -98,9 +117,12 @@
                         <colgroup>
                             <col class="alumni-col-no">
                             <col class="alumni-col-nis">
+                            <col class="alumni-col-nisn">
                             <col class="alumni-col-name">
                             <col class="alumni-col-gender">
                             <col class="alumni-col-unit">
+                            <col class="alumni-col-class">
+                            <col class="alumni-col-year">
                             <col class="alumni-col-date">
                             <col class="alumni-col-reason">
                             <col class="alumni-col-actions">
@@ -109,9 +131,12 @@
                             <tr>
                                 <th>No</th>
                                 <th>NIS</th>
+                                <th>NISN</th>
                                 <th>Nama Siswa</th>
                                 <th>JK</th>
                                 <th>Unit</th>
+                                <th>Kelas</th>
+                                <th>Tahun</th>
                                 <th>Tanggal Keluar</th>
                                 <th>Alasan</th>
                                 <th>Aksi</th>
@@ -122,9 +147,12 @@
                                 <tr>
                                     <td class="alumni-cell-center">{{ $alumni->firstItem() + $loop->index }}</td>
                                     <td class="alumni-cell-center">{{ $student->nis ?: '-' }}</td>
+                                    <td class="alumni-cell-center">{{ $student->nisn ?: '-' }}</td>
                                     <td class="alumni-cell-main"><strong>{{ $student->name }}</strong></td>
                                     <td class="alumni-cell-center">{{ $student->gender === 'L' ? 'L' : 'P' }}</td>
                                     <td class="alumni-cell-center">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</td>
+                                    <td class="alumni-cell-center">{{ $student->schoolClass?->name ?? '-' }}</td>
+                                    <td class="alumni-cell-center">{{ $student->academicYear?->name ?? '-' }}</td>
                                     <td class="alumni-cell-center">{{ $student->exit_date?->format('d/m/Y') ?? '-' }}</td>
                                     <td class="alumni-cell-center">{{ $student->inactive_reason ?: '-' }}</td>
                                     <td class="alumni-actions-cell">
@@ -135,7 +163,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="alumni-empty-cell">
+                                    <td colspan="11" class="alumni-empty-cell">
                                         <strong>Belum ada data alumni</strong>
                                         <span>Data akan muncul setelah siswa dijadikan nonaktif/alumni.</span>
                                     </td>

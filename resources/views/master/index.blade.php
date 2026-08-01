@@ -6,7 +6,7 @@
     <title>Master Data - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body>
+<body class="{{ ($tab ?? null) === 'students' ? 'student-data-body' : 'master-data-body' }}">
 @php
     $svg = fn ($path, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$path.'</svg>';
     $icons = [
@@ -38,6 +38,9 @@
         'clock' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
         'info' => '<circle cx="12" cy="12" r="9"/><path d="M12 10v6M12 7h.01"/>',
         'filter' => '<path d="M4 6h16M7 12h10M10 18h4"/>',
+        'sort' => '<path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/>',
+        'sort-up' => '<path d="m7 14 5-5 5 5"/>',
+        'sort-down' => '<path d="m7 10 5 5 5-5"/>',
     ];
     $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
     $tabs = [
@@ -195,11 +198,18 @@
             @if ($tab === 'students')
                 <section class="student-workspace student-list-filter-card student-reference-align-lock">
                     @php
+                        $canCreateStudents = auth()->user()?->hasPermission('students.create') ?? false;
+                        $canImportStudents = auth()->user()?->hasPermission('students.import') ?? false;
+                        $canExportStudents = auth()->user()?->hasPermission('students.export') ?? false;
+                        $canManageStudentAlumni = auth()->user()?->hasPermission('students.alumni') ?? false;
                         $studentExportQuery = array_filter([
                             'unit_id' => request('unit_id'),
                             'class_id' => request('class_id'),
                             'year_id' => $studentYearId,
+                            'status' => $studentStatus,
                             'search' => request('search'),
+                            'sort' => request('sort'),
+                            'direction' => request('direction'),
                         ], fn ($value) => filled($value));
                         $canClassAlumni = request()->filled('unit_id')
                             && request()->filled('class_id')
@@ -213,28 +223,41 @@
                             <h1>Data Siswa</h1>
                             <p>Kelola identitas, kelas, wali, dan status siswa.</p>
                         </div>
-                        <div class="student-title-actions">
+                        <div class="student-title-actions student-export-actions">
+                            @if ($canCreateStudents)
                             <a href="{{ route('student-management.students.create') }}" class="button student-add-button">{!! $icon('plus') !!} Tambah</a>
-                            @if ($canClassAlumni)
+                            @endif
+                            @if ($canManageStudentAlumni && $canClassAlumni)
                                 <a href="{{ route('student-management.students.class-alumni.create', ['unit_id' => request('unit_id'), 'class_id' => request('class_id'), 'year_id' => $studentYearId]) }}" class="button student-add-button">{!! $icon('check') !!} Jadikan Alumni</a>
                             @endif
+                            @if ($canImportStudents)
                             <a href="{{ route('student-management.students.import') }}" class="button action-purple">{!! $icon('upload') !!} Import</a>
+                            @endif
+                            @if ($canExportStudents)
                             <a href="{{ route('master.students.export', $studentExportQuery) }}" class="button action-green">{!! $icon('download') !!} Export</a>
+                            @endif
+                            @if ($canImportStudents)
+                            <a href="{{ route('master.students.template') }}" class="button action-green">{!! $icon('download') !!} Template</a>
+                            @endif
                         </div>
                     </div>
 
                     <form id="student-data-filter" method="GET" action="{{ route('student-management.students.index') }}" class="student-filter-panel student-reference-filter student-fee-card-filter" data-student-filter-panel>
                         <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">
+                        <input type="hidden" name="year_id" value="{{ $studentYearId }}">
+                        @if(request()->filled('search'))
+                            <input type="hidden" name="search" value="{{ request('search') }}">
+                        @endif
+                        @if(request()->filled('sort'))
+                            <input type="hidden" name="sort" value="{{ request('sort') }}">
+                            <input type="hidden" name="direction" value="{{ request('direction', 'asc') }}">
+                        @endif
                         <div class="student-reference-filter-grid student-fee-card-filter-grid">
                             <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                             <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
+                            <label><span>Status Data</span><select name="status"><option value="active" @selected($studentStatus === 'active')>Aktif</option><option value="inactive" @selected($studentStatus === 'inactive')>Nonaktif</option><option value="all" @selected($studentStatus === 'all')>Semua</option></select></label>
                         </div>
-                        <label class="student-reference-search student-fee-filter-search">
-                            <span>Cari siswa</span>
-                            {!! $icon('search') !!}
-                            <input name="search" value="{{ request('search') }}" placeholder="Nama atau NIS..." aria-label="Cari nama atau NIS">
-                        </label>
-                        <div class="student-filter-actions student-fee-card-filter-actions fee-type-card-filter-actions">
+                        <div class="student-filter-actions student-fee-card-filter-actions student-data-filter-actions">
                             <button class="button student-fee-card-search-button fee-type-card-search-button" aria-label="Tampilkan data">Terapkan</button>
                             <a href="{{ route('student-management.students.index') }}" class="button student-fee-card-reset-button fee-type-card-reset-button">Reset</a>
                         </div>
@@ -778,9 +801,14 @@
                 @endif
 
                 @if($tab === 'students')
-                    <div class="student-reference-card-count">
-                        <form method="GET" action="{{ route('student-management.students.index') }}" class="student-reference-card-length">
-                            @foreach(request()->except(['per_page', 'page', 'status']) as $key => $value)
+                    @php
+                        $studentResultSummary = ($data->total() ?? 0) > 0
+                            ? 'Menampilkan '.number_format($data->firstItem(), 0, ',', '.').'-'.number_format($data->lastItem(), 0, ',', '.').' dari '.number_format($data->total(), 0, ',', '.').' siswa'
+                            : 'Menampilkan 0 dari 0 siswa';
+                    @endphp
+                    <div class="student-reference-card-count student-table-toolbar-v2">
+                        <form method="GET" action="{{ route('student-management.students.index') }}" class="student-reference-card-length student-page-size-form">
+                            @foreach(request()->except(['per_page', 'page']) as $key => $value)
                                 @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                             @endforeach
                             <label>Tampilkan
@@ -793,9 +821,18 @@
                                 siswa
                             </label>
                         </form>
-                        <span>
-                            {{ ($data->total() ?? 0) > 0 ? 'Menampilkan '.number_format($data->firstItem(), 0, ',', '.').'-'.number_format($data->lastItem(), 0, ',', '.').' dari '.number_format($data->total(), 0, ',', '.').' siswa' : 'Menampilkan 0 dari 0 siswa' }}
-                        </span>
+                        <form method="GET" action="{{ route('student-management.students.index') }}" class="report-student-search-card" role="search">
+                            @foreach(request()->except(['search', 'page']) as $key => $value)
+                                @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
+                            @endforeach
+                            <label>
+                                <span>Cari Siswa</span>
+                                <span class="report-student-search-input">
+                                    {!! $icon('search') !!}
+                                    <input type="search" name="search" value="{{ request('search') }}" placeholder="Nama / NIS / NISN" autocomplete="off" aria-label="Cari siswa">
+                                </span>
+                            </label>
+                        </form>
                     </div>
                 @else
                     @php
@@ -820,18 +857,34 @@
                             default => 'Cari data...',
                         };
                     @endphp
-                    <form method="GET" action="{{ route('master.index') }}" class="master-data-filter-panel">
+                    <form method="GET" action="{{ route('master.index') }}" @class([
+                        'master-data-filter-panel',
+                        'master-class-filter-panel' => $tab === 'classes',
+                        'master-fee-filter-panel' => $tab === 'fee-types',
+                        'master-discount-filter-panel' => $tab === 'fee-discounts',
+                    ])>
                         <input type="hidden" name="tab" value="{{ $tab }}">
                         <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">
 
                         @if (in_array($tab, ['classes', 'fee-types', 'fee-discounts'], true))
                             <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit aria-label="Filter unit pendidikan"><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                         @endif
-                        @if ($tab === 'fee-discounts')
+                        @if (in_array($tab, ['fee-types', 'fee-discounts'], true))
                             <label><span>Kelas</span><select name="class_id" data-student-filter-class aria-label="Filter kelas"><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
                         @endif
-                        @if ($tab === 'classes')
-                            <label><span>Status Data</span><select name="status" aria-label="Filter status data"><option value="">Semua Status</option><option value="active" @selected($classStatus === 'active')>Aktif</option><option value="inactive" @selected($classStatus === 'inactive')>Nonaktif</option></select></label>
+                        @if (in_array($tab, ['classes', 'fee-types', 'fee-discounts'], true))
+                            <label><span>Tahun Pelajaran</span><select name="year_id" aria-label="Filter tahun pelajaran"><option value="">semua</option>@foreach ($academicYears as $year)<option value="{{ $year->id }}" @selected((string) request('year_id', $activeAcademicYear?->id) === (string) $year->id)>{{ $year->name }}</option>@endforeach</select></label>
+                        @endif
+                        @if (in_array($tab, ['classes', 'fee-types', 'fee-discounts'], true))
+                            @php
+                                $selectedMasterStatus = match ($tab) {
+                                    'classes' => $classStatus,
+                                    'fee-types' => $feeTypeStatus,
+                                    'fee-discounts' => $feeDiscountStatus,
+                                    default => request('status', 'active'),
+                                };
+                            @endphp
+                            <label><span>Status Data</span><select name="status" aria-label="Filter status data"><option value="">Semua Status</option><option value="active" @selected($selectedMasterStatus === 'active')>Aktif</option><option value="inactive" @selected($selectedMasterStatus === 'inactive')>Nonaktif</option></select></label>
                         @endif
                         @if ($tab === 'data-users')
                             <label><span>Role</span><select name="role" aria-label="Filter role"><option value="">Semua Role</option>@foreach ($roleOptions as $key => $name)<option value="{{ $key }}" @selected(request('role') === $key)>{{ $name }}</option>@endforeach</select></label>
@@ -869,8 +922,22 @@
                         </span>
                     </div>
                 @endif
-                <div class="table-wrap"><table class="data-table {{ $tab !== 'students' ? 'master-data-table' : '' }} {{ $tab === 'students' ? 'student-flat-table student-master-table' : '' }} {{ $tab === 'academic-years' ? 'academic-year-table' : '' }} {{ $tab === 'education-units' ? 'education-unit-table' : '' }} {{ $tab === 'classes' ? 'class-table' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table' : '' }} {{ $tab === 'data-roles' ? 'data-role-table' : '' }} {{ $tab === 'data-users' ? 'data-user-table' : '' }}">
+                <div class="table-wrap"><table class="data-table {{ $tab !== 'students' ? 'master-data-table' : '' }} {{ $tab === 'students' ? 'student-flat-table student-master-table student-standard-table-v2' : '' }} {{ $tab === 'academic-years' ? 'academic-year-table' : '' }} {{ $tab === 'education-units' ? 'education-unit-table' : '' }} {{ $tab === 'classes' ? 'class-table' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table' : '' }} {{ $tab === 'data-roles' ? 'data-role-table' : '' }} {{ $tab === 'data-users' ? 'data-user-table' : '' }}">
                     @if ($tab === 'students')
+                        @php
+                            $studentSortColumns = [
+                                'nis' => 'NIS',
+                                'name' => 'Nama',
+                                'gender' => 'JK',
+                                'unit' => 'Unit',
+                                'class' => 'Kelas',
+                            ];
+                            $studentSortUrl = fn ($column, $direction) => route('student-management.students.index', array_merge(request()->except(['sort', 'direction', 'page']), [
+                                'sort' => $column,
+                                'direction' => $direction,
+                            ]));
+                            $hasExplicitStudentSort = request()->filled('sort') && array_key_exists((string) request('sort'), $studentSortColumns);
+                        @endphp
                         <colgroup>
                             <col class="student-col-no">
                             <col class="student-col-nis">
@@ -882,15 +949,24 @@
                         </colgroup>
                         <thead><tr>
                             <th>No</th>
-                            @foreach ([
-                                'nis' => 'NIS',
-                                'name' => 'Nama',
-                                'gender' => 'JK',
-                                'unit' => 'Unit',
-                                'class' => 'Kelas',
-                            ] as $columnKey => $columnLabel)
-                                <th class="{{ $columnKey === 'class' ? 'student-class-column' : '' }}">
-                                    {{ $columnLabel }}
+                            @foreach ($studentSortColumns as $columnKey => $columnLabel)
+                                @php
+                                    $isCurrentStudentSort = $hasExplicitStudentSort && $studentSort === $columnKey;
+                                    $nextStudentDirection = $isCurrentStudentSort && $studentSortDirection === 'asc' ? 'desc' : 'asc';
+                                    $studentSortIcon = $isCurrentStudentSort ? ($studentSortDirection === 'asc' ? 'sort-up' : 'sort-down') : 'sort';
+                                @endphp
+                                <th @class([
+                                    'student-sortable-heading',
+                                    'is-sorted' => $isCurrentStudentSort,
+                                    'student-class-column' => $columnKey === 'class',
+                                ])>
+                                    <a class="student-sort-link" href="{{ $studentSortUrl($columnKey, $nextStudentDirection) }}" aria-label="Urutkan {{ $columnLabel }} {{ $nextStudentDirection === 'asc' ? 'naik' : 'turun' }}">
+                                        <span>{{ $columnLabel }}</span>
+                                        <span class="student-sort-indicator">{!! $icon($studentSortIcon) !!}</span>
+                                        @if($isCurrentStudentSort)
+                                            <span class="student-sr-only">{{ $studentSortDirection === 'asc' ? 'Diurutkan naik' : 'Diurutkan turun' }}</span>
+                                        @endif
+                                    </a>
                                 </th>
                             @endforeach
                             <th class="student-action-column">Aksi</th>
@@ -987,7 +1063,65 @@
                         @empty @include('master.partials.empty') @endforelse</tbody>
                     @endif
                 </table></div>
-                @if ($tab !== 'classes')<div class="pagination-wrap">{{ $data->links() }}</div>@endif
+                @if ($tab === 'students')
+                    @php
+                        $studentCurrentPage = $data->currentPage();
+                        $studentLastPage = $data->lastPage();
+                        $studentStartPage = max(1, $studentCurrentPage - 1);
+                        $studentEndPage = min($studentLastPage, $studentCurrentPage + 1);
+                        if ($studentCurrentPage <= 2) {
+                            $studentEndPage = min($studentLastPage, 3);
+                        }
+                        if ($studentCurrentPage >= $studentLastPage - 1) {
+                            $studentStartPage = max(1, $studentLastPage - 2);
+                        }
+                        $studentPageUrl = fn ($page) => route('student-management.students.index', array_merge(request()->except('page'), ['page' => $page]));
+                    @endphp
+                    @if($data->hasPages())
+                        <nav class="pagination-wrap student-report-pagination" aria-label="Navigasi halaman data siswa">
+                            <p>{{ $studentResultSummary }}</p>
+                            <div class="student-pagination-links">
+                                @if($data->onFirstPage())
+                                    <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                                @else
+                                    <a class="student-page-button" href="{{ $studentPageUrl($studentCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
+                                @endif
+
+                                @if($studentStartPage > 1)
+                                    <a class="student-page-button is-number" href="{{ $studentPageUrl(1) }}" aria-label="Halaman 1">1</a>
+                                    @if($studentStartPage > 2)
+                                        <span class="student-page-ellipsis" aria-hidden="true">...</span>
+                                    @endif
+                                @endif
+
+                                @for($page = $studentStartPage; $page <= $studentEndPage; $page++)
+                                    @if($page === $studentCurrentPage)
+                                        <span class="student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
+                                    @else
+                                        <a class="student-page-button is-number" href="{{ $studentPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                    @endif
+                                @endfor
+
+                                @if($studentEndPage < $studentLastPage)
+                                    @if($studentEndPage < $studentLastPage - 1)
+                                        <span class="student-page-ellipsis" aria-hidden="true">...</span>
+                                    @endif
+                                    <a class="student-page-button is-number" href="{{ $studentPageUrl($studentLastPage) }}" aria-label="Halaman {{ $studentLastPage }}">{{ $studentLastPage }}</a>
+                                @endif
+
+                                @if($data->hasMorePages())
+                                    <a class="student-page-button" href="{{ $studentPageUrl($studentCurrentPage + 1) }}" rel="next">Berikutnya</a>
+                                @else
+                                    <span class="student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
+                                @endif
+                            </div>
+                        </nav>
+                    @else
+                        <div class="student-report-pagination student-pagination-summary-only">
+                            <p>{{ $studentResultSummary }}</p>
+                        </div>
+                    @endif
+                @elseif ($tab !== 'classes')<div class="pagination-wrap">{{ $data->links() }}</div>@endif
             </section>
             @endif
             @endif

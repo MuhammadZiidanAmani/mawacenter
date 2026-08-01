@@ -400,7 +400,7 @@
         }
 
         html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
-            grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
+            grid-template-columns: 160px 150px 180px minmax(220px, 1fr) max-content !important;
             grid-template-rows: auto !important;
         }
 
@@ -414,46 +414,170 @@
             grid-row: 1 !important;
         }
 
-        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3) {
             grid-column: 3 !important;
             grid-row: 1 !important;
         }
 
-        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
             grid-column: 4 !important;
+            grid-row: 1 !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+            grid-column: 5 !important;
             grid-row: 1 !important;
             align-self: end !important;
             width: auto !important;
             min-width: 0 !important;
         }
 
+        html body .identity-standard-page .identity-reset-card {
+            grid-template-columns:40px minmax(0, 1fr) minmax(220px, auto) 48px !important;
+        }
+
+        html body .identity-standard-page .identity-reset-card-meta {
+            display:flex !important;
+            flex-wrap:wrap !important;
+            justify-content:flex-end !important;
+            gap:6px !important;
+            min-width:0 !important;
+        }
+
+        html body .identity-standard-page .identity-reset-badge,
+        html body .identity-standard-page .identity-reset-mini {
+            display:inline-flex !important;
+            align-items:center !important;
+            min-height:28px !important;
+            padding:0 10px !important;
+            border-radius:8px !important;
+            border:1px solid #d1d5db !important;
+            color:#334155 !important;
+            background:#ffffff !important;
+            font-size:14px !important;
+            line-height:1 !important;
+            white-space:nowrap !important;
+        }
+
+        html body .identity-standard-page .identity-reset-badge.strong {
+            color:#004528 !important;
+            background:#e9f8ef !important;
+            border-color:#b9e3ca !important;
+            font-weight:700 !important;
+        }
+
+        html body .identity-standard-page .identity-reset-badge.medium {
+            color:#725414 !important;
+            background:#fff8e9 !important;
+            border-color:#f0ddb0 !important;
+            font-weight:700 !important;
+        }
+
+        html body .identity-standard-page .identity-reset-badge.check {
+            color:#334155 !important;
+            background:#f9fafb !important;
+            font-weight:700 !important;
+        }
+
         @media (width <= 760px) {
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page {
                 padding:16px !important;
+                overflow-x:hidden !important;
             }
 
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page > .student-list-filter-card,
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page > .identity-cleanup-table-card {
-                width: 100% !important;
+                width: calc(100vw - 32px) !important;
                 max-width: none !important;
+                min-width:0 !important;
+                overflow:hidden !important;
+            }
+
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .student-master-heading,
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .student-master-heading p {
+                width:calc(100vw - 32px) !important;
+                max-width:calc(100vw - 32px) !important;
+                min-width:0 !important;
+                overflow-wrap:break-word !important;
             }
 
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
                 grid-template-columns: 1fr !important;
+                width:calc(100vw - 32px) !important;
+                max-width:calc(100vw - 32px) !important;
+                min-width:0 !important;
+                box-sizing:border-box !important;
+                overflow:hidden !important;
             }
 
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3),
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search,
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
                 grid-column: auto !important;
                 grid-row: auto !important;
             }
 
+            html body .identity-standard-page .identity-reset-card {
+                grid-template-columns:36px minmax(0, 1fr) 44px !important;
+            }
+
+            html body .identity-standard-page .identity-reset-card-meta {
+                grid-column:2 / 3 !important;
+                grid-row:2 !important;
+                justify-content:flex-start !important;
+            }
+
             html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
                 display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                width: 100% !important;
+                grid-template-columns: 1fr !important;
+                width: calc(100vw - 64px) !important;
+                max-width:calc(100vw - 64px) !important;
+                min-width:0 !important;
+            }
+
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions .button {
+                width:calc(100vw - 64px) !important;
+                max-width:none !important;
+                min-width:0 !important;
+            }
+
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .student-reference-card-count,
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .identity-reset-card {
+                width:100% !important;
+                max-width:calc(100vw - 32px) !important;
+                min-width:0 !important;
+                box-sizing:border-box !important;
+            }
+
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .student-reference-card-count {
+                display:grid !important;
+                grid-template-columns:1fr !important;
+                gap:10px !important;
+                overflow:hidden !important;
+            }
+
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .student-reference-card-count > span {
+                max-width:100% !important;
+                overflow-wrap:anywhere !important;
+            }
+
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .identity-reset-card {
+                grid-template-columns:36px minmax(0, 1fr) !important;
+            }
+
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .identity-reset-card > form,
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .identity-reset-card > .identity-reset-action {
+                grid-column:2 / 3 !important;
+                grid-row:3 !important;
+                width:100% !important;
+                max-width:100% !important;
+            }
+
+            html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .identity-reset-action {
+                width:100% !important;
+                height:40px !important;
             }
         }
     </style>
@@ -541,11 +665,20 @@
                                 @endforeach
                             </select>
                         </label>
+                        <label>
+                            <span>Tahun Pelajaran</span>
+                            <select name="year_id">
+                                <option value="">semua</option>
+                                @foreach ($academicYears as $year)
+                                    <option value="{{ $year->id }}" @selected((string) $filters['year_id'] === (string) $year->id)>{{ $year->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
                     </div>
                     <label class="student-reference-search student-fee-filter-search">
                         <span>Cari siswa</span>
                         {!! $icon('search') !!}
-                        <input name="search" value="{{ $filters['search'] }}" placeholder="Nama atau NIS..." aria-label="Cari kandidat identitas">
+                        <input name="search" value="{{ $filters['search'] }}" placeholder="Nama, NIS, NISN, unit, kelas..." aria-label="Cari kandidat identitas">
                     </label>
                     <div class="student-filter-actions student-fee-card-filter-actions fee-type-card-filter-actions">
                         <button class="button student-fee-card-search-button fee-type-card-search-button" type="submit">Terapkan</button>
@@ -567,11 +700,11 @@
                             @endforeach
                             <option value="all" @selected($filters['per_page'] === 'all')>All</option>
                         </select>
-                        siswa
+                        kandidat
                     </label>
                 </form>
                 <span>
-                    {{ $totalRows > 0 ? 'Menampilkan '.number_format($firstRow, 0, ',', '.').'-'.number_format($lastRow, 0, ',', '.').' dari '.number_format($totalRows, 0, ',', '.').' siswa' : 'Menampilkan 0 dari 0 siswa' }}
+                    {{ $totalRows > 0 ? 'Menampilkan '.number_format($firstRow, 0, ',', '.').'-'.number_format($lastRow, 0, ',', '.').' dari '.number_format($totalRows, 0, ',', '.').' kandidat' : 'Menampilkan 0 dari 0 kandidat' }}
                 </span>
                 </div>
 
@@ -581,6 +714,22 @@
                         @php
                             $rowNumber = $candidates->firstItem() + $loop->index;
                             $isLinkedRow = ($candidate['row_type'] ?? 'candidate') === 'linked';
+                            $confidenceClass = match ($candidate['confidence']) {
+                                'Kuat', 'Gabungan' => 'strong',
+                                'Sedang' => 'medium',
+                                default => 'check',
+                            };
+                            $unitSummary = $candidate['students']
+                                ->map(fn ($student) => $student->schoolClass?->educationUnit?->code)
+                                ->filter()
+                                ->unique()
+                                ->implode(' / ');
+                            $classSummary = $candidate['students']
+                                ->map(fn ($student) => $student->schoolClass?->name)
+                                ->filter()
+                                ->unique()
+                                ->take(3)
+                                ->implode(' / ');
                             $detailUrl = $isLinkedRow ? null : route('student-management.identity-cleanup.show', [
                                 'candidateKey' => $candidate['key'],
                                 ...request()->query(),
@@ -590,23 +739,27 @@
                             <span class="identity-reset-number">{{ $rowNumber }}</span>
                             <div class="identity-reset-card-body">
                                 <strong>{{ $candidate['name'] }}</strong>
-                                <span>{{ $candidate['reason'] }}</span>
+                                <span>{{ $candidate['reason'] }}{{ $unitSummary ? ' · '.$unitSummary : '' }}{{ $classSummary ? ' · '.$classSummary : '' }}</span>
+                            </div>
+                            <div class="identity-reset-card-meta">
+                                <span class="identity-reset-badge {{ $confidenceClass }}">{{ $candidate['confidence'] }}</span>
+                                <span class="identity-reset-mini">{{ $candidate['students']->count() }} data</span>
                             </div>
                             @if ($isLinkedRow)
                                 <form method="POST" action="{{ route('student-management.identity-cleanup.split') }}">
                                     @csrf
                                     <input type="hidden" name="identity_root_id" value="{{ $candidate['identity_root_id'] }}">
-                                    <button class="identity-reset-action danger" type="submit" aria-label="Pisah" title="Pisah" onclick="return confirm('Pisahkan data identitas ini?')">{!! $icon('split') !!}</button>
+                                    <button class="identity-reset-action danger" type="submit" aria-label="Pisahkan identitas" title="Pisahkan identitas" onclick="return confirm('Pisahkan data identitas ini?')">{!! $icon('split') !!}</button>
                                 </form>
                             @else
-                                <a class="identity-reset-action" href="{{ $detailUrl }}" aria-label="Gabung" title="Gabung">{!! $icon('merge') !!}</a>
+                                <a class="identity-reset-action" href="{{ $detailUrl }}" aria-label="Tinjau kandidat identitas" title="Tinjau kandidat">{!! $icon('merge') !!}</a>
                             @endif
                         </article>
                     @endforeach
                 @else
                     <div class="identity-reset-empty">
-                        <strong>Belum ada kandidat duplikat</strong>
-                        <span>Sistem belum menemukan nama, NISN, tanggal lahir, atau data orang tua yang perlu digabung.</span>
+                        <strong>Belum ada kandidat identitas pada filter ini.</strong>
+                        <span>Sistem belum menemukan nama, NISN, tanggal lahir, atau data orang tua yang perlu ditinjau.</span>
                     </div>
                 @endif
                 </section>

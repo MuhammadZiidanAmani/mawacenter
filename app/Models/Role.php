@@ -17,6 +17,13 @@ class Role extends Model
     public const PERMISSIONS = [
         'dashboard.view' => 'Dashboard',
         'students.view' => 'Manajemen Siswa',
+        'students.create' => 'Tambah Siswa',
+        'students.update' => 'Edit Siswa',
+        'students.import' => 'Import Siswa',
+        'students.export' => 'Export Siswa',
+        'students.movement' => 'Pindah/Naik Kelas',
+        'students.alumni' => 'Kelola Alumni',
+        'students.identity_cleanup' => 'Rapikan Identitas',
         'payments.cash.create' => 'Transaksi Cash',
         'payments.transfer.submit_guardian' => 'Transfer Wali Santri',
         'payments.verify_transfer' => 'Verifikasi Transfer',

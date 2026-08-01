@@ -5,6 +5,7 @@ html body .app-shell .main-panel main#student-alumni-page.student-alumni-page > 
     box-sizing: border-box !important;
     width: min(100%, 1200px) !important;
     max-width: 1200px !important;
+    min-width: 0 !important;
     margin:0 auto !important;
 }
 
@@ -12,6 +13,7 @@ html body .app-shell .main-panel main.student-page:not(.student-create-page):not
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-page {
     display: grid !important;
     gap:16px !important;
+    min-width: 0 !important;
 }
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-page {
@@ -127,6 +129,7 @@ html body .app-shell .main-panel main#student-alumni-page.student-alumni-page > 
     box-sizing: border-box !important;
     width: min(100%, 1200px) !important;
     max-width: 1200px !important;
+    min-width: 0 !important;
     margin:0 auto !important;
 }
 
@@ -906,7 +909,7 @@ html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 > .s
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 > .student-list-filter-card > form.student-filter-panel {
     display: grid !important;
-    grid-template-columns: minmax(170px, 240px) minmax(240px, 1fr) 96px 96px !important;
+    grid-template-columns: minmax(120px, .8fr) minmax(140px, .9fr) minmax(150px, .9fr) minmax(220px, 1.4fr) 96px 96px !important;
     align-items: end !important;
     gap: 12px !important;
     width: 100% !important;
@@ -1067,6 +1070,7 @@ html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .stu
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table-wrap {
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     margin: 0 !important;
     overflow-x: auto !important;
     background: #ffffff !important;
@@ -1077,7 +1081,7 @@ html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alu
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table {
     width: 100% !important;
-    min-width: 920px !important;
+    min-width: 1040px !important;
     table-layout: fixed !important;
     border-collapse: collapse !important;
     background: #ffffff !important;
@@ -1088,7 +1092,11 @@ html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alu
 }
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table col.alumni-col-nis {
-    width: 96px !important;
+    width: 90px !important;
+}
+
+html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table col.alumni-col-nisn {
+    width: 108px !important;
 }
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table col.alumni-col-name {
@@ -1096,23 +1104,31 @@ html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alu
 }
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table col.alumni-col-gender {
-    width: 56px !important;
+    width: 48px !important;
 }
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table col.alumni-col-unit {
-    width: 88px !important;
+    width: 78px !important;
+}
+
+html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table col.alumni-col-class {
+    width: 112px !important;
+}
+
+html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table col.alumni-col-year {
+    width: 92px !important;
 }
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table col.alumni-col-date {
-    width: 128px !important;
+    width: 118px !important;
 }
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table col.alumni-col-reason {
-    width: 220px !important;
+    width: 190px !important;
 }
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table col.alumni-col-actions {
-    width: 72px !important;
+    width: 64px !important;
 }
 
 html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table th,
@@ -1263,7 +1279,7 @@ html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .pag
     }
 
     html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table {
-        min-width: 860px !important;
+        min-width: 1040px !important;
     }
 
     html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table th,
@@ -6608,6 +6624,10 @@ html body .student-import-page .student-import-summary-card.duplicate strong {
     color: #92400e !important;
 }
 
+html body .student-import-page .student-import-summary-card.update strong {
+    color: #1d4ed8 !important;
+}
+
 html body .student-import-page .student-import-summary-card.failed strong {
     color: #dc2626 !important;
 }
@@ -6721,6 +6741,16 @@ html body .student-import-page .student-import-status-badge {
 html body .student-import-page .student-import-status-badge.valid {
     color: #157144 !important;
     background: #e9f8ef !important;
+}
+
+html body .student-import-page .student-import-status-badge.baru {
+    color: #157144 !important;
+    background: #e9f8ef !important;
+}
+
+html body .student-import-page .student-import-status-badge.update {
+    color: #1d4ed8 !important;
+    background: #eff6ff !important;
 }
 
 html body .student-import-page .student-import-status-badge.duplikat {
@@ -8693,7 +8723,16 @@ html body .app-shell .main-panel main.student-page:not(.student-create-page):not
 }
 
 html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
-    grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
+    grid-template-columns: minmax(0, 1fr) max-content !important;
+    align-items: end !important;
+}
+
+html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-reference-filter-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap:16px !important;
+    grid-column: 1 !important;
+    min-width: 0 !important;
 }
 
 html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > .student-reference-card-list {
@@ -8723,5 +8762,1148 @@ html body .app-shell .main-panel main.student-page:not(.student-create-page):not
     html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > .student-reference-align-lock > .student-reference-card-list {
         grid-template-columns: 1fr !important;
         gap:12px !important;
+    }
+}
+
+/* Rapikan Identitas P1 visual audit lock. */
+html body .app-shell,
+html body .app-shell .main-panel,
+html body .app-shell .main-panel main#identity-standard-page,
+html body .app-shell .main-panel main.identity-review-page {
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page {
+    display: grid !important;
+    align-content: start !important;
+    gap:16px !important;
+    padding:24px 32px 32px !important;
+    background: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page > .identity-cleanup-header,
+html body .app-shell .main-panel main.identity-review-page > .identity-review-canvas {
+    box-sizing: border-box !important;
+    width: min(100%, 1200px) !important;
+    max-width: 1200px !important;
+    margin:0 auto !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page > .identity-review-canvas {
+    min-height: 0 !important;
+    padding:16px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page .identity-review-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 300px !important;
+    gap:16px !important;
+    align-items: start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page .identity-review-main,
+html body .app-shell .main-panel main.identity-review-page .identity-review-table-wrap {
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page .identity-review-table-wrap {
+    overflow-x: auto !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page .identity-review-table {
+    width: 100% !important;
+    min-width: 1000px !important;
+    table-layout: fixed !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page .identity-review-col-check { width:48px !important; }
+html body .app-shell .main-panel main.identity-review-page .identity-review-col-nis { width:80px !important; }
+html body .app-shell .main-panel main.identity-review-page .identity-review-col-nisn { width:80px !important; }
+html body .app-shell .main-panel main.identity-review-page .identity-review-col-name { width:200px !important; }
+html body .app-shell .main-panel main.identity-review-page .identity-review-col-birth { width:105px !important; }
+html body .app-shell .main-panel main.identity-review-page .identity-review-col-parent { width:150px !important; }
+html body .app-shell .main-panel main.identity-review-page .identity-review-col-unit { width:70px !important; }
+html body .app-shell .main-panel main.identity-review-page .identity-review-col-class { width:90px !important; }
+html body .app-shell .main-panel main.identity-review-page .identity-review-col-year { width:90px !important; }
+html body .app-shell .main-panel main.identity-review-page .identity-review-col-status { width:80px !important; }
+
+html body .app-shell .main-panel main.identity-review-page .identity-review-table th,
+html body .app-shell .main-panel main.identity-review-page .identity-review-table td {
+    height: 44px !important;
+    padding:10px 12px !important;
+    vertical-align: middle !important;
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page .identity-cell-main {
+    text-align: left !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page .identity-cell-center {
+    text-align: center !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page .identity-review-summary {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding:16px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page .identity-review-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap:10px !important;
+}
+
+html body .app-shell .main-panel main.identity-review-page .identity-review-actions .button {
+    min-width: 0 !important;
+    width: 100% !important;
+    height: 40px !important;
+    white-space: normal !important;
+    text-align: center !important;
+}
+
+html body .app-shell .main-panel main#identity-standard-page .student-reference-card-count {
+    box-sizing: border-box !important;
+    padding:0 !important;
+}
+
+@media (width <= 1500px) {
+    html body .app-shell .main-panel main.identity-review-page .identity-review-layout {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-table {
+        min-width: 1000px !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-summary dl {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap:12px !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-actions {
+        max-width: 420px !important;
+        margin-left: auto !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main#identity-standard-page,
+    html body .app-shell .main-panel main.identity-review-page {
+        width: 100% !important;
+        overflow-x: hidden !important;
+        padding:16px !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page > .identity-cleanup-header,
+    html body .app-shell .main-panel main.identity-review-page > .identity-review-canvas {
+        width: calc(100vw - 32px) !important;
+        max-width: calc(100vw - 32px) !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    html body .app-shell .main-panel main#identity-standard-page .student-master-heading,
+    html body .app-shell .main-panel main.identity-review-page .student-master-heading {
+        width: calc(100vw - 32px) !important;
+        max-width: calc(100vw - 32px) !important;
+        min-width: 0 !important;
+    }
+
+    html body .app-shell .main-panel main#identity-standard-page .student-master-heading p,
+    html body .app-shell .main-panel main.identity-review-page .student-master-heading p {
+        width: calc(100vw - 32px) !important;
+        max-width: 100% !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    html body .app-shell .main-panel main#identity-standard-page .student-reference-card-count {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap:10px !important;
+        align-items: start !important;
+    }
+
+    html body .app-shell .main-panel main#identity-standard-page .student-reference-card-count > span {
+        display: block !important;
+        max-width: 100% !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    html body .app-shell .main-panel main#identity-standard-page .identity-reset-card {
+        width: 100% !important;
+        grid-template-columns:36px minmax(0, 1fr) 44px !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page > .identity-cleanup-header {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-back-button {
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-layout {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-summary dl {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-summary {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-summary dd {
+        max-width: 100% !important;
+        overflow-wrap: break-word !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-actions {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        overflow: hidden !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-actions .button {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-table {
+        min-width: 980px !important;
+    }
+
+    html body .app-shell .main-panel main.identity-review-page .identity-review-actions {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Data Siswa table standard: follows Menu Laporan table rhythm, scoped to this page. */
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-data-card.student-reference-align-lock > .student-reference-card-list {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-data-card.student-reference-align-lock > .student-table-toolbar-v2 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap:12px !important;
+    width: 100% !important;
+    margin:0 !important;
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-size-form label {
+    display: flex !important;
+    align-items: center !important;
+    gap:8px !important;
+    color: #404942 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-size-form select {
+    width: 78px !important;
+    height: 36px !important;
+    padding:0 10px !important;
+    color: #020617 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .report-student-search-card {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    width: auto !important;
+    max-width: 100% !important;
+    margin: 0 3px 0 0 !important;
+    padding: 0 !important;
+    color: #334155 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .report-student-search-card label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.25 !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .report-student-search-input {
+    box-sizing: border-box !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 280px !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    margin: 0 !important;
+    padding: 0 10px !important;
+    color: #020617 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .report-student-search-input .icon {
+    width: 16px !important;
+    height: 16px !important;
+    color: #707971 !important;
+    flex: 0 0 16px !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .report-student-search-input input {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 34px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #020617 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    outline: 0 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 34px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .report-student-search-input:focus-within {
+    border-color: #004528 !important;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
+}
+
+html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 96px)) !important;
+    gap:8px !important;
+    align-items: end !important;
+    grid-column: 2 !important;
+}
+
+@media (width <= 1180px) {
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-reference-filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
+        grid-column: 1 !important;
+        width: max-content !important;
+    }
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-data-card.student-reference-align-lock > .table-wrap {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 {
+    width: 100% !important;
+    min-width: 860px !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;
+    background: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 th,
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 td {
+    height: 40px !important;
+    min-height: 40px !important;
+    padding:8px 10px !important;
+    color: #020617 !important;
+    border: 0 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+    vertical-align: middle !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 th {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 2 !important;
+    color: #020617 !important;
+    background: #fbfdf8 !important;
+    border-bottom-color: #d1d5db !important;
+    font-weight: 500 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 tbody tr:hover td {
+    background: #fbfdf8 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 tbody tr:last-child td {
+    border-bottom: 0 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 td[colspan] {
+    height: 72px !important;
+    padding:16px !important;
+    text-align: center !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 .empty-state {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: center !important;
+    gap:4px !important;
+    margin:0 !important;
+    padding:0 !important;
+    color: #707971 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 .empty-state strong {
+    color: #020617 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 .empty-state span {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 th:first-child,
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 td:first-child,
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 td:nth-child(2),
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 td:nth-child(4),
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 td:nth-child(5),
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 td:nth-child(6),
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 td:nth-child(7) {
+    text-align: center !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-standard-table-v2 td:nth-child(3) {
+    color: #020617 !important;
+    font-weight: 400 !important;
+    text-align: left !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-sort-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap:6px !important;
+    color: #020617 !important;
+    font-family: inherit !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1.35 !important;
+    text-decoration: none !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-sort-link:hover {
+    color: #004528 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-sort-link:focus-visible {
+    color: #004528 !important;
+    outline: 2px solid rgba(0, 69, 40, .18) !important;
+    outline-offset: 3px !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-sort-indicator {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 16px !important;
+    height: 16px !important;
+    color: #707971 !important;
+    flex: 0 0 16px !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-sort-indicator .icon {
+    width: 14px !important;
+    height: 14px !important;
+    stroke-width: 2.2 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-sortable-heading.is-sorted .student-sort-indicator {
+    color: #004528 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding:0 !important;
+    margin:-1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-report-pagination {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap:12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    border-top: 0 !important;
+    overflow: visible !important;
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-report-pagination p {
+    min-width: 0 !important;
+    margin:0 !important;
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-pagination-links {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap:8px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-button,
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-ellipsis {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding:0 12px !important;
+    color: #334155 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    text-decoration: none !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-button:hover {
+    color: #004528 !important;
+    background: #f3fbf6 !important;
+    border-color: #dfe5dc !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-button.is-active {
+    color: #ffffff !important;
+    background: #004528 !important;
+    border-color: #004528 !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-button.is-disabled,
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-button.is-disabled:hover {
+    color: #707971 !important;
+    background: #f9fafb !important;
+    border-color: #d1d5db !important;
+    cursor: not-allowed !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-ellipsis {
+    min-width: 24px !important;
+    padding:0 4px !important;
+    color: #707971 !important;
+    background: transparent !important;
+    border-color: transparent !important;
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock > .student-flat-header {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap:12px !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock .student-title-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap:8px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock .student-title-actions .button {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        justify-content: center !important;
+    }
+
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
+        width: 100% !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        overflow: hidden !important;
+    }
+
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-reference-filter-grid,
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-reference-search {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions,
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap:8px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+    }
+
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions .button,
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions .button {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        justify-content: center !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-data-card.student-reference-align-lock > .student-table-toolbar-v2 {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap:8px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding-inline-end: 4px !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-size-form,
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-size-form label,
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .report-student-search-card {
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .report-student-search-card,
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .report-student-search-card label {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 6px !important;
+        box-sizing: border-box !important;
+        white-space: normal !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .report-student-search-input {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-report-pagination {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-pagination-links {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+        gap: 4px !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-button {
+        min-width: 32px !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        padding-inline: 7px !important;
+        font-size: 13px !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-page-ellipsis {
+        min-width: 18px !important;
+        padding-inline: 2px !important;
+        font-size: 13px !important;
+    }
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock .student-title-actions :is(.student-add-button, .action-purple, .action-green),
+    html body .app-shell .main-panel .student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-title-actions :is(.student-add-button, .action-purple, .action-green) {
+        box-sizing: border-box !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        padding-inline: 10px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock .student-title-actions {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions,
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions :is(button, .button, a),
+    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions :is(button, .button, a) {
+        box-sizing: border-box !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        padding-inline: 10px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+    }
+}
+
+@media (width <= 640px) {
+    html body.student-data-body .app-shell,
+    html body.student-data-body .main-panel {
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+    }
+
+    html body.student-data-body .topbar {
+        gap: 8px !important;
+        min-width: 0 !important;
+        max-width: 100vw !important;
+        padding-inline: 12px !important;
+    }
+
+    html body.student-data-body .active-year-pill small {
+        display: none !important;
+    }
+
+    html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) {
+        box-sizing: border-box !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
+        overflow-x: hidden !important;
+    }
+
+    html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-reference-align-lock {
+        width: calc(100vw - 32px) !important;
+        max-width: calc(100vw - 32px) !important;
+        min-width: 0 !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock .student-title-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+
+    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock .student-title-actions :is(.student-add-button, .action-purple, .action-green) {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding-inline: 10px !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+    }
+}
+
+html body.student-data-quality-body .app-shell .main-panel {
+    background: #ffffff;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding: 24px 32px;
+    display: grid;
+    gap: 20px;
+    color: #020617;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-heading h1 {
+    margin: 0;
+    color: #020617;
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-heading p {
+    margin: 4px 0 0;
+    max-width: 720px;
+    color: #707971;
+    font-size: 14px;
+    line-height: 1.45;
+    font-weight: 400;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-summary {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    min-width: 280px;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-summary span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #707971;
+    font-size: 14px;
+    line-height: 1;
+    font-weight: 400;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-summary strong {
+    color: #020617;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card-head {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 10px;
+    align-items: flex-start;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card-icon {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    color: #404942;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card-icon .icon {
+    width: 18px;
+    height: 18px;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card h2,
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-section-head h2 {
+    margin: 0;
+    color: #020617;
+    font-size: 16px;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card p,
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-section-head p {
+    margin: 4px 0 0;
+    color: #707971;
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 400;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card-foot strong {
+    color: #020617;
+    font-size: 20px;
+    line-height: 1;
+    font-weight: 700;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card-foot a,
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card-foot span {
+    color: #004528;
+    font-size: 14px;
+    line-height: 1.25;
+    font-weight: 700;
+    text-align: right;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card-foot span {
+    color: #707971;
+    font-weight: 500;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card.is-warning .data-quality-card-icon {
+    color: #92400e;
+    background: #fff7ed;
+    border-color: #fed7aa;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card.is-danger .data-quality-card-icon {
+    color: #ef1f2d;
+    background: #fff4f4;
+    border-color: #f2cfd2;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card.is-info .data-quality-card-icon {
+    color: #2563eb;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-detail-card {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-table {
+    min-width: 860px;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-table th {
+    height: 40px;
+    padding: 10px 12px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-table td {
+    min-height: 40px;
+    padding: 10px 12px;
+    color: #020617;
+    font-size: 14px;
+    line-height: 1.35;
+    font-weight: 400;
+    vertical-align: top;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-table td strong {
+    color: #020617;
+    font-weight: 700;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-badge,
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-inline-item {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    min-height: 28px;
+    margin: 0 6px 6px 0;
+    padding: 5px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #404942;
+    font-size: 14px;
+    line-height: 1.2;
+    font-weight: 500;
+    white-space: normal;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-badge {
+    color: #92400e;
+    background: #fff7ed;
+    border-color: #fed7aa;
+    font-weight: 700;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-action-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-empty {
+    padding: 16px !important;
+    background: #fbfdf8;
+    border: 1px solid #dfe5dc;
+    color: #707971;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-empty strong,
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-empty span {
+    display: block;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-empty strong {
+    margin-bottom: 4px;
+    color: #020617;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-empty span {
+    color: #707971;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+@media (width <= 1180px) {
+    html body .app-shell .main-panel main.student-data-quality-page .data-quality-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.student-data-quality-page {
+        max-width: 100vw;
+        padding: 16px;
+        gap: 16px;
+        overflow-x: hidden;
+    }
+
+    html body .app-shell .main-panel main.student-data-quality-page .data-quality-heading,
+    html body .app-shell .main-panel main.student-data-quality-page .data-quality-section-head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    html body .app-shell .main-panel main.student-data-quality-page .data-quality-summary {
+        justify-content: flex-start;
+        min-width: 0;
+    }
+
+    html body .app-shell .main-panel main.student-data-quality-page .data-quality-summary span {
+        flex: 1 1 140px;
+    }
+
+    html body .app-shell .main-panel main.student-data-quality-page .data-quality-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    html body .app-shell .main-panel main.student-data-quality-page .data-quality-detail-card {
+        padding: 14px;
+        min-width: 0;
+    }
+
+    html body .app-shell .main-panel main.student-data-quality-page .data-quality-table {
+        min-width: 760px;
     }
 }

@@ -22,6 +22,8 @@
     ];
     $sidebarIcon = fn ($name, $class = '') => $sidebarSvg($sidebarIcons[$name], $class);
     $canAccess = fn (string $permission) => auth()->user()?->hasPermission($permission) ?? false;
+    $studentPermissions = ['students.view', 'students.create', 'students.update', 'students.import', 'students.export', 'students.movement', 'students.alumni', 'students.identity_cleanup'];
+    $canAccessStudentsMenu = collect($studentPermissions)->contains(fn ($permission) => $canAccess($permission));
     $studentOpen = $activeMenu === 'students';
     $masterOpen = $activeMenu === 'master';
     $reportOpen = $activeMenu === 'reports';
@@ -32,15 +34,24 @@
         @if($canAccess('dashboard.view'))
         <a href="{{ route('dashboard') }}" class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}">{!! $sidebarIcon('grid') !!}<span>Dashboard</span></a>
         @endif
-        @if($canAccess('students.view'))
+        @if($canAccessStudentsMenu)
         <div class="nav-group nested-nav {{ $studentOpen ? 'open' : '' }}">
             <button type="button" class="nav-item nav-parent {{ $studentOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $studentOpen ? 'true' : 'false' }}">{!! $sidebarIcon('users') !!}<span>Manajemen Siswa</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
+                @if($canAccess('students.view'))
                 <a href="{{ route('student-management.students.index') }}" class="{{ $activeStudentMenu === 'data-siswa' ? 'active' : '' }}">{!! $sidebarIcon('users') !!}<span>Data Siswa</span></a>
+                <a href="{{ route('student-management.data-quality.index') }}" class="{{ $activeStudentMenu === 'kualitas-data' ? 'active' : '' }}">{!! $sidebarIcon('chart') !!}<span>Kualitas Data</span></a>
+                @endif
+                @if($canAccess('students.identity_cleanup'))
                 <a href="{{ route('student-management.identity-cleanup.index') }}" class="{{ $activeStudentMenu === 'rapikan-identitas' ? 'active' : '' }}">{!! $sidebarIcon('role') !!}<span>Rapikan Identitas</span></a>
+                @endif
+                @if($canAccess('students.movement'))
                 <a href="{{ route('student-management.class-transfer.index') }}" class="{{ $activeStudentMenu === 'pindah-kelas' ? 'active' : '' }}">{!! $sidebarIcon('switch') !!}<span>Pindah Kelas</span></a>
                 <a href="{{ route('student-management.class-promotion.index') }}" class="{{ $activeStudentMenu === 'naik-kelas' ? 'active' : '' }}">{!! $sidebarIcon('arrow-up') !!}<span>Naik Kelas</span></a>
+                @endif
+                @if($canAccess('students.view'))
                 <a href="{{ route('student-management.alumni.index') }}" class="{{ $activeStudentMenu === 'alumni' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>Data Alumni</span></a>
+                @endif
             </div>
         </div>
         @endif

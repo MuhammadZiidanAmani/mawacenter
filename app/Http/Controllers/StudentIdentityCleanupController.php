@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\EducationUnit;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -59,8 +60,11 @@ class StudentIdentityCleanupController extends Controller
         ]);
 
         $selected = Student::whereIn('id', $validated['student_ids'])->get();
+        $before = [];
+        $after = [];
+        $affectedIds = [];
 
-        DB::transaction(function () use ($selected) {
+        DB::transaction(function () use ($selected, &$before, &$after, &$affectedIds) {
             $rootIds = $selected
                 ->map(fn (Student $student) => $student->identity_student_id ?: $student->id)
                 ->push(...$selected->pluck('id'))
@@ -76,13 +80,31 @@ class StudentIdentityCleanupController extends Controller
                 ->whereNull('identity_student_id')
                 ->sortBy('id')
                 ->first() ?? $selected->sortBy('id')->first();
+            $affectedIds = $groupStudents->pluck('id')->values()->all();
+            $before = $groupStudents
+                ->map(fn (Student $student) => $this->identityAuditSnapshot($student))
+                ->values()
+                ->all();
 
             foreach ($groupStudents as $student) {
                 $student->forceFill([
                     'identity_student_id' => $student->is($primary) ? null : $primary->id,
                 ])->save();
             }
+            $after = Student::whereIn('id', $affectedIds)
+                ->get()
+                ->map(fn (Student $student) => $this->identityAuditSnapshot($student))
+                ->values()
+                ->all();
         });
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.identity_merge',
+            $affectedIds,
+            ['selected_student_ids' => collect($validated['student_ids'])->map(fn ($id) => (int) $id)->values()->all()],
+            ['students' => $before],
+            ['students' => $after],
+            $request,
+        );
 
         return redirect()
             ->route('student-management.identity-cleanup.index')
@@ -95,11 +117,36 @@ class StudentIdentityCleanupController extends Controller
             'identity_root_id' => ['required', 'integer', 'exists:students,id'],
         ]);
 
-        DB::transaction(function () use ($validated) {
-            Student::where('id', $validated['identity_root_id'])
+        $before = [];
+        $after = [];
+        $affectedIds = [];
+        DB::transaction(function () use ($validated, &$before, &$after, &$affectedIds) {
+            $students = Student::where('id', $validated['identity_root_id'])
                 ->orWhere('identity_student_id', $validated['identity_root_id'])
-                ->update(['identity_student_id' => null]);
+                ->get();
+            $affectedIds = $students->pluck('id')->values()->all();
+            $before = $students
+                ->map(fn (Student $student) => $this->identityAuditSnapshot($student))
+                ->values()
+                ->all();
+
+            Student::whereIn('id', $affectedIds)->update(['identity_student_id' => null]);
+            $after = Student::whereIn('id', $affectedIds)
+                ->get()
+                ->map(fn (Student $student) => $this->identityAuditSnapshot($student))
+                ->values()
+                ->all();
         });
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.identity_split',
+            $affectedIds,
+            ['identity_root_id' => (int) $validated['identity_root_id']],
+            ['students' => $before],
+            ['students' => $after],
+            $request,
+            Student::class,
+            (int) $validated['identity_root_id'],
+        );
 
         return back()->with('success', 'Identitas siswa berhasil dipisahkan kembali.');
     }
@@ -326,5 +373,21 @@ class StudentIdentityCleanupController extends Controller
             ->replaceMatches('/[^a-z0-9]+/', ' ')
             ->squish()
             ->value();
+    }
+
+    private function identityAuditSnapshot(Student $student): array
+    {
+        $student->loadMissing(['schoolClass.educationUnit', 'academicYear']);
+
+        return [
+            'id' => $student->id,
+            'identity_student_id' => $student->identity_student_id,
+            'nis' => $student->nis,
+            'nisn' => $student->nisn,
+            'name' => $student->name,
+            'unit' => $student->schoolClass?->educationUnit?->code,
+            'class' => $student->schoolClass?->name,
+            'academic_year' => $student->academicYear?->name,
+        ];
     }
 }

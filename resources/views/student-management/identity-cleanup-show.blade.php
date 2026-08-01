@@ -56,7 +56,10 @@
                                 <colgroup>
                                     <col class="identity-review-col-check">
                                     <col class="identity-review-col-nis">
+                                    <col class="identity-review-col-nisn">
                                     <col class="identity-review-col-name">
+                                    <col class="identity-review-col-birth">
+                                    <col class="identity-review-col-parent">
                                     <col class="identity-review-col-unit">
                                     <col class="identity-review-col-class">
                                     <col class="identity-review-col-year">
@@ -66,7 +69,10 @@
                                     <tr>
                                         <th>Pilih</th>
                                         <th>NIS</th>
+                                        <th>NISN</th>
                                         <th>Nama</th>
+                                        <th>Tanggal Lahir</th>
+                                        <th>Orang Tua</th>
                                         <th>Unit</th>
                                         <th>Kelas</th>
                                         <th>Tahun</th>
@@ -80,7 +86,12 @@
                                                 <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" checked>
                                             </td>
                                             <td class="identity-cell-center">{{ $student->nis }}</td>
+                                            <td class="identity-cell-center">{{ $student->nisn ?: '-' }}</td>
                                             <td class="identity-cell-main">{{ $student->name }}</td>
+                                            <td class="identity-cell-center">{{ $student->birth_date?->format('d/m/Y') ?? '-' }}</td>
+                                            <td class="identity-cell-main">
+                                                {{ collect([$student->father_name, $student->mother_name])->filter()->implode(' / ') ?: '-' }}
+                                            </td>
                                             <td class="identity-cell-center">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</td>
                                             <td class="identity-cell-center">{{ $student->schoolClass?->name ?? '-' }}</td>
                                             <td class="identity-cell-center">{{ $student->academicYear?->name ?? '-' }}</td>
@@ -110,7 +121,7 @@
                             </div>
                             <div>
                                 <dt>Aksi</dt>
-                                <dd>Centang minimal dua data yang benar-benar milik orang yang sama.</dd>
+                                <dd>Centang minimal dua data yang benar-benar milik orang yang sama. Transaksi dan tagihan tetap berada pada record unit masing-masing.</dd>
                             </div>
                         </dl>
                         <div class="identity-review-actions">
