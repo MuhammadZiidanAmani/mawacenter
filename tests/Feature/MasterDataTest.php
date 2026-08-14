@@ -53,7 +53,7 @@ class MasterDataTest extends TestCase
             ->assertSee('student-flat-table', false)
             ->assertSee('data-student-filter-unit', false)
             ->assertSee('data-student-filter-class', false)
-            ->assertSee('<option value="">semua</option>', false);
+            ->assertSee('<option value="">Semua</option>', false);
     }
 
     public function test_student_management_granular_permissions_gate_ui_and_routes(): void
@@ -353,7 +353,7 @@ class MasterDataTest extends TestCase
         $this->get('/master-data?tab=education-units&per_page=all')
             ->assertOk()
             ->assertSee('value="500"', false)
-            ->assertSee('<option value="all" selected>All</option>', false)
+            ->assertSee('<option value="all" selected>Semua</option>', false)
             ->assertSee('Unit 1')
             ->assertSee('Unit 11');
     }
