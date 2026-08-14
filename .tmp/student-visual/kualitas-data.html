@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kualitas Data Siswa - MA'WA CENTER</title>
+    <link rel="preload" as="style" href="http://127.0.0.1:8000/build/assets/app-Dqnby4Ts.css" /><link rel="modulepreload" as="script" href="http://127.0.0.1:8000/build/assets/app-g3cJn-6F.js" /><link rel="stylesheet" href="http://127.0.0.1:8000/build/assets/app-Dqnby4Ts.css" /><script type="module" src="http://127.0.0.1:8000/build/assets/app-g3cJn-6F.js"></script></head>
+<body class="student-data-quality-body">
+<div class="app-shell">
+    <aside class="sidebar" data-sidebar>
+    <div class="brand"><div class="brand-mark"><img src="http://127.0.0.1:8000/images/mawa-center-mark.png" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
+    <nav class="sidebar-nav">
+                <a href="http://localhost" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>Dashboard</span></a>
+                        <div class="nav-group nested-nav open">
+            <button type="button" class="nav-item nav-parent active" data-nav-toggle aria-expanded="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Manajemen Siswa</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                                <a href="http://127.0.0.1:8000/manajemen-siswa/data-siswa" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Data Siswa</span></a>
+                <a href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data" class="active"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Kualitas Data</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/></svg><span>Rapikan Identitas</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/pindah-kelas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4-4m-4 4 4 4"/></svg><span>Pindah Kelas</span></a>
+                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m0 0-5 5m5-5 5 5"/></svg><span>Naik Kelas</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/alumni" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Data Alumni</span></a>
+                            </div>
+        </div>
+                        <a href="http://127.0.0.1:8000/keuangan/pembayaran" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h2"/></svg><span>Pembayaran</span></a>
+                        <a href="http://127.0.0.1:8000/keuangan/verifikasi-transfer" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/></svg><span>Verifikasi Transfer</span></a>
+                        <a href="http://127.0.0.1:8000/keuangan/tagihan" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>Tagihan</span></a>
+                        <div class="nav-group nested-nav ">
+            <button type="button" class="nav-item nav-parent " data-nav-toggle aria-expanded="false"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Laporan</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                <a href="http://127.0.0.1:8000/laporan/transaksi" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Transaksi Pembayaran</span></a>
+                <a href="http://127.0.0.1:8000/laporan/spp-perbulan" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>SPP Perbulan</span></a>
+                <a href="http://127.0.0.1:8000/laporan/spp-tahun-pelajaran" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>SPP Pertahun</span></a>
+                <a href="http://127.0.0.1:8000/laporan/rekap-unit" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Rekap Per Unit</span></a>
+            </div>
+        </div>
+                        <div class="nav-group master-nav ">
+            <button type="button" class="nav-item nav-parent " data-master-nav-toggle aria-expanded="false"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Data Master</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                                    <a href="http://127.0.0.1:8000/master-data?tab=academic-years" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Tahun Pelajaran</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=education-units" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>Unit Pendidikan</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=classes" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Kelas</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=fee-types" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>Kategori Pembayaran</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=fee-discounts" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/></svg><span>Keringanan Biaya</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=data-roles" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/></svg><span>Data Role</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=data-users" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Data User</span></a>
+                            </div>
+        </div>
+                        <a href="http://127.0.0.1:8000/pengaturan" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/></svg><span>Pengaturan</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
+            </nav>
+</aside>
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+
+    <div class="main-panel">
+        <header class="topbar">
+            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar" title="Buka atau tutup sidebar"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+            <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>2026/2027</strong></div>
+            <div class="topbar-spacer"></div>
+            <button class="icon-button notification-button" type="button" aria-label="Notifikasi" title="Notifikasi"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></button>
+            <form method="POST" action="http://127.0.0.1:8000/logout" class="logout-form">
+    <input type="hidden" name="_token" value="EBo0JMdR4UvboBzJUmO4QdRhjbl3mwydW4HHGfot" autocomplete="off">    <button class="icon-button logout-button" type="submit" aria-label="Keluar" title="Keluar"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></svg></button>
+</form>
+        </header>
+
+        <main class="student-page student-data-quality-page">
+            <section class="data-quality-heading">
+                <div>
+                    <h1>Kualitas Data Siswa</h1>
+                    <p>Pantau anomali data siswa yang perlu dibersihkan oleh admin tanpa mengubah pembayaran atau tagihan.</p>
+                </div>
+                <div class="data-quality-summary">
+                    <span><strong>2.009</strong> aktif</span>
+                    <span><strong>22</strong> nonaktif</span>
+                    <span><strong>2.633</strong> perlu cek</span>
+                </div>
+            </section>
+
+            <section class="data-quality-grid" aria-label="Ringkasan kualitas data siswa">
+                                    <article class="data-quality-card is-warning is-selected">
+                        <div class="data-quality-card-head">
+                            <span class="data-quality-card-icon"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+                            <div>
+                                <h2>Kandidat duplikat identitas</h2>
+                                <p>Nama, NISN, tanggal lahir, atau orang tua mirip dan perlu ditinjau.</p>
+                            </div>
+                        </div>
+                        <div class="data-quality-card-foot">
+                            <strong>590</strong>
+                                                            <a href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data?indicator=duplicate-identities" aria-label="Lihat Detail Kandidat duplikat identitas">Lihat Detail</a>
+                                                    </div>
+                    </article>
+                                    <article class="data-quality-card is-neutral ">
+                        <div class="data-quality-card-head">
+                            <span class="data-quality-card-icon"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg></span>
+                            <div>
+                                <h2>Siswa aktif tanpa NISN</h2>
+                                <p>Data identitas nasional belum lengkap untuk siswa aktif.</p>
+                            </div>
+                        </div>
+                        <div class="data-quality-card-foot">
+                            <strong>1.939</strong>
+                                                            <a href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data?indicator=active-without-nisn" aria-label="Lihat Detail Siswa aktif tanpa NISN">Lihat Detail</a>
+                                                    </div>
+                    </article>
+                                    <article class="data-quality-card is-warning ">
+                        <div class="data-quality-card-head">
+                            <span class="data-quality-card-icon"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+                            <div>
+                                <h2>Siswa aktif tanpa tanggal masuk</h2>
+                                <p>Tanggal masuk penting untuk audit akademik dan awal tagihan.</p>
+                            </div>
+                        </div>
+                        <div class="data-quality-card-foot">
+                            <strong>0</strong>
+                                                            <a href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data?indicator=active-without-entry-date" aria-label="Lihat Detail Siswa aktif tanpa tanggal masuk">Lihat Detail</a>
+                                                    </div>
+                    </article>
+                                    <article class="data-quality-card is-info ">
+                        <div class="data-quality-card-head">
+                            <span class="data-quality-card-icon"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg></span>
+                            <div>
+                                <h2>Mulai tagihan perlu dicek</h2>
+                                <p>Siswa masuk setelah awal tahun tanpa mulai tagihan khusus.</p>
+                            </div>
+                        </div>
+                        <div class="data-quality-card-foot">
+                            <strong>104</strong>
+                                                            <a href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data?indicator=active-without-billing-start" aria-label="Lihat Detail Mulai tagihan perlu dicek">Lihat Detail</a>
+                                                    </div>
+                    </article>
+                                    <article class="data-quality-card is-danger ">
+                        <div class="data-quality-card-head">
+                            <span class="data-quality-card-icon"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+                            <div>
+                                <h2>Nonaktif belum lengkap</h2>
+                                <p>Siswa nonaktif/alumni tanpa tanggal keluar atau alasan nonaktif.</p>
+                            </div>
+                        </div>
+                        <div class="data-quality-card-foot">
+                            <strong>0</strong>
+                                                            <a href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data?indicator=inactive-without-exit-data" aria-label="Lihat Detail Nonaktif belum lengkap">Lihat Detail</a>
+                                                    </div>
+                    </article>
+                            </section>
+
+            <section class="data-quality-filter-card">
+                <form method="GET" action="http://127.0.0.1:8000/manajemen-siswa/kualitas-data" class="data-quality-filter-form">
+                    <label>
+                        <span>Indikator</span>
+                        <select name="indicator">
+                                                            <option value="duplicate-identities" selected>Kandidat Duplikat Identitas</option>
+                                                            <option value="active-without-nisn" >Siswa Aktif Tanpa NISN</option>
+                                                            <option value="active-without-entry-date" >Siswa Aktif Tanpa Tanggal Masuk</option>
+                                                            <option value="active-without-billing-start" >Mulai Tagihan Perlu Dicek</option>
+                                                            <option value="inactive-without-exit-data" >Siswa Nonaktif/Alumni Belum Lengkap</option>
+                                                    </select>
+                    </label>
+                    <label>
+                        <span>Tampilkan</span>
+                        <select name="per_page">
+                                                            <option value="10" selected>10</option>
+                                                            <option value="25" >25</option>
+                                                            <option value="50" >50</option>
+                                                            <option value="100" >100</option>
+                                                    </select>
+                    </label>
+                    <div class="data-quality-filter-actions">
+                        <button class="button button-primary" type="submit">Terapkan</button>
+                        <a class="button button-secondary" href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data">Reset</a>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card master-card student-data-card data-quality-detail-card">
+                <div class="data-quality-section-head">
+                    <div>
+                        <h2>Kandidat Duplikat Identitas</h2>
+                        <p>Kandidat dari pencocokan identitas aktif. Tinjau sebelum digabungkan.</p>
+                    </div>
+                                            <a class="button button-secondary" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas">Rapikan Identitas</a>
+                                    </div>
+                                    <div class="table-wrap data-quality-table-wrap">
+                        <table class="data-table student-flat-table data-quality-table data-quality-duplicate-table">
+                            <thead>
+                                <tr>
+                                    <th>Kandidat</th>
+                                    <th>Alasan</th>
+                                    <th>Confidence</th>
+                                    <th>Data Terdampak</th>
+                                                                            <th>Aksi</th>
+                                                                    </tr>
+                            </thead>
+                            <tbody>
+                                                                    <tr>
+                                        <td><strong>ABDUL QODIR ASYUJA&#039;I</strong></td>
+                                        <td>Nama dan tanggal lahir sama</td>
+                                        <td><span class="data-quality-badge">Kuat</span></td>
+                                        <td>
+                                                                                            <span class="data-quality-inline-item">230191 - ABDUL QODIR ASYUJA&#039;I (MTs / 9B / 2026/2027)</span>
+                                                                                            <span class="data-quality-inline-item">230191 - ABDUL QODIR ASYUJA&#039;I (PONPES / 9B / 2026/2027)</span>
+                                                                                    </td>
+                                                                                    <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas/tinjau/2935-3450" aria-label="Tinjau kandidat ABDUL QODIR ASYUJA&#039;I">Tinjau</a>
+                                            </td>
+                                                                            </tr>
+                                                                    <tr>
+                                        <td><strong>ABDULLAH FAHREL</strong></td>
+                                        <td>Nama dan tanggal lahir sama</td>
+                                        <td><span class="data-quality-badge">Kuat</span></td>
+                                        <td>
+                                                                                            <span class="data-quality-inline-item">240067 - ABDULLAH FAHREL (MTs / 8B / 2026/2027)</span>
+                                                                                            <span class="data-quality-inline-item">240067 - ABDULLAH FAHREL (PONPES / 8B / 2026/2027)</span>
+                                                                                    </td>
+                                                                                    <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas/tinjau/2759-3319" aria-label="Tinjau kandidat ABDULLAH FAHREL">Tinjau</a>
+                                            </td>
+                                                                            </tr>
+                                                                    <tr>
+                                        <td><strong>ABDULLAH FAQIH QOMARUDIN</strong></td>
+                                        <td>Nama dan tanggal lahir sama</td>
+                                        <td><span class="data-quality-badge">Kuat</span></td>
+                                        <td>
+                                                                                            <span class="data-quality-inline-item">240002 - ABDULLAH FAQIH QOMARUDIN (MTs / 8A / 2026/2027)</span>
+                                                                                            <span class="data-quality-inline-item">240002 - ABDULLAH FAQIH QOMARUDIN (PONPES / 8A / 2026/2027)</span>
+                                                                                    </td>
+                                                                                    <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas/tinjau/2722-3282" aria-label="Tinjau kandidat ABDULLAH FAQIH QOMARUDIN">Tinjau</a>
+                                            </td>
+                                                                            </tr>
+                                                                    <tr>
+                                        <td><strong>ABDURROKHIM</strong></td>
+                                        <td>Nama dan tanggal lahir sama</td>
+                                        <td><span class="data-quality-badge">Kuat</span></td>
+                                        <td>
+                                                                                            <span class="data-quality-inline-item">240068 - ABDURROKHIM (MTs / 8A / 2026/2027)</span>
+                                                                                            <span class="data-quality-inline-item">240068 - ABDURROKHIM (PONPES / 8A / 2026/2027)</span>
+                                                                                    </td>
+                                                                                    <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas/tinjau/2731-3291" aria-label="Tinjau kandidat ABDURROKHIM">Tinjau</a>
+                                            </td>
+                                                                            </tr>
+                                                                    <tr>
+                                        <td><strong>ABIDAH ARDELIA</strong></td>
+                                        <td>Nama dan tanggal lahir sama</td>
+                                        <td><span class="data-quality-badge">Kuat</span></td>
+                                        <td>
+                                                                                            <span class="data-quality-inline-item">230033 - ABIDAH ARDELIA (PONPES / 9D / 2026/2027)</span>
+                                                                                            <span class="data-quality-inline-item">230033 - ABIDAH ARDELIA (MTs / 9D / 2026/2027)</span>
+                                                                                    </td>
+                                                                                    <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas/tinjau/2952-3453" aria-label="Tinjau kandidat ABIDAH ARDELIA">Tinjau</a>
+                                            </td>
+                                                                            </tr>
+                                                                    <tr>
+                                        <td><strong>ACHMAD NUR SIDIQ</strong></td>
+                                        <td>Nama dan tanggal lahir sama</td>
+                                        <td><span class="data-quality-badge">Kuat</span></td>
+                                        <td>
+                                                                                            <span class="data-quality-inline-item">250048 - ACHMAD NUR SIDIQ (MTs / 7B / 2026/2027)</span>
+                                                                                            <span class="data-quality-inline-item">250048 - ACHMAD NUR SIDIQ (PONPES / 7B / 2026/2027)</span>
+                                                                                    </td>
+                                                                                    <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas/tinjau/2638-3244" aria-label="Tinjau kandidat ACHMAD NUR SIDIQ">Tinjau</a>
+                                            </td>
+                                                                            </tr>
+                                                                    <tr>
+                                        <td><strong>ADAM ZHAFIR RIFA&#039;AH</strong></td>
+                                        <td>Nama dan tanggal lahir sama</td>
+                                        <td><span class="data-quality-badge">Kuat</span></td>
+                                        <td>
+                                                                                            <span class="data-quality-inline-item">250001 - ADAM ZHAFIR RIFA&#039;AH (MTs / 7B / 2026/2027)</span>
+                                                                                            <span class="data-quality-inline-item">250001 - ADAM ZHAFIR RIFA&#039;AH (PONPES / 7B / 2026/2027)</span>
+                                                                                    </td>
+                                                                                    <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas/tinjau/2625-3231" aria-label="Tinjau kandidat ADAM ZHAFIR RIFA&#039;AH">Tinjau</a>
+                                            </td>
+                                                                            </tr>
+                                                                    <tr>
+                                        <td><strong>ADINDA NAJWA ARIYANTO</strong></td>
+                                        <td>Nama dan tanggal lahir sama</td>
+                                        <td><span class="data-quality-badge">Kuat</span></td>
+                                        <td>
+                                                                                            <span class="data-quality-inline-item">220003 - ADINDA NAJWA ARIYANTO (PONPES / 10B / 2026/2027)</span>
+                                                                                            <span class="data-quality-inline-item">250025 - ADINDA NAJWA ARIYANTO (MA / 10B / 2026/2027)</span>
+                                                                                    </td>
+                                                                                    <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas/tinjau/2075-3678" aria-label="Tinjau kandidat ADINDA NAJWA ARIYANTO">Tinjau</a>
+                                            </td>
+                                                                            </tr>
+                                                                    <tr>
+                                        <td><strong>ADIRA NURFALLAH</strong></td>
+                                        <td>Nama dan tanggal lahir sama</td>
+                                        <td><span class="data-quality-badge">Kuat</span></td>
+                                        <td>
+                                                                                            <span class="data-quality-inline-item">202170 - ADIRA NURFALLAH (PONPES / 12A / 2026/2027)</span>
+                                                                                            <span class="data-quality-inline-item">230003 - ADIRA NURFALLAH (MA / 12A / 2026/2027)</span>
+                                                                                    </td>
+                                                                                    <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas/tinjau/2179-3489" aria-label="Tinjau kandidat ADIRA NURFALLAH">Tinjau</a>
+                                            </td>
+                                                                            </tr>
+                                                                    <tr>
+                                        <td><strong>ADITYA NUGRAHA</strong></td>
+                                        <td>Nama dan tanggal lahir sama</td>
+                                        <td><span class="data-quality-badge">Kuat</span></td>
+                                        <td>
+                                                                                            <span class="data-quality-inline-item">240149 - ADITYA NUGRAHA (MTs / 8A / 2026/2027)</span>
+                                                                                            <span class="data-quality-inline-item">240149 - ADITYA NUGRAHA (PONPES / 8A / 2026/2027)</span>
+                                                                                    </td>
+                                                                                    <td class="data-quality-action-cell">
+                                                <a class="button button-secondary data-quality-review-link" href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas/tinjau/2743-3303" aria-label="Tinjau kandidat ADITYA NUGRAHA">Tinjau</a>
+                                            </td>
+                                                                            </tr>
+                                                            </tbody>
+                        </table>
+                    </div>
+                
+                <div class="data-quality-pagination">
+                    <span>
+                        Menampilkan 1-10 dari 590 data
+                    </span>
+                                            <div class="data-quality-pagination-links" aria-label="Navigasi halaman kualitas data">
+                                                            <span class="data-quality-page-button is-disabled">Sebelumnya</span>
+                                                        <span class="data-quality-page-current">Halaman 1 dari 59</span>
+                                                            <a class="data-quality-page-button" href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data?page=2">Berikutnya</a>
+                                                    </div>
+                                    </div>
+            </section>
+        </main>
+        <footer class="app-footer" aria-label="Copyright">
+    &copy; 2026 Ma'wa Center
+</footer>
+    </div>
+</div>
+</body>
+</html>

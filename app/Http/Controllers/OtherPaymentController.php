@@ -13,6 +13,7 @@ use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Services\AuditLogService;
 use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentImportService;
 use App\Services\OtherPaymentService;
@@ -27,6 +28,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OtherPaymentController extends Controller
 {
@@ -90,7 +92,7 @@ class OtherPaymentController extends Controller
             'importToken' => null,
             'feeTypes' => $this->feeTypes($section),
             'paymentSection' => $section,
-            ...$this->filterOptions($section),
+            ...$this->filterOptions($request, $section),
         ]);
     }
 
@@ -98,10 +100,10 @@ class OtherPaymentController extends Controller
     {
         $section = $this->section($request);
         $feeTypes = $this->feeTypes($section);
+        $unitIds = $request->user()?->accessibleUnitIds();
 
         if ($request->filled('student_id')) {
             $selectedStudent = Student::with('schoolClass.educationUnit')->findOrFail($request->integer('student_id'));
-            $unitIds = $request->user()?->accessibleUnitIds();
             if (is_array($unitIds) && ! in_array((int) $selectedStudent->schoolClass?->education_unit_id, $unitIds, true)) {
                 abort(403, 'Anda tidak memiliki akses ke siswa ini.');
             }
@@ -154,6 +156,7 @@ class OtherPaymentController extends Controller
         }
         $validated = $request->validate($rules);
         $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
+        $this->authorizeStudentAccess($request, $student);
         $feeType = $this->feeTypeForSection($validated['fee_type_id'], $section);
 
         if ($section['key'] === 'laundry') {
@@ -183,6 +186,7 @@ class OtherPaymentController extends Controller
             'year' => ['required', 'integer', 'between:2000,2100'],
         ]);
         $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
+        $this->authorizeStudentAccess($request, $student);
 
         return response()->json($payments->monthStatuses(
             $student,
@@ -196,10 +200,20 @@ class OtherPaymentController extends Controller
         $section = $this->section($request);
         $validated = $request->validated();
         $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
+        $this->authorizeStudentAccess($request, $student);
         $feeType = $this->feeTypeForSection($validated['fee_type_id'], $section);
         $payment = $section['key'] === 'laundry'
             ? $laundryPayments->record($student, $feeType, $validated)
             : $payments->record($student, $feeType, $validated);
+        app(AuditLogService::class)->recordOperation(
+            'payments.other.create',
+            $this->paymentAuditMetadata($payment),
+            afterValues: $this->paymentAuditSnapshot($payment),
+            request: $request,
+            subjectType: OtherPayment::class,
+            subjectId: $payment->id,
+            studentIds: [$student->id],
+        );
 
         return redirect()->route('finance.other.index', $this->sectionParams($section))
             ->with('success', 'Pembayaran '.$section['title'].' berhasil disimpan.')
@@ -210,7 +224,7 @@ class OtherPaymentController extends Controller
             ]);
     }
 
-    public function receipt(OtherPayment $otherPayment): View
+    public function receipt(Request $request, OtherPayment $otherPayment): View
     {
         $otherPayment->load([
             'student.academicYear',
@@ -218,6 +232,7 @@ class OtherPaymentController extends Controller
             'feeType.academicYear',
             'items',
         ]);
+        $this->authorizePaymentAccess($request, $otherPayment);
 
         return view('finance.other-receipt', [
             'payment' => $otherPayment,
@@ -227,7 +242,7 @@ class OtherPaymentController extends Controller
         ]);
     }
 
-    public function downloadReceipt(OtherPayment $otherPayment): Response
+    public function downloadReceipt(Request $request, OtherPayment $otherPayment): Response
     {
         $otherPayment->load([
             'student.academicYear',
@@ -235,6 +250,7 @@ class OtherPaymentController extends Controller
             'feeType.academicYear',
             'items',
         ]);
+        $this->authorizePaymentAccess($request, $otherPayment);
         $logoPath = public_path('images/logo-yayasan-mambaul-hikmah.png');
         $html = view('finance.other-receipt-pdf', [
             'payment' => $otherPayment,
@@ -256,9 +272,17 @@ class OtherPaymentController extends Controller
         ]);
     }
 
-    public function show(OtherPayment $otherPayment): JsonResponse
+    public function proof(Request $request, OtherPayment $otherPayment): StreamedResponse
+    {
+        $this->authorizePaymentAccess($request, $otherPayment);
+
+        return $this->proofResponse($otherPayment->transfer_proof_path);
+    }
+
+    public function show(Request $request, OtherPayment $otherPayment): JsonResponse
     {
         $otherPayment->load(['student.schoolClass.educationUnit', 'feeType', 'items']);
+        $this->authorizePaymentAccess($request, $otherPayment);
 
         return response()->json([
             'id' => $otherPayment->id,
@@ -289,7 +313,19 @@ class OtherPaymentController extends Controller
 
     public function update(UpdateOtherPaymentRequest $request, OtherPayment $otherPayment, OtherPaymentService $payments): RedirectResponse
     {
-        $payments->updateMetadata($otherPayment, $request->validated());
+        $this->authorizePaymentAccess($request, $otherPayment);
+        $before = $this->paymentAuditSnapshot($otherPayment->loadMissing(['feeType', 'items']));
+        $payment = $payments->updateMetadata($otherPayment, $request->validated());
+        app(AuditLogService::class)->recordOperation(
+            'payments.other.update',
+            $this->paymentAuditMetadata($payment),
+            beforeValues: $before,
+            afterValues: $this->paymentAuditSnapshot($payment),
+            request: $request,
+            subjectType: OtherPayment::class,
+            subjectId: $payment->id,
+            studentIds: [$payment->student_id],
+        );
 
         return $this->redirectAfterMutation($request, route('finance.other.index', $this->paymentSectionParams($otherPayment)))
             ->with('success', 'Transaksi pembayaran berhasil diperbarui.');
@@ -297,13 +333,26 @@ class OtherPaymentController extends Controller
 
     public function destroy(Request $request, OtherPayment $otherPayment, OtherPaymentService $payments, LaundryPaymentService $laundryPayments): RedirectResponse
     {
+        $this->authorizePaymentAccess($request, $otherPayment);
         $sectionParams = $this->paymentSectionParams($otherPayment);
-        $otherPayment->loadMissing('feeType');
+        $otherPayment->loadMissing('feeType', 'items');
+        $before = $this->paymentAuditSnapshot($otherPayment);
+        $paymentId = $otherPayment->id;
+        $studentId = $otherPayment->student_id;
         if ($otherPayment->feeType?->payment_group === 'laundry') {
             $laundryPayments->delete($otherPayment);
         } else {
             $payments->delete($otherPayment);
         }
+        app(AuditLogService::class)->recordOperation(
+            'payments.other.delete',
+            $this->paymentAuditMetadata($otherPayment),
+            beforeValues: $before,
+            request: $request,
+            subjectType: OtherPayment::class,
+            subjectId: $paymentId,
+            studentIds: [$studentId],
+        );
 
         return $this->redirectAfterMutation($request, route('finance.other.index', $sectionParams))
             ->with('success', 'Transaksi pembayaran berhasil dihapus.');
@@ -323,6 +372,7 @@ class OtherPaymentController extends Controller
     public function previewImport(PreviewOtherPaymentImportRequest $request, OtherPaymentImportService $importer): View
     {
         $section = $this->section($request);
+        $unitIds = $request->user()?->accessibleUnitIds();
         $token = $request->string('token')->value();
         $stored = $token ? $request->session()->get("other_payment_imports.{$token}") : null;
 
@@ -334,7 +384,7 @@ class OtherPaymentController extends Controller
         }
 
         try {
-            $sources = $importer->sources(Storage::path($stored['path']), $section['key']);
+            $sources = $importer->sources(Storage::path($stored['path']), $section['key'], $unitIds);
             $mappings = array_replace(
                 $stored['mappings'] ?? [],
                 is_array($request->input('mappings')) ? $request->input('mappings') : [],
@@ -357,7 +407,7 @@ class OtherPaymentController extends Controller
             return view('finance.payments', [
                 'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
                 'mode' => 'import-preview',
-                'importPreview' => $importer->preview(Storage::path($stored['path']), $mappings, $stored['name'], $section['key']),
+                'importPreview' => $importer->preview(Storage::path($stored['path']), $mappings, $stored['name'], $section['key'], $unitIds),
                 'importSources' => $sources,
                 'importMappings' => $mappings,
                 'importToken' => $token,
@@ -381,6 +431,7 @@ class OtherPaymentController extends Controller
     public function import(Request $request, OtherPaymentImportService $importer): RedirectResponse
     {
         $section = $this->section($request);
+        $unitIds = $request->user()?->accessibleUnitIds();
         $validated = $request->validate(['token' => ['required', 'uuid']]);
         $stored = $request->session()->pull("other_payment_imports.{$validated['token']}");
 
@@ -389,7 +440,7 @@ class OtherPaymentController extends Controller
         }
 
         try {
-            $result = $importer->import(Storage::path($stored['path']), $stored['mappings'] ?? [], $stored['name'], $section['key']);
+            $result = $importer->import(Storage::path($stored['path']), $stored['mappings'] ?? [], $stored['name'], $section['key'], $unitIds);
         } finally {
             Storage::delete($stored['path']);
         }
@@ -401,6 +452,18 @@ class OtherPaymentController extends Controller
         if ($result['failures']) {
             $message .= ' '.count($result['failures']).' transaksi gagal: '.collect($result['failures'])->pluck('message')->take(3)->implode(' ');
         }
+        app(AuditLogService::class)->recordOperation(
+            'payments.other.import',
+            [
+                'file_name' => $stored['name'] ?? null,
+                'payment_group' => $section['key'],
+                'imported' => (int) $result['imported'],
+                'duplicates' => (int) $result['duplicates'],
+                'failed_rows' => count($result['failures']),
+            ],
+            afterValues: ['result' => collect($result)->except('rows')->all()],
+            request: $request,
+        );
 
         return redirect()->route('finance.payments.import')->with('success', $message);
     }
@@ -425,9 +488,12 @@ class OtherPaymentController extends Controller
 
     private function feeTypes(array $section)
     {
+        $unitIds = request()->user()?->accessibleUnitIds();
+
         return FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
             ->where('is_active', true)
             ->paymentGroup($section['key'])
+            ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
             ->orderBy('name')->get();
     }
 
@@ -465,9 +531,11 @@ class OtherPaymentController extends Controller
             ->exists();
     }
 
-    private function filterOptions(array $section): array
+    private function filterOptions(Request $request, array $section): array
     {
+        $unitIds = $request->user()?->accessibleUnitIds();
         $operatorQuery = OtherPayment::query()
+            ->when(is_array($unitIds), fn ($query) => $query->whereHas('student.schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
             ->whereNotNull('operator_name')
             ->where('operator_name', '!=', '');
         if ($section['key'] !== 'all') {
@@ -475,16 +543,20 @@ class OtherPaymentController extends Controller
         }
 
         return [
-            'educationUnits' => EducationUnit::orderByRaw($this->educationUnitOrderExpression())->orderBy('name')->get(),
+            'educationUnits' => EducationUnit::query()
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
+                ->orderByRaw($this->educationUnitOrderExpression())->orderBy('name')->get(),
             'classes' => SchoolClass::with('educationUnit')
                 ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
                 ->select('school_classes.*')
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('school_classes.education_unit_id', $unitIds))
                 ->orderByRaw($this->educationUnitOrderExpression())
                 ->orderBy('school_classes.name')
                 ->get(),
             'studentOptions' => Student::select('students.*')->with('schoolClass.educationUnit')
                 ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
                 ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('school_classes.education_unit_id', $unitIds))
                 ->orderByRaw($this->educationUnitOrderExpression())
                 ->orderBy('students.name')
                 ->get(),
@@ -510,6 +582,7 @@ class OtherPaymentController extends Controller
                 'fee_type_id' => 'Kategori pembayaran tidak sesuai dengan menu '.$section['title'].'.',
             ]);
         }
+        $this->authorizeUnitAccess(request(), (int) $feeType->education_unit_id);
 
         return $feeType;
     }
@@ -567,5 +640,83 @@ class OtherPaymentController extends Controller
     private function educationUnitOrderExpression(): string
     {
         return "CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END";
+    }
+
+    private function authorizePaymentAccess(Request $request, OtherPayment $payment): void
+    {
+        $payment->loadMissing('student.schoolClass.educationUnit');
+
+        if (! $payment->student) {
+            abort(404);
+        }
+
+        $this->authorizeStudentAccess($request, $payment->student);
+    }
+
+    private function paymentAuditMetadata(OtherPayment $payment): array
+    {
+        $payment->loadMissing(['student.schoolClass.educationUnit', 'feeType']);
+
+        return [
+            'student_id' => $payment->student_id,
+            'unit_id' => $payment->student?->schoolClass?->education_unit_id,
+            'fee_type_id' => $payment->fee_type_id,
+            'payment_group' => $payment->feeType?->payment_group,
+            'payment_method' => $payment->payment_method,
+            'status' => $payment->status,
+            'paid_amount' => (int) $payment->paid_amount,
+        ];
+    }
+
+    private function paymentAuditSnapshot(OtherPayment $payment): array
+    {
+        $payment->loadMissing(['feeType', 'items']);
+
+        return [
+            'id' => $payment->id,
+            'student_id' => $payment->student_id,
+            'fee_type_id' => $payment->fee_type_id,
+            'payment_group' => $payment->feeType?->payment_group,
+            'transaction_at' => $payment->transaction_at?->format('Y-m-d H:i:s'),
+            'payment_method' => $payment->payment_method,
+            'status' => $payment->status,
+            'paid_amount' => (int) $payment->paid_amount,
+            'remaining_amount' => (int) $payment->remaining_amount,
+            'payment_status' => $payment->payment_status,
+            'items' => $payment->items->map(fn ($item) => [
+                'year' => (int) $item->year,
+                'month' => (int) $item->month,
+                'paid_amount' => (int) $item->paid_amount,
+                'remaining_amount' => (int) $item->remaining_amount,
+            ])->values()->all(),
+        ];
+    }
+
+    private function authorizeStudentAccess(Request $request, Student $student): void
+    {
+        $student->loadMissing('schoolClass.educationUnit');
+        $this->authorizeUnitAccess($request, $student->schoolClass?->education_unit_id);
+    }
+
+    private function authorizeUnitAccess(Request $request, ?int $unitId): void
+    {
+        $unitIds = $request->user()?->accessibleUnitIds();
+
+        if (is_array($unitIds) && ! in_array((int) $unitId, $unitIds, true)) {
+            abort(403, 'Anda tidak memiliki akses ke siswa atau transaksi ini.');
+        }
+    }
+
+    private function proofResponse(?string $path): StreamedResponse
+    {
+        if (! $path) {
+            abort(404);
+        }
+
+        if (Storage::disk('local')->exists($path)) {
+            return Storage::disk('local')->response($path);
+        }
+
+        abort(404);
     }
 }

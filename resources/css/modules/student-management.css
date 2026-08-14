@@ -10048,3 +10048,173 @@ html body .app-shell .main-panel main.student-data-quality-page .data-quality-em
         flex-wrap: wrap;
     }
 }
+
+/* Student management button overrides migrated from payments module. */
+body .student-class-alumni-button,
+body .student-import-confirm {
+    color: #ffffff !important;
+    background: #157144 !important;
+    border-color: #157144 !important;
+}
+
+body .student-class-alumni-button:hover,
+body .student-import-confirm:hover {
+    color: #ffffff !important;
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+}
+
+body .student-class-alumni-button svg,
+body .student-import-confirm svg {
+    color: #ffffff !important;
+    stroke: currentColor !important;
+}
+
+body .student-class-alumni-button:focus-visible {
+    outline: 0 !important;
+    box-shadow: 0 0 0 3px rgba(21, 113, 68, .14) !important;
+}
+
+html body .app-shell .main-panel .student-class-alumni-button,
+html body .app-shell .main-panel .student-import-confirm,
+html body .class-movement-page .class-movement-filter .student-search-button,
+html body .student-page .student-title-actions .student-class-alumni-button,
+html body .student-class-alumni-page-actions .button-primary,
+html body .student-alumni-v7 .student-filter-panel .student-search-button {
+    color: #ffffff !important;
+    background: #157144 !important;
+    border-color: #157144 !important;
+}
+
+html body .app-shell .main-panel .student-class-alumni-button:hover,
+html body .app-shell .main-panel .student-import-confirm:hover,
+html body .class-movement-page .class-movement-filter .student-search-button:hover,
+html body .student-page .student-title-actions .student-class-alumni-button:hover,
+html body .student-class-alumni-page-actions .button-primary:hover,
+html body .student-alumni-v7 .student-filter-panel .student-search-button:hover {
+    color: #ffffff !important;
+    background: #0d5f36 !important;
+    border-color: #0d5f36 !important;
+}
+
+/* Manajemen Siswa visual QA polish.
+   Keep this scoped and small until the full module is ready to be rewritten. */
+html body .app-shell .main-panel main.student-data-quality-page {
+    max-width: 1200px;
+}
+
+html body .class-movement-standard-page .class-transfer-student-main > strong,
+html body .class-movement-standard-page .class-promotion-student-main > strong,
+html body .identity-standard-page .identity-reset-card-body strong {
+    color: #020617 !important;
+}
+
+html body .class-movement-standard-page .class-transfer-student-card:hover,
+html body .class-movement-standard-page .class-promotion-student-card:hover,
+html body .class-movement-standard-page .class-transfer-student-card:has(input:checked),
+html body .class-movement-standard-page .class-promotion-student-card:has(input:checked) {
+    transform: none !important;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-filter-card,
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-detail-card {
+    border-radius: 8px;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-review-link,
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-action-cell .icon-button,
+html body .identity-standard-page .identity-reset-action,
+html body .student-alumni-v7 .alumni-actions-cell .icon-button {
+    min-width: 32px;
+    min-height: 32px;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-pagination {
+    margin-top: 16px;
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.student-data-quality-page {
+        max-width: 100vw;
+    }
+}
+
+/* Manajemen Siswa staged UI standardization. */
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page) :is(.student-filter-panel, .student-reference-filter, .student-list-table-card, .student-data-card, .student-reference-card-count select, .student-master-table, .student-flat-table, .table-wrap, .identity-reset-card, .class-transfer-student-card, .class-promotion-student-card),
+html body .app-shell .main-panel main.student-data-quality-page :is(.data-quality-card, .data-quality-filter-card, .data-quality-detail-card, .data-quality-badge, .data-quality-inline-item),
+html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 :is(.alumni-table-wrap, .alumni-table, .student-list-filter-card, .student-list-table-card, .student-reference-card-count select),
+html body .app-shell .main-panel main.class-movement-standard-page :is(.class-movement-filter-panel, .class-transfer-student-card, .class-promotion-student-card, .class-movement-data-card, .class-transfer-action-panel, .class-promotion-action-panel) {
+    border-radius: 8px !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-master-table .student-actions-cell {
+    padding: 0 8px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-master-table .student-actions-cell .table-actions.student-ghost-actions {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    width: 72px !important;
+    height: 40px !important;
+}
+
+html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .student-master-table .student-actions-cell .table-actions.student-ghost-actions form {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 30px !important;
+    height: 30px !important;
+    margin: 0 !important;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card {
+    min-height: 230px;
+}
+
+html body .app-shell .main-panel main.student-data-quality-page .data-quality-card-foot {
+    margin-top: auto;
+}
+
+html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-pagination {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+}
+
+html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .student-master-heading h1 {
+    margin: 0 !important;
+    color: #020617 !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0 !important;
+}
+
+html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .student-master-heading p {
+    margin: 4px 0 0 !important;
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.45 !important;
+}
+
+html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-table .alumni-cell-main strong {
+    color: #020617 !important;
+}
+
+@media (width <= 760px) {
+    html body .app-shell .main-panel main.student-data-quality-page .data-quality-card {
+        min-height: 0;
+    }
+
+    html body .app-shell .main-panel main#student-alumni-page.student-alumni-v7 .alumni-pagination {
+        justify-content: flex-start !important;
+        flex-wrap: wrap !important;
+    }
+}

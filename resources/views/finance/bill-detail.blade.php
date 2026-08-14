@@ -7,7 +7,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         .bill-detail-web {
-            padding: 28px 48px 48px;
+            width: min(100%, 1200px);
+            min-width: 0;
+            margin-inline: auto;
+            padding: 24px 32px 32px;
         }
 
         .bill-detail-web-head {
@@ -19,9 +22,9 @@
         }
 
         .bill-detail-web-title h1 {
-            margin: 0 0 6px;
+            margin: 0 0 4px;
             color: #020617;
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 700;
             line-height: 1.2;
         }
@@ -29,8 +32,9 @@
         .bill-detail-web-title p {
             margin: 0;
             color: #707971;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 400;
+            line-height: 1.45;
         }
 
         .bill-detail-web-actions {
@@ -44,6 +48,30 @@
             min-width: 112px;
             min-height: 40px;
             border-radius: 8px;
+        }
+
+        .bill-detail-web-actions .bill-detail-action-primary {
+            color: #ffffff;
+            background: #004528;
+            border-color: #004528;
+        }
+
+        .bill-detail-web-actions .bill-detail-action-primary:hover {
+            color: #ffffff;
+            background: #0d5f36;
+            border-color: #0d5f36;
+        }
+
+        .bill-detail-web-actions .bill-detail-action-secondary {
+            color: #334155;
+            background: #ffffff;
+            border-color: #d1d5db;
+        }
+
+        .bill-detail-web-actions .bill-detail-action-secondary:hover {
+            color: #020617;
+            background: #fbfdf8;
+            border-color: #d1d5db;
         }
 
         .bill-detail-web-summary {
@@ -63,7 +91,7 @@
         .bill-detail-web-panel h2 {
             margin: 0 0 16px;
             color: #020617;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 700;
         }
 
@@ -84,13 +112,13 @@
         .bill-detail-web-field strong,
         .bill-detail-web-field b {
             color: #020617;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 700;
             line-height: 1.3;
         }
 
         .bill-detail-web-status {
-            color: #dc2626 !important;
+            color: #ef1f2d;
         }
 
         .bill-detail-web-total {
@@ -110,7 +138,7 @@
         .bill-detail-web-total strong {
             margin-top: 8px;
             color: #004528;
-            font-size: 28px;
+            font-size: 20px;
             font-weight: 700;
             line-height: 1.2;
         }
@@ -135,7 +163,7 @@
         .bill-detail-web-table th {
             background: #fbfdf8;
             color: #334155;
-            font-weight: 700;
+            font-weight: 500;
             text-align: center;
         }
 
@@ -167,7 +195,7 @@
 
         @media (max-width: 900px) {
             .bill-detail-web {
-                padding: 20px 16px 32px;
+                padding: 16px;
             }
 
             .bill-detail-web-head,
@@ -210,17 +238,18 @@
     $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
     $rupiah = fn ($amount) => 'Rp. '.number_format($amount, 0, ',', '.').',-';
     $activeAcademicYear = \App\Models\AcademicYear::where('is_active', true)->first();
+    $canCreateCashPayment = auth()->user()?->hasPermission('payments.cash.create') ?? false;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'bills'])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar">
-            <button class="icon-button menu-toggle always-visible" data-sidebar-toggle>{!! $icon('menu') !!}</button>
+            <button type="button" class="icon-button menu-toggle always-visible" data-sidebar-toggle aria-label="Buka menu" title="Buka menu">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
-            <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <button class="icon-button logout-button">{!! $icon('logout') !!}</button>
+            <button type="button" class="icon-button notification-button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}</button>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main class="student-page bill-detail-web">
@@ -230,10 +259,12 @@
                     <p>Rincian kewajiban administrasi siswa.</p>
                 </div>
                 <div class="bill-detail-web-actions">
-                    <a href="{{ $backUrl }}" class="button button-secondary">Kembali</a>
-                    <a href="{{ route('finance.payments.index', ['student_id' => $student->id, 'search' => $student->nis]) }}" class="button button-primary">Bayar</a>
-                    <a href="{{ $downloadUrl }}" class="button button-primary">{!! $icon('download') !!} Unduh</a>
-                    <a href="{{ $printUrl }}" target="_blank" rel="noopener" class="button button-secondary">{!! $icon('print') !!} Cetak</a>
+                    <a href="{{ $backUrl }}" class="button bill-detail-action-secondary">Kembali</a>
+                    @if($canCreateCashPayment)
+                    <a href="{{ route('finance.payments.index', ['student_id' => $student->id, 'search' => $student->nis]) }}" class="button bill-detail-action-primary">Bayar</a>
+                    @endif
+                    <a href="{{ $downloadUrl }}" class="button bill-detail-action-primary">{!! $icon('download') !!} Unduh</a>
+                    <a href="{{ $printUrl }}" target="_blank" rel="noopener" class="button bill-detail-action-secondary">{!! $icon('print') !!} Cetak</a>
                 </div>
             </div>
 

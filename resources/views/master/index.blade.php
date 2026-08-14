@@ -51,6 +51,19 @@
         'data-roles' => ['Data Role', 'role', $stats['roles'] ?? 0],
         'data-users' => ['Data User', 'users', $stats['users'] ?? 0],
     ];
+    $canAccess = fn (string $permission) => auth()->user()?->hasPermission($permission) ?? false;
+    $masterTabPermissions = [
+        'academic-years' => 'master.manage',
+        'education-units' => 'master.manage',
+        'classes' => 'master.manage',
+        'fee-types' => 'master.manage',
+        'fee-discounts' => 'master.manage',
+        'data-roles' => 'users.manage',
+        'data-users' => 'users.manage',
+    ];
+    $tabs = collect($tabs)
+        ->filter(fn ($item, $key) => $canAccess($masterTabPermissions[$key] ?? 'master.manage'))
+        ->all();
     $masterTableTabs = ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'];
     $labels = [
         'students' => ['Data Siswa', 'Kelola identitas, kelas, wali, dan status siswa.', 'Tambah Data Siswa'],
@@ -63,6 +76,7 @@
         'data-users' => ['Data User', 'Kelola akun pengguna dan role aksesnya.', 'Tambah User'],
     ];
     $createDescription = 'Pastikan data yang dimasukkan sudah benar.';
+    $canManageCurrentMasterTab = $canAccess($masterTabPermissions[$tab] ?? 'master.manage');
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', [
@@ -74,13 +88,13 @@
 
     <div class="main-panel">
         <header class="topbar">
-            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
+            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar" title="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ optional($academicYears->firstWhere('is_active', true))->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
-            <button class="icon-button notification-button" aria-label="Notifikasi">{!! $icon('bell') !!}<span></span></button>
-            <button class="icon-button logout-button" type="button" aria-label="Keluar" title="Keluar">{!! $icon('logout') !!}</button>
+            <button class="icon-button notification-button" type="button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}<span></span></button>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
-        <main class="{{ $showCreate ? ($tab === 'students' ? 'student-page student-create-page' : 'master-create-page'.($tab === 'academic-years' ? ' academic-year-create-page' : '').($tab === 'education-units' ? ' education-unit-create-page' : '').($tab === 'classes' ? ' class-create-page' : '').($tab === 'fee-types' ? ' fee-type-create-page' : '').($tab === 'fee-discounts' ? ' fee-discount-create-page' : '').($tab === 'data-roles' ? ' data-role-create-page' : '').($tab === 'data-users' ? ' data-user-create-page' : '')) : ($tab === 'students' ? ('student-page'.($showStudentImport ? ' student-import-page' : '')) : 'student-page master-flat-page'.($tab === 'academic-years' ? ' academic-year-page' : '').($tab === 'education-units' ? ' education-unit-page' : '').($tab === 'classes' ? ' class-page' : '').($tab === 'fee-types' ? ' fee-type-page' : '').($tab === 'fee-discounts' ? ' fee-discount-page' : '').($tab === 'data-roles' ? ' data-role-page' : '').($tab === 'data-users' ? ' data-user-page' : '')) }}">
+        <main class="{{ $showCreate ? ($tab === 'students' ? 'student-page student-create-page' : 'master-create-page'.($tab === 'academic-years' ? ' academic-year-create-page' : '').($tab === 'education-units' ? ' education-unit-create-page' : '').($tab === 'classes' ? ' class-create-page' : '').($tab === 'fee-types' ? ' fee-type-create-page' : '').($tab === 'fee-discounts' ? ' fee-discount-create-page' : '').($tab === 'data-roles' ? ' data-role-create-page' : '').($tab === 'data-users' ? ' data-user-create-page' : '')) : ($tab === 'students' ? ('student-page'.($showStudentImport ? ' student-import-page' : '')) : 'master-flat-page'.($tab === 'academic-years' ? ' academic-year-page' : '').($tab === 'education-units' ? ' education-unit-page' : '').($tab === 'classes' ? ' class-page' : '').($tab === 'fee-types' ? ' fee-type-page' : '').($tab === 'fee-discounts' ? ' fee-discount-page' : '').($tab === 'data-roles' ? ' data-role-page' : '').($tab === 'data-users' ? ' data-user-page' : '')) }}">
             @if (session('success'))
                 <div class="result-modal-backdrop show" data-alert>
                     <div class="result-modal success-result">
@@ -134,7 +148,7 @@
 
                     $createDescription = $createDescriptions[$tab] ?? 'Pastikan data yang dimasukkan sudah benar.';
                 @endphp
-                <section class="hero master-hero">
+                <section class="master-create-heading-section">
                     <div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Pengelolaan Data · Tambah</p>@endif<h1>{{ $labels[$tab][2] }}</h1><p>Lengkapi formulir berikut untuk menambahkan data baru.</p></div>
                 </section>
                 <section class="card master-create-card">
@@ -188,9 +202,11 @@
                     @else
                     <h1>{{ $labels[$tab][0] }}</h1>
                     @endif
+                    @if($canManageCurrentMasterTab)
                     <div class="student-title-actions">
                         <a href="{{ route('master.create', ['tab' => $tab]) }}" class="button student-add-button {{ in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true) ? 'master-primary-add-button' : '' }} {{ in_array($tab, ['academic-years', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true) ? 'academic-year-add-button' : '' }}">{!! $icon('plus') !!} {{ in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true) ? 'Tambah' : $labels[$tab][2] }}</a>
                     </div>
+                    @endif
                 </div>
             </section>
             @endif
@@ -253,8 +269,8 @@
                             <input type="hidden" name="direction" value="{{ request('direction', 'asc') }}">
                         @endif
                         <div class="student-reference-filter-grid student-fee-card-filter-grid">
-                            <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
-                            <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
+                            <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">Semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected(request('unit_id') == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                            <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">Semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(request('class_id') == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
                             <label><span>Status Data</span><select name="status"><option value="active" @selected($studentStatus === 'active')>Aktif</option><option value="inactive" @selected($studentStatus === 'inactive')>Nonaktif</option><option value="all" @selected($studentStatus === 'all')>Semua</option></select></label>
                         </div>
                         <div class="student-filter-actions student-fee-card-filter-actions student-data-filter-actions">
@@ -396,7 +412,7 @@
                                 @foreach([10, 25, 50, 100, 500] as $size)
                                     <option value="{{ $size }}" @selected((string) request('per_page', '25') === (string) $size)>{{ $size }}</option>
                                 @endforeach
-                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                <option value="all" @selected(request('per_page') === 'all')>Semua</option>
                             </select>
                             kelas
                         </label>
@@ -458,7 +474,7 @@
                                 @foreach([10, 25, 50, 100, 500] as $size)
                                     <option value="{{ $size }}" @selected((string) request('per_page', '10') === (string) $size)>{{ $size }}</option>
                                 @endforeach
-                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                <option value="all" @selected(request('per_page') === 'all')>Semua</option>
                             </select>
                             kategori
                         </label>
@@ -543,7 +559,7 @@
                                 @foreach([10, 25, 50, 100, 500] as $size)
                                     <option value="{{ $size }}" @selected((string) request('per_page', '25') === (string) $size)>{{ $size }}</option>
                                 @endforeach
-                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                <option value="all" @selected(request('per_page') === 'all')>Semua</option>
                             </select>
                             keringanan
                         </label>
@@ -631,7 +647,7 @@
                                 @foreach([10, 25, 50, 100, 500] as $size)
                                     <option value="{{ $size }}" @selected((string) request('per_page', '25') === (string) $size)>{{ $size }}</option>
                                 @endforeach
-                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                <option value="all" @selected(request('per_page') === 'all')>Semua</option>
                             </select>
                             role
                         </label>
@@ -715,7 +731,7 @@
                                 @foreach([10, 25, 50, 100, 500] as $size)
                                     <option value="{{ $size }}" @selected((string) request('per_page', '25') === (string) $size)>{{ $size }}</option>
                                 @endforeach
-                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                <option value="all" @selected(request('per_page') === 'all')>Semua</option>
                             </select>
                             user
                         </label>
@@ -776,7 +792,7 @@
             </section>
             @else
             <section class="card master-card student-data-card {{ $tab === 'students' ? 'student-list-table-card student-reference-align-lock' : 'master-flat-card' }} {{ $tab === 'education-units' ? 'education-unit-table-card' : '' }} {{ $tab === 'classes' ? 'class-table-card' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table-card' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table-card' : '' }} {{ $tab === 'data-roles' ? 'data-role-table-card' : '' }} {{ $tab === 'data-users' ? 'data-user-table-card' : '' }}">
-                @if (! in_array($tab, ['students', 'academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users']))
+                @if ($tab !== 'students' && count($tabs) > 1)
                 <div class="master-tabs">
                     @foreach ($tabs as $key => $item)
                         <a href="{{ route('master.index', ['tab' => $key]) }}" class="{{ $tab === $key ? 'active' : '' }}">{!! $icon($item[1]) !!}<span>{{ $item[0] }}</span><b>{{ $item[2] }}</b></a>
@@ -816,7 +832,7 @@
                                     @foreach([10, 25, 50, 100, 500] as $size)
                                         <option value="{{ $size }}" @selected((string) request('per_page', '10') === (string) $size)>{{ $size }}</option>
                                     @endforeach
-                                    <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                    <option value="all" @selected(request('per_page') === 'all')>Semua</option>
                                 </select>
                                 siswa
                             </label>
@@ -912,7 +928,7 @@
                                     @foreach([10, 25, 50, 100, 500] as $size)
                                         <option value="{{ $size }}" @selected((string) request('per_page', '10') === (string) $size)>{{ $size }}</option>
                                     @endforeach
-                                    <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                    <option value="all" @selected(request('per_page') === 'all')>Semua</option>
                                 </select>
                                 {{ $masterCountLabel }}
                             </label>
@@ -1121,7 +1137,7 @@
                             <p>{{ $studentResultSummary }}</p>
                         </div>
                     @endif
-                @elseif ($tab !== 'classes')<div class="pagination-wrap">{{ $data->links() }}</div>@endif
+                @else<div class="pagination-wrap">{{ $data->links() }}</div>@endif
             </section>
             @endif
             @endif
@@ -1134,7 +1150,7 @@
 @unless ($showCreate || $showStudentImport)
 <div class="modal-backdrop {{ $errors->any() && ! $errors->has('file') ? 'show' : '' }} {{ $tab === 'academic-years' ? 'academic-year-edit-modal' : '' }} {{ $tab === 'education-units' ? 'education-unit-edit-modal' : '' }} {{ $tab === 'classes' ? 'class-edit-modal' : '' }} {{ $tab === 'fee-types' ? 'fee-type-edit-modal' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-edit-modal' : '' }} {{ $tab === 'data-roles' ? 'data-role-edit-modal' : '' }} {{ $tab === 'data-users' ? 'data-user-edit-modal' : '' }}" data-modal>
     <div class="form-modal">
-        <div class="form-modal-header"><div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Master Data</p>@endif<h2 data-modal-title>Edit Data</h2></div><button class="icon-button" data-modal-close>×</button></div>
+        <div class="form-modal-header"><div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Master Data</p>@endif<h2 data-modal-title>Edit Data</h2></div><button class="icon-button" type="button" data-modal-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
         <form method="POST" action="{{ route('master.'.$tab.'.store') }}" data-master-form data-store-action="{{ route('master.'.$tab.'.store') }}" class="master-form">
             @csrf <input type="hidden" name="_method" value="POST" data-form-method>
             @include('master.partials.form-fields')

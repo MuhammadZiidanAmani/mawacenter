@@ -19,13 +19,14 @@ class OtherPaymentImportService
         private LaundryPaymentService $laundryPayments,
     ) {}
 
-    public function sources(string $path, ?string $paymentGroup = null): array
+    public function sources(string $path, ?string $paymentGroup = null, ?array $unitIds = null): array
     {
         [$headers, $rows] = $this->readRows($path);
         $sources = [];
         $feeTypes = FeeType::with(['educationUnit', 'schoolClass'])
             ->where('is_active', true)
             ->when($paymentGroup, fn ($query, $group) => $query->paymentGroup($group))
+            ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
             ->orderBy('name')
             ->get();
 
@@ -54,17 +55,17 @@ class OtherPaymentImportService
         return array_values($sources);
     }
 
-    public function preview(string $path, array $mappings, ?string $sourceName = null, ?string $paymentGroup = null): array
+    public function preview(string $path, array $mappings, ?string $sourceName = null, ?string $paymentGroup = null, ?array $unitIds = null): array
     {
-        return $this->process($path, $mappings, false, $sourceName, $paymentGroup);
+        return $this->process($path, $mappings, false, $sourceName, $paymentGroup, $unitIds);
     }
 
-    public function import(string $path, array $mappings, ?string $sourceName = null, ?string $paymentGroup = null): array
+    public function import(string $path, array $mappings, ?string $sourceName = null, ?string $paymentGroup = null, ?array $unitIds = null): array
     {
-        return $this->process($path, $mappings, true, $sourceName, $paymentGroup);
+        return $this->process($path, $mappings, true, $sourceName, $paymentGroup, $unitIds);
     }
 
-    private function process(string $path, array $mappings, bool $persist, ?string $sourceName, ?string $paymentGroup): array
+    private function process(string $path, array $mappings, bool $persist, ?string $sourceName, ?string $paymentGroup, ?array $unitIds): array
     {
         [$headers, $rows] = $this->readRows($path);
         $result = ['total' => count($rows), 'valid' => 0, 'imported' => 0, 'duplicates' => 0, 'failures' => [], 'rows' => []];
@@ -93,11 +94,13 @@ class OtherPaymentImportService
             $existingImportKeys = $this->existingImportKeys($prepared);
             $studentsByNis = Student::with('schoolClass.educationUnit')
                 ->whereIn('nis', array_values(array_unique(array_column($prepared, 'nis'))))
+                ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
                 ->get()
                 ->groupBy(fn (Student $student) => (string) $student->nis);
             $feeTypes = FeeType::with(['educationUnit', 'schoolClass', 'academicYear'])
                 ->when($paymentGroup, fn ($query, $group) => $query->paymentGroup($group))
                 ->where('is_active', true)
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
                 ->get();
             $feeTypesById = $feeTypes
                 ->whereIn('id', collect($mappings)->filter()->map(fn ($id) => (int) $id)->unique()->all())

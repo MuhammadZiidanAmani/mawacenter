@@ -24,6 +24,7 @@
     $reportQuery = fn (array $except = []) => collect(request()->except(array_merge($except, ['page'])))
         ->filter(fn ($value) => is_scalar($value))
         ->all();
+    $canExportReports = auth()->user()?->hasPermission('reports.export') ?? false;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'reports', 'activeReportMenu' => 'report'])
@@ -34,7 +35,7 @@
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
             <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <button class="icon-button logout-button">{!! $icon('logout') !!}</button>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main class="student-page report-flat-page">
@@ -42,7 +43,9 @@
                 <div class="student-flat-header">
                     <h1>Laporan Pembayaran</h1>
                     <div class="student-title-actions">
+                        @if($canExportReports)
                         <a href="{{ route('reports.export', request()->query()) }}" class="button student-add-button">{!! $icon('download') !!} Export CSV</a>
+                        @endif
                         <a href="{{ route('reports.index') }}" class="button action-orange">Reset</a>
                     </div>
                 </div>

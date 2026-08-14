@@ -21,7 +21,7 @@ class StudentIdentityCleanupController extends Controller
     {
         $filters = $this->filtersFromRequest($request);
 
-        $students = $this->studentsForCleanup();
+        $students = $this->studentsForCleanup($request);
         $candidates = $this->duplicateCandidates($students, $filters);
         $linkedGroups = $this->linkedIdentityGroups($students, $filters);
 
@@ -39,7 +39,7 @@ class StudentIdentityCleanupController extends Controller
     public function show(Request $request, string $candidateKey): View
     {
         $filters = $this->filtersFromRequest($request);
-        $students = $this->studentsForCleanup();
+        $students = $this->studentsForCleanup($request);
         $candidate = $this->duplicateCandidates($students, $filters)
             ->firstWhere('key', $candidateKey);
 
@@ -60,6 +60,7 @@ class StudentIdentityCleanupController extends Controller
         ]);
 
         $selected = Student::whereIn('id', $validated['student_ids'])->get();
+        $this->authorizeStudentsAccess($request, $selected);
         $before = [];
         $after = [];
         $affectedIds = [];
@@ -117,6 +118,10 @@ class StudentIdentityCleanupController extends Controller
             'identity_root_id' => ['required', 'integer', 'exists:students,id'],
         ]);
 
+        $linkedStudents = Student::where('id', $validated['identity_root_id'])
+            ->orWhere('identity_student_id', $validated['identity_root_id'])
+            ->get();
+        $this->authorizeStudentsAccess($request, $linkedStudents);
         $before = [];
         $after = [];
         $affectedIds = [];
@@ -215,11 +220,18 @@ class StudentIdentityCleanupController extends Controller
         ];
     }
 
-    private function studentsForCleanup(): Collection
+    private function studentsForCleanup(Request $request): Collection
     {
+        $unitIds = $request->user()?->accessibleUnitIds();
+
         return Student::query()
             ->with(['schoolClass.educationUnit', 'academicYear'])
             ->where('is_active', true)
+            ->when(is_array($unitIds), function ($query) use ($unitIds) {
+                $unitIds === []
+                    ? $query->whereRaw('1 = 0')
+                    : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds));
+            })
             ->orderBy('name')
             ->orderBy('nis')
             ->get();
@@ -227,11 +239,20 @@ class StudentIdentityCleanupController extends Controller
 
     private function sharedViewData(): array
     {
+        $unitIds = request()->user()?->accessibleUnitIds();
+
         return [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'academicYears' => AcademicYear::orderByDesc('is_active')->orderByDesc('start_date')->orderByDesc('id')->get(),
-            'educationUnits' => EducationUnit::where('is_active', true)->orderBy('name')->get(),
-            'schoolClasses' => SchoolClass::with('educationUnit')->where('is_active', true)->orderBy('name')->get(),
+            'educationUnits' => EducationUnit::where('is_active', true)
+                ->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereIn('id', $unitIds))
+                ->orderBy('name')
+                ->get(),
+            'schoolClasses' => SchoolClass::with('educationUnit')
+                ->where('is_active', true)
+                ->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereIn('education_unit_id', $unitIds))
+                ->orderBy('name')
+                ->get(),
         ];
     }
 
@@ -389,5 +410,16 @@ class StudentIdentityCleanupController extends Controller
             'class' => $student->schoolClass?->name,
             'academic_year' => $student->academicYear?->name,
         ];
+    }
+
+    private function authorizeStudentsAccess(Request $request, Collection $students): void
+    {
+        $unitIds = $request->user()?->accessibleUnitIds();
+        if (! is_array($unitIds)) {
+            return;
+        }
+
+        $students->loadMissing('schoolClass');
+        abort_if($students->contains(fn (Student $student) => ! in_array((int) $student->schoolClass?->education_unit_id, $unitIds, true)), 403);
     }
 }

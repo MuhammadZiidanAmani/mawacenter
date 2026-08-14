@@ -62,6 +62,7 @@ class EnsureRolePermission
             in_array($routeName, ['master.students.template', 'master.students.import.preview', 'master.students.import'], true) => ['students.import'],
             str_starts_with($routeName, 'finance.transfer-verifications.') => ['payments.verify_transfer'],
             in_array($routeName, ['finance.payments.import', 'finance.spp.import.preview', 'finance.spp.import', 'finance.other.import.preview', 'finance.other.import', 'finance.spp.correct', 'finance.spp.update', 'finance.spp.destroy', 'finance.other.update', 'finance.other.destroy'], true) => ['payments.verify_transfer'],
+            $routeName === 'finance.payments.store' => ['payments.cash.create'],
             in_array($routeName, ['finance.spp.store', 'finance.other.store', 'finance.spp.create', 'finance.other.create', 'finance.spp.months', 'finance.spp.quote', 'finance.other.months', 'finance.other.quote'], true) => ['payments.cash.create'],
             str_starts_with($routeName, 'finance.spp.'),
             str_starts_with($routeName, 'finance.other.'),
@@ -72,10 +73,20 @@ class EnsureRolePermission
             str_starts_with($routeName, 'guardian.') => ['bills.view_guardian', 'payments.transfer.submit_guardian'],
             str_starts_with($routeName, 'reports.export.') || $routeName === 'reports.export' => ['reports.export'],
             str_starts_with($routeName, 'reports.') => ['reports.view', 'reports.view_unit'],
-            $routeName === 'master.destroy' && $request->route('type') === 'students' => ['master.manage'],
-            str_starts_with($routeName, 'master.') => ['master.manage', 'users.manage'],
+            $routeName === 'master.index' => $this->permissionsForMasterType((string) $request->query('tab', 'academic-years')),
+            $routeName === 'master.create' => $this->permissionsForMasterType((string) $request->query('tab', 'academic-years')),
+            in_array($routeName, ['master.data-roles.store', 'master.data-roles.update', 'master.data-users.store', 'master.data-users.update'], true) => ['users.manage'],
+            $routeName === 'master.destroy' => $this->permissionsForMasterType((string) $request->route('type')),
+            str_starts_with($routeName, 'master.') => ['master.manage'],
             str_starts_with($routeName, 'settings.') => ['settings.view'],
             default => [],
         };
+    }
+
+    private function permissionsForMasterType(string $type): array
+    {
+        return in_array($type, ['data-roles', 'data-users'], true)
+            ? ['users.manage']
+            : ['master.manage'];
     }
 }

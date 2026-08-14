@@ -28,7 +28,7 @@
             <button class="icon-button menu-toggle always-visible" data-sidebar-toggle>{!! $icon('menu') !!}</button>
             <div class="topbar-spacer"></div>
             <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <a class="icon-button logout-button" href="{{ route('logout') }}">{!! $icon('logout') !!}</a>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main class="student-page transfer-verification-page">
@@ -62,7 +62,7 @@
                                     <td><strong>{{ $transfer->user?->name }}</strong><small>{{ $transfer->user?->username }}</small></td>
                                     <td><strong>{{ $transfer->student?->name }}</strong><small>{{ $transfer->student?->schoolClass?->educationUnit?->code ?? '-' }} - {{ $transfer->student?->nis }}</small></td>
                                     <td><strong class="bill-money remaining">{{ $rupiah($transfer->amount) }}</strong></td>
-                                    <td><a href="{{ asset('storage/'.$transfer->proof_path) }}" target="_blank" class="button transfer-proof-link">{!! $icon('file') !!}</a></td>
+                                    <td><a href="{{ route('finance.transfer-verifications.proof', $transfer) }}" target="_blank" class="button transfer-proof-link" title="Lihat Bukti" aria-label="Lihat Bukti">{!! $icon('file') !!}</a></td>
                                     <td><span class="status {{ $transfer->status === 'Diterima' ? 'success' : ($transfer->status === 'Ditolak' ? 'danger' : 'neutral') }}">{{ $transfer->status }}</span></td>
                                     <td>
                                         @if($transfer->status === 'Pending')

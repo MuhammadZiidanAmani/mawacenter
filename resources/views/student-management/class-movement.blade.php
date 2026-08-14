@@ -94,7 +94,7 @@
             padding:16px !important;
             background: #ffffff !important;
             border: 1px solid #d1d5db !important;
-            border-radius: 12px !important;
+            border-radius: 8px !important;
             box-shadow: none !important;
         }
 
@@ -403,7 +403,7 @@
         html body .class-movement-standard-page .class-transfer-student-main > strong,
         html body .class-movement-standard-page .class-promotion-student-main > strong {
             margin:0 !important;
-            color: #004528 !important;
+            color: #020617 !important;
             font-size: 16px !important;
             font-weight: 700 !important;
             line-height: 1.3 !important;
@@ -1163,11 +1163,11 @@
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar">
-            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
+            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar" title="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
-            <button class="icon-button notification-button" aria-label="Notifikasi">{!! $icon('bell') !!}</button>
-            <button class="icon-button logout-button" type="button" aria-label="Keluar" title="Keluar">{!! $icon('logout') !!}</button>
+            <button class="icon-button notification-button" type="button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}</button>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main class="class-movement-standard-page {{ $isPromotion ? 'class-promotion-screen' : 'class-transfer-standard-screen' }}">
@@ -1202,8 +1202,8 @@
 
                 <form id="class-movement-filter" method="GET" action="{{ $indexRoute }}" class="class-movement-filter-panel" data-student-filter-panel>
                     <div class="class-movement-filter-grid">
-                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected($filters['unit_id'] == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
-                        <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected($filters['class_id'] == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
+                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">Semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected($filters['unit_id'] == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
+                        <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">Semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected($filters['class_id'] == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
                     </div>
                     <label class="class-movement-filter-search">
                         <span>Cari siswa</span>
@@ -1239,7 +1239,7 @@
                             @foreach([10, 25, 50, 100, 500] as $size)
                                 <option value="{{ $size }}" @selected((string) $filters['per_page'] === (string) $size)>{{ $size }}</option>
                             @endforeach
-                            <option value="all" @selected($filters['per_page'] === 'all')>All</option>
+                            <option value="all" @selected($filters['per_page'] === 'all')>Semua</option>
                         </select>
                         siswa
                     </label>

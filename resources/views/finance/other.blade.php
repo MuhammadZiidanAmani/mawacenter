@@ -56,6 +56,8 @@
     };
     $filterDateFrom = $nativeDateValue(request('date_from'), now()->startOfMonth()->toDateString());
     $filterDateTo = $nativeDateValue(request('date_to'), now()->toDateString());
+    $canCreateCashPayment = auth()->user()?->hasPermission('payments.cash.create') ?? false;
+    $canManagePaymentCorrections = auth()->user()?->hasPermission('payments.verify_transfer') ?? false;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'payment', 'activePaymentMenu' => $showCreate ? 'transaction' : 'history'])
@@ -64,7 +66,7 @@
         <header class="topbar">
             <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle>{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
-            <div class="topbar-spacer"></div><button class="icon-button notification-button">{!! $icon('bell') !!}</button><button class="icon-button logout-button">{!! $icon('logout') !!}</button>
+            <div class="topbar-spacer"></div><button class="icon-button notification-button">{!! $icon('bell') !!}</button>@include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
         <main @class(['finance-page' => $showCreate, 'student-page payment-flat-page' => ! $showCreate])>
             @php
@@ -78,8 +80,12 @@
                     <div class="student-flat-header">
                         <h1>Pembayaran {{ $paymentSection['title'] }}</h1>
                         <div class="student-title-actions">
+                            @if($canCreateCashPayment)
                             <a href="{{ route('finance.other.create', ['category' => $paymentSection['key']]) }}" class="button student-add-button">{!! $icon('plus') !!} Tambah</a>
+                            @endif
+                            @if($canManagePaymentCorrections)
                             <button type="button" class="button action-purple spp-import-toggle {{ $importPreview || $errors->any() ? 'active' : '' }}" data-spp-import-toggle aria-expanded="{{ $errors->any() ? 'true' : 'false' }}">{!! $icon('upload') !!} Import</button>
+                            @endif
                         </div>
                     </div>
                     <form method="GET" action="{{ route('finance.other.index', ['category' => $paymentSection['key']]) }}" class="student-filter-panel payment-filter-panel payment-filter-compact">
@@ -107,6 +113,7 @@
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
                     </form>
+                @if($canManagePaymentCorrections)
                 <div class="spp-import-modal-backdrop {{ $errors->any() ? 'show' : '' }}" data-spp-import-panel @if(! $errors->any()) hidden @endif>
                     <section class="spp-import-modal" role="dialog" aria-modal="true" aria-labelledby="other-import-title">
                         <header class="spp-import-modal-head">
@@ -137,7 +144,8 @@
                         </form>
                     </section>
                 </div>
-                @if($importPreview)
+                @endif
+                @if($canManagePaymentCorrections && $importPreview)
                 <section class="card other-import-mapping">
                     <div class="spp-preview-table-head"><div><strong>Pemetaan Kategori Pembayaran</strong><span>Pastikan kategori Excel diarahkan ke kategori pembayaran aplikasi yang benar untuk setiap unit.</span></div><span class="spp-preview-count">{{ count($importSources) }} pemetaan</span></div>
                     <form method="POST" action="{{ route('finance.other.import.preview', ['category' => $paymentSection['key']]) }}" class="other-mapping-form">@csrf<input type="hidden" name="token" value="{{ $importToken }}">
@@ -189,7 +197,7 @@
                                         <div class="registration-detail-item time"><span>Waktu</span><strong>{{ $payment->transaction_at->format('Y-m-d H:i:s') }}</strong></div>
                                         <div class="registration-detail-item"><span>Petugas</span><strong>{{ $payment->operator_name ?: '-' }}</strong></div>
                                         <div class="registration-detail-item"><span>Pembayaran</span><strong>{{ $payment->payment_status }}</strong></div>
-                                        <div class="registration-detail-item action"><span>Aksi</span><div @class(['registration-actions', 'spp-compact-actions' => $paymentSection['key'] === 'laundry'])><a href="{{ route('finance.other.receipt', $payment) }}" target="_blank" class="registration-action print" title="Cetak Struk" aria-label="Cetak Struk"><svg class="icon" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/></svg></a><button type="button" class="registration-action edit" title="Edit Transaksi" aria-label="Edit Transaksi" data-other-edit-url="{{ route('finance.other.show', $payment) }}" data-other-update-url="{{ route('finance.other.update', $payment) }}"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button><button type="button" class="registration-action delete" title="Hapus Transaksi" aria-label="Hapus Transaksi" data-other-delete-url="{{ route('finance.other.destroy', $payment) }}" data-other-delete-name="{{ $payment->student?->name }}"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></div></div>
+                                        <div class="registration-detail-item action"><span>Aksi</span><div @class(['registration-actions', 'spp-compact-actions' => $paymentSection['key'] === 'laundry'])><a href="{{ route('finance.other.receipt', $payment) }}" target="_blank" class="registration-action print" title="Cetak Struk" aria-label="Cetak Struk"><svg class="icon" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/></svg></a>@if($canManagePaymentCorrections)<button type="button" class="registration-action edit" title="Edit Transaksi" aria-label="Edit Transaksi" data-other-edit-url="{{ route('finance.other.show', $payment) }}" data-other-update-url="{{ route('finance.other.update', $payment) }}"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button><button type="button" class="registration-action delete" title="Hapus Transaksi" aria-label="Hapus Transaksi" data-other-delete-url="{{ route('finance.other.destroy', $payment) }}" data-other-delete-name="{{ $payment->student?->name }}"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button>@endif</div></div>
                                     </div>
                                 @else
                                     <div class="spp-expanded-content">

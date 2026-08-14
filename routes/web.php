@@ -14,7 +14,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'role.access'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
-    Route::get('/logout', [AuthController::class, 'destroy'])->name('logout');
+    Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
     Route::get('/laporan', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/laporan/export', [ReportController::class, 'legacyExport'])->name('reports.export');
     Route::prefix('laporan')->name('reports.')->controller(ReportController::class)->group(function () {

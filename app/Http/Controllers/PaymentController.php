@@ -10,6 +10,7 @@ use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\SppPayment;
 use App\Models\Student;
+use App\Services\AuditLogService;
 use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentService;
 use App\Services\SppPaymentService;
@@ -101,6 +102,7 @@ class PaymentController extends Controller
                     ->where(fn ($query) => $query
                         ->where('id', $identityId)
                         ->orWhere('identity_student_id', $identityId))
+                    ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
                     ->pluck('id');
 
                 $selectedRegistrations = $people->get($identityId);
@@ -229,12 +231,15 @@ class PaymentController extends Controller
         $identityId = $selectedStudent->identity_student_id ?: $selectedStudent->id;
         $registrations = Student::with(['academicYear', 'schoolClass.educationUnit'])
             ->where('is_active', true)
+            ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
             ->where(fn ($query) => $query
                 ->where('id', $identityId)
                 ->orWhere('identity_student_id', $identityId))
             ->get()
             ->keyBy('id');
-        $feeTypes = FeeType::where('is_active', true)->get();
+        $feeTypes = FeeType::where('is_active', true)
+            ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
+            ->get();
         $selectedKeys = collect($validated['bill_keys'] ?? [])
             ->concat($validated['optional_keys'] ?? [])
             ->unique()
@@ -269,7 +274,7 @@ class PaymentController extends Controller
             'operator_user_id' => auth()->id(),
         ];
         if ($validated['payment_method'] === 'Transfer' && $request->hasFile('transfer_proof')) {
-            $baseData['transfer_proof_path'] = $request->file('transfer_proof')->store('payment-proofs', 'public');
+            $baseData['transfer_proof_path'] = $request->file('transfer_proof')->store('payment-proofs', 'local');
         }
         $createdPayments = collect();
 
@@ -299,6 +304,7 @@ class PaymentController extends Controller
                 $createdPayments->push([
                     'type' => 'other',
                     'id' => $payment->id,
+                    'student_id' => $student->id,
                     'label' => $feeType->name,
                     'receipt_url' => route('finance.other.receipt', $payment),
                     'download_url' => route('finance.other.receipt.download', $payment),
@@ -323,6 +329,7 @@ class PaymentController extends Controller
                     $createdPayments->push([
                         'type' => 'spp',
                         'id' => $payment->id,
+                        'student_id' => $student->id,
                         'label' => 'SPP '.$student->schoolClass?->educationUnit?->code,
                         'receipt_url' => route('finance.spp.receipt', $payment),
                         'download_url' => route('finance.spp.receipt.download', $payment),
@@ -351,6 +358,7 @@ class PaymentController extends Controller
                 $createdPayments->push([
                     'type' => 'spp',
                     'id' => $payment->id,
+                    'student_id' => $student->id,
                     'label' => 'SPP '.$student->schoolClass?->educationUnit?->code,
                     'receipt_url' => route('finance.spp.receipt', $payment),
                     'download_url' => route('finance.spp.receipt.download', $payment),
@@ -396,6 +404,7 @@ class PaymentController extends Controller
                 $createdPayments->push([
                     'type' => 'other',
                     'id' => $payment->id,
+                    'student_id' => $student->id,
                     'label' => $feeType->name,
                     'receipt_url' => route('finance.other.receipt', $payment),
                     'download_url' => route('finance.other.receipt.download', $payment),
@@ -409,6 +418,25 @@ class PaymentController extends Controller
                 ->withInput()
                 ->withErrors(['bill_keys' => 'Tidak ada tagihan terpilih yang dapat dibayar.']);
         }
+        app(AuditLogService::class)->recordOperation(
+            'payments.bulk_create',
+            [
+                'payment_method' => $validated['payment_method'],
+                'paid_amount' => (int) $validated['paid_amount'],
+                'selected_student_id' => $selectedStudent->id,
+                'payments' => $createdPayments->map(fn (array $payment) => [
+                    'type' => $payment['type'],
+                    'id' => $payment['id'],
+                    'label' => $payment['label'],
+                    'student_id' => $payment['student_id'],
+                ])->values()->all(),
+            ],
+            afterValues: ['payments' => $createdPayments->values()->all()],
+            request: $request,
+            subjectType: Student::class,
+            subjectId: $selectedStudent->id,
+            studentIds: $createdPayments->pluck('student_id')->all(),
+        );
 
         return redirect()
             ->route('finance.payments.index', [
@@ -491,9 +519,12 @@ class PaymentController extends Controller
 
     public function import(): View
     {
+        $unitIds = request()->user()?->accessibleUnitIds();
+
         return view('finance.payments', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'educationUnits' => EducationUnit::orderByRaw("CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
                 ->orderBy('name')
                 ->get(),
             'mode' => 'import',
@@ -722,17 +753,17 @@ class PaymentController extends Controller
                 $defaultPeriodCount = $monthCount;
             } else {
                 try {
-                $window = $sppPayments->paymentWindow($student);
-                $defaultPeriodCount = (int) $window['default_month_count'];
-                $runningAmount = 0;
-                foreach ($window['items'] as $index => $item) {
-                    $runningAmount += (int) $item['remaining_amount'];
-                    $periodOptions[] = $this->periodOption($index + 1, [
-                        'remaining_amount' => $runningAmount,
-                        'period_start' => $window['period_start'],
-                        'period_end' => ['year' => $item['year'], 'month' => $item['month']],
-                    ], true);
-                }
+                    $window = $sppPayments->paymentWindow($student);
+                    $defaultPeriodCount = (int) $window['default_month_count'];
+                    $runningAmount = 0;
+                    foreach ($window['items'] as $index => $item) {
+                        $runningAmount += (int) $item['remaining_amount'];
+                        $periodOptions[] = $this->periodOption($index + 1, [
+                            'remaining_amount' => $runningAmount,
+                            'period_start' => $window['period_start'],
+                            'period_end' => ['year' => $item['year'], 'month' => $item['month']],
+                        ], true);
+                    }
                 } catch (ValidationException) {
                     // Tidak ada periode SPP yang dapat ditagihkan.
                 }

@@ -1,1319 +1,733 @@
-/* Menu Tagihan CSS module.
-   Keep active selectors scoped to .bill-flat-page, .guardian-bill-page, or bill-specific classes. */
-/* Tagihan Siswa: follows the Data Siswa/Data Master operational standard. */
-html body .app-shell .main-panel main.bill-flat-page {
-    background:#ffffff !important;
-    display:grid !important;
-    align-content:start !important;
-    justify-items:start !important;
-    padding:24px 32px 32px !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-workspace {
-    width:min(100%, 1200px) !important;
-    max-width:1200px !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    display:grid !important;
-    gap:16px !important;
-    background:transparent !important;
-    border:0 !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
-    overflow:visible !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-heading {
-    display:flex !important;
-    align-items:flex-start !important;
-    justify-content:space-between !important;
-    gap:12px 16px !important;
-    width:100% !important;
-    margin:0 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-heading h1 {
-    margin:0 !important;
-    color:#020617 !important;
-    font-size:20px !important;
-    font-weight:700 !important;
-    line-height:1.2 !important;
-    letter-spacing:0 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-heading p {
-    margin:4px 0 0 !important;
-    color:#707971 !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:1.45 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-sync-form {
-    margin-left:auto !important;
-    display:flex !important;
-    align-items:center !important;
-    flex:0 0 auto !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-filter-apply,
-html body .app-shell .main-panel main.bill-flat-page .bill-sync-button,
-html body .app-shell .main-panel main.bill-flat-page .bill-detail-primary {
-    box-sizing:border-box !important;
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    gap:8px !important;
-    height:40px !important;
-    min-height:40px !important;
-    min-width:88px !important;
-    padding:0 14px !important;
-    border:1px solid #004528 !important;
-    border-radius:8px !important;
-    background:#004528 !important;
-    color:#ffffff !important;
-    font-size:14px !important;
-    font-weight:700 !important;
-    line-height:1 !important;
-    text-decoration:none !important;
-    box-shadow:0 4px 12px rgba(0,0,0,.05) !important;
-    transform:translateY(0) !important;
-    transition:transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-filter-apply:hover,
-html body .app-shell .main-panel main.bill-flat-page .bill-sync-button:hover,
-html body .app-shell .main-panel main.bill-flat-page .bill-detail-primary:hover {
-    background:#0d5f36 !important;
-    border-color:#0d5f36 !important;
-    color:#ffffff !important;
-    box-shadow:0 10px 20px rgba(0,69,40,.16) !important;
-    transform:translateY(-2px) !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-pay-short .icon {
-    width:18px !important;
-    height:18px !important;
-    stroke:currentColor !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel {
-    box-sizing:border-box !important;
-    width:100% !important;
-    margin:0 !important;
-    padding:16px !important;
-    display:grid !important;
-    grid-template-columns:160px 150px max-content !important;
-    align-items:end !important;
-    gap:12px !important;
-    background:#ffffff !important;
-    border:1px solid #d1d5db !important;
-    border-radius:12px !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel label {
-    min-width:0 !important;
-    display:grid !important;
-    gap:6px !important;
-    margin:0 !important;
-    color:#334155 !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:1.25 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel label > span:first-child {
-    color:#334155 !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:1.25 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel select,
-html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel input[type=search],
-html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form input[type=search] {
-    box-sizing:border-box !important;
-    width:100% !important;
-    height:40px !important;
-    min-height:40px !important;
-    padding:0 12px !important;
-    color:#020617 !important;
-    background:#ffffff !important;
-    border:1px solid #d1d5db !important;
-    border-radius:8px !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:40px !important;
-    outline:0 !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel select:focus,
-html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel input[type=search]:focus,
-html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form input[type=search]:focus {
-    border-color:#157144 !important;
-    box-shadow:0 0 0 3px rgba(21,113,68,.10) !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-search-input {
-    position:relative !important;
-    display:block !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-search-input .icon {
-    position:absolute !important;
-    left:12px !important;
-    top:50% !important;
-    width:18px !important;
-    height:18px !important;
-    color:#707971 !important;
-    stroke:currentColor !important;
-    transform:translateY(-50%) !important;
-    pointer-events:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-search-input input[type=search] {
-    padding-left:36px !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-filter-actions {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:flex-start !important;
-    gap:8px !important;
-    height:40px !important;
-    margin:0 !important;
-    flex:0 0 auto !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-filter-reset,
-html body .app-shell .main-panel main.bill-flat-page .bill-detail-secondary {
-    box-sizing:border-box !important;
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    height:40px !important;
-    min-height:40px !important;
-    min-width:88px !important;
-    padding:0 14px !important;
-    color:#404942 !important;
-    background:#ffffff !important;
-    border:1px solid #d1d5db !important;
-    border-radius:8px !important;
-    font-size:14px !important;
-    font-weight:700 !important;
-    line-height:1 !important;
-    text-decoration:none !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary {
-    width:100% !important;
-    min-width:0 !important;
-    display:grid !important;
-    gap:8px !important;
-    margin:0 !important;
-    padding:0 !important;
-    background:transparent !important;
-    border:0 !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table-wrap {
-    width:100% !important;
-    max-width:100% !important;
-    min-width:0 !important;
-    margin:0 0 4px !important;
-    overflow-x:auto !important;
-    overflow-y:hidden !important;
-    background:#ffffff !important;
-    border:1px solid #d1d5db !important;
-    border-radius:8px !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-sync-button .icon {
-    width:16px !important;
-    height:16px !important;
-    stroke:currentColor !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table {
-    width:100% !important;
-    min-width:920px !important;
-    table-layout:fixed !important;
-    border-collapse:collapse !important;
-    border:0 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-col-no { width:48px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-col-unit { width:auto !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-col-students { width:72px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-col-money { width:156px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-col-total { width:172px !important; }
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table th,
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td {
-    height:40px !important;
-    min-height:40px !important;
-    max-height:40px !important;
-    padding:8px 10px !important;
-    color:#020617 !important;
-    background:#ffffff !important;
-    border:0 !important;
-    border-bottom:1px solid #e5e7eb !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:1.2 !important;
-    vertical-align:middle !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table th {
-    color:#334155 !important;
-    background:#fbfdf8 !important;
-    text-align:center !important;
-    font-weight:500 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:first-child {
-    text-align:center !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:nth-child(2) {
-    text-align:left !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:nth-child(3) {
-    text-align:center !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:nth-child(4),
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:nth-child(5),
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:nth-child(6),
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table td:nth-child(7) {
-    text-align:right !important;
-    font-variant-numeric:tabular-nums !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table .bill-money-pair {
-    width:auto !important;
-    margin-left:auto !important;
-    display:inline-grid !important;
-    grid-template-columns:auto minmax(11.5ch, max-content) !important;
-    align-items:center !important;
-    justify-content:end !important;
-    gap:4px !important;
-    color:#004528 !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:1.2 !important;
-    font-variant-numeric:tabular-nums !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table .bill-money-pair > span {
-    text-align:left !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table .bill-money-pair > strong {
-    min-width:0 !important;
-    color:#004528 !important;
-    text-align:right !important;
-    font-size:14px !important;
-    font-weight:inherit !important;
-    line-height:1.2 !important;
-    overflow:visible !important;
-    text-overflow:clip !important;
-    white-space:nowrap !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table .bill-money-number {
-    display:block !important;
-    width:100% !important;
-    color:#004528 !important;
-    text-align:right !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:1.2 !important;
-    font-variant-numeric:tabular-nums !important;
-    white-space:nowrap !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tbody td:nth-child(7) .bill-money-pair,
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot .bill-money-pair {
-    font-weight:700 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tbody td:nth-child(7) .bill-money-pair,
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot td:last-child .bill-money-pair {
-    width:auto !important;
-    grid-template-columns:auto minmax(13ch, max-content) !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tbody td:nth-child(7) .bill-money-pair > span,
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot .bill-money-pair > span {
-    font-weight:700 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot .bill-money-number {
-    font-weight:700 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tr.is-active td {
-    background:#fbfdf8 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot td {
-    height:44px !important;
-    min-height:44px !important;
-    max-height:44px !important;
-    padding:8px 10px !important;
-    background:#fbfdf8 !important;
-    border-top:1px solid #d1d5db !important;
-    border-bottom:0 !important;
-    color:#004528 !important;
-    font-weight:700 !important;
-    vertical-align:middle !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot .bill-unit-total-caption {
-    color:#707971 !important;
-    text-align:center !important;
-    font-weight:700 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot td:nth-child(2) {
-    text-align:center !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot td:nth-child(3),
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot td:nth-child(4),
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot td:nth-child(5),
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot td:nth-child(6) {
-    text-align:right !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-table tfoot strong {
-    color:#004528 !important;
-    font-size:14px !important;
-    font-weight:700 !important;
-    line-height:1.2 !important;
-    font-variant-numeric:tabular-nums !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-table-toolbar {
-    width:100% !important;
-    margin:0 !important;
-    padding:0 !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    flex-wrap:wrap !important;
-    gap:14px !important;
-    color:#707971 !important;
-    background:transparent !important;
-    border:0 !important;
-    box-shadow:none !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:1.35 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-size-form {
-    margin:0 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form {
-    width:auto !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form .bill-search-field {
-    width:auto !important;
-    min-width:0 !important;
-    max-width:none !important;
-    display:flex !important;
-    align-items:center !important;
-    gap:10px !important;
-    margin:0 !important;
-    color:#334155 !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:1.25 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form .bill-search-field > span:first-child {
-    flex:0 0 auto !important;
-    color:#334155 !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:1.25 !important;
-    white-space:nowrap !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form .bill-search-input {
-    box-sizing:border-box !important;
-    width:280px !important;
-    max-width:100% !important;
-    height:36px !important;
-    min-height:36px !important;
-    display:flex !important;
-    align-items:center !important;
-    gap:8px !important;
-    margin:0 !important;
-    padding:0 10px !important;
-    color:#020617 !important;
-    background:#ffffff !important;
-    border:1px solid #d1d5db !important;
-    border-radius:8px !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form .bill-search-input .icon {
-    position:static !important;
-    width:16px !important;
-    height:16px !important;
-    color:#707971 !important;
-    flex:0 0 16px !important;
-    transform:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form .bill-search-input input[type=search] {
-    width:100% !important;
-    min-width:0 !important;
-    height:34px !important;
-    min-height:34px !important;
-    margin:0 !important;
-    padding:0 !important;
-    color:#020617 !important;
-    background:transparent !important;
-    border:0 !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
-    outline:0 !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:34px !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form .bill-search-input:focus-within {
-    border-color:#004528 !important;
-    box-shadow:0 0 0 3px rgba(0,69,40,.12) !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-size-form label {
-    display:inline-flex !important;
-    align-items:center !important;
-    gap:8px !important;
-    margin:0 !important;
-    padding:0 !important;
-    color:#707971 !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-size-form select {
-    width:78px !important;
-    min-width:78px !important;
-    height:34px !important;
-    min-height:34px !important;
-    padding:0 10px !important;
-    color:#111c2c !important;
-    background:#ffffff !important;
-    border:1px solid #d1d5db !important;
-    border-radius:8px !important;
-    font-size:14px !important;
-    font-weight:500 !important;
-    line-height:34px !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bills-data-card {
-    width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    background:transparent !important;
-    border:0 !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .table-wrap {
-    width:100% !important;
-    max-width:100% !important;
-    min-width:0 !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow-x:auto !important;
-    overflow-y:hidden !important;
-    border:1px solid #d1d5db !important;
-    border-radius:8px !important;
-    background:#ffffff !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-flat-table {
-    width:100% !important;
-    min-width:0 !important;
-    table-layout:fixed !important;
-    border-collapse:collapse !important;
-    border:0 !important;
-    border-bottom:0 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-col-no { width:48px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-col-nis { width:84px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-col-name { width:auto !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-col-unit { width:74px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-col-class { width:168px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-col-total { width:136px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-col-action { width:60px !important; }
-
-html body .app-shell .main-panel main.bill-flat-page .bill-flat-table th,
-html body .app-shell .main-panel main.bill-flat-page .bill-flat-table td {
-    color:#020617 !important;
-    height:40px !important;
-    min-height:40px !important;
-    max-height:40px !important;
-    padding:8px 10px !important;
-    vertical-align:middle !important;
-    border:0 !important;
-    border-bottom:1px solid #e5e7eb !important;
-    font-size:14px !important;
-    letter-spacing:0 !important;
-    line-height:1.2 !important;
-    text-transform:none !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-flat-table th {
-    text-align:center !important;
-    background:#fbfdf8 !important;
-    color:#334155 !important;
-    font-weight:500 !important;
-    text-transform:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-flat-table td {
-    text-align:center !important;
-    font-weight:400 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-flat-table td:nth-child(3) {
-    text-align:left !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-flat-table td:nth-child(6) {
-    text-align:right !important;
-    font-variant-numeric:tabular-nums !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-flat-table td:nth-child(7) {
-    text-align:center !important;
-    padding-left:2px !important;
-    padding-right:2px !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-student-name {
-    display:block !important;
-    max-width:100% !important;
-    color:#020617 !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-    white-space:nowrap !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-money {
-    font-variant-numeric:tabular-nums !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    color:#020617 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-money.remaining {
-    color:#020617 !important;
-    font-weight:400 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-money.paid {
-    color:#404942 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-status {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    max-width:100% !important;
-    min-height:24px !important;
-    padding:0 10px !important;
-    border-radius:999px !important;
-    color:#92400e !important;
-    background:#fff7ed !important;
-    font-size:14px !important;
-    font-weight:700 !important;
-    line-height:1 !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-status.is-paid {
-    color:#157144 !important;
-    background:#e9f8ef !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-status.is-overdue {
-    color:#ef1f2d !important;
-    background:#fff4f4 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-table-actions {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    gap:2px !important;
-    height:28px !important;
-    min-width:0 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-detail-trigger,
-html body .app-shell .main-panel main.bill-flat-page .bill-pay-short {
-    box-sizing:border-box !important;
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    gap:0 !important;
-    width:28px !important;
-    height:28px !important;
-    min-height:28px !important;
-    min-width:28px !important;
-    padding:0 !important;
-    border:0 !important;
-    border-radius:6px !important;
-    background:transparent !important;
-    font-size:14px !important;
-    font-weight:700 !important;
-    line-height:1 !important;
-    text-decoration:none !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-detail-trigger .icon,
-html body .app-shell .main-panel main.bill-flat-page .bill-pay-short .icon {
-    width:18px !important;
-    height:18px !important;
-    stroke:currentColor !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-detail-trigger {
-    color:#404942 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-pay-short {
-    color:#004528 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-detail-trigger:hover,
-html body .app-shell .main-panel main.bill-flat-page .bill-pay-short:hover {
-    color:#020617 !important;
-    background:#f3fbf6 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-flat-table tbody tr:last-child td,
-html body .app-shell .main-panel main.bill-flat-page .bill-flat-table tbody tr:last-child td::after,
-html body .app-shell .main-panel main.bill-flat-page .pagination-wrap {
-    border-bottom:0 !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .pagination-wrap {
-    margin-top:16px !important;
-}
-
-@media (width <= 1180px) {
-    html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel {
-        grid-template-columns:160px 150px max-content !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-filter-actions {
-        justify-content:flex-start !important;
-    }
-
-}
-
-@media (width <= 760px) {
-    html body .app-shell .main-panel main.bill-flat-page {
-        width:100% !important;
-        max-width:100vw !important;
-        padding:16px !important;
-        overflow-x:hidden !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-workspace {
-        width:100% !important;
-        max-width:none !important;
-        min-width:0 !important;
-        overflow-x:hidden !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-page-heading {
-        flex-direction:column !important;
-        align-items:stretch !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-sync-form,
-    html body .app-shell .main-panel main.bill-flat-page .bill-sync-button {
-        width:100% !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel {
-        width:100% !important;
-        max-width:100% !important;
-        min-width:0 !important;
-        grid-template-columns:1fr !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-filter-actions {
-        display:grid !important;
-        grid-template-columns:1fr 1fr !important;
-        width:100% !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-filter-actions .button {
-        width:100% !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .table-wrap {
-        width:100% !important;
-        max-width:100% !important;
-        min-width:0 !important;
-        overflow-x:auto !important;
-        overflow-y:hidden !important;
-        -webkit-overflow-scrolling:touch !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-flat-table {
-        min-width:760px !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-unit-table {
-        min-width:820px !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-table-toolbar {
-        align-items:flex-start !important;
-        flex-direction:column !important;
-        margin-bottom:0 !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form,
-    html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form .bill-search-field,
-    html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form .bill-search-input {
-        width:100% !important;
-        max-width:100% !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-toolbar-search-form .bill-search-field {
-        display:grid !important;
-        gap:6px !important;
-    }
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-heading > div {
-    min-width:0 !important;
-    flex:1 1 auto !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-heading h1 {
-    color:#020617 !important;
-}
-
-/* Tagihan Siswa PRD stage 1: final structure lock. */
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card {
-    width:100% !important;
-    max-width:100% !important;
-    min-width:0 !important;
-    overflow:visible !important;
-    background:transparent !important;
-    border:0 !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table-wrap {
-    width:100% !important;
-    max-width:100% !important;
-    min-width:0 !important;
-    overflow-x:auto !important;
-    overflow-y:hidden !important;
-    -webkit-overflow-scrolling:touch !important;
-    margin:0 !important;
-    border:1px solid #d1d5db !important;
-    border-radius:8px !important;
-    background:#ffffff !important;
-    box-shadow:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table {
-    min-width:520px !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-col-no { width:48px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-col-unit { width:auto !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-col-students { width:96px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-col-total { width:176px !important; }
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table th {
-    font-weight:500 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table th:nth-child(2) {
-    text-align:center !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table td:nth-child(4),
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table tfoot td:nth-child(4) {
-    text-align:right !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table tbody .bill-money.remaining {
-    color:#020617 !important;
-    font-weight:400 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table tfoot td,
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table tfoot .bill-money.remaining {
-    color:#020617 !important;
-    font-weight:700 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table tfoot .bill-money.remaining {
-    color:#004528 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .bill-unit-table tfoot td:nth-child(3) {
-    color:#020617 !important;
-    text-align:center !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-unit-summary-card .empty-state,
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table .empty-state {
-    height:56px !important;
-    color:#707971 !important;
-    text-align:center !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    white-space:normal !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bills-filter-panel {
-    grid-template-columns:160px 150px max-content !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table {
-    min-width:760px !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-col-no { width:48px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-col-nis { width:84px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-col-name { width:auto !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-col-unit { width:74px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-col-class { width:168px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-col-total { width:136px !important; }
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-col-action { width:60px !important; }
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th,
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table td {
-    height:40px !important;
-    min-height:40px !important;
-    max-height:40px !important;
-    padding:8px 10px !important;
-    font-size:14px !important;
-    line-height:1.25 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th {
-    font-weight:500 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th:nth-child(1),
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table td:nth-child(1) {
-    width:48px !important;
-    min-width:48px !important;
-    max-width:48px !important;
-    text-align:center !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th:nth-child(2),
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table td:nth-child(2) {
-    width:84px !important;
-    min-width:84px !important;
-    max-width:84px !important;
-    text-align:center !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th:nth-child(3),
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table td:nth-child(3) {
-    width:auto !important;
-    min-width:0 !important;
-    max-width:none !important;
-    text-align:left !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th:nth-child(3) {
-    text-align:center !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th:nth-child(4),
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table td:nth-child(4) {
-    width:74px !important;
-    min-width:74px !important;
-    max-width:74px !important;
-    text-align:center !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th:nth-child(5),
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table td:nth-child(5) {
-    width:168px !important;
-    min-width:168px !important;
-    max-width:168px !important;
-    text-align:center !important;
-    white-space:normal !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th:nth-child(6),
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table td:nth-child(6) {
-    width:136px !important;
-    min-width:136px !important;
-    max-width:136px !important;
-    text-align:right !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th:nth-child(6) {
-    text-align:center !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table th:nth-child(7),
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table td:nth-child(7) {
-    width:60px !important;
-    min-width:60px !important;
-    max-width:60px !important;
-    text-align:center !important;
-    padding-left:4px !important;
-    padding-right:4px !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-stitch-table .bill-money.remaining {
-    color:#020617 !important;
-    font-weight:400 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-sort-link {
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    gap:6px !important;
-    color:#020617 !important;
-    font-family:inherit !important;
-    font-size:14px !important;
-    font-weight:500 !important;
-    line-height:1.35 !important;
-    text-decoration:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-sort-link > span:first-child {
-    color:#020617 !important;
-    font-size:14px !important;
-    font-weight:500 !important;
-    line-height:1.35 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-sort-indicator {
-    width:16px !important;
-    height:16px !important;
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    color:#707971 !important;
-    flex:0 0 16px !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-sort-indicator .icon {
-    width:14px !important;
-    height:14px !important;
-    stroke-width:2.2 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-sortable-heading.is-sorted .bill-sort-indicator {
-    color:#004528 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-sr-only {
-    position:absolute !important;
-    width:1px !important;
-    height:1px !important;
-    padding:0 !important;
-    margin:-1px !important;
-    overflow:hidden !important;
-    clip:rect(0, 0, 0, 0) !important;
-    white-space:nowrap !important;
-    border:0 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-pagination-footer {
-    width:100% !important;
-    display:grid !important;
-    grid-template-columns:minmax(0, 1fr) auto !important;
-    align-items:center !important;
-    gap:12px !important;
-    color:#707971 !important;
-    font-size:14px !important;
-    font-weight:400 !important;
-    line-height:1.35 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-pagination {
-    display:flex !important;
-    align-items:center !important;
-    justify-content:flex-end !important;
-    flex-wrap:wrap !important;
-    gap:8px !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-link {
-    box-sizing:border-box !important;
-    min-width:36px !important;
-    height:36px !important;
-    padding:0 12px !important;
-    display:inline-flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    color:#334155 !important;
-    background:#ffffff !important;
-    border:1px solid #d1d5db !important;
-    border-radius:8px !important;
-    font-size:14px !important;
-    font-weight:500 !important;
-    line-height:1 !important;
-    text-decoration:none !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-link.is-active {
-    color:#ffffff !important;
-    background:#004528 !important;
-    border-color:#004528 !important;
-    font-weight:700 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page .bill-page-link.is-disabled,
-html body .app-shell .main-panel main.bill-flat-page .bill-page-link.is-ellipsis {
-    color:#707971 !important;
-    background:#f9fafb !important;
-    border-color:#d1d5db !important;
-}
-
-/* Tagihan Siswa polish tahap 1: mobile, warna isi tabel, dan struktur aktif. */
-html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-page-heading {
-    align-items:flex-start !important;
-    justify-content:flex-start !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-stitch-table .bill-student-name {
-    color:#020617 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-stitch-table .bill-unit-chip,
-html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-stitch-table .bill-money.remaining,
-html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card .bill-unit-table tbody .bill-money.remaining {
-    color:#020617 !important;
-}
-
-html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card .bill-unit-table tfoot .bill-money.remaining {
-    color:#004528 !important;
-}
-
-@media (width <= 900px) {
-    html body .app-shell .main-panel main.bill-flat-page .bill-pagination-footer {
-        grid-template-columns:1fr !important;
-        align-items:start !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page .bill-pagination {
-        justify-content:flex-start !important;
-    }
-}
-
-@media (width <= 760px) {
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) {
-        overflow-x:hidden !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-workspace,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-filter-panel,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-table-toolbar,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-data-card,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-pagination-footer {
-        width:100% !important;
-        max-width:100% !important;
-        min-width:0 !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card .bill-unit-table-wrap,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-data-card .table-wrap {
-        width:100% !important;
-        max-width:100% !important;
-        min-width:0 !important;
-        overflow-x:auto !important;
-        overflow-y:hidden !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card .bill-unit-table {
-        width:100% !important;
-        min-width:520px !important;
-        table-layout:fixed !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card .bill-unit-col-no { width:44px !important; }
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card .bill-unit-col-unit { width:auto !important; }
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card .bill-unit-col-students { width:56px !important; }
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card .bill-unit-col-total { width:132px !important; }
-
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card .bill-unit-table th,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-unit-summary-card .bill-unit-table td {
-        padding:8px 8px !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-filter-panel {
-        display:grid !important;
-        grid-template-columns:1fr !important;
-        align-items:stretch !important;
-        gap:12px !important;
-        overflow:visible !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-filter-panel label,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-filter-panel select,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-filter-panel input[type=search],
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-toolbar-search-form,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-toolbar-search-form .bill-search-field,
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bill-toolbar-search-form input[type=search],
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-filter-panel .bill-filter-actions {
-        width:100% !important;
-        max-width:100% !important;
-        min-width:0 !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-filter-panel .bill-filter-actions {
-        display:grid !important;
-        grid-template-columns:1fr !important;
-        height:auto !important;
-    }
-
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-filter-panel .bill-filter-actions .button {
-        width:100% !important;
-    }
-}
-
-@media (width <= 420px) {
-    html body .app-shell .main-panel main.bill-flat-page:not(.guardian-bill-page) .bills-filter-panel .bill-filter-actions {
-        grid-template-columns:1fr !important;
-    }
-}
-
-/* Tagihan Wali Santri. */
-.guardian-page {
-    gap: 16px;
-}
-
-.guardian-filter,
-.guardian-upload-panel {
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    display: grid;
-    gap: 12px;
+/* Menu Tagihan.
+   Scoped to bill pages; keep finance/payment flows in their own modules. */
+
+main.bill-flat-page {
+    width: 100%;
+    min-width: 0;
+    padding: 24px 32px 32px;
+    background: #ffffff;
+}
+
+main.bill-flat-page .bill-workspace {
+    width: min(100%, 1200px);
+    min-width: 0;
     margin: 0;
-    padding: 16px;
-}
-
-.guardian-filter {
-    grid-template-columns: minmax(0, 320px);
-}
-
-.guardian-filter label,
-.guardian-upload-panel label {
-    color: #334155;
-    display: grid;
-    font-size: 14px;
-    font-weight: 500;
-    gap: 8px;
-}
-
-.guardian-filter select,
-.guardian-upload-panel input[type="file"] {
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    color: #020617;
-    font-size: 14px;
-    min-height: 40px;
-    padding: 8px 12px;
-}
-
-.guardian-transfer-form {
     display: grid;
     gap: 16px;
 }
 
-.guardian-upload-panel {
-    align-items: end;
-    grid-template-columns: minmax(0, 1fr) max-content;
+main.bill-flat-page .bill-page-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px 16px;
+    min-width: 0;
 }
 
-.guardian-bill-table td:nth-child(1),
-.guardian-bill-table th:nth-child(1) {
-    text-align: center;
-    width: 64px;
+main.bill-flat-page .bill-page-heading > div {
+    min-width: 0;
 }
 
-.guardian-bill-table td,
-.guardian-bill-table th,
-.guardian-history-table td,
-.guardian-history-table th {
-    height: 40px;
+main.bill-flat-page .bill-page-heading h1 {
+    margin: 0;
+    color: #020617;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+}
+
+main.bill-flat-page .bill-page-heading p {
+    margin: 4px 0 0;
+    color: #707971;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+main.bill-flat-page .bill-sync-form {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+main.bill-flat-page .bill-filter-apply,
+main.bill-flat-page .bill-sync-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 88px;
     min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #004528;
+    border-radius: 8px;
+    background: #004528;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: none;
+}
+
+main.bill-flat-page .bill-filter-apply:hover,
+main.bill-flat-page .bill-sync-button:hover {
+    border-color: #0d5f36;
+    background: #0d5f36;
+    color: #ffffff;
+}
+
+main.bill-flat-page .bill-sync-button .icon {
+    width: 16px;
+    height: 16px;
+}
+
+main.bill-flat-page .bill-filter-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 88px;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: none;
+}
+
+main.bill-flat-page .bill-filter-reset:hover {
+    border-color: #d1d5db;
+    background: #fbfdf8;
+    color: #020617;
+}
+
+main.bill-flat-page .bill-unit-summary-card {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+main.bill-flat-page .bill-unit-table-wrap,
+main.bill-flat-page .table-wrap {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+main.bill-flat-page .bill-unit-table,
+main.bill-flat-page .bill-flat-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+main.bill-flat-page .bill-unit-table {
+    min-width: 520px;
+}
+
+main.bill-flat-page .bill-flat-table {
+    min-width: 760px;
+}
+
+main.bill-flat-page .bill-unit-col-no,
+main.bill-flat-page .bill-stitch-col-no {
+    width: 48px;
+}
+
+main.bill-flat-page .bill-unit-col-unit,
+main.bill-flat-page .bill-stitch-col-name {
+    width: auto;
+}
+
+main.bill-flat-page .bill-unit-col-students {
+    width: 96px;
+}
+
+main.bill-flat-page .bill-unit-col-total {
+    width: 176px;
+}
+
+main.bill-flat-page .bill-stitch-col-nis {
+    width: 84px;
+}
+
+main.bill-flat-page .bill-stitch-col-unit {
+    width: 74px;
+}
+
+main.bill-flat-page .bill-stitch-col-class {
+    width: 168px;
+}
+
+main.bill-flat-page .bill-stitch-col-total {
+    width: 136px;
+}
+
+main.bill-flat-page .bill-stitch-col-action {
+    width: 60px;
+}
+
+main.bill-flat-page .bill-unit-table th,
+main.bill-flat-page .bill-unit-table td,
+main.bill-flat-page .bill-flat-table th,
+main.bill-flat-page .bill-flat-table td {
+    height: 40px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #020617;
+    background: #ffffff;
+    font-size: 14px;
+    line-height: 1.25;
     vertical-align: middle;
 }
 
-.guardian-bill-table td small {
-    color: #707971;
-    display: block;
-    font-size: 12px;
-    font-weight: 400;
-    margin-top: 2px;
+main.bill-flat-page .bill-unit-table th,
+main.bill-flat-page .bill-flat-table th {
+    color: #334155;
+    background: #fbfdf8;
+    font-weight: 500;
+    text-align: center;
 }
 
-@media (max-width: 760px) {
-    .guardian-filter,
-    .guardian-upload-panel {
+main.bill-flat-page .bill-unit-table td,
+main.bill-flat-page .bill-flat-table td {
+    font-weight: 400;
+}
+
+main.bill-flat-page .bill-unit-table tbody tr:last-child td,
+main.bill-flat-page .bill-flat-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+main.bill-flat-page .bill-unit-table td:first-child,
+main.bill-flat-page .bill-flat-table td:first-child,
+main.bill-flat-page .bill-flat-table td:nth-child(2),
+main.bill-flat-page .bill-flat-table td:nth-child(4),
+main.bill-flat-page .bill-flat-table td:nth-child(5),
+main.bill-flat-page .bill-flat-table td:nth-child(7) {
+    text-align: center;
+}
+
+main.bill-flat-page .bill-unit-table td:nth-child(2),
+main.bill-flat-page .bill-flat-table td:nth-child(3) {
+    text-align: left;
+}
+
+main.bill-flat-page .bill-unit-table td:nth-child(3) {
+    text-align: center;
+}
+
+main.bill-flat-page .bill-unit-table td:nth-child(4),
+main.bill-flat-page .bill-flat-table td:nth-child(6) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+main.bill-flat-page .bill-flat-table td:nth-child(3) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+main.bill-flat-page .bill-flat-table td:nth-child(5) {
+    white-space: normal;
+}
+
+main.bill-flat-page .bill-unit-table tfoot td {
+    height: 40px;
+    border-top: 1px solid #d1d5db;
+    border-bottom: 0;
+    background: #fbfdf8;
+    color: #020617;
+    font-weight: 700;
+}
+
+main.bill-flat-page .bill-unit-total-caption {
+    color: #707971;
+    text-align: center;
+}
+
+main.bill-flat-page .bill-unit-table tfoot td:nth-child(3) {
+    text-align: center;
+}
+
+main.bill-flat-page .bill-unit-table tfoot td:nth-child(4) {
+    text-align: right;
+}
+
+main.bill-flat-page .bill-money {
+    color: #020617;
+    font-weight: 400;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+main.bill-flat-page tfoot .bill-money {
+    color: #004528;
+    font-weight: 700;
+}
+
+main.bill-flat-page .bill-student-name {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    color: #020617;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+main.bill-flat-page .bill-unit-chip {
+    color: #020617;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+main.bill-flat-page .empty-state {
+    height: 56px;
+    color: #707971;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    white-space: normal;
+}
+
+main.bill-flat-page .bills-filter-panel {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 160px 150px max-content;
+    align-items: end;
+    gap: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: none;
+}
+
+main.bill-flat-page .bills-filter-panel label {
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+main.bill-flat-page .bills-filter-panel label > span:first-child {
+    color: #334155;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+main.bill-flat-page .bills-filter-panel select,
+main.bill-flat-page .bill-page-size-form select {
+    min-height: 40px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #020617;
+    font-size: 14px;
+    font-weight: 400;
+    box-shadow: none;
+}
+
+main.bill-flat-page .bills-filter-panel select {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+}
+
+main.bill-flat-page .bills-filter-panel select:focus,
+main.bill-flat-page .bill-page-size-form select:focus,
+main.bill-flat-page .bill-toolbar-search-form .bill-search-input:focus-within {
+    border-color: #004528;
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12);
+    outline: 0;
+}
+
+main.bill-flat-page .bill-filter-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+main.bill-flat-page .bill-table-toolbar {
+    width: 100%;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    color: #707971;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+main.bill-flat-page .bill-page-size-form,
+main.bill-flat-page .bill-toolbar-search-form {
+    margin: 0;
+}
+
+main.bill-flat-page .bill-page-size-form label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: #707971;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+main.bill-flat-page .bill-page-size-form select {
+    width: 78px;
+    min-width: 78px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0 10px;
+    font-weight: 500;
+}
+
+main.bill-flat-page .bill-toolbar-search-form {
+    width: auto;
+    min-width: 0;
+}
+
+main.bill-flat-page .bill-search-field {
+    width: auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+main.bill-flat-page .bill-search-field > span:first-child {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+main.bill-flat-page .bill-search-input {
+    width: 280px;
+    max-width: 100%;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #020617;
+}
+
+main.bill-flat-page .bill-search-input .icon {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    color: #707971;
+}
+
+main.bill-flat-page .bill-search-input input[type="search"] {
+    width: 100%;
+    min-width: 0;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #020617;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 34px;
+    outline: 0;
+    box-shadow: none;
+}
+
+main.bill-flat-page .bill-sort-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #020617;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.35;
+    text-decoration: none;
+}
+
+main.bill-flat-page .bill-sort-indicator {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #707971;
+}
+
+main.bill-flat-page .bill-sort-indicator .icon {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.2;
+}
+
+main.bill-flat-page .bill-sortable-heading.is-sorted .bill-sort-indicator {
+    color: #004528;
+}
+
+main.bill-flat-page .bill-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+main.bill-flat-page .bill-table-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+main.bill-flat-page .bill-detail-trigger,
+main.bill-flat-page .bill-pay-short {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #334155;
+    box-shadow: none;
+    text-decoration: none;
+}
+
+main.bill-flat-page .bill-detail-trigger:hover,
+main.bill-flat-page .bill-pay-short:hover {
+    background: #f3fbf6;
+    color: #004528;
+}
+
+main.bill-flat-page .bill-detail-trigger .icon,
+main.bill-flat-page .bill-pay-short .icon {
+    width: 18px;
+    height: 18px;
+}
+
+main.bill-flat-page .bill-pagination-footer {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    color: #707971;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+main.bill-flat-page .bill-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+main.bill-flat-page .bill-page-link {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+}
+
+main.bill-flat-page .bill-page-link.is-active {
+    border-color: #004528;
+    background: #004528;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+main.bill-flat-page .bill-page-link.is-disabled,
+main.bill-flat-page .bill-page-link.is-ellipsis {
+    border-color: #d1d5db;
+    background: #f9fafb;
+    color: #707971;
+}
+
+main.bill-flat-page .bill-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #f9fafb;
+    color: #707971;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+main.bill-flat-page .bill-status.is-paid {
+    background: #e9f8ef;
+    color: #157144;
+}
+
+main.bill-flat-page .guardian-transfer-form {
+    display: grid;
+    gap: 16px;
+}
+
+main.bill-flat-page .guardian-cash-note {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fbfdf8;
+    color: #404942;
+    font-size: 14px;
+    font-weight: 400;
+    padding: 12px;
+}
+
+@media (max-width: 1180px) {
+    main.bill-flat-page {
+        padding: 20px 24px 32px;
+    }
+}
+
+@media (max-width: 900px) {
+    main.bill-flat-page .bill-page-heading,
+    main.bill-flat-page .bill-pagination-footer {
         grid-template-columns: 1fr;
     }
 
-    .guardian-upload-panel .button,
-    .guardian-filter select {
+    main.bill-flat-page .bill-page-heading {
+        display: grid;
+    }
+
+    main.bill-flat-page .bill-sync-form,
+    main.bill-flat-page .bill-sync-button {
         width: 100%;
+    }
+
+    main.bill-flat-page .bill-pagination {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 760px) {
+    main.bill-flat-page {
+        padding: 16px;
+        overflow-x: hidden;
+    }
+
+    main.bill-flat-page .bill-workspace,
+    main.bill-flat-page .bill-unit-summary-card,
+    main.bill-flat-page .bills-filter-panel,
+    main.bill-flat-page .bill-table-toolbar,
+    main.bill-flat-page .bills-data-card,
+    main.bill-flat-page .bill-pagination-footer {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    main.bill-flat-page .bill-unit-table {
+        min-width: 520px;
+    }
+
+    main.bill-flat-page .bill-unit-col-no {
+        width: 44px;
+    }
+
+    main.bill-flat-page .bill-unit-col-students {
+        width: 56px;
+    }
+
+    main.bill-flat-page .bill-unit-col-total {
+        width: 132px;
+    }
+
+    main.bill-flat-page .bill-unit-table th,
+    main.bill-flat-page .bill-unit-table td {
+        padding: 8px;
+    }
+
+    main.bill-flat-page .bills-filter-panel {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    main.bill-flat-page .bill-filter-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    main.bill-flat-page .bill-filter-actions .button,
+    main.bill-flat-page .bill-filter-apply,
+    main.bill-flat-page .bill-filter-reset {
+        width: 100%;
+    }
+
+    main.bill-flat-page .bill-table-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    main.bill-flat-page .bill-toolbar-search-form,
+    main.bill-flat-page .bill-search-field,
+    main.bill-flat-page .bill-search-input {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    main.bill-flat-page .bill-search-field {
+        display: grid;
+        gap: 6px;
     }
 }

@@ -27,7 +27,7 @@
             <button class="icon-button menu-toggle always-visible" data-sidebar-toggle>{!! $icon('menu') !!}</button>
             <div class="topbar-spacer"></div>
             <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <a class="icon-button logout-button" href="{{ route('logout') }}">{!! $icon('logout') !!}</a>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main class="student-page guardian-page">

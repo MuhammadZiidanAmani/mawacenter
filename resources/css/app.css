@@ -10,42 +10,64 @@
 @import "./modules/settings.css";
 @import "./modules/dashboard.css";
 
-/* Global Foundation
-   Keep only shared shell, tokens, controls, tables, footer, and modal primitives here.
-   Menu-specific CSS must live in its own module or remain in legacy sections until migrated.
+/* Global UI foundation
+   Keep this file limited to tokens, app shell, shared controls, tables, footer,
+   and modal primitives. Menu-specific rules belong in resources/css/modules.
 */
 :root {
-    --surface: #ffffff;
-    --canvas: #ffffff;
-    --soft: #fbfdf8;
-    --line: #d1d5db;
-    --line-soft: #e5e7eb;
-    --text: #020617;
-    --muted: #707971;
-    --muted-strong: #404942;
-    --brand: #004528;
-    --brand-hover: #0d5f36;
-    --blue: #004528;
-    --blue-dark: #020617;
-    --leaf: #8ea43f;
+    --app-canvas: #ffffff;
+    --app-surface: #ffffff;
+    --app-panel-soft: #fbfdf8;
+    --app-neutral-soft: #f9fafb;
+    --app-field-soft: #f6f8f5;
+    --app-text: #020617;
+    --app-text-alt: #111c2c;
+    --app-label: #334155;
+    --app-muted: #707971;
+    --app-muted-strong: #404942;
+    --app-border: #d1d5db;
+    --app-border-soft: #e5e7eb;
+    --app-border-green-soft: #dfe5dc;
+    --app-primary: #004528;
+    --app-primary-hover: #0d5f36;
+    --app-success: #157144;
+    --app-success-soft: #e9f8ef;
+    --app-success-subtle: #f3fbf6;
+    --app-danger: #ef1f2d;
+    --app-danger-hover: #c91724;
+    --app-danger-soft: #fff4f4;
+    --app-warning: #92400e;
+    --app-warning-soft: #fff7ed;
+    --app-info: #2563eb;
+    --app-info-soft: #eff6ff;
+    --app-radius: 8px;
+    --app-radius-panel: 12px;
+    --app-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --app-page-padding-x: 32px;
+    --app-page-padding-y: 24px;
+    --app-content-width: 1200px;
+    --app-dashboard-width: 1440px;
 }
 
 * {
     box-sizing: border-box;
 }
 
-html,
-body {
+html {
     min-height: 100%;
+    background: var(--app-canvas);
 }
 
 body {
+    min-height: 100%;
     margin: 0;
-    color: var(--text);
-    background: var(--canvas);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    font-size: 16px;
-    line-height: 1.55;
+    color: var(--app-text);
+    background: var(--app-canvas);
+    font-family: var(--app-font);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: 0;
 }
 
 a {
@@ -53,46 +75,82 @@ a {
     text-decoration: none;
 }
 
-button,
 input,
 select,
 textarea {
     font: inherit;
 }
 
-:where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
-    min-width: 0;
-    color: var(--text);
-    background: #ffffff;
-    font-size: 14px;
-    line-height: 1.25;
-}
-
-:where(input::placeholder, textarea::placeholder) {
-    color: var(--muted);
+img,
+svg {
+    max-width: 100%;
 }
 
 :where(button, a, input, select, textarea):focus-visible {
-    outline: 2px solid var(--brand);
+    outline: 2px solid var(--app-primary);
     outline-offset: 2px;
+}
+
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea) {
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    padding: 0 12px;
+    color: var(--app-text);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+:where(textarea) {
+    min-height: 96px;
+    padding-block: 10px;
+    resize: vertical;
+}
+
+:where(input::placeholder, textarea::placeholder) {
+    color: var(--app-muted);
+}
+
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea):focus {
+    border-color: var(--app-primary);
+    outline: 2px solid rgba(0, 69, 40, .12);
+    outline-offset: 0;
 }
 
 .icon {
     width: 20px;
     height: 20px;
+    flex: 0 0 auto;
     fill: none;
     stroke: currentColor;
-    stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
-    flex: 0 0 auto;
+    stroke-width: 2;
 }
 
 .app-shell {
     display: flex;
     width: 100%;
     min-height: 100vh;
-    background: #ffffff;
+    background: var(--app-canvas);
+}
+
+.main-panel {
+    display: flex;
+    flex: 1 1 auto;
+    min-width: 0;
+    min-height: 100vh;
+    flex-direction: column;
+    background: var(--app-canvas);
+}
+
+main {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .sidebar {
@@ -100,22 +158,22 @@ textarea {
     top: 0;
     z-index: 30;
     display: flex;
-    flex: 0 0 280px;
     width: 280px;
     height: 100vh;
+    flex: 0 0 280px;
     flex-direction: column;
     overflow-y: auto;
-    border-right: 1px solid var(--line-soft);
-    background: #ffffff;
+    background: var(--app-surface);
+    border-right: 1px solid var(--app-border);
 }
 
 .brand {
     display: flex;
+    min-height: 76px;
     align-items: center;
     gap: 12px;
-    min-height: 76px;
     padding: 18px 20px;
-    border-bottom: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--app-border);
 }
 
 .brand-mark {
@@ -138,20 +196,20 @@ textarea {
 }
 
 .brand strong {
-    color: var(--brand);
+    color: var(--app-primary);
     font-size: 18px;
     font-weight: 700;
     line-height: 1.2;
 }
 
 .brand strong span {
-    color: #8ea43f;
-    font-weight: 400;
+    color: var(--app-success);
+    font-weight: 700;
 }
 
 .brand small {
-    color: var(--muted);
     margin-top: 2px;
+    color: var(--app-muted);
     font-size: 14px;
     font-weight: 400;
     line-height: 1.3;
@@ -167,15 +225,15 @@ textarea {
 .master-nav .nav-submenu a,
 .nested-nav .nav-submenu a {
     display: flex;
-    align-items: center;
-    gap: 10px;
     width: 100%;
     min-height: 40px;
+    align-items: center;
+    gap: 10px;
     padding: 10px 12px;
-    color: var(--muted-strong);
+    color: var(--app-label);
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: var(--app-radius);
     font-size: 14px;
     font-weight: 500;
     line-height: 1.35;
@@ -184,13 +242,17 @@ textarea {
 
 .nav-item:hover,
 .master-nav .nav-submenu a:hover,
-.nested-nav .nav-submenu a:hover,
+.nested-nav .nav-submenu a:hover {
+    color: var(--app-primary-hover);
+    background: var(--app-success-subtle);
+}
+
 .nav-item.active,
+.nav-parent.active,
 .master-nav .nav-submenu a.active,
 .nested-nav .nav-submenu a.active {
-    color: var(--brand);
-    background: #f6fbf7;
-    border-color: #dfe5dc;
+    color: var(--app-primary);
+    background: var(--app-success-soft);
 }
 
 .nav-parent {
@@ -198,9 +260,9 @@ textarea {
 }
 
 .nav-chevron {
-    margin-left: auto;
     width: 16px;
     height: 16px;
+    margin-left: auto;
     transition: transform .18s ease;
 }
 
@@ -218,23 +280,14 @@ textarea {
     display: grid;
 }
 
-.main-panel {
-    display: flex;
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 100vh;
-    flex-direction: column;
-    background: #ffffff;
-}
-
 .topbar {
     display: flex;
+    min-height: 64px;
     align-items: center;
     gap: 12px;
-    min-height: 64px;
     padding: 12px 24px;
-    border-bottom: 1px solid var(--line-soft);
-    background: #ffffff;
+    background: var(--app-surface);
+    border-bottom: 1px solid var(--app-border);
 }
 
 .topbar-spacer {
@@ -243,26 +296,30 @@ textarea {
 
 .active-year-pill {
     display: inline-flex;
+    min-height: 36px;
     align-items: center;
     gap: 8px;
-    min-height: 36px;
     padding: 0 12px;
-    color: var(--muted);
-    background: var(--soft);
-    border: 1px solid var(--line-soft);
+    color: var(--app-muted);
+    background: var(--app-panel-soft);
+    border: 1px solid var(--app-border-soft);
     border-radius: 999px;
     font-size: 14px;
+    font-weight: 400;
+    line-height: 1.25;
 }
 
 .active-year-pill > span {
     width: 8px;
     height: 8px;
+    flex: 0 0 8px;
     border-radius: 999px;
-    background: var(--brand);
+    background: var(--app-primary);
 }
 
 .active-year-pill strong {
-    color: var(--text);
+    color: var(--app-text);
+    font-size: 14px;
     font-weight: 700;
 }
 
@@ -270,17 +327,20 @@ textarea {
     display: inline-grid;
     width: 40px;
     height: 40px;
+    flex: 0 0 auto;
     place-items: center;
-    color: var(--muted-strong);
-    background: #ffffff;
-    border: 1px solid var(--line);
-    border-radius: 8px;
+    color: var(--app-label);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    font: inherit;
+    letter-spacing: 0;
     cursor: pointer;
 }
 
 .icon-button:hover {
-    color: var(--brand);
-    background: #f6fbf7;
+    color: var(--app-primary-hover);
+    background: var(--app-success-subtle);
 }
 
 .sidebar-close {
@@ -288,42 +348,57 @@ textarea {
     margin-left: auto;
 }
 
-main {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
 .button {
     display: inline-flex;
+    min-height: 40px;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 40px;
     padding: 0 14px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: #ffffff;
-    color: var(--muted-strong);
+    color: var(--app-label);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
     font-size: 14px;
     font-weight: 700;
+    letter-spacing: 0;
     line-height: 1;
     cursor: pointer;
 }
 
+.button:hover {
+    color: var(--app-primary-hover);
+    background: var(--app-success-subtle);
+}
+
 .button-primary {
     color: #ffffff;
-    background: var(--brand);
-    border-color: var(--brand);
+    background: var(--app-primary);
+    border-color: var(--app-primary);
 }
 
 .button-primary:hover {
-    background: var(--brand-hover);
-    border-color: var(--brand-hover);
+    color: #ffffff;
+    background: var(--app-primary-hover);
+    border-color: var(--app-primary-hover);
 }
 
-.button-secondary:hover {
-    color: var(--brand);
-    background: #f6fbf7;
+.button-secondary {
+    color: var(--app-label);
+    background: var(--app-surface);
+    border-color: var(--app-border);
+}
+
+.button-danger {
+    color: #ffffff;
+    background: var(--app-danger);
+    border-color: var(--app-danger);
+}
+
+.button-danger:hover {
+    color: #ffffff;
+    background: var(--app-danger-hover);
+    border-color: var(--app-danger-hover);
 }
 
 .table-wrap {
@@ -332,46 +407,168 @@ main {
     overflow-x: auto;
 }
 
-.app-footer {
-    color: var(--muted);
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--app-text);
+}
+
+.data-table th,
+.data-table td {
+    min-height: 40px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--app-border-soft);
+    font-size: 14px;
+    line-height: 1.35;
+    vertical-align: middle;
+}
+
+.data-table th {
+    color: var(--app-label);
+    background: var(--app-panel-soft);
+    font-weight: 500;
     text-align: center;
-    background: transparent;
-    border: 0;
+}
+
+.data-table td {
+    font-weight: 400;
+    text-align: left;
+}
+
+.data-table tbody tr:hover {
+    background: var(--app-panel-soft);
+}
+
+.status,
+.compact-badge,
+.code-badge {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--app-border);
+    border-radius: 999px;
+    background: var(--app-neutral-soft);
+    color: var(--app-muted);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.status.success,
+.compact-badge.success {
+    color: var(--app-success);
+    background: var(--app-success-soft);
+    border-color: var(--app-success-soft);
+}
+
+.status.danger,
+.compact-badge.danger {
+    color: var(--app-danger);
+    background: var(--app-danger-soft);
+    border-color: #f2cfd2;
+}
+
+.status.warning,
+.compact-badge.warning {
+    color: var(--app-warning);
+    background: var(--app-warning-soft);
+    border-color: #fed7aa;
+}
+
+.status.neutral,
+.compact-badge.neutral {
+    color: var(--app-muted);
+    background: var(--app-neutral-soft);
+    border-color: var(--app-border);
+}
+
+.app-footer {
     margin: 0;
     padding: 8px 16px 12px;
+    color: var(--app-muted);
+    background: transparent;
+    border: 0;
     font-size: 14px;
     font-weight: 400;
     line-height: 1.4;
+    text-align: center;
 }
 
-.result-modal-backdrop[hidden],
-.result-modal-backdrop:not(.show) {
-    display: none;
-}
-
-.modal-backdrop:not(.show) {
-    display: none;
-}
-
-.modal-backdrop.show {
+.modal-backdrop,
+.result-modal-backdrop {
     position: fixed;
     inset: 0;
     z-index: 60;
-    display: grid;
+    display: none;
     place-items: center;
     padding: 24px;
-    background: rgba(15, 23, 42, .38);
+    background: rgba(2, 6, 23, .38);
 }
 
-.form-modal {
+.modal-backdrop.show,
+.result-modal-backdrop.show {
+    display: grid;
+}
+
+.modal-backdrop[hidden],
+.result-modal-backdrop[hidden] {
+    display: none;
+}
+
+.form-modal,
+.result-modal {
     width: min(100%, 560px);
     max-height: calc(100vh - 48px);
     overflow: auto;
-    color: #020617;
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    border-radius: 12px;
-    box-shadow: 0 18px 45px rgba(15, 23, 42, .18);
+    color: var(--app-text);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    box-shadow: 0 18px 45px rgba(2, 6, 23, .16);
+}
+
+.result-modal {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    width: min(100%, 420px);
+    padding: 24px;
+    text-align: center;
+}
+
+.result-modal strong {
+    color: var(--app-text);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.result-modal p {
+    margin: 0;
+    color: var(--app-muted);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+.result-icon {
+    display: inline-grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--app-success-soft);
+    color: var(--app-success);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.error-result .result-icon {
+    color: var(--app-danger);
+    background: var(--app-danger-soft);
 }
 
 .form-modal-header {
@@ -380,20 +577,20 @@ main {
     justify-content: space-between;
     gap: 12px;
     padding: 16px 18px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--app-border-soft);
 }
 
 .form-modal-header h2 {
     margin: 0;
-    color: #020617;
-    font-size: 20px;
+    color: var(--app-text);
+    font-size: 16px;
     font-weight: 700;
     line-height: 1.25;
 }
 
 .form-modal-header .eyebrow {
     margin: 0 0 4px;
-    color: #707971;
+    color: var(--app-muted);
     font-size: 14px;
     font-weight: 400;
     line-height: 1.35;
@@ -410,30 +607,10 @@ main {
 .form-modal .spp-edit-readonly {
     display: grid;
     gap: 6px;
-    color: #334155;
+    color: var(--app-label);
     font-size: 14px;
     font-weight: 500;
     line-height: 1.35;
-}
-
-.form-modal .master-form input,
-.form-modal .master-form select {
-    width: 100%;
-    height: 40px;
-    padding: 0 12px;
-    color: #020617;
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 400;
-}
-
-.form-modal .master-form input:focus,
-.form-modal .master-form select:focus {
-    border-color: #004528;
-    outline: 2px solid #dff1e7;
-    outline-offset: 0;
 }
 
 .form-modal .spp-edit-readonly,
@@ -441,33 +618,11 @@ main {
     grid-column: 1 / -1;
 }
 
-.form-modal .form-actions {
+.form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    margin: 0;
-}
-
-@media (max-width: 640px) {
-    .modal-backdrop.show {
-        padding: 16px;
-        align-items: start;
-        overflow-y: auto;
-    }
-
-    .form-modal {
-        max-height: none;
-    }
-
-    .form-modal .master-form {
-        grid-template-columns: 1fr;
-        padding: 16px;
-    }
-
-    .form-modal .form-actions {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
+    margin: 20px 0 0;
 }
 
 @media (max-width: 960px) {
@@ -478,6 +633,7 @@ main {
     .sidebar {
         position: fixed;
         inset: 0 auto 0 0;
+        z-index: 40;
         transform: translateX(-100%);
         transition: transform .2s ease;
     }
@@ -490,9 +646,9 @@ main {
     .sidebar-overlay {
         position: fixed;
         inset: 0;
-        z-index: 20;
+        z-index: 35;
         display: none;
-        background: rgba(15, 23, 42, .32);
+        background: rgba(2, 6, 23, .38);
     }
 
     body.sidebar-open .sidebar-overlay,
@@ -509,852 +665,48 @@ main {
     }
 }
 
-/* Legacy menu CSS.
-   Do not add Report or Tagihan rules here; use modules/reports.css and modules/bills.css.
-   Older legacy menu styles stay here until their own module migration.
-*/
-body{font-size:16px;line-height:1.55}small,.brand small,.topbar-title small,.active-year-pill small,.active-year-pill strong,.hero p:last-child,.simple-list-header span,.card-header p,.card-header a,.payment-name small,.payment-amount small,.school-year small,.school-year strong,.student-page .student-filter-heading small,.student-page .table-person small,.table-person small,.data-table td>small,.spp-detail-grid span,.spp-correction-history span,.spp-correction-history small,.other-payment-summary span,.spp-import-modal-head p,.spp-import-progress div,.spp-import-progress b,.spp-import-info p,.spp-import-dropzone small,.spp-import-browse,.spp-import-copy>div>span:last-of-type,.spp-import-kicker,.spp-import-steps span,.spp-import-steps b,.spp-import-form-head span,.spp-file-text small,.spp-file-browse,.spp-preview-title>div>span:last-child,.spp-confirm-button b,.spp-import-stats p span,.spp-import-stats p small,.spp-preview-table-head div span,.spp-preview-count,.spp-line-number,.spp-import-note,.spp-import-note span,.other-mapping-form label span small,.settings-form-head small,.settings-fields label,.settings-fields input,.settings-fields select,.settings-fields textarea,.composition-total span,.composition-row,.settings-save span,.setup-card a,.settings-note strong,.settings-note p{font-size:14px;line-height:1.45}.nav-item,.master-nav .nav-parent,.master-nav .nav-submenu a,.nested-nav>.nav-submenu>a,.nested-nav-button,.button,.student-page .student-action-bar .button,.list-toolbar label,.list-toolbar select,.list-toolbar input,.student-filter-panel label,.student-page .student-filter-panel label,.master-form label,.master-form input,.master-form select,.table-search input,.table-search select,.student-filter-panel input,.student-filter-panel select,.student-page .student-filter-panel input,.student-page .student-filter-panel select,.spp-form-grid>label,.spp-form-field,.spp-form-grid input,.spp-form-grid select,.student-search-results button,.student-search-results span,.spp-month-field legend,.spp-months label,.spp-month-status,.spp-summary span,.spp-summary .total small,.spp-quote-message,.payment-method,.spp-expanded-meta span,.spp-expanded-meta strong,.spp-expanded-actions>span,.spp-detail-grid strong,.spp-edit-readonly,.spp-correction-history b,.spp-import-dropzone strong,.spp-file-text strong,.spp-preview-table-head strong,.other-mapping-form label span strong,.other-mapping-form select{font-size:14px;line-height:1.45}.data-table th,.student-page .data-table th,.status,.student-page .status,.code-badge,.trend,.period{font-size:14px;line-height:1.35}.data-table td,.student-page .data-table td,.data-table td>strong,.table-person strong,.student-page .table-person strong,.student-table-length,.student-page .student-table-length,.pagination-wrap,.student-page .pagination-wrap,.form-modal-header h2{font-size:14px;line-height:1.5}.brand strong{font-size:20px;line-height:1.25}.topbar-title span{font-size:16px;line-height:1.35}.eyebrow,.student-page .student-page-hero .eyebrow{font-size:14px;line-height:1.4}.hero h1,.student-page .student-page-hero h1{letter-spacing:-.025em;font-size:20px;line-height:1.2}.simple-list-header strong,
-.card-header h3,
-.spp-form-heading strong,
-.spp-preview-title strong,
-.spp-correction-history>strong,
-.other-payment-heading>div strong,
-.settings-form-head strong{font-size:16px;line-height:1.35}.spp-import-modal-head h2{font-size:20px;line-height:1.25}.spp-import-stats p strong{font-size:20px;line-height:1.2}.result-modal strong{font-size:20px;line-height:1.25}.result-modal p{font-size:16px;line-height:1.55}@media (width<=600px){body{font-size:14px}.hero h1,.student-page .student-page-hero h1{font-size:20px}.spp-import-modal-head h2{font-size:20px}}.student-status-dot{line-height:1.35;font-size:14px!important}.button,
-.nav-item,
-.master-nav .nav-submenu a,
-.nested-level>.nav-submenu-deep a,
-.nested-nav-button,
-.status,
-.period,
-.trend,
-.code-badge,
-.payment-method,
-.student-status-dot,
-.spp-import-browse,
-.spp-file-browse,
-.spp-preview-count,
-.spp-line-number,
-.student-search-results button,
-.spp-expand-button,
-.pagination-wrap nav a,
-.pagination-wrap nav span{font-weight:500!important}.spp-form-grid>label,
-.spp-form-field,
-.spp-form-field>span,
-.student-filter-panel label,
-.student-page .student-filter-panel label,
-.master-form label,
-.settings-fields label,
-.list-toolbar label{font-weight:400!important}.master-form select[multiple]{height:auto;min-height:138px;padding:8px 10px}.master-form select[multiple] option{border-radius:6px;padding:8px 8px}.registration-class-field{color:#566276;gap:8px;font-size:14px;display:grid}.registration-class-list{background:#fff;border:1px solid #e5e7eb;border-radius:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;max-height:240px;padding:12px;display:grid;overflow-y:auto}.registration-class-list label{color:#172033;cursor:pointer;background:#fbfdf8;border:1px solid #e3e9f2;border-radius:9px;align-items:center;gap:12px;min-height:42px;padding:12px 10px;transition:all .18s;display:flex}.registration-class-list label[hidden]{display:none}.registration-class-list label:hover{background:#f5fbf7;border-color:#b8d9c4}.registration-class-list input{accent-color:#157144;flex:none;width:17px;height:17px}.registration-class-list label:has(input:checked){color:#0b4f2f;background:#edf8f1;border-color:#85c99c;box-shadow:0 6px 14px #0d5f3610}.registration-class-list .registration-all-classes{grid-column:1/-1;font-weight:700}.registration-class-list p{color:#7d8a9e;text-align:center;background:#fbfdf8;border:1px dashed #d9e1ec;border-radius:9px;grid-column:1/-1;margin:0;padding:16px}.master-form label>small{color:#7d8a9e;margin-top:4px;font-size:14px;line-height:1.35}.student-page{--nova-primary:#004532;--nova-primary-soft:#e5f3eb;--nova-orange:#fd761a;--nova-surface:#f7f9fb;--nova-line:#dfe5e2;background:var(--nova-surface);padding:20px 24px 32px}.student-page .student-page-hero{min-height:auto;box-shadow:none;background:0 0;border:0;align-items:end;margin-bottom:14px;padding:0}.student-page .student-page-hero .eyebrow{color:#9d4300;letter-spacing:.11em;font-size:14px}.student-page .student-page-hero h1{color:#191c1e;letter-spacing:-.025em;font-size:20px;font-weight:700!important}.student-page .student-page-hero p:last-child{color:#66716c;font-size:14px}.student-page .student-workspace{margin-bottom:16px}.nova-student-search{background:#fff;border:1px solid #bec9c2;border-radius:999px;align-items:center;gap:12px;width:100%;height:52px;margin-bottom:12px;padding:0 16px;transition:all .18s;display:flex;box-shadow:inset 0 1px 2px #17203306}.nova-student-search:focus-within{border-color:var(--nova-primary);box-shadow:0 0 0 4px #0045320c}.nova-student-search .icon{color:#55615b;flex:none;width:20px;height:20px}.nova-student-search input:not([type=hidden]){color:#191c1e;background:0 0;border:0;outline:0;width:100%;min-width:0;padding:0;font-size:14px}.nova-student-search input::placeholder{color:#77827d}.nova-student-search>a{color:#64706a;background:#eef2ef;border-radius:50%;flex:none;place-items:center;width:26px;height:26px;font-size:16px;display:grid}.student-page .student-action-bar{gap:12px;padding:0}.student-page .student-action-bar .button{color:#27312c;background:#fff;border:1px solid #cbd4cf;border-radius:10px;min-width:0;min-height:40px;padding:0 16px;font-size:14px;font-weight:700;box-shadow:0 4px 12px #17203308}.student-page .student-action-bar .button-primary{color:#fff;background:var(--nova-primary);border-color:var(--nova-primary);box-shadow:0 7px 15px #00453220}.student-page .student-action-bar .action-orange{color:var(--nova-primary);border-color:var(--nova-primary);background:#fff}.student-page .student-action-bar .action-purple,.student-page .student-action-bar .action-green{color:#27312c;background:#fff;border-color:#cbd4cf}.student-page .student-filter-toggle{color:var(--nova-primary);background:#eef6f1;border-color:#cedfd5;margin-left:auto}.student-page .student-action-bar .button:hover{color:var(--nova-primary);background:#f5faf7;border-color:#8cae9d;transform:translateY(-1px)}.student-page .student-action-bar .button-primary:hover{color:#fff;background:#065f46;border-color:#065f46}.student-page .student-filter-toggle.active{color:#fff;background:var(--nova-primary);border-color:var(--nova-primary)}.student-page .student-filter-panel{border-color:var(--nova-line);border-radius:16px;margin-top:12px;box-shadow:0 8px 24px #17203308}.student-page .student-filter-heading{border-color:var(--nova-line);background:#f2f6f3}.student-page .student-filter-icon{color:var(--nova-primary);box-shadow:none;background:#dfeee5}.student-page .student-search-button{background:var(--nova-primary);border-color:var(--nova-primary);box-shadow:none}.student-page .student-import-preview{background:#fff;border:0;border-radius:24px;margin-bottom:16px;position:relative;overflow:hidden;box-shadow:0 8px 28px #1720330a}.student-page .student-import-preview:before{content:"";z-index:3;background:var(--nova-orange);border-radius:24px 0 0 24px;width:4px;position:absolute;inset:0 auto 0 0}.student-page .student-import-preview .spp-preview-header{background:#fff;border:0;padding:16px 20px 10px 24px}.student-page .student-import-preview .spp-import-kicker{color:#9d4300}.student-page .student-import-preview .spp-preview-title strong{color:#191c1e;font-size:16px}.student-page .student-import-preview .spp-confirm-button{color:#fff;background:var(--nova-primary);min-height:38px;box-shadow:none;border:0;border-radius:10px}.student-page .student-import-preview .spp-import-stats{background:#fff;gap:8px;padding:0 20px 14px 24px}.student-page .student-import-preview .spp-import-stats>div{text-align:center;background:#f1f3f4;border:0;border-radius:10px;justify-content:center;min-height:56px;padding:8px 12px}.student-page .student-import-preview .spp-import-stats p span{color:#53605a;text-transform:uppercase;font-size:14px}.student-page .student-import-preview .spp-import-stats p strong{margin-top:4px;font-size:16px}.student-page .student-import-preview .spp-validation-bar{display:none}.student-page .student-import-preview .student-import-table-heading,.student-page .student-import-preview .student-import-toolbar,.student-page .student-import-preview .spp-import-table-wrap,.student-page .student-import-preview .student-import-footer{margin-inline:20px}.student-page .student-import-preview .student-import-table-heading{padding-inline:4px}.student-page .student-import-preview .student-import-toolbar{margin-bottom:10px}.student-page .student-import-preview .student-import-footer{border-radius:0 0 12px 12px;margin-bottom:8px}.student-page .student-data-card{background:#fff;border:0;border-radius:24px;overflow:hidden;box-shadow:0 8px 28px #1720330a}.nova-student-list-head{border-bottom:1px solid #e6ebe8;justify-content:space-between;align-items:end;gap:16px;padding:16px 20px 14px;display:flex}.nova-student-list-head>div>span,.nova-student-list-head>div>strong,.nova-student-list-head>div>small{display:block}.nova-student-list-head .eyebrow{color:#9d4300;margin:0 0 4px;font-size:14px}.nova-student-list-head strong{color:#191c1e;letter-spacing:-.015em;font-size:16px}.nova-student-list-head small{color:#748079;margin-top:4px;font-size:14px}.nova-student-length label{color:#66716c;align-items:center;gap:8px;font-size:14px;display:flex}.nova-student-length select{color:#27312c;background:#fff;border:1px solid #cbd4cf;border-radius:8px;outline:0;width:66px;height:32px;padding:0 8px}.student-page .nova-student-table{min-width:840px}.student-page .nova-student-table th{color:#5d6862;letter-spacing:.035em;text-transform:uppercase;background:#f2f4f3;border-color:#e2e7e4;padding:12px 12px;font-size:14px}.student-page .nova-student-table td{border-color:#e0e5e2;padding:12px;font-size:14px}.student-page .nova-student-table tbody tr:hover{background:#f7faf8}.student-page .nova-student-table td:nth-child(2) strong{color:var(--nova-primary);font-variant-numeric:tabular-nums}.student-page .nova-student-table .code-badge{color:#147245;background:#e1f3e8;border:0;border-radius:6px}.student-page .nova-student-table .table-actions .icon-button{background:0 0;border:0}.student-page .pagination-wrap{background:#fff;border-top:1px solid #e6ebe8;padding:12px 16px}@media (width<=900px){.student-page{padding-inline:16px}.student-page .student-filter-toggle{margin-left:0}.nova-student-list-head{flex-direction:column;align-items:flex-start}}@media (width<=600px){.nova-student-search{height:46px;padding-inline:14px}.student-page .student-action-bar{grid-template-columns:1fr 1fr}.student-page .student-action-bar .button{justify-content:center;width:100%}.student-page .student-import-preview .spp-import-stats{grid-template-columns:repeat(2,1fr)}}h1,
-h2,
-h3,
-.hero h1,
-.student-page .student-page-hero h1,
-.brand strong,
-.topbar-title span,
-.login-brand h1,
-.simple-list-header strong,
-.card-header h3,
-.spp-form-heading strong,
-.spp-import-modal-head h2,
-.spp-preview-title strong,
-.spp-correction-history>strong,
-.other-payment-heading>div strong,
-.settings-form-head strong,
-.master-create-heading strong,
-.form-modal-header h2,
-.student-page,
-.payment-flat-page{background:var(--canvas)}.sidebar,.topbar,.card,.student-workspace,.student-data-card,.student-page .student-workspace,.student-page .student-data-card,.payment-flat-page .payment-workspace,.payment-flat-page .payment-data-card{border-color:var(--line)}.brand strong,.login-brand h1,.login-help strong{color:var(--blue-dark)}.brand strong span,.login-brand h1 span,.student-page .student-page-hero .eyebrow,.nova-student-list-head .eyebrow,.student-page .student-import-preview .spp-import-kicker{color:var(--leaf)}.nav-item:hover,.master-nav .nav-parent:hover,.master-nav .nav-submenu a:hover,.nested-nav-button:hover,.icon-button:hover{color:var(--blue);background:#f0f7e8}.nav-item.active,.master-nav .nav-parent.active,.nested-nav>.nav-parent.active,.button-primary,.student-page .student-search-button{color:#fff;background:linear-gradient(135deg, var(--blue), #6f913d);border-color:var(--blue);box-shadow:0 8px 18px #2e511926}.student-page .student-search-button:hover{background:linear-gradient(135deg, #244714, var(--blue));box-shadow:0 12px 24px #2e511936}.avatar,.topbar-avatar,.student-page .student-import-preview .spp-preview-icon{background:linear-gradient(145deg, #9dbb59, var(--blue))}.active-year-pill>span,.whatsapp-fab{background:var(--leaf)}.action-purple,.action-orange,.action-green,.student-print-button,.student-download-button,.student-add-button,.student-page .student-action-bar .button:focus-visible,.student-page .student-action-bar .button:active,.student-page .student-action-bar .button.active{color:#fff;background:var(--blue);border-color:var(--blue)}.student-page .student-action-bar .action-purple,.student-page .student-action-bar .action-orange,.student-page .student-action-bar .action-green,.student-add-button{color:var(--blue);background:#fff;border-color:#cbd9bd}.student-page .student-action-bar .button:hover,.settings-role-strip a:hover,.settings-role-strip a.active{color:var(--blue);background:#f4faef;border-color:#adc68a}.student-filter-panel input:focus,
-.student-filter-panel select:focus,
-.student-page .student-filter-panel select:focus,
-.spp-form-grid input:focus,
-.spp-form-grid select:focus,
-.list-toolbar select:focus,
-.list-toolbar input:focus,
-.master-form input:focus,
-.master-form select:focus,
-.payment-flat-page .payment-filter-panel input:focus,
-.payment-flat-page .payment-filter-panel select:focus,
-.settings-fields input:focus,
-.settings-fields select:focus,
-.settings-fields textarea:focus,
-.settings-user-toolbar input:focus{border-color:var(--leaf);box-shadow:0 0 0 3px #9dbb5926}.metric-icon.blue,.student-management-placeholder-icon,.student-page .nova-student-table .code-badge,.education-code,.role-permission-summary,.settings-role-strip strong,.payment-flat-page .spp-expand-button{color:var(--blue);background:var(--blue-soft);border-color:#c9ddb4}.metric-icon.indigo,.compact-badge.neutral{color:#5f7826;background:#eef5dc}.metric-icon.green,.status.success,.school-year span,.compact-badge.method,.compact-badge.success{color:var(--green);background:#edf7e3}.progress{background-color:#edf3e6}.progress .blue,.progress .amber,.composition-row i.spp{background:var(--leaf)}.student-management-summary b,.payment-amount strong{color:var(--green)!important}.student-page .student-flat-table tbody tr:hover,
-.payment-flat-page .payment-flat-table tbody tr:nth-child(odd),
-.student-page .student-search-button,
-.master-flat-page .student-search-button,
-.payment-flat-page .student-search-button,
-.payment-flat-page .payment-filter-actions .student-search-button,
-.payment-flat-page .payment-transaction-search .student-search-button{color:var(--blue)!important;box-shadow:none!important;background:#fff!important;border-color:#cbd9bd!important}.student-search-button:hover,
-.student-page .student-search-button:hover,
-.master-flat-page .student-search-button:hover,
-.payment-flat-page .student-search-button:hover,
-.payment-flat-page .payment-filter-actions .student-search-button:hover,
-.payment-flat-page .payment-transaction-search .student-search-button:hover,
-.student-search-button:active,
-.student-page .student-search-button:active,
-.master-flat-page .student-search-button:active,
-.payment-flat-page .student-search-button:active{color:var(--blue)!important;box-shadow:none!important;background:#fff!important;border-color:#aac58d!important;transform:none!important}.student-search-button .icon,
-.student-page .student-search-button .icon,
-.master-flat-page .student-search-button .icon,
-.payment-flat-page .student-search-button .icon,
-.student-page .student-data-card,
-.student-create-page .student-create-canvas,
-.master-create-card,
-.master-flat-page .master-flat-workspace,
-.master-flat-page .master-flat-card,
-.payment-flat-page .payment-single-canvas,
-.payment-flat-page .payment-transaction-workspace,
-.payment-flat-page .payment-data-card,
-.payment-create-page .spp-payment-form{padding-left:var(--app-canvas-inset)!important;padding-right:var(--app-canvas-inset)!important;padding-bottom:var(--app-canvas-inset)!important}.student-page .student-workspace,
-.student-create-page .student-create-canvas,
-.master-create-card,
-.master-flat-page .master-flat-workspace,
-.payment-flat-page .payment-single-canvas,
-.payment-flat-page .payment-transaction-workspace,
-.payment-create-page .spp-payment-form{padding-top:var(--app-canvas-inset)!important}.student-page .student-flat-header,.master-create-heading,.spp-form-topbar{padding-left:0!important;padding-right:0!important}@media (width<=760px){:root{--app-canvas-inset:var(--app-canvas-inset-mobile)}}:root{--type-ui:14px;--type-small:14px;--type-table:14px;--type-title:16px;--weight-normal:400;--weight-title:600}body,
-input,
-select,
-textarea,
-button,
-.nav-item,
-.master-nav .nav-parent,
-.master-nav .nav-submenu a,
-.nested-level>.nav-submenu-deep a,
-.button,
-.student-action-bar .button,
-.student-search-button,
-.student-filter-reset,
-.list-toolbar label,
-.list-toolbar select,
-.list-toolbar input,
-.table-search input,
-.table-search select,
-.master-form input,
-.master-form select,
-.student-filter-panel label,
-.student-filter-panel input,
-.student-filter-panel select,
-.master-flat-page .master-filter-panel label,
-.master-flat-page .master-filter-panel input,
-.master-flat-page .master-filter-panel select,
-.payment-flat-page .payment-filter-panel label,
-.payment-flat-page .payment-filter-panel input,
-.payment-flat-page .payment-filter-panel select,
-.payment-flat-page .payment-transaction-search label,
-.payment-flat-page .payment-transaction-search input,
-.spp-form-grid>label,
-.spp-form-field,
-.spp-form-grid input,
-.spp-form-grid select,
-.master-create-form label,
-.master-create-form input,
-.master-create-form select{font-size:var(--type-ui)!important;font-weight:var(--weight-normal)!important;letter-spacing:0!important}small,
-.brand small,
-.user-card small,
-.topbar-title small,
-.school-year small,
-.active-year-pill small,
-.eyebrow,
-.status,
-.trend,
-.period,
-.badge,
-.compact-badge,
-.code-badge,
-.education-code,
-.payment-method,
-.payment-unit-count,
-.payment-option-buttons a,
-.spp-month-status,
-.spp-summary span,
-.spp-summary .total small,
-.student-import-message,
-.pagination-wrap,
-.student-table-length,
-.table-toolbar>span,
-.list-toolbar-sort .list-sort-heading,
-.student-page .table-person small,
-.student-page .data-table td>small,
-.master-flat-page .data-table td>small,
-.payment-flat-page .payment-student-name small{font-size:var(--type-small)!important;font-weight:var(--weight-normal)!important;letter-spacing:0!important}.data-table td,
-.student-page .data-table td,
-.student-page .student-flat-table td,
-.master-flat-page .data-table td,
-.payment-flat-page .data-table td,
-.payment-flat-page .payment-transaction-table td,
-.student-page .table-person strong,
-.student-page .data-table td>strong,
-.master-flat-page .data-table td>strong,
-.payment-flat-page .payment-student-name,
-.payment-flat-page .payment-student-name strong{font-size:var(--type-table)!important;font-weight:var(--weight-normal)!important;letter-spacing:0!important}.data-table th,
-.student-page .data-table th,
-.student-page .student-flat-table th,
-.master-flat-page .data-table th,
-.payment-flat-page .data-table th,
-.payment-flat-page .payment-transaction-table th,
-.data-table th .list-sort-heading,
-.data-table th .list-sort-label,
-.student-page .student-flat-table th .list-sort-heading,
-.student-page .student-flat-table th .list-sort-label,
-.master-flat-page .data-table th .list-sort-heading,
-.master-flat-page .data-table th .list-sort-label{font-size:var(--type-table)!important;font-weight:var(--weight-title)!important;letter-spacing:0!important}h1,h2,h3,.hero h1,.payment-hub-heading h1,.student-page .student-page-hero h1,.student-flat-header h1,.student-flat-header strong,.student-create-page .student-flat-header strong,.master-create-heading strong,.spp-form-heading strong,.other-payment-heading>div strong,.settings-form-head strong,.card-header h3,.simple-list-header strong,.nova-student-list-head strong{font-weight:var(--weight-title)!important;letter-spacing:0!important}.student-flat-header h1,
-.student-flat-header strong,
-.master-create-heading strong,
-.spp-form-heading strong,
-.other-payment-heading>div strong,
-.settings-form-head strong,
-.card-header h3,
-.simple-list-header strong,
-.nova-student-list-head strong{font-size:var(--type-title)!important}.nav-label,.master-tabs a,.role-permission-field,.role-permission-grid label,.role-permission-summary,.payment-import-card form label span,.student-import-preview .spp-import-stats p span,.student-import-preview .spp-import-stats p strong,.spp-summary strong,.spp-quote-message.success,.registration-detail-item>span,.registration-detail-item>strong,.settings-fields label,.settings-save span,.settings-note strong,.account-summary small,.account-summary strong,.topbar-title span,.active-year-pill small,.active-year-pill strong,.school-year strong,.school-year span,.user-card strong,.card-header p,.card-header a,.payment-name strong,.payment-name small,.payment-amount strong,.payment-amount small,.master-stats p,.master-stats strong,.master-stats small,.master-tabs b,.composition-total span,.composition-row,.composition-row strong,.settings-form-head small,.setup-card a,.setup-card a strong,.settings-note p,.settings-role-strip span,.settings-role-strip strong{font-size:var(--type-small)!important;font-weight:var(--weight-normal)!important;letter-spacing:0!important}.master-stats strong,.composition-total strong,.payment-amount strong{font-weight:var(--weight-normal)!important;letter-spacing:0!important}.master-stats strong{display:block!important;width:100%!important;max-width:1120px!important;margin:0!important;padding:0!important;background:transparent!important}
-/* RESULT MODAL TYPOGRAPHY FINAL LOCK */
-html body .result-modal {
-    justify-content: center !important;
-    gap:8px !important;
-    width: min(280px, calc(100vw - 32px)) !important;
-    min-height: min(280px, calc(100vw - 32px)) !important;
-    padding:16px !important;
-}
-
-html body .result-modal .result-icon {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 46px !important;
-    height: 46px !important;
-    color: #ffffff !important;
-    background: #157144 !important;
-    border: 3px solid #dff3e7 !important;
-    border-radius: 999px !important;
-    box-shadow: 0 8px 18px rgba(21, 113, 68, .18) !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 46px !important;
-}
-
-html body .success-result .result-icon {
-    color: #ffffff !important;
-    background: #157144 !important;
-    border-color: #dff3e7 !important;
-}
-
-html body .error-result .result-icon {
-    color: #ffffff !important;
-    background: #ba1a1a !important;
-    border-color: #ffdad6 !important;
-    box-shadow: 0 8px 18px rgba(186, 26, 26, .16) !important;
-}
-
-html body .result-modal > strong {
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-}
-
-html body .result-modal > p {
-    margin:0 !important;
-    font-size: 16px !important;
-    font-weight: 400 !important;
-    line-height: 1.5 !important;
-}
-
-html body .result-modal > .button,
-html body .result-modal > button.button {
-    height: 40px !important;
-    min-height: 40px !important;
-    padding:0 20px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-}
-
-@media (width <= 480px) {
-    html body .result-modal {
-        width: min(260px, calc(100vw - 28px)) !important;
-        min-height: min(260px, calc(100vw - 28px)) !important;
-        padding:16px !important;
+@media (max-width: 760px) {
+    :root {
+        --app-page-padding-x: 16px;
+        --app-page-padding-y: 16px;
     }
 
-    html body .result-modal > strong {
-        font-size: 20px !important;
+    .topbar {
+        gap: 8px;
+        min-height: 60px;
     }
 
-    html body .result-modal > p {
-        font-size: 16px !important;
+    .active-year-pill small {
+        display: none;
+    }
+
+    .form-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions .button,
+    .form-actions button,
+    .form-actions a {
+        width: 100%;
     }
 }
 
-/* WHITE PAGE STANDARD FINAL: keep standardized master/student pages on a white canvas. */
-html body :is(
-    .master-flat-page,
-    .master-create-page,
-    .academic-year-page,
-    .academic-year-create-page,
-    .education-unit-page,
-    .education-unit-create-page,
-    .class-page,
-    .class-create-page,
-    .fee-type-page,
-    .fee-type-create-page,
-    .fee-discount-page,
-    .fee-discount-create-page,
-    .data-role-page,
-    .data-role-create-page,
-    .data-user-page,
-    .data-user-create-page,
-    .student-create-page
-) {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body .student-page:not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body:has(:is(
-    .master-flat-page,
-    .master-create-page,
-    .academic-year-page,
-    .academic-year-create-page,
-    .education-unit-page,
-    .education-unit-create-page,
-    .class-page,
-    .class-create-page,
-    .fee-type-page,
-    .fee-type-create-page,
-    .fee-discount-page,
-    .fee-discount-create-page,
-    .data-role-page,
-    .data-role-create-page,
-    .data-user-page,
-    .data-user-create-page,
-    .student-page
-)) .main-panel {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body:has(:is(
-    .master-flat-page,
-    .master-create-page,
-    .academic-year-page,
-    .academic-year-create-page,
-    .education-unit-page,
-    .education-unit-create-page,
-    .class-page,
-    .class-create-page,
-    .fee-type-page,
-    .fee-type-create-page,
-    .fee-discount-page,
-    .fee-discount-create-page,
-    .data-role-page,
-    .data-role-create-page,
-    .data-user-page,
-    .data-user-create-page,
-    .student-page
-)) .main-panel::before,
-html body:has(:is(
-    .master-flat-page,
-    .master-create-page,
-    .academic-year-page,
-    .academic-year-create-page,
-    .education-unit-page,
-    .education-unit-create-page,
-    .class-page,
-    .class-create-page,
-    .fee-type-page,
-    .fee-type-create-page,
-    .fee-discount-page,
-    .fee-discount-create-page,
-    .data-role-page,
-    .data-role-create-page,
-    .data-user-page,
-    .data-user-create-page,
-    .student-page
-)) .main-panel::after {
-    background: #ffffff !important;
-    background-image: none !important;
-    box-shadow: none !important;
-}
-
-/* Global secondary button standard: soft branded green, not white. */
-html body .button.button-secondary,html body .app-shell .button-secondary,html body .app-shell .student-filter-reset,html body .app-shell .payment-import-entry-button,html body .app-shell .payment-spp-change-student,html body .finance-page .payment-create-page .button-secondary,html body .student-page .spp-preview-page-heading .button-secondary,html body .student-page .payment-single-canvas:has(.spp-import-preview-simple) .student-title-actions .button-secondary {
-    color: #0d5f36 !important;
-    background: #f3fbf6 !important;
-    border-color: #b9dcc7 !important;
-    box-shadow: none !important;
-}
-
-html body .button.button-secondary:hover,html body .app-shell .button-secondary:hover,html body .app-shell .student-filter-reset:hover,html body .app-shell .payment-import-entry-button:hover,html body .app-shell .payment-spp-change-student:hover,html body .finance-page .payment-create-page .button-secondary:hover,html body .student-page .spp-preview-page-heading .button-secondary:hover,html body .student-page .payment-single-canvas:has(.spp-import-preview-simple) .student-title-actions .button-secondary:hover {
-    color: #004528 !important;
-    background: #e9f8ef !important;
-    border-color: #157144 !important;
-}
-
-/* Standards cleanup for pages audited against ai/standar aplikasi.md. */
-html body .app-shell .student-master-table {
-    table-layout: fixed !important;
-    width: 100% !important;
-    min-width: 1080px !important;
-    border-collapse: collapse !important;
-    border-spacing: 0 !important;
-}
-
-html body .app-shell .student-master-table .student-col-no {
-    width: 40px !important;
-}
-
-html body .app-shell .student-master-table .student-col-nis {
-    width: 80px !important;
-}
-
-html body .app-shell .student-master-table .student-col-gender {
-    width: 104px !important;
-}
-
-html body .app-shell .student-master-table .student-col-unit {
-    width: 112px !important;
-}
-
-html body .app-shell .student-master-table .student-col-class,
-html body .app-shell .student-master-table .student-class-column,
-html body .app-shell .student-master-table .student-class-cell {
-    width: 190px !important;
-    min-width: 190px !important;
-    max-width: 190px !important;
-    text-align: center !important;
-    white-space: normal !important;
-    word-break: normal !important;
-    overflow-wrap: normal !important;
-}
-
-html body .app-shell .student-master-table .student-col-actions,
-html body .app-shell .student-master-table .student-actions-cell {
-    width: 56px !important;
-    min-width: 56px !important;
-    max-width: 56px !important;
-    padding:0 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-}
-
-html body .app-shell .table-actions.student-ghost-actions,
-html body .app-shell .table-actions.student-ghost-actions form {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .app-shell .table-actions.student-ghost-actions {
-    gap:0 !important;
-    width: 48px !important;
-    height: 44px !important;
-}
-
-html body .app-shell .table-actions.student-ghost-actions.student-card-actions {
-    gap:8px !important;
-    width: auto !important;
-    height: 36px !important;
-}
-
-html body .app-shell .table-actions.student-ghost-actions .icon-button {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 24px !important;
-    min-width: 24px !important;
-    height: 32px !important;
-    min-height: 32px !important;
-    margin:0 !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-}
-
-html body .app-shell .table-actions.student-ghost-actions.student-card-actions .icon-button {
-    width: 36px !important;
-    min-width: 36px !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-}
-
-html body .app-shell .table-actions.student-ghost-actions .edit-button {
-    color: #157144 !important;
-}
-
-html body .app-shell .table-actions.student-ghost-actions .delete-button {
-    color: #ef1f2d !important;
-}
-
-html body .app-shell .table-actions.student-ghost-actions .icon {
-    width: 16px !important;
-    height: 16px !important;
-}
-
-html body .student-import-page .student-import-preview-table-v3 col.student-col-no {
-    width: 40px !important;
-}
-
-html body .student-import-page .student-import-preview-table-v3 col.student-col-nis {
-    width: 80px !important;
-}
-
-html body .student-import-page .student-import-preview-table-v3 col.student-col-name {
-    width: 38% !important;
-}
-
-html body .student-import-page .student-import-preview-table-v3 col.student-import-col-status {
-    width: 88px !important;
-}
-
-html body .student-import-page .student-import-preview-table-v3 .student-import-name-heading {
-    text-align: center !important;
-}
-
-html body .student-import-page .student-import-preview-table-v3 .student-import-name-cell,
-html body .student-import-page .student-import-preview-table-v3 .student-import-name {
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-}
-
-html body .student-import-page .student-import-preview-table-v3 .student-import-name-cell {
-    text-align: left !important;
-}
-
-html body .student-import-page .student-import-preview-table-v3 .student-import-name {
-    display: block !important;
-    max-width: 100% !important;
-    font-weight: 400 !important;
-    word-break: normal !important;
-    overflow-wrap: normal !important;
-}
-
-html body .app-shell .spp-validation-bar {
-    height: 8px !important;
-    overflow: hidden !important;
-    background: #f9fafb !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-}
-
-html body .app-shell .spp-validation-progress {
-    display: block !important;
-    width: 100% !important;
-    height: 100% !important;
-    appearance: none !important;
-    border: 0 !important;
-    background: transparent !important;
-}
-
-html body .app-shell .spp-validation-progress::-webkit-progress-bar {
-    background: transparent !important;
-}
-
-html body .app-shell .spp-validation-progress::-webkit-progress-value {
-    background: #157144 !important;
-    border-radius: 8px !important;
-}
-
-html body .app-shell .spp-validation-progress::-moz-progress-bar {
-    background: #157144 !important;
-    border-radius: 8px !important;
-}
-
-html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter {
-    grid-template-columns: minmax(120px, .8fr) minmax(140px, .9fr) minmax(150px, .9fr) minmax(220px, 1.4fr) 96px 96px !important;
-    grid-template-rows: auto !important;
-}
-
-html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1) {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-}
-
-html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2) {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
-}
-
-html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3) {
-    grid-column: 3 !important;
-    grid-row: 1 !important;
-}
-
-html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
-    grid-column: 4 !important;
-    grid-row: 1 !important;
-}
-
-html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-    grid-column: 5 / span 2 !important;
-    grid-row: 1 !important;
-    align-self: end !important;
-    width: auto !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main#student-alumni-page.student-alumni-page .student-master-heading p,
-html body .app-shell .main-panel main#student-alumni-page.student-alumni-page .student-reference-card-count span {
-    min-width: 0 !important;
-    white-space: normal !important;
-    overflow-wrap: anywhere !important;
-}
-
-@media (width <= 760px) {
-    html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter {
-        grid-template-columns: 1fr !important;
+@media (max-width: 640px) {
+    .modal-backdrop.show,
+    .result-modal-backdrop.show {
+        align-items: start;
+        overflow-y: auto;
+        padding: 16px;
     }
 
-    html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
-    html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
-    html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(3),
-    html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search,
-    html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-        grid-column: auto !important;
-        grid-row: auto !important;
+    .form-modal,
+    .result-modal {
+        max-height: none;
     }
 
-    html body .app-shell .main-panel main#student-alumni-page.student-alumni-page form.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        width: 100% !important;
-    }
-
-    html body .app-shell .main-panel main#student-alumni-page.student-alumni-page .student-reference-card-count {
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) !important;
-        justify-items: start !important;
-    }
-
-    html body.student-alumni-body .app-shell,
-    html body.student-alumni-body .main-panel {
-        max-width: 100vw !important;
-        overflow-x: hidden !important;
-    }
-
-    html body.student-alumni-body .topbar {
-        gap: 8px !important;
-        min-width: 0 !important;
-        max-width: 100vw !important;
-        padding-inline: 12px !important;
-    }
-
-    html body.student-alumni-body .active-year-pill small {
-        display: none !important;
-    }
-
-    html body.student-alumni-body main#student-alumni-page.student-alumni-page {
-        box-sizing: border-box !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 0 !important;
-        overflow-x: hidden !important;
-    }
-
-    html body.student-alumni-body main#student-alumni-page.student-alumni-page > .student-list-filter-card,
-    html body.student-alumni-body main#student-alumni-page.student-alumni-page > .student-list-table-card {
-        width: calc(100vw - 32px) !important;
-        max-width: calc(100vw - 32px) !important;
-        min-width: 0 !important;
+    .form-modal .master-form {
+        grid-template-columns: 1fr;
+        padding: 16px;
     }
 }
-
-html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock {
-    box-sizing: border-box !important;
-    width: min(100%, 1200px) !important;
-    max-width: min(1200px, calc(100vw - 64px)) !important;
-    margin-left:auto !important;
-    margin-right:auto !important;
-}
-
-html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-flat-header,
-html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > #student-data-filter,
-html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-count,
-html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-list {
-    box-sizing: border-box !important;
-    width: 100% !important;
-    max-width: 100% !important;
-}
-
-html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap:16px !important;
-}
-
-html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
-    grid-template-columns: minmax(320px, 480px) max-content !important;
-    grid-template-rows: auto !important;
-    align-items: end !important;
-    justify-content: stretch !important;
-}
-
-html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-reference-filter-grid {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
-    gap:16px !important;
-    grid-column: 1 !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-flat-header {
-    padding-right:0 !important;
-}
-
-html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1) {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-}
-
-html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2) {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
-}
-
-html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions,
-html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
-    align-self: end !important;
-    width: auto !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) .student-report-pagination.pagination-wrap {
-    padding:0 !important;
-    background: transparent !important;
-    border-top: 0 !important;
-}
-
-@media (width <= 760px) {
-    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock {
-        width: 100% !important;
-        max-width: none !important;
-    }
-
-    html body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page) > .student-reference-align-lock > .student-reference-card-list {
-        grid-template-columns: 1fr !important;
-    }
-
-    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
-        grid-template-columns: 1fr !important;
-    }
-
-    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-reference-filter-grid {
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: 100% !important;
-        grid-template-columns: minmax(0, 1fr) !important;
-    }
-
-    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
-    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
-    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions,
-    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
-        grid-column: auto !important;
-        grid-row: auto !important;
-    }
-
-    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions,
-    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        width: 100% !important;
-    }
-
-    html body .app-shell .main-panel form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
-        grid-template-columns: 1fr !important;
-    }
-
-}
-
-@media (width <= 640px) {
-    html body.student-data-body .app-shell,
-    html body.student-data-body .main-panel {
-        max-width: 100vw !important;
-        overflow-x: hidden !important;
-    }
-
-    html body.student-data-body .topbar {
-        gap: 8px !important;
-        min-width: 0 !important;
-        max-width: 100vw !important;
-        padding-inline: 12px !important;
-    }
-
-    html body.student-data-body .active-year-pill small {
-        display: none !important;
-    }
-
-    html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) {
-        box-sizing: border-box !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
-        min-width: 0 !important;
-        overflow-x: hidden !important;
-    }
-
-    html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-reference-align-lock {
-        width: calc(100vw - 32px) !important;
-        max-width: calc(100vw - 32px) !important;
-        min-width: 0 !important;
-    }
-
-    html body.student-data-body .student-export-actions {
-        display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 8px !important;
-        width: 358px !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        overflow: hidden !important;
-    }
-
-    html body.student-data-body .student-export-actions :is(.student-add-button, .action-purple, .action-green) {
-        box-sizing: border-box !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        padding-inline: 10px !important;
-        justify-content: center !important;
-        white-space: nowrap !important;
-    }
-}
-
-/* Shared form inputs. */
-.login-form select,
-.data-user-create-page select[multiple],
-.data-user-edit-modal select[multiple] {
-    background: #fff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    color: #020617;
-    font-size: 14px;
-    min-height: 40px;
-    padding: 8px 12px;
-}
-
-.login-form select {
-    border: 0;
-    outline: 0;
-    width: 100%;
-}
-
-html body .app-footer {
-    margin: 0;
-    padding: 8px 16px 12px;
-    color: #707971;
-    background: transparent;
-    border: 0;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.4;
-}
-

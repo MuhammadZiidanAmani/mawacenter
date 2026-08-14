@@ -35,7 +35,16 @@ class AuthTest extends TestCase
         ])->assertRedirect('/');
 
         $this->assertAuthenticatedAs($user);
-        $this->get('/logout')->assertRedirect('/login');
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('method="POST"', false)
+            ->assertSee('action="'.route('logout').'"', false)
+            ->assertSee('name="_token"', false);
+
+        $this->get('/logout')->assertStatus(405);
+        $this->assertAuthenticatedAs($user);
+
+        $this->post('/logout')->assertRedirect('/login');
         $this->assertGuest();
     }
 

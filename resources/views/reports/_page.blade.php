@@ -59,6 +59,7 @@
         'Tidak Ditagih' => 'neutral',
         default => null,
     };
+    $canManagePaymentCorrections = auth()->user()?->hasPermission('payments.verify_transfer') ?? false;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'reports', 'activeReportMenu' => $activeReportMenu])
@@ -69,7 +70,7 @@
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
             <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <a class="icon-button logout-button" href="{{ route('logout') }}">{!! $icon('logout') !!}</a>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main class="report-page-v2 report-page-{{ $reportKey }}">
@@ -505,13 +506,13 @@
                                         $receiptUrl = $sourceId ? ($isSppPayment
                                             ? route('finance.spp.receipt', ['sppPayment' => $sourceId])
                                             : route('finance.other.receipt', ['otherPayment' => $sourceId])) : null;
-                                        $deleteUrl = $sourceId ? ($isSppPayment
+                                        $deleteUrl = $sourceId && $canManagePaymentCorrections ? ($isSppPayment
                                             ? route('finance.spp.destroy', ['sppPayment' => $sourceId])
                                             : route('finance.other.destroy', ['otherPayment' => $sourceId])) : null;
-                                        $editUrl = $sourceId ? ($isSppPayment
+                                        $editUrl = $sourceId && $canManagePaymentCorrections ? ($isSppPayment
                                             ? route('finance.payments.index', ['search' => $row['nis'] ?? $row['name'] ?? '', 'student_id' => $row['student_id'] ?? null, 'edit_payment' => $sourceId, 'return_url' => url()->full()])
                                             : route('finance.other.show', ['otherPayment' => $sourceId])) : null;
-                                        $updateUrl = $sourceId && ! $isSppPayment
+                                        $updateUrl = $sourceId && $canManagePaymentCorrections && ! $isSppPayment
                                             ? route('finance.other.update', ['otherPayment' => $sourceId])
                                             : null;
                                     @endphp

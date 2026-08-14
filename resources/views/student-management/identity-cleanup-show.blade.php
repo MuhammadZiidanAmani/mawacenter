@@ -26,11 +26,11 @@
 
     <div class="main-panel">
         <header class="topbar">
-            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
+            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar" title="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
-            <button class="icon-button notification-button" aria-label="Notifikasi">{!! $icon('bell') !!}</button>
-            <button class="icon-button logout-button" aria-label="Keluar">{!! $icon('logout') !!}</button>
+            <button class="icon-button notification-button" type="button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}</button>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main class="student-page identity-cleanup-page identity-review-page">

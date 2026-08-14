@@ -17,8 +17,14 @@ class StudentDataQualityController extends Controller
 
     public function index(Request $request): View
     {
+        $unitIds = $request->user()?->accessibleUnitIds();
         $students = Student::query()
             ->with(['schoolClass.educationUnit', 'academicYear'])
+            ->when(is_array($unitIds), function ($query) use ($unitIds) {
+                $unitIds === []
+                    ? $query->whereRaw('1 = 0')
+                    : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds));
+            })
             ->orderBy('name')
             ->orderBy('nis')
             ->get();

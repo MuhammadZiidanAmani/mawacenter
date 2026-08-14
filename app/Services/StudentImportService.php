@@ -12,17 +12,17 @@ use Throwable;
 
 class StudentImportService
 {
-    public function preview(string $path, AcademicYear $activeYear): array
+    public function preview(string $path, AcademicYear $activeYear, ?array $unitIds = null): array
     {
-        return $this->process($path, $activeYear, false);
+        return $this->process($path, $activeYear, false, $unitIds);
     }
 
-    public function import(string $path, AcademicYear $activeYear): array
+    public function import(string $path, AcademicYear $activeYear, ?array $unitIds = null): array
     {
-        return $this->process($path, $activeYear, true);
+        return $this->process($path, $activeYear, true, $unitIds);
     }
 
-    private function process(string $path, AcademicYear $activeYear, bool $persist): array
+    private function process(string $path, AcademicYear $activeYear, bool $persist, ?array $unitIds): array
     {
         [$headers, $rows] = $this->readRows($path);
         $result = [
@@ -41,7 +41,9 @@ class StudentImportService
         DB::beginTransaction();
 
         try {
-            $units = EducationUnit::with('schoolClasses')->get();
+            $units = EducationUnit::with('schoolClasses')
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
+                ->get();
 
             foreach ($rows as $sourceRow) {
                 $row = $this->prepareRow($sourceRow['line'], $sourceRow['values'], $headers);
@@ -120,6 +122,12 @@ class StudentImportService
             }
 
             return $result;
+        } catch (Throwable $exception) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            throw $exception;
         } finally {
             if (! $persist && DB::transactionLevel() > 0) {
                 DB::rollBack();

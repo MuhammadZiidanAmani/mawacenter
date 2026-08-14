@@ -81,12 +81,6 @@ passwordToggle?.addEventListener('click', () => {
     passwordToggle.setAttribute('title', revealing ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
 });
 
-
-
-document.querySelectorAll('.logout-button').forEach((button) => {
-    button.addEventListener('click', () => { window.location.href = '/logout'; });
-});
-
 document.querySelectorAll('[data-indonesian-date]').forEach((input) => {
     input.value = formatDateInput(input.value);
     input.addEventListener('input', () => { input.value = formatDateInput(input.value); });

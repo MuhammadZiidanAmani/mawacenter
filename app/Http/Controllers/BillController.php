@@ -10,6 +10,7 @@ use App\Models\FeeType;
 use App\Models\GuardianTransferRequest;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Services\AuditLogService;
 use App\Services\BillQueryService;
 use App\Services\BillService;
 use Illuminate\Http\Request;
@@ -306,12 +307,15 @@ class BillController extends Controller
             'student_name' => $request->string('student_name')->value() ?: null,
             'nis' => $request->string('nis')->value() ?: null,
         ];
+        $this->applyUserScope($request, $filters);
 
         $result = ['created' => 0, 'existing' => 0, 'skipped' => 0, 'refreshed' => 0];
         $this->mergeResult($result, $bills->generateSppFromEntryUntil($academicYear, $year, $untilMonth, $filters));
 
         $feeTypes = FeeType::where('is_active', true)
             ->where('creates_bill', true)
+            ->when(isset($filters['unit_ids']) && is_array($filters['unit_ids']), fn ($query) => $query->whereIn('education_unit_id', $filters['unit_ids']))
+            ->when(isset($filters['unit_id']) && $filters['unit_id'], fn ($query) => $query->where('education_unit_id', $filters['unit_id']))
             ->where(function ($query) {
                 $query->whereNull('payment_group')->orWhereNotIn('payment_group', ['spp', 'laundry']);
             })
@@ -320,6 +324,17 @@ class BillController extends Controller
 
         $this->mergeResult($result, $bills->generateFeeTypes($academicYear, $feeTypes, $year, $untilMonth, $filters));
         $this->mergeResult($result, $bills->refreshCurrentBillScope($academicYear, $filters));
+        app(AuditLogService::class)->recordOperation(
+            'bills.sync',
+            [
+                'year' => $year,
+                'until_month' => $untilMonth,
+                'academic_year_id' => $academicYear->id,
+                'filters' => $filters,
+            ] + $result,
+            afterValues: ['result' => $result],
+            request: $request,
+        );
 
         return redirect()
             ->route('finance.bills.index', $request->only(['year', 'until_month', 'unit_id', 'class_id', 'student_id', 'fee_type_id', 'student_search', 'student_name', 'nis', 'search', 'per_page', 'sort', 'direction']))

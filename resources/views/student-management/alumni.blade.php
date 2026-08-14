@@ -30,11 +30,11 @@
 
     <div class="main-panel">
         <header class="topbar">
-            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
+            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar" title="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
-            <button class="icon-button notification-button" aria-label="Notifikasi">{!! $icon('bell') !!}</button>
-            <button class="icon-button logout-button" aria-label="Keluar">{!! $icon('logout') !!}</button>
+            <button class="icon-button notification-button" type="button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}</button>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main id="student-alumni-page" class="student-page student-alumni-page student-alumni-v7">
@@ -52,7 +52,7 @@
                         <label>
                             <span>Unit Pendidikan</span>
                             <select name="unit_id" data-student-filter-unit>
-                                <option value="">semua</option>
+                                <option value="">Semua</option>
                                 @foreach ($educationUnits as $unit)
                                     <option value="{{ $unit->id }}" @selected($selectedUnitId == $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>
                                 @endforeach
@@ -61,7 +61,7 @@
                         <label>
                             <span>Kelas</span>
                             <select name="class_id" data-student-filter-class>
-                                <option value="">semua</option>
+                                <option value="">Semua</option>
                                 @foreach ($classes as $class)
                                     <option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected(($filters['class_id'] ?? null) == $class->id)>{{ $class->educationUnit?->code ? $class->educationUnit->code.' - ' : '' }}{{ $class->name }}</option>
                                 @endforeach
@@ -70,7 +70,7 @@
                         <label>
                             <span>Tahun Pelajaran</span>
                             <select name="year_id">
-                                <option value="">semua</option>
+                                <option value="">Semua</option>
                                 @foreach ($academicYears as $year)
                                     <option value="{{ $year->id }}" @selected(($filters['year_id'] ?? null) == $year->id)>{{ $year->name }}</option>
                                 @endforeach
@@ -102,7 +102,7 @@
                                 @foreach([10, 25, 50, 100, 500] as $size)
                                     <option value="{{ $size }}" @selected(($filters['per_page'] ?? '10') == (string) $size)>{{ $size }}</option>
                                 @endforeach
-                                <option value="all" @selected(($filters['per_page'] ?? '10') === 'all')>All</option>
+                                <option value="all" @selected(($filters['per_page'] ?? '10') === 'all')>Semua</option>
                             </select>
                             alumni
                         </label>
@@ -173,7 +173,23 @@
                     </table>
                 </div>
 
-                <div class="pagination-wrap">{{ $alumni->links() }}</div>
+                @if($alumni->hasPages())
+                    @php
+                        $alumniPageUrl = fn ($page) => route('student-management.alumni.index', array_merge(request()->except('page'), ['page' => $page]));
+                    @endphp
+                    <nav class="pagination-wrap alumni-pagination" aria-label="Navigasi halaman alumni">
+                        @if($alumni->onFirstPage())
+                            <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                        @else
+                            <a class="student-page-button" href="{{ $alumniPageUrl($alumni->currentPage() - 1) }}" rel="prev">Sebelumnya</a>
+                        @endif
+                        @if($alumni->hasMorePages())
+                            <a class="student-page-button" href="{{ $alumniPageUrl($alumni->currentPage() + 1) }}" rel="next">Berikutnya</a>
+                        @else
+                            <span class="student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
+                        @endif
+                    </nav>
+                @endif
             </section>
         </main>
         @include('partials.app-footer')

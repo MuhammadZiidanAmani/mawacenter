@@ -53,17 +53,18 @@
     $isGuardianView = $isGuardianView ?? false;
     $guardianTotal = $isGuardianView ? (int) $guardianBills->sum('remaining_amount') : 0;
     $canSyncBills = auth()->user()?->isSuperAdmin() || (auth()->user()?->hasPermission('payments.verify_transfer') ?? false);
+    $canCreateCashPayment = auth()->user()?->hasPermission('payments.cash.create') ?? false;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'bills'])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar">
-            <button class="icon-button menu-toggle always-visible" data-sidebar-toggle>{!! $icon('menu') !!}</button>
+            <button type="button" class="icon-button menu-toggle always-visible" data-sidebar-toggle aria-label="Buka menu" title="Buka menu">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
-            <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <button class="icon-button logout-button">{!! $icon('logout') !!}</button>
+            <button type="button" class="icon-button notification-button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}</button>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main @class(['student-page', 'bill-page', 'bill-flat-page', 'payment-transaction-page', 'payment-flat-page', 'guardian-bill-page' => $isGuardianView])>
@@ -473,7 +474,9 @@
                                         <td>
                                             <div class="bill-table-actions">
                                                 <a href="{{ $student ? route('finance.bills.show', array_merge(request()->only(['unit_id', 'class_id', 'student_id', 'student_search', 'per_page', 'sort', 'direction']), ['student' => $student->id, 'year' => $year, 'until_month' => $untilMonth])) : '#' }}" class="button bill-detail-trigger" aria-label="Detail tagihan" title="Detail" target="_blank" rel="noopener">{!! $icon('eye') !!}</a>
+                                                @if($canCreateCashPayment)
                                                 <a href="{{ route('finance.payments.index', ['student_id' => $student?->id, 'search' => $student?->nis]) }}" class="bill-pay-short" aria-label="Bayar tagihan" title="Bayar">{!! $icon('wallet') !!}</a>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>

@@ -9,16 +9,21 @@
 <body>
 <div class="app-shell">
     @include('partials.sidebar', [
-        'activeMenu' => $mode === 'history' ? 'reports' : 'payment',
-        'activeReportMenu' => $mode === 'history' ? 'history' : '',
+        'activeMenu' => 'payment',
+        'activeReportMenu' => '',
     ])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
 
     <div class="main-panel">
+        @php
+            $topbarIcon = fn (string $path) => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">'.$path.'</svg>';
+        @endphp
         <header class="topbar">
             <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar">☰</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
+            <button class="icon-button notification-button" type="button" aria-label="Notifikasi">{!! $topbarIcon('<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path>') !!}<span></span></button>
+            @include('partials.logout-button', ['icon' => $topbarIcon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path>')])
         </header>
 
         <main @class(['payment-hub-page', 'payment-import-page' => in_array($mode, ['import', 'import-preview'], true), 'payment-import-preview-page' => $mode === 'import-preview', 'payment-transaction-page' => $mode === 'payment', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
@@ -50,6 +55,8 @@
                             ? ($selectedRegistrations->firstWhere('identity_student_id', null) ?? $selectedRegistrations->first())
                             : null;
                         $createdReceipts = collect(session('payment_receipts', []));
+                        $canCreateCashPayment = auth()->user()?->hasPermission('payments.cash.create') ?? false;
+                        $canImportPayments = auth()->user()?->hasPermission('payments.verify_transfer') ?? false;
                     @endphp
                     @if(session('success') && $createdReceipts->isNotEmpty())
                         <div data-auto-receipts>
@@ -83,7 +90,9 @@
                             <h1>Pembayaran</h1>
                             <p>Cari siswa, pilih tagihan, lalu proses pembayaran.</p>
                         </div>
+                        @if($canImportPayments)
                         <a href="{{ route('finance.payments.import') }}" class="button button-primary payment-import-action">{!! $icon('upload') !!} Import Excel</a>
+                        @endif
                     </div>
                     <div class="payment-one-stop-layout payment-prd-layout">
                         <section class="payment-one-stop-main payment-prd-search-panel">
@@ -225,6 +234,7 @@
                                         $paymentFormAction = $isEditingSppPayment ? route('finance.spp.update', $editSppPayment) : route('finance.payments.store');
                                         $paymentReturnUrl = $returnUrl ?: route('reports.transactions', request()->except(['edit_payment', 'student_id', 'search', 'history_period', 'return_url']));
                                         $canDeleteHistory = auth()->user()?->hasPermission('payments.verify_transfer') ?? false;
+                                        $canSavePayment = $isEditingSppPayment ? $canImportPayments : $canCreateCashPayment;
                                     @endphp
                                     <article class="payment-one-stop-person">
                                         <div class="payment-one-stop-person-head payment-one-stop-profile-card">
@@ -467,7 +477,9 @@
                                                     </div>
                                                     @endunless
 
+                                                    @if($canSavePayment)
                                                     <button class="button button-primary payment-one-stop-pay-button" data-payment-submit @disabled($billRows->isEmpty())>{{ $isEditingSppPayment ? 'Simpan Perubahan' : 'Bayar & Cetak Struk' }}</button>
+                                                    @endif
                                                 </div>
                                             </section>
                                             </div>
@@ -552,9 +564,11 @@
                             <h1>Riwayat Pembayaran</h1>
                             <p>Pilih jenis riwayat untuk melihat transaksi yang sudah tercatat.</p>
                         </div>
+                        @if(auth()->user()?->hasPermission('payments.cash.create'))
                         <div class="student-action-bar">
                             <a class="button student-add-button" href="{{ route('finance.payments.index') }}">Pembayaran</a>
                         </div>
+                        @endif
                     </div>
                     <div class="payment-history-grid">
                         @foreach([

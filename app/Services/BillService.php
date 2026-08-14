@@ -774,6 +774,13 @@ class BillService
             ->where('academic_year_id', $academicYear->id)
             ->when($filters['student_ids'] ?? null, fn ($query, $ids) => $query->whereIn('id', $ids))
             ->when($filters['unit_id'] ?? null, fn ($query, $id) => $query->whereHas('schoolClass', fn ($class) => $class->where('education_unit_id', $id)))
+            ->when(array_key_exists('unit_ids', $filters), function ($query) use ($filters) {
+                $unitIds = array_values(array_filter((array) $filters['unit_ids'], fn ($id) => $id !== null && $id !== ''));
+
+                $unitIds === []
+                    ? $query->whereRaw('1 = 0')
+                    : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds));
+            })
             ->when($filters['class_id'] ?? null, fn ($query, $id) => $query->where('school_class_id', $id))
             ->when($filters['student_id'] ?? null, fn ($query, $id) => $query->where('id', $id))
             ->when(($filters['student_search'] ?? null) && ! ($filters['student_id'] ?? null), function ($query) use ($filters) {

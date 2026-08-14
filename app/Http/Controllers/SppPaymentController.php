@@ -12,6 +12,7 @@ use App\Models\EducationUnit;
 use App\Models\SchoolClass;
 use App\Models\SppPayment;
 use App\Models\Student;
+use App\Services\AuditLogService;
 use App\Services\SppPaymentImportService;
 use App\Services\SppPaymentService;
 use Carbon\CarbonImmutable;
@@ -23,8 +24,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SppPaymentController extends Controller
 {
@@ -74,7 +76,7 @@ class SppPaymentController extends Controller
                 ->when($sort === 'date', fn ($query) => $query->orderBy('spp_payments.transaction_at', $direction))
                 ->paginate($perPage)->withQueryString(),
             'showCreate' => false,
-            ...$this->filterOptions(),
+            ...$this->filterOptions($request),
         ]);
     }
 
@@ -132,6 +134,10 @@ class SppPaymentController extends Controller
         $editPayment = ! empty($validated['edit_payment'])
             ? SppPayment::findOrFail((int) $validated['edit_payment'])
             : null;
+        $this->authorizeStudentAccess($request, $student);
+        if ($editPayment) {
+            $this->authorizePaymentAccess($request, $editPayment);
+        }
         if ($editPayment && (int) $editPayment->student_id !== (int) $student->id) {
             abort(422, 'Transaksi edit tidak sesuai dengan siswa yang dipilih.');
         }
@@ -151,6 +157,10 @@ class SppPaymentController extends Controller
         $editPayment = ! empty($validated['edit_payment'])
             ? SppPayment::findOrFail((int) $validated['edit_payment'])
             : null;
+        $this->authorizeStudentAccess($request, $student);
+        if ($editPayment) {
+            $this->authorizePaymentAccess($request, $editPayment);
+        }
         if ($editPayment && (int) $editPayment->student_id !== (int) $student->id) {
             abort(422, 'Transaksi edit tidak sesuai dengan siswa yang dipilih.');
         }
@@ -164,7 +174,17 @@ class SppPaymentController extends Controller
     {
         $validated = $request->validated();
         $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
+        $this->authorizeStudentAccess($request, $student);
         $payment = $payments->record($student, $validated);
+        app(AuditLogService::class)->recordOperation(
+            'payments.spp.create',
+            $this->paymentAuditMetadata($payment),
+            afterValues: $this->paymentAuditSnapshot($payment),
+            request: $request,
+            subjectType: SppPayment::class,
+            subjectId: $payment->id,
+            studentIds: [$student->id],
+        );
 
         return redirect()->route('finance.spp.receipt', $payment)
             ->with('success', 'Pembayaran SPP berhasil disimpan.');
@@ -178,6 +198,7 @@ class SppPaymentController extends Controller
             'month' => (int) $validated['month'],
             'year' => (int) $validated['year'],
         ];
+        $this->authorizeUnitAccess($request, $context['unit_id']);
         $file = $request->file('file');
         $token = (string) Str::uuid();
         $path = $file->storeAs('spp-imports', $token.'.xlsx');
@@ -219,6 +240,7 @@ class SppPaymentController extends Controller
         }
 
         try {
+            $this->authorizeUnitAccess($request, (int) $stored['unit_id']);
             $result = $importer->import(Storage::path($stored['path']), $stored['name'], [
                 'unit_id' => (int) $stored['unit_id'],
                 'month' => (int) $stored['month'],
@@ -235,13 +257,28 @@ class SppPaymentController extends Controller
         if ($result['failures']) {
             $message .= ' '.count($result['failures']).' transaksi gagal: '.collect($result['failures'])->pluck('message')->take(3)->implode(' ');
         }
+        app(AuditLogService::class)->recordOperation(
+            'payments.spp.import',
+            [
+                'file_name' => $stored['name'] ?? null,
+                'unit_id' => (int) $stored['unit_id'],
+                'month' => (int) $stored['month'],
+                'year' => (int) $stored['year'],
+                'imported' => (int) $result['imported'],
+                'duplicates' => (int) $result['duplicates'],
+                'failed_rows' => count($result['failures']),
+            ],
+            afterValues: ['result' => collect($result)->except('rows')->all()],
+            request: $request,
+        );
 
         return redirect()->route('finance.payments.import')->with('success', $message);
     }
 
-    public function show(SppPayment $sppPayment): JsonResponse
+    public function show(Request $request, SppPayment $sppPayment): JsonResponse
     {
         $sppPayment->load(['student.schoolClass.educationUnit', 'items', 'corrections']);
+        $this->authorizePaymentAccess($request, $sppPayment);
 
         return response()->json([
             'id' => $sppPayment->id,
@@ -282,9 +319,10 @@ class SppPaymentController extends Controller
         ]);
     }
 
-    public function receipt(SppPayment $sppPayment, SppPaymentService $payments): View
+    public function receipt(Request $request, SppPayment $sppPayment, SppPaymentService $payments): View
     {
         $sppPayment->load(['student.schoolClass.educationUnit', 'items']);
+        $this->authorizePaymentAccess($request, $sppPayment);
         $outstandingSummary = $payments->outstandingSummaryUntilCurrent($sppPayment->student);
         $rootIdentityId = $sppPayment->student?->identity_student_id ?: $sppPayment->student_id;
         $otherSppStudents = Student::select('students.*')->with('schoolClass.educationUnit')
@@ -311,9 +349,10 @@ class SppPaymentController extends Controller
         ]);
     }
 
-    public function downloadReceipt(SppPayment $sppPayment, SppPaymentService $payments): Response
+    public function downloadReceipt(Request $request, SppPayment $sppPayment, SppPaymentService $payments): Response
     {
         $sppPayment->load(['student.schoolClass.educationUnit', 'items']);
+        $this->authorizePaymentAccess($request, $sppPayment);
         $outstandingSummary = $payments->outstandingSummaryUntilCurrent($sppPayment->student);
         $logoPath = public_path('images/logo-yayasan-mambaul-hikmah.png');
         $html = view('finance.spp-receipt-pdf', [
@@ -338,9 +377,17 @@ class SppPaymentController extends Controller
         ]);
     }
 
+    public function proof(Request $request, SppPayment $sppPayment): StreamedResponse
+    {
+        $this->authorizePaymentAccess($request, $sppPayment);
+
+        return $this->proofResponse($sppPayment->transfer_proof_path);
+    }
+
     public function update(UpdateSppPaymentRequest $request, SppPayment $sppPayment, SppPaymentService $payments): RedirectResponse
     {
         $validated = $request->validated();
+        $this->authorizePaymentAccess($request, $sppPayment);
         if (array_key_exists('student_id', $validated) && (int) $validated['student_id'] !== (int) $sppPayment->student_id) {
             abort(422, 'Transaksi edit tidak sesuai dengan siswa yang dipilih.');
         }
@@ -350,12 +397,23 @@ class SppPaymentController extends Controller
             ]);
         }
         if ($request->hasFile('transfer_proof')) {
-            $validated['transfer_proof_path'] = $request->file('transfer_proof')->store('payment-proofs', 'public');
+            $validated['transfer_proof_path'] = $request->file('transfer_proof')->store('payment-proofs', 'local');
         }
+        $before = $this->paymentAuditSnapshot($sppPayment->loadMissing('items'));
 
-        array_key_exists('month_count', $validated)
+        $payment = array_key_exists('month_count', $validated)
             ? $payments->updatePayment($sppPayment, $validated)
             : $payments->updateMetadata($sppPayment, $validated);
+        app(AuditLogService::class)->recordOperation(
+            'payments.spp.update',
+            $this->paymentAuditMetadata($payment),
+            beforeValues: $before,
+            afterValues: $this->paymentAuditSnapshot($payment),
+            request: $request,
+            subjectType: SppPayment::class,
+            subjectId: $payment->id,
+            studentIds: [$payment->student_id],
+        );
 
         return $this->redirectAfterMutation($request, route('finance.spp.index'))
             ->with('success', 'Transaksi pembayaran SPP berhasil diperbarui.');
@@ -363,7 +421,19 @@ class SppPaymentController extends Controller
 
     public function correct(CorrectSppPaymentRequest $request, SppPayment $sppPayment, SppPaymentService $payments): RedirectResponse
     {
-        $payments->correctPaidAmount($sppPayment, $request->validated());
+        $this->authorizePaymentAccess($request, $sppPayment);
+        $before = $this->paymentAuditSnapshot($sppPayment->loadMissing('items'));
+        $payment = $payments->correctPaidAmount($sppPayment, $request->validated());
+        app(AuditLogService::class)->recordOperation(
+            'payments.spp.correct',
+            $this->paymentAuditMetadata($payment) + ['reason' => $request->validated('reason')],
+            beforeValues: $before,
+            afterValues: $this->paymentAuditSnapshot($payment),
+            request: $request,
+            subjectType: SppPayment::class,
+            subjectId: $payment->id,
+            studentIds: [$payment->student_id],
+        );
 
         return $this->redirectAfterMutation($request, route('finance.spp.index'))
             ->with('success', 'Koreksi nominal pembayaran berhasil disimpan dan tercatat dalam histori.');
@@ -371,7 +441,20 @@ class SppPaymentController extends Controller
 
     public function destroy(Request $request, SppPayment $sppPayment, SppPaymentService $payments): RedirectResponse
     {
+        $this->authorizePaymentAccess($request, $sppPayment);
+        $before = $this->paymentAuditSnapshot($sppPayment->loadMissing('items'));
+        $paymentId = $sppPayment->id;
+        $studentId = $sppPayment->student_id;
         $payments->delete($sppPayment);
+        app(AuditLogService::class)->recordOperation(
+            'payments.spp.delete',
+            $this->paymentAuditMetadata($sppPayment),
+            beforeValues: $before,
+            request: $request,
+            subjectType: SppPayment::class,
+            subjectId: $paymentId,
+            studentIds: [$studentId],
+        );
 
         return $this->redirectAfterMutation($request, route('finance.spp.index'))
             ->with('success', 'Transaksi pembayaran SPP berhasil dihapus.');
@@ -411,23 +494,30 @@ class SppPaymentController extends Controller
         ][$month] ?? '-';
     }
 
-    private function filterOptions(): array
+    private function filterOptions(Request $request): array
     {
+        $unitIds = $request->user()?->accessibleUnitIds();
+
         return [
-            'educationUnits' => EducationUnit::orderByRaw($this->educationUnitOrderExpression())->orderBy('name')->get(),
+            'educationUnits' => EducationUnit::query()
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
+                ->orderByRaw($this->educationUnitOrderExpression())->orderBy('name')->get(),
             'classes' => SchoolClass::with('educationUnit')
                 ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
                 ->select('school_classes.*')
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('school_classes.education_unit_id', $unitIds))
                 ->orderByRaw($this->educationUnitOrderExpression())
                 ->orderBy('school_classes.name')
                 ->get(),
             'studentOptions' => Student::select('students.*')->with('schoolClass.educationUnit')
                 ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
                 ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('school_classes.education_unit_id', $unitIds))
                 ->orderByRaw($this->educationUnitOrderExpression())
                 ->orderBy('students.name')
                 ->get(),
             'operators' => SppPayment::query()
+                ->when(is_array($unitIds), fn ($query) => $query->whereHas('student.schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
                 ->whereNotNull('operator_name')
                 ->where('operator_name', '!=', '')
                 ->distinct()
@@ -460,5 +550,79 @@ class SppPaymentController extends Controller
     private function educationUnitOrderExpression(): string
     {
         return "CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END";
+    }
+
+    private function authorizePaymentAccess(Request $request, SppPayment $payment): void
+    {
+        $payment->loadMissing('student.schoolClass.educationUnit');
+
+        if (! $payment->student) {
+            abort(404);
+        }
+
+        $this->authorizeStudentAccess($request, $payment->student);
+    }
+
+    private function paymentAuditMetadata(SppPayment $payment): array
+    {
+        $payment->loadMissing('student.schoolClass.educationUnit');
+
+        return [
+            'student_id' => $payment->student_id,
+            'unit_id' => $payment->student?->schoolClass?->education_unit_id,
+            'payment_method' => $payment->payment_method,
+            'status' => $payment->status,
+            'paid_amount' => (int) $payment->paid_amount,
+        ];
+    }
+
+    private function paymentAuditSnapshot(SppPayment $payment): array
+    {
+        $payment->loadMissing('items');
+
+        return [
+            'id' => $payment->id,
+            'student_id' => $payment->student_id,
+            'transaction_at' => $payment->transaction_at?->format('Y-m-d H:i:s'),
+            'payment_method' => $payment->payment_method,
+            'status' => $payment->status,
+            'paid_amount' => (int) $payment->paid_amount,
+            'remaining_amount' => (int) $payment->remaining_amount,
+            'payment_status' => $payment->payment_status,
+            'items' => $payment->items->map(fn ($item) => [
+                'year' => (int) $item->year,
+                'month' => (int) $item->month,
+                'paid_amount' => (int) $item->paid_amount,
+                'remaining_amount' => (int) $item->remaining_amount,
+            ])->values()->all(),
+        ];
+    }
+
+    private function authorizeStudentAccess(Request $request, Student $student): void
+    {
+        $student->loadMissing('schoolClass.educationUnit');
+        $this->authorizeUnitAccess($request, $student->schoolClass?->education_unit_id);
+    }
+
+    private function authorizeUnitAccess(Request $request, ?int $unitId): void
+    {
+        $unitIds = $request->user()?->accessibleUnitIds();
+
+        if (is_array($unitIds) && ! in_array((int) $unitId, $unitIds, true)) {
+            abort(403, 'Anda tidak memiliki akses ke siswa atau transaksi ini.');
+        }
+    }
+
+    private function proofResponse(?string $path): StreamedResponse
+    {
+        if (! $path) {
+            abort(404);
+        }
+
+        if (Storage::disk('local')->exists($path)) {
+            return Storage::disk('local')->response($path);
+        }
+
+        abort(404);
     }
 }

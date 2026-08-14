@@ -1,3741 +1,795 @@
-/* Data Master submenu standard cleanup */
-html body .app-shell .main-panel main.master-flat-page {
-    background: #ffffff !important;
-    padding:24px 32px 32px !important;
+/* Data Master UI standard.
+   Scoped to the Data Master pages so the foundation and other modules stay calm.
+*/
+
+main.master-flat-page,
+main.master-create-page {
+    --master-surface: var(--app-surface);
+    --master-soft: var(--app-panel-soft);
+    --master-text: var(--app-text);
+    --master-label: var(--app-label);
+    --master-muted: var(--app-muted);
+    --master-border: var(--app-border);
+    --master-border-soft: var(--app-border-soft);
+    --master-primary: var(--app-primary);
+    --master-primary-hover: var(--app-primary-hover);
+
+    width: 100%;
+    min-width: 0;
+    padding: var(--app-page-padding-y) var(--app-page-padding-x) 32px;
+    color: var(--master-text);
+    background: #ffffff;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace,
-html body .app-shell .main-panel main.master-flat-page > .academic-year-card-section,
-html body .app-shell .main-panel main.master-flat-page > .education-unit-card-section,
-html body .app-shell .main-panel main.master-flat-page > .class-card-section,
-html body .app-shell .main-panel main.master-flat-page > .fee-type-card-section,
-html body .app-shell .main-panel main.master-flat-page > .fee-discount-card-section,
-html body .app-shell .main-panel main.master-flat-page > .data-role-card-section,
-html body .app-shell .main-panel main.master-flat-page > .data-user-card-section,
-html body .app-shell .main-panel main.master-flat-page > .master-card {
-    box-sizing: border-box !important;
-    width: min(100%, 1200px) !important;
-    max-width: min(1200px, calc(100vw - 64px)) !important;
-    margin-left:auto !important;
-    margin-right:auto !important;
+main.master-flat-page > .master-flat-workspace,
+main.master-flat-page > .master-card,
+main.master-create-page > .master-create-heading-section,
+main.master-create-page > .master-create-card {
+    width: min(100%, var(--app-content-width));
+    margin-inline: auto;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace {
-    margin-top:0 !important;
-    margin-bottom:16px !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
+main.master-flat-page > .master-flat-workspace {
+    margin-bottom: 16px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace > .student-flat-header {
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: space-between !important;
-    gap:12px !important;
-    margin:0 !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
+main.master-flat-page .student-flat-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .master-sample-heading {
-    display: block !important;
-    gap:0 !important;
-    margin:0 !important;
-    padding:0 !important;
+main.master-flat-page .master-sample-heading,
+main.master-create-page .master-create-heading-section > div {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .master-sample-heading h1 {
-    margin:0 !important;
-    color: #020617 !important;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-    letter-spacing: 0 !important;
+main.master-flat-page .master-sample-heading h1,
+main.master-create-page .master-create-heading-section h1 {
+    margin: 0;
+    color: var(--master-text);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.2;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace > .student-flat-header > h1 {
-    margin:0 !important;
-    color: #020617 !important;
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.25 !important;
-    letter-spacing: 0 !important;
+main.master-flat-page .master-sample-heading p,
+main.master-create-page .master-create-heading-section p {
+    margin: 0;
+    color: var(--master-muted);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.45;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .master-sample-heading p {
-    margin:4px 0 0 !important;
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.45 !important;
-    letter-spacing: 0 !important;
+main.master-flat-page .student-title-actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .student-title-actions {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap:8px !important;
-    margin:0 !important;
-    padding:0 !important;
+main.master-flat-page .student-add-button,
+main.master-flat-page .master-primary-add-button {
+    min-height: 40px;
+    color: #ffffff;
+    background: var(--master-primary);
+    border-color: var(--master-primary);
+    box-shadow: none;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .student-title-actions > .button.master-primary-add-button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap:8px !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    padding:0 16px !important;
-    color: #ffffff !important;
-    background: #157144 !important;
-    border: 1px solid #157144 !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    transform: none !important;
+main.master-flat-page .student-add-button:hover,
+main.master-flat-page .master-primary-add-button:hover {
+    color: #ffffff;
+    background: var(--master-primary-hover);
+    border-color: var(--master-primary-hover);
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .student-title-actions > .button.master-primary-add-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-    box-shadow: none !important;
-    transform: none !important;
+main.master-flat-page > .master-card.master-flat-card {
+    margin-top: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .student-title-actions > .button.master-primary-add-button {
-    padding:0 14px !important;
-    background: #004528 !important;
-    border-color: #004528 !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
-    transform: translateY(0) !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
+main.master-flat-page .master-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 4px;
+    overflow-x: visible;
+    background: #ffffff;
+    border: 1px solid var(--master-border);
+    border-radius: var(--app-radius);
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .student-title-actions > .button.master-primary-add-button:hover {
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
-    transform: translateY(-2px) !important;
+main.master-flat-page .master-tabs a {
+    display: inline-flex;
+    min-width: max-content;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    color: var(--master-label);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
 }
 
-html body .app-shell .main-panel main.master-flat-page > .master-card.master-flat-card {
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
+main.master-flat-page .master-tabs a:hover,
+main.master-flat-page .master-tabs a.active {
+    color: var(--master-primary);
+    background: var(--app-success-soft);
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel {
-    box-sizing: border-box !important;
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) minmax(220px, 300px) max-content !important;
-    align-items: end !important;
-    gap:12px !important;
-    width: 100% !important;
-    margin:0 0 16px !important;
-    padding:16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
+main.master-flat-page .master-tabs b {
+    display: inline-grid;
+    min-width: 26px;
+    min-height: 24px;
+    place-items: center;
+    padding: 0 8px;
+    color: var(--master-muted);
+    background: #ffffff;
+    border: 1px solid var(--master-border-soft);
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel label {
-    display: grid !important;
-    gap:6px !important;
-    min-width: 0 !important;
-    margin:0 !important;
-    color: #334155 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.25 !important;
+main.master-flat-page .master-data-filter-panel {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: end;
+    gap: 12px;
+    width: 100%;
+    margin: 0 0 16px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid var(--master-border);
+    border-radius: var(--app-radius);
+    box-shadow: none;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel label > span {
-    color: #334155 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.25 !important;
+main.master-flat-page .master-data-filter-panel label {
+    display: grid;
+    grid-column: span 3;
+    gap: 6px;
+    min-width: 0;
+    margin: 0;
+    color: var(--master-label);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.25;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel input,
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel select {
-    box-sizing: border-box !important;
-    width: 100% !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    margin:0 !important;
-    padding:0 12px !important;
-    color: #020617 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 40px !important;
+main.master-flat-page .master-data-filter-panel label > span {
+    color: var(--master-label);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.25;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel input::placeholder {
-    color: #707971 !important;
+main.master-flat-page .master-data-filter-search {
+    position: relative;
+    grid-column: span 4;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel input:focus,
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel select:focus {
-    border-color: #157144 !important;
-    box-shadow: 0 0 0 3px rgba(21, 113, 68, .10) !important;
-    outline: 0 !important;
+main.master-flat-page:is(.academic-year-page, .education-unit-page, .data-role-page) .master-data-filter-search {
+    grid-column: 1;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-search {
-    position: relative !important;
+main.master-flat-page:is(.academic-year-page, .education-unit-page, .data-role-page) .master-data-filter-panel {
+    grid-template-columns: minmax(0, 1fr) max-content;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-search .icon {
-    position: absolute !important;
-    left: 12px !important;
-    bottom: 11px !important;
-    width: 18px !important;
-    height: 18px !important;
-    color: #707971 !important;
-    stroke: currentColor !important;
-    pointer-events: none !important;
+main.master-flat-page:is(.academic-year-page, .education-unit-page, .data-role-page) .master-data-filter-actions {
+    grid-column: 2;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-search input {
-    padding-left: 32px !important;
+main.master-flat-page.data-user-page .master-data-filter-search {
+    grid-column: span 5;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-actions {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap:8px !important;
-    min-height: 40px !important;
-    margin:0 !important;
+main.master-flat-page .master-data-filter-search .icon {
+    position: absolute;
+    left: 12px;
+    bottom: 11px;
+    width: 18px;
+    height: 18px;
+    color: var(--master-muted);
+    pointer-events: none;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-actions .button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 96px !important;
-    min-width: 96px !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    padding:0 14px !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    text-decoration: none !important;
+main.master-flat-page .master-data-filter-search input {
+    padding-left: 34px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-search-button {
-    color: #ffffff !important;
-    background: #004528 !important;
-    border: 1px solid #004528 !important;
+main.master-flat-page .master-data-filter-actions {
+    display: flex;
+    grid-column: span 2;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    min-width: 0;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-search-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
+main.master-flat-page .master-data-filter-actions .button {
+    min-width: 96px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-reset-button {
-    color: #334155 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
+main.master-flat-page .master-data-search-button {
+    color: #ffffff;
+    background: var(--master-primary);
+    border-color: var(--master-primary);
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-count {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap:12px !important;
-    width: 100% !important;
-    margin:0 0 16px !important;
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.25 !important;
+main.master-flat-page .master-data-search-button:hover {
+    color: #ffffff;
+    background: var(--master-primary-hover);
+    border-color: var(--master-primary-hover);
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-length,
-html body .app-shell .main-panel main.master-flat-page .master-data-length label {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap:8px !important;
-    margin:0 !important;
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.25 !important;
+main.master-flat-page .master-data-reset-button {
+    color: var(--master-label);
+    background: #ffffff;
+    border-color: var(--master-border);
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-length select {
-    width: 92px !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    padding:0 12px !important;
-    color: #020617 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
+main.master-flat-page .master-data-count {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 16px;
+    color: var(--master-muted);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
 }
 
-html body .app-shell .main-panel main.master-flat-page .table-wrap {
-    display: block !important;
-    width: 100% !important;
-    margin:0 !important;
-    padding:0 !important;
-    overflow-x: hidden !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
+main.master-flat-page .master-data-length,
+main.master-flat-page .master-data-length label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--master-muted);
+    font-size: 14px;
+    font-weight: 400;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table {
-    table-layout: fixed !important;
-    border-collapse: separate !important;
-    border-spacing: 0 !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    background: #ffffff !important;
-    color: #020617 !important;
+main.master-flat-page .master-data-length select {
+    width: 86px;
+    min-height: 36px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table th,
-html body .app-shell .main-panel main.master-flat-page .master-data-table td {
-    height: 40px !important;
-    min-height: 40px !important;
-    padding:8px 12px !important;
-    color: #020617 !important;
-    border: 0 !important;
-    border-bottom: 1px solid #eef2f7 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.25 !important;
-    text-align: center !important;
-    vertical-align: middle !important;
+main.master-flat-page .table-wrap {
+    overflow-x: auto;
+    background: #ffffff;
+    border: 1px solid var(--master-border);
+    border-radius: var(--app-radius);
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table th {
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 2 !important;
-    padding:8px 10px !important;
-    color: #475569 !important;
-    background: #f8faf7 !important;
-    border-bottom: 1px solid #dbe5dd !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-    box-shadow: 0 1px 0 rgba(15, 23, 42, .04) !important;
+main.master-flat-page .master-data-table {
+    width: 100%;
+    min-width: 820px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    background: #ffffff;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table td:nth-child(2) {
-    text-align: left !important;
+main.master-flat-page .master-data-table col[class$="-col-no"] {
+    width: 56px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table td:nth-child(2) strong {
-    color: #004528 !important;
+main.master-flat-page .master-data-table col[class$="-col-actions"] {
+    width: 92px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table strong,
-html body .app-shell .main-panel main.master-flat-page .master-data-table .role-permission-summary {
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1.25 !important;
+main.master-flat-page .master-data-table col[class$="-col-status"] {
+    width: 118px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table .status,
-html body .app-shell .main-panel main.master-flat-page .master-data-table .code-badge {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-height: 24px !important;
-    padding:0 10px !important;
-    border-radius: 999px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
+main.master-flat-page .master-data-table .academic-year-col-start,
+main.master-flat-page .master-data-table .academic-year-col-end {
+    width: 140px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table .table-actions {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap:4px !important;
-    height: 40px !important;
-    margin:0 !important;
+main.master-flat-page .master-data-table .education-unit-col-code,
+main.master-flat-page .master-data-table .data-role-col-key,
+main.master-flat-page .master-data-table .fee-discount-col-unit {
+    width: 120px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table .table-actions form {
-    margin:0 !important;
+main.master-flat-page .master-data-table .education-unit-col-count,
+main.master-flat-page .master-data-table .class-col-count,
+main.master-flat-page .master-data-table .data-role-col-count {
+    width: 128px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table .table-actions .icon-button {
-    width: 30px !important;
-    min-width: 30px !important;
-    height: 30px !important;
-    min-height: 30px !important;
-    padding:0 !important;
-    border-radius: 8px !important;
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    color: #64706a !important;
+main.master-flat-page .master-data-table .fee-type-col-unit,
+main.master-flat-page .master-data-table .fee-type-col-class {
+    width: 130px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table .table-actions .icon-button:hover {
-    background: #ffffff !important;
-    border-color: #d8e2dc !important;
-    box-shadow: 0 6px 14px rgba(15, 23, 42, .08) !important;
-    transform: translateY(-1px) !important;
+main.master-flat-page .master-data-table .fee-type-col-amount {
+    width: 150px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table .table-actions .edit-button:hover {
-    color: #004528 !important;
+main.master-flat-page .master-data-table .data-user-col-username,
+main.master-flat-page .master-data-table .data-user-col-role {
+    width: 140px;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table .table-actions .delete-button:hover {
-    color: #dc2626 !important;
+main.master-flat-page .master-data-table th,
+main.master-flat-page .master-data-table td {
+    height: 40px;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--master-border-soft);
+    color: var(--master-text);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.3;
+    text-align: center;
+    vertical-align: middle;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table tbody tr:hover td {
-    background: #fbfdf8 !important;
-    border-bottom-color: #dfe8df !important;
+main.master-flat-page .master-data-table th {
+    color: var(--master-label);
+    background: var(--master-soft);
+    font-weight: 500;
 }
 
-html body .app-shell .main-panel main.master-flat-page .master-data-table tbody tr:last-child td {
-    border-bottom: 0 !important;
+main.master-flat-page .master-data-table td:nth-child(2),
+main.master-flat-page .education-unit-table td:nth-child(3),
+main.master-flat-page .data-role-table td:nth-child(4),
+main.master-flat-page .data-user-table td:nth-child(2),
+main.master-flat-page .data-user-table td:nth-child(4),
+main.master-flat-page .data-user-table td:nth-child(6) {
+    text-align: left;
 }
 
-html body .app-shell .main-panel main.master-flat-page .pagination-wrap {
-    margin-top:16px !important;
+main.master-flat-page .fee-type-table td:nth-child(5) {
+    text-align: right;
 }
 
-html body .app-shell .main-panel main.master-flat-page > :is(.academic-year-card-section, .education-unit-card-section, .class-card-section, .fee-type-card-section, .fee-discount-card-section, .data-role-card-section, .data-user-card-section, .master-card) {
-    margin-top:0 !important;
+main.master-flat-page .master-data-table strong {
+    color: var(--master-text);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
 }
 
-@media (width <= 760px) {
-    html body .app-shell .main-panel main.master-flat-page {
-        padding:16px !important;
+main.master-flat-page .master-data-table tbody tr:hover td {
+    background: #fbfdf8;
+}
+
+main.master-flat-page .master-data-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+main.master-flat-page .role-permission-summary {
+    color: var(--master-label);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+main.master-flat-page .table-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin: 0;
+}
+
+main.master-flat-page .table-actions form {
+    display: inline-flex;
+    margin: 0;
+}
+
+main.master-flat-page .table-actions .icon-button {
+    width: 32px;
+    height: 32px;
+    color: var(--master-muted);
+    background: transparent;
+    border-color: transparent;
+}
+
+main.master-flat-page .table-actions .icon-button:hover {
+    background: var(--app-success-subtle);
+}
+
+main.master-flat-page .table-actions .edit-button:hover {
+    color: var(--master-primary);
+}
+
+main.master-flat-page .table-actions .delete-button:hover {
+    color: var(--app-danger);
+    background: var(--app-danger-soft);
+}
+
+main.master-flat-page .master-data-table .code-badge,
+main.master-flat-page .master-data-table .status {
+    min-height: 26px;
+    padding: 4px 10px;
+}
+
+main.master-flat-page .empty-state,
+main.master-flat-page .master-empty-state {
+    display: grid;
+    gap: 4px;
+    min-height: 128px;
+    place-items: center;
+    padding: 28px 16px;
+    color: var(--master-muted);
+    text-align: center;
+}
+
+main.master-flat-page .empty-state strong,
+main.master-flat-page .master-empty-state strong {
+    color: var(--master-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+main.master-flat-page .empty-state span,
+main.master-flat-page .master-empty-state span {
+    color: var(--master-muted);
+    font-size: 14px;
+    font-weight: 400;
+}
+
+main.master-flat-page .pagination-wrap {
+    margin-top: 16px;
+}
+
+main.master-flat-page .pagination-wrap nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--master-muted);
+    font-size: 14px;
+}
+
+main.master-flat-page .pagination-wrap nav > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+main.master-flat-page .pagination-wrap a,
+main.master-flat-page .pagination-wrap span[aria-current] span,
+main.master-flat-page .pagination-wrap span[aria-disabled] span {
+    min-height: 36px;
+    padding: 8px 12px;
+    border: 1px solid var(--master-border);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--master-label);
+    line-height: 1.25;
+}
+
+main.master-flat-page .pagination-wrap span[aria-current] span {
+    color: #ffffff;
+    background: var(--master-primary);
+    border-color: var(--master-primary);
+}
+
+main.master-flat-page .pagination-wrap span[aria-disabled] span {
+    color: var(--master-muted);
+    background: var(--app-neutral-soft);
+}
+
+main.master-create-page {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+}
+
+main.master-create-page .master-create-heading-section {
+    margin-bottom: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+main.master-create-page .master-create-card {
+    max-width: 860px;
+    padding: 0;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid var(--master-border);
+    border-radius: var(--app-radius);
+    box-shadow: none;
+}
+
+main.master-create-page .master-create-heading {
+    display: none;
+}
+
+main.master-create-page .master-create-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 20px;
+}
+
+main.master-create-page .master-create-form > label,
+main.master-create-page .master-create-form .fee-type-simple-field,
+main.master-create-page .master-create-form .fee-discount-simple-field,
+main.master-create-page .role-permission-field {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    color: var(--master-label);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+main.master-create-page .span-2,
+main.master-create-page .master-create-form > .form-actions,
+main.master-create-page .fee-type-simple,
+main.master-create-page .fee-discount-simple,
+main.master-create-page .role-permission-field {
+    grid-column: 1 / -1;
+}
+
+main.master-create-page .fee-type-simple,
+main.master-create-page .fee-discount-simple {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+main.master-create-page .fee-type-simple-note,
+main.master-create-page .fee-billing-choice,
+main.master-create-page .fee-discount-reason-field,
+main.master-create-page .fee-type-simple-status,
+main.master-create-page .fee-discount-simple-status {
+    grid-column: 1 / -1;
+}
+
+main.master-create-page .fee-type-simple-note {
+    margin: 0;
+    padding: 12px;
+    color: var(--master-muted);
+    background: var(--app-panel-soft);
+    border: 1px solid var(--master-border-soft);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+main.master-create-page .role-permission-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    max-height: 320px;
+    overflow: auto;
+    padding: 12px;
+    border: 1px solid var(--master-border);
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+main.master-create-page .role-permission-grid label,
+.form-modal .role-permission-grid label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+    color: var(--master-label, var(--app-label));
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+main.master-create-page .role-permission-grid input,
+.form-modal .role-permission-grid input {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    margin-top: 2px;
+    accent-color: var(--app-primary);
+}
+
+main.master-create-page .switch-field,
+.form-modal .switch-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--master-label, var(--app-label));
+    font-size: 14px;
+    font-weight: 500;
+}
+
+main.master-create-page .switch-field input,
+.form-modal .switch-field input {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    accent-color: var(--app-primary);
+}
+
+main.master-create-page .form-actions {
+    margin: 4px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--master-border-soft);
+}
+
+.academic-year-edit-modal .form-modal,
+.education-unit-edit-modal .form-modal,
+.class-edit-modal .form-modal,
+.fee-type-edit-modal .form-modal,
+.fee-discount-edit-modal .form-modal,
+.data-role-edit-modal .form-modal,
+.data-user-edit-modal .form-modal {
+    width: min(100%, 720px);
+    border-radius: var(--app-radius);
+}
+
+.academic-year-edit-modal .form-modal,
+.education-unit-edit-modal .form-modal,
+.class-edit-modal .form-modal {
+    width: min(100%, 560px);
+}
+
+.fee-type-edit-modal .form-modal,
+.fee-discount-edit-modal .form-modal,
+.data-role-edit-modal .form-modal,
+.data-user-edit-modal .form-modal {
+    width: min(100%, 720px);
+}
+
+.academic-year-edit-modal .master-form,
+.education-unit-edit-modal .master-form,
+.class-edit-modal .master-form,
+.fee-type-edit-modal .master-form,
+.fee-discount-edit-modal .master-form,
+.data-role-edit-modal .master-form,
+.data-user-edit-modal .master-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.fee-type-edit-modal .fee-type-simple,
+.fee-discount-edit-modal .fee-discount-simple {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.data-role-edit-modal .role-permission-field,
+.data-role-edit-modal .role-permission-grid {
+    grid-column: 1 / -1;
+}
+
+.data-role-edit-modal .role-permission-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    max-height: 320px;
+    overflow: auto;
+    padding: 12px;
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+}
+
+@media (max-width: 1080px) {
+    main.master-flat-page .master-data-filter-panel label,
+    main.master-flat-page .master-data-filter-search {
+        grid-column: span 4;
     }
 
-    html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace,
-    html body .app-shell .main-panel main.master-flat-page > .academic-year-card-section,
-    html body .app-shell .main-panel main.master-flat-page > .education-unit-card-section,
-    html body .app-shell .main-panel main.master-flat-page > .class-card-section,
-    html body .app-shell .main-panel main.master-flat-page > .fee-type-card-section,
-    html body .app-shell .main-panel main.master-flat-page > .fee-discount-card-section,
-    html body .app-shell .main-panel main.master-flat-page > .data-role-card-section,
-    html body .app-shell .main-panel main.master-flat-page > .data-user-card-section,
-    html body .app-shell .main-panel main.master-flat-page > .master-card {
-        width: 100% !important;
-        max-width: none !important;
-    }
-
-    html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace > .student-flat-header {
-        display: grid !important;
-        gap:12px !important;
-    }
-
-    html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .student-title-actions,
-    html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .student-title-actions > .button.master-primary-add-button {
-        width: 100% !important;
-    }
-
-    html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel {
-        grid-template-columns: 1fr !important;
-        padding:16px !important;
-    }
-
-    html body .app-shell .main-panel main.master-flat-page .master-data-filter-actions {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        width: 100% !important;
-    }
-
-    html body .app-shell .main-panel main.master-flat-page .master-data-filter-actions .button {
-        width: 100% !important;
-        min-width: 0 !important;
-    }
-
-    html body .app-shell .main-panel main.master-flat-page .master-data-count {
-        display: grid !important;
-        gap:12px !important;
-    }
-}
-
-/* Final lock: Data Master heading, filter, and table alignment follow ai/standar aplikasi.md. */
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace,
-html body .app-shell .main-panel main.master-flat-page > .master-card.master-flat-card {
-    width: 100% !important;
-    max-width: 1200px !important;
-    margin-left:auto !important;
-    margin-right:auto !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace {
-    margin-top:0 !important;
-    margin-bottom:16px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace > .student-flat-header {
-    align-items: flex-start !important;
-    margin:0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > .master-card.master-flat-card {
-    margin-top:0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > .master-card.master-flat-card > .master-data-filter-panel {
-    margin-top:0 !important;
-    margin-bottom:16px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel {
-    justify-content: start !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page:is(.academic-year-page, .education-unit-page, .data-role-page) .master-data-filter-panel {
-    grid-template-columns: minmax(260px, 360px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page.data-user-page .master-data-filter-panel {
-    grid-template-columns: 180px minmax(260px, 360px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page.class-page .master-data-filter-panel {
-    grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page.fee-type-page .master-data-filter-panel {
-    grid-template-columns: 160px minmax(220px, 300px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page.fee-discount-page .master-data-filter-panel {
-    grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel > label,
-html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel > .master-data-filter-actions {
-    align-self: end !important;
-}
-
-@media (width <= 1180px) {
-    html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page:is(.academic-year-page, .education-unit-page, .data-role-page) .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page.data-user-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page.class-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page:is(.fee-type-page, .fee-discount-page) .master-data-filter-panel {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-}
-
-@media (width <= 760px) {
-    html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace,
-    html body .app-shell .main-panel main.master-flat-page > .master-card.master-flat-card {
-        max-width: none !important;
-    }
-
-    html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page:is(.academic-year-page, .education-unit-page, .data-role-page) .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page.data-user-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page.class-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page:is(.fee-type-page, .fee-discount-page) .master-data-filter-panel {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-
-/* Final Data Master spacing lock: prevent inherited Data Siswa grid gap from doubling the heading-to-filter distance. */
-html body .app-shell .main-panel main.master-flat-page {
-    display: block !important;
-    gap:0 !important;
-    row-gap:0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace {
-    margin-top:0 !important;
-    margin-bottom:0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > .master-card.master-flat-card {
-    margin-top:0 !important;
-    margin-bottom:0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > section.student-data-card.master-flat-card {
-    margin-top:0 !important;
-    margin-bottom:0 !important;
-    padding-top:0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace > .student-flat-header,
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .master-sample-heading,
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .master-sample-heading h1,
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .student-title-actions {
-    margin-top:0 !important;
-    margin-bottom:0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > .master-flat-workspace .master-sample-heading p {
-    margin-top:4px !important;
-    margin-bottom:0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > .master-card.master-flat-card > .master-data-filter-panel {
-    margin-top:16px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > section.student-data-card.master-flat-card > .master-data-filter-panel {
-    margin-top:16px !important;
-}
-
-/* Specificity lock: Data Master also carries student-page, so neutralize high-specificity Data Siswa spacing. */
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) {
-    display: block !important;
-    gap:0 !important;
-    row-gap:0 !important;
-    padding:24px 32px 32px !important;
-    background: #ffffff !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-workspace.master-flat-workspace {
-    box-sizing: border-box !important;
-    display: block !important;
-    width: 100% !important;
-    max-width: 1200px !important;
-    margin:0 auto !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-workspace.master-flat-workspace > .student-flat-header {
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: space-between !important;
-    gap:16px !important;
-    min-height: 0 !important;
-    height: auto !important;
-    margin:0 !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-data-card.master-flat-card {
-    box-sizing: border-box !important;
-    display: block !important;
-    width: 100% !important;
-    max-width: 1200px !important;
-    margin:0 auto !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-data-card.master-flat-card > .master-data-filter-panel {
-    margin:16px 0 16px !important;
-}
-
-/* Data Master count toolbar follows Data Siswa count toolbar standard. */
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .master-data-count {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    flex-wrap: wrap !important;
-    gap:14px !important;
-    width: 100% !important;
-    margin:0 0 12px !important;
-    padding:0 !important;
-    color: #707971 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .master-data-length,
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .master-data-length label {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap:8px !important;
-    margin:0 !important;
-    padding:0 !important;
-    color: #707971 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .master-data-length select {
-    box-sizing: border-box !important;
-    width: 78px !important;
-    min-width: 78px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    margin:0 !important;
-    padding:0 10px !important;
-    color: #111c2c !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    line-height: 34px !important;
-}
-
-/* Data Master table header lock: keep labels such as "Tahun Pelajaran" on one line. */
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .master-data-table th {
-    white-space: nowrap !important;
-    word-break: normal !important;
-    overflow-wrap: normal !important;
-    hyphens: none !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .academic-year-table col.academic-year-col-no {
-    width: 56px !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .academic-year-table col.academic-year-col-name {
-    width: 180px !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .academic-year-table col.academic-year-col-start,
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .academic-year-table col.academic-year-col-end {
-    width: 120px !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .academic-year-table col.academic-year-col-status {
-    width: 110px !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) .academic-year-table col.academic-year-col-actions {
-    width: 92px !important;
-}
-
-/* Data Master filter standard lock: follows ai/standar aplikasi.md and Data Siswa filter sizing. */
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-workspace.master-flat-workspace {
-    margin:0 auto 16px !important;
-}
-
-html body .app-shell .main-panel main.student-page.master-flat-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-data-card.master-flat-card > .master-data-filter-panel,
-html body .app-shell .main-panel main.master-flat-page > .master-card.master-flat-card > .master-data-filter-panel {
-    margin:0 0 16px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page:is(.academic-year-page, .education-unit-page, .data-role-page) .master-data-filter-panel {
-    grid-template-columns: minmax(220px, 300px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page.data-user-page .master-data-filter-panel {
-    grid-template-columns: 180px minmax(220px, 300px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page.class-page .master-data-filter-panel {
-    grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page.fee-type-page .master-data-filter-panel {
-    grid-template-columns: 160px minmax(220px, 300px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page.fee-discount-page .master-data-filter-panel {
-    grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
-}
-
-@media (width <= 1180px) {
-    html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page:is(.academic-year-page, .education-unit-page, .data-role-page) .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page.data-user-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page.class-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page:is(.fee-type-page, .fee-discount-page) .master-data-filter-panel {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    main.master-flat-page .master-data-filter-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
     }
 }
 
-@media (width <= 760px) {
-    html body .app-shell .main-panel main.master-flat-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page:is(.academic-year-page, .education-unit-page, .data-role-page) .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page.data-user-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page.class-page .master-data-filter-panel,
-    html body .app-shell .main-panel main.master-flat-page:is(.fee-type-page, .fee-discount-page) .master-data-filter-panel {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-/* Data Master compact table lock: keep visible rows at the 40px standard. */
-html body .app-shell .main-panel main.master-flat-page .master-data-table tr {
-    height: 40px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table th,
-html body .app-shell .main-panel main.master-flat-page .master-data-table td {
-    max-height: 40px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table tbody tr {
-    height: 40px !important;
-    max-height: 40px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table tbody td {
-    height: 40px !important;
-    min-height: 40px !important;
-    max-height: 40px !important;
-    padding:4px 12px !important;
-    line-height: 1.2 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .academic-year-table tbody td:nth-child(2) {
-    text-align: center !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .academic-year-table tbody td:nth-child(2) > strong {
-    text-align: center !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .education-unit-table tbody td:nth-child(2) {
-    text-align: center !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .education-unit-table tbody td:nth-child(3) {
-    text-align: left !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .education-unit-table tbody td:nth-child(3) > strong {
-    text-align: left !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .class-table {
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .class-table col.class-col-no {
-    width: 56px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .class-table col.class-col-name {
-    width: 300px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .class-table col.class-col-unit {
-    width: 210px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .class-table col.class-col-count {
-    width: 120px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .class-table col.class-col-status {
-    width: 110px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .class-table col.class-col-actions {
-    width: 92px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table td > strong,
-html body .app-shell .main-panel main.master-flat-page .master-data-table td > .role-permission-summary {
-    display: block !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table .status,
-html body .app-shell .main-panel main.master-flat-page .master-data-table .code-badge {
-    max-width: 100% !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}
-
-/* Kategori Pembayaran: active year follows the topbar; status remains visible in table only. */
-html body .app-shell .main-panel main.master-flat-page.fee-type-page .master-data-filter-panel {
-    grid-template-columns: 160px minmax(220px, 300px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-type-table {
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-type-table col.fee-type-col-no {
-    width: 48px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-type-table col.fee-type-col-name {
-    width: 260px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-type-table col.fee-type-col-unit {
-    width: 80px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-type-table col.fee-type-col-class {
-    width: 120px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-type-table col.fee-type-col-amount {
-    width: 128px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-type-table col.fee-type-col-status {
-    width: 92px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-type-table col.fee-type-col-actions {
-    width: 84px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-type-table tbody td:nth-child(5) {
-    text-align: right !important;
-}
-
-@media (width <= 1180px) {
-    html body .app-shell .main-panel main.master-flat-page.fee-type-page .master-data-filter-panel {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-}
-
-@media (width <= 760px) {
-    html body .app-shell .main-panel main.master-flat-page.fee-type-page .master-data-filter-panel {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-/* Keringanan Biaya: status is not a filter; keep the card focused on scope and search. */
-html body .app-shell .main-panel main.master-flat-page.fee-discount-page .master-data-filter-panel {
-    grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-discount-table {
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-discount-table col.fee-discount-col-no {
-    width: 48px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-discount-table col.fee-discount-col-student {
-    width: 300px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-discount-table col.fee-discount-col-unit {
-    width: 80px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-discount-table col.fee-discount-col-class {
-    width: 100px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-discount-table col.fee-discount-col-payment {
-    width: 200px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-discount-table col.fee-discount-col-actions {
-    width: 84px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .fee-discount-table tbody td:nth-child(2),
-html body .app-shell .main-panel main.master-flat-page .fee-discount-table tbody td:nth-child(2) > strong {
-    text-align: left !important;
-}
-
-@media (width <= 1180px) {
-    html body .app-shell .main-panel main.master-flat-page.fee-discount-page .master-data-filter-panel {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-}
-
-@media (width <= 760px) {
-    html body .app-shell .main-panel main.master-flat-page.fee-discount-page .master-data-filter-panel {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table td:has(.table-actions),
-html body .app-shell .main-panel main.master-flat-page .master-data-table td:has(.fee-discount-actions),
-html body .app-shell .main-panel main.master-flat-page .master-data-table td[colspan] {
-    overflow: visible !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table td:has(.table-actions),
-html body .app-shell .main-panel main.master-flat-page .master-data-table td:has(.fee-discount-actions) {
-    padding:4px 8px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table .table-actions,
-html body .app-shell .main-panel main.master-flat-page .master-data-table .fee-discount-actions {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 32px !important;
-    min-height: 32px !important;
-    max-height: 32px !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table .table-actions form {
-    height: 32px !important;
-    min-height: 32px !important;
-    max-height: 32px !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table td[colspan],
-html body .app-shell .main-panel main.master-flat-page .master-data-table .empty-state {
-    white-space: normal !important;
-    text-overflow: clip !important;
-}
-
-/* Data Master bottom-line lock: the table should end cleanly without a final rule. */
-html body .app-shell .main-panel main.master-flat-page > section.student-data-card.master-flat-card,
-html body .app-shell .main-panel main.master-flat-page > .master-card.master-flat-card,
-html body .app-shell .main-panel main.master-flat-page .table-wrap,
-html body .app-shell .main-panel main.master-flat-page .master-data-table,
-html body .app-shell .main-panel main.master-flat-page .pagination-wrap {
-    border: 0 !important;
-    border-bottom: 0 !important;
-    border-block-end: 0 !important;
-    outline: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page .master-data-table tbody tr:last-child,
-html body .app-shell .main-panel main.master-flat-page .master-data-table tbody tr:last-child td {
-    border-bottom: 0 !important;
-    border-block-end: 0 !important;
-    outline: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .app-shell .main-panel main.master-flat-page > section.student-data-card.master-flat-card::after,
-html body .app-shell .main-panel main.master-flat-page > .master-card.master-flat-card::after,
-html body .app-shell .main-panel main.master-flat-page .table-wrap::after,
-html body .app-shell .main-panel main.master-flat-page .master-data-table::after,
-html body .app-shell .main-panel main.master-flat-page .pagination-wrap::before,
-html body .app-shell .main-panel main.master-flat-page .pagination-wrap::after,
-html body .app-shell .main-panel main.master-flat-page .master-data-table tbody tr:last-child::after,
-html body .app-shell .main-panel main.master-flat-page .master-data-table tbody tr:last-child td::after {
-    content: none !important;
-    display: none !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-@media (width <= 760px) {
-    html body .app-shell .main-panel main.master-flat-page .table-wrap {
-        overflow-x: auto !important;
+@media (max-width: 760px) {
+    main.master-flat-page,
+    main.master-create-page {
+        padding: 16px;
     }
 
-    html body .app-shell .main-panel main.master-flat-page .master-data-table {
-        min-width: 820px !important;
+    main.master-flat-page .student-flat-header {
+        display: grid;
+        gap: 12px;
     }
 
-    html body .app-shell .main-panel main.master-flat-page .fee-type-table,
-    html body .app-shell .main-panel main.master-flat-page .fee-discount-table {
-        min-width: 760px !important;
-    }
-}
-
-/* Migrated Master legacy locks from app.css. */
-/* TAHUN PELAJARAN CARD VIEW */
-html body .academic-year-page {
-    background: #ffffff !important;
-}
-
-html body .academic-year-page .master-flat-workspace {
-    padding-bottom:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .academic-year-page .student-flat-header {
-    align-items: flex-end !important;
-    margin-bottom:20px !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .academic-year-page .master-sample-heading {
-    display: grid !important;
-    gap:4px !important;
-    align-content: start !important;
-}
-
-html body .academic-year-page .master-sample-heading h1 {
-    margin:0 !important;
-    color: #111c2c !important;
-    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.15 !important;
-    letter-spacing: 0 !important;
-}
-
-html body .academic-year-page .master-sample-heading p {
-    margin:0 !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    line-height: 1.45 !important;
-}
-
-html body .academic-year-page .master-primary-add-button {
-    height: 46px !important;
-    min-height: 46px !important;
-    border-radius: 8px !important;
-    background: #004528 !important;
-    border-color: #004528 !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
-    padding:0 20px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    transform: translateY(0) !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
-    will-change: transform !important;
-}
-
-html body .academic-year-page .master-primary-add-button:hover {
-    transform: translateY(-3px) scale(1.02) !important;
-    box-shadow: 0 10px 20px rgba(0, 69, 40, .18) !important;
-}
-
-html body .academic-year-page .master-primary-add-button:active {
-    transform: translateY(0) scale(.98) !important;
-}
-
-html body .academic-year-page .academic-year-add-button {
-    color: #004528 !important;
-    background: #ffffff !important;
-    border-color: #d1d5db !important;
-    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
-    transform: translateY(0) scale(1) !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
-    will-change: transform !important;
-}
-
-html body .academic-year-page .academic-year-add-button:hover {
-    color: #004528 !important;
-    background: #e9f8ef !important;
-    border-color: #004528 !important;
-    transform: translateY(-4px) scale(1.025) !important;
-    box-shadow: 0 12px 24px rgba(0, 69, 40, .16) !important;
-    animation: academicYearAddHoverLift .72s ease-in-out infinite alternate !important;
-}
-
-html body .academic-year-page .academic-year-add-button:active {
-    transform: translateY(0) scale(.98) !important;
-    animation: none !important;
-}
-
-@keyframes academicYearAddHoverLift {
-    from {
-        transform: translateY(-2px) scale(1.01);
-        background-color: #ffffff;
-        border-color: #d1d5db;
-        box-shadow: 0 8px 18px rgba(0, 69, 40, .10);
+    main.master-flat-page .student-title-actions,
+    main.master-flat-page .student-title-actions .button {
+        width: 100%;
     }
 
-    to {
-        transform: translateY(-6px) scale(1.035);
-        background-color: #e9f8ef;
-        border-color: #004528;
-        box-shadow: 0 16px 28px rgba(0, 69, 40, .18);
-    }
-}
-
-/* TAHUN PELAJARAN ADD BUTTON FINAL OVERRIDE */
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button {
-    color: #004528 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
-    font-weight: 700 !important;
-    transform: translateY(0) scale(1) !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease, border-color .16s ease !important;
-    will-change: transform !important;
-}
-
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button svg,
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button .icon {
-    color: #004528 !important;
-    stroke: #004528 !important;
-}
-
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button:hover {
-    color: #004528 !important;
-    background: #e9f8ef !important;
-    border-color: #004528 !important;
-    box-shadow: 0 12px 24px rgba(0, 69, 40, .16) !important;
-    animation: academicYearAddHoverLift .72s ease-in-out infinite alternate !important;
-}
-
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button:active {
-    transform: translateY(0) scale(.98) !important;
-    animation: none !important;
-}
-
-html body .academic-year-card-section {
-    display: grid !important;
-    gap:16px !important;
-}
-
-html body .academic-year-card-toolbar {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap:0 !important;
-    margin:0 !important;
-    padding:16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-}
-
-html body .academic-year-search {
-    position: relative !important;
-    display: block !important;
-    margin:0 !important;
-}
-
-html body .academic-year-search .icon {
-    position: absolute !important;
-    left: 18px !important;
-    top: 50% !important;
-    width: 20px !important;
-    height: 20px !important;
-    transform: translateY(-50%) !important;
-    color: #707971 !important;
-    pointer-events: none !important;
-}
-
-html body .academic-year-search input {
-    width: 100% !important;
-    height: 44px !important;
-    min-height: 44px !important;
-    padding:0 16px 0 32px !important;
-    color: #111c2c !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    line-height: 44px !important;
-}
-
-html body .academic-year-search input:focus {
-    border-color: #004528 !important;
-    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
-    outline: 0 !important;
-}
-
-html body .academic-year-length {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap:8px !important;
-    height: 56px !important;
-    margin:0 !important;
-    padding:0 16px !important;
-    color: #404942 !important;
-    background: #f9fafb !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-}
-
-html body .academic-year-length span {
-    white-space: nowrap !important;
-    color: #707971 !important;
-    font-weight: 400 !important;
-    font-size: 14px !important;
-}
-
-html body .academic-year-length select {
-    width: 68px !important;
-    min-width: 68px !important;
-    height: 40px !important;
-    padding:0 8px !important;
-    background: transparent !important;
-    border: 0 !important;
-    color: #111c2c !important;
-    box-shadow: none !important;
-    font-weight: 500 !important;
-}
-
-html body .academic-year-filter-button {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 56px !important;
-    height: 56px !important;
-    margin:0 !important;
-    color: #404942 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    cursor: pointer !important;
-}
-
-html body .academic-year-filter-button .icon {
-    width: 22px !important;
-    height: 22px !important;
-}
-
-html body .academic-year-card-grid {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap:16px !important;
-}
-
-html body .academic-year-card {
-    display: flex !important;
-    flex-direction: column !important;
-    gap:16px !important;
-    min-height: 150px !important;
-    padding:16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
-    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease !important;
-}
-
-html body .academic-year-card:hover {
-    transform: translateY(-2px) !important;
-    border-color: #157144 !important;
-    box-shadow: 0 8px 18px rgba(17, 28, 44, .08) !important;
-}
-
-html body .academic-year-card-top,
-html body .academic-year-card-footer {
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: space-between !important;
-    gap:14px !important;
-}
-
-html body .academic-year-card-main {
-    display: flex !important;
-    align-items: center !important;
-    gap:12px !important;
-    min-width: 0 !important;
-}
-
-html body .academic-year-card-main > span:last-child {
-    display: grid !important;
-    gap:4px !important;
-    min-width: 0 !important;
-}
-
-html body .academic-year-card-main strong {
-    color: #111c2c !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.15 !important;
-}
-
-html body .academic-year-card-main small {
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.2 !important;
-}
-
-html body .academic-year-card-icon {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 42px !important;
-    min-width: 42px !important;
-    height: 42px !important;
-    color: #707971 !important;
-    background: #f9fafb !important;
-    border-radius: 8px !important;
-}
-
-html body .academic-year-card.is-active .academic-year-card-icon {
-    color: #004528 !important;
-    background: #e9f8ef !important;
-}
-
-html body .academic-year-card-icon .icon {
-    width: 22px !important;
-    height: 22px !important;
-}
-
-html body .academic-year-status {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap:8px !important;
-    min-width: 94px !important;
-    min-height: 28px !important;
-    padding:4px 12px !important;
-    border-radius: 999px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-}
-
-html body .academic-year-status i {
-    width: 8px !important;
-    height: 8px !important;
-    border-radius: 999px !important;
-    background: #0d5f36 !important;
-}
-
-html body .academic-year-status.is-active {
-    color: #0d5f36 !important;
-    background: #e9f8ef !important;
-}
-
-html body .academic-year-status.is-inactive {
-    color: #404942 !important;
-    background: #f9fafb !important;
-}
-
-html body .academic-year-card-footer {
-    align-items: center !important;
-    margin-top:auto !important;
-    padding-top:16px !important;
-    border-top: 1px solid #d1d5db !important;
-}
-
-html body .academic-year-card-footer > span {
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.25 !important;
-}
-
-html body .academic-year-card-footer .table-actions {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap:6px !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .academic-year-card-footer .table-actions form {
-    display: inline-flex !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .academic-year-card-footer .icon-button {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 36px !important;
-    min-width: 36px !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    margin:0 !important;
-    padding:0 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-}
-
-html body .academic-year-card-footer .edit-button {
-    color: #004528 !important;
-}
-
-html body .academic-year-card-footer .delete-button {
-    color: #ef1f2d !important;
-}
-
-html body .academic-year-card-footer .icon-button .icon {
-    width: 18px !important;
-    height: 18px !important;
-}
-
-html body .academic-year-info {
-    display: flex !important;
-    align-items: flex-start !important;
-    gap:16px !important;
-    margin-top:4px !important;
-    padding:20px 24px !important;
-    color: #404942 !important;
-    background: #f9fafb !important;
-    border: 0 !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
-}
-
-html body .academic-year-info > span {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 24px !important;
-    min-width: 24px !important;
-    height: 24px !important;
-    color: #004528 !important;
-}
-
-html body .academic-year-info .icon {
-    width: 22px !important;
-    height: 22px !important;
-}
-
-html body .academic-year-info p {
-    margin:0 !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    line-height: 1.55 !important;
-}
-
-html body .academic-year-info strong {
-    display: inline-block !important;
-    margin-right:8px !important;
-    color: #111c2c !important;
-    font-weight: 700 !important;
-}
-
-html body .academic-year-info b {
-    color: #111c2c !important;
-    font-weight: 700 !important;
-}
-
-html body .academic-year-empty {
-    display: grid !important;
-    grid-column: 1 / -1 !important;
-    place-items: center !important;
-    gap:6px !important;
-    min-height: 160px !important;
-    padding:24px !important;
-    text-align: center !important;
-    background: #ffffff !important;
-    border: 1px dashed #d1d5db !important;
-    border-radius: 12px !important;
-}
-
-html body .academic-year-empty strong {
-    color: #111c2c !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-html body .academic-year-empty span {
-    color: #707971 !important;
-    font-size: 14px !important;
-}
-
-html body .academic-year-card-section .pagination-wrap {
-    margin-top:0 !important;
-    padding-top:0 !important;
-    border-top: 0 !important;
-    box-shadow: none !important;
-}
-
-/* TAHUN PELAJARAN WHITE BACKGROUND FINAL LOCK */
-html:has(.academic-year-page),
-html:has(.academic-year-page) body,
-html body:has(.academic-year-page),
-html body:has(.academic-year-page) .app-shell,
-html body:has(.academic-year-page) .main-panel,
-html body:has(.academic-year-page) .student-page.master-flat-page.academic-year-page,
-html body:has(.academic-year-page) .academic-year-page,
-html body:has(.academic-year-page) .academic-year-card-section {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-}
-
-html body:has(.academic-year-page) .academic-year-page::before,
-html body:has(.academic-year-page) .academic-year-page::after,
-html body:has(.academic-year-page) .main-panel::before,
-html body:has(.academic-year-page) .main-panel::after {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-}
-
-/* TAMBAH TAHUN PELAJARAN FINAL LOCK */
-html:has(.academic-year-create-page),
-html:has(.academic-year-create-page) body,
-html body:has(.academic-year-create-page),
-html body:has(.academic-year-create-page) .app-shell,
-html body:has(.academic-year-create-page) .main-panel,
-html body:has(.academic-year-create-page) .academic-year-create-page,
-html body:has(.academic-year-create-page) .master-hero,
-html body:has(.academic-year-create-page) .master-create-card,
-html body:has(.academic-year-create-page) .master-form {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body:has(.academic-year-create-page) .academic-year-create-page::before,
-html body:has(.academic-year-create-page) .academic-year-create-page::after,
-html body:has(.academic-year-create-page) .main-panel::before,
-html body:has(.academic-year-create-page) .main-panel::after {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body .academic-year-create-page,
-html body .academic-year-create-page * {
-    letter-spacing: 0 !important;
-}
-
-html body .academic-year-create-page * {
-    font-size: 14px !important;
-}
-
-html body .academic-year-create-page .master-hero {
-    margin:0 0 20px !important;
-    padding:0 !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .academic-year-create-page .master-hero > div {
-    display: grid !important;
-    gap:4px !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .academic-year-create-page .master-hero h1 {
-    margin:0 !important;
-    color: #111c2c !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.15 !important;
-}
-
-html body .academic-year-create-page .master-hero p {
-    margin:0 !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.45 !important;
-}
-
-html body .academic-year-create-page .master-create-card {
-    border: 1px solid #d1d5db !important;
-    box-shadow: none !important;
-}
-
-html body .academic-year-create-page .master-create-heading {
-    display: none !important;
-}
-
-html body .academic-year-create-page .master-create-heading,
-html body .academic-year-create-page .master-create-heading * {
-    font-size: 14px !important;
-}
-
-html body .academic-year-create-page .master-form,
-html body .academic-year-create-page .master-form label,
-html body .academic-year-create-page .master-form input,
-html body .academic-year-create-page .master-form select,
-html body .academic-year-create-page .master-form button,
-html body .academic-year-create-page .master-form .button,
-html body .academic-year-create-page .switch-field {
-    font-size: 14px !important;
-    line-height: 1.25 !important;
-}
-
-html body .academic-year-create-page .master-form label,
-html body .academic-year-create-page .switch-field {
-    font-weight: 500 !important;
-}
-
-html body .academic-year-create-page .master-form input,
-html body .academic-year-create-page .master-form select {
-    font-weight: 400 !important;
-}
-
-/* TAMBAH UNIT PENDIDIKAN FINAL LOCK */
-html:has(.education-unit-create-page),
-html:has(.education-unit-create-page) body,
-html body:has(.education-unit-create-page),
-html body:has(.education-unit-create-page) .app-shell,
-html body:has(.education-unit-create-page) .main-panel,
-html body:has(.education-unit-create-page) .education-unit-create-page,
-html body:has(.education-unit-create-page) .master-hero,
-html body:has(.education-unit-create-page) .master-create-card,
-html body:has(.education-unit-create-page) .master-form {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body:has(.education-unit-create-page) .education-unit-create-page::before,
-html body:has(.education-unit-create-page) .education-unit-create-page::after,
-html body:has(.education-unit-create-page) .main-panel::before,
-html body:has(.education-unit-create-page) .main-panel::after {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body .education-unit-create-page,
-html body .education-unit-create-page * {
-    letter-spacing: 0 !important;
-}
-
-html body .education-unit-create-page * {
-    font-size: 14px !important;
-}
-
-html body .education-unit-create-page .master-hero {
-    margin:0 0 20px !important;
-    padding:0 !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .education-unit-create-page .master-hero > div {
-    display: grid !important;
-    gap:4px !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .education-unit-create-page .master-hero h1 {
-    margin:0 !important;
-    color: #111c2c !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.15 !important;
-}
-
-html body .education-unit-create-page .master-hero p {
-    margin:0 !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.45 !important;
-}
-
-html body .education-unit-create-page .master-create-card {
-    border: 1px solid #d1d5db !important;
-    box-shadow: none !important;
-}
-
-html body .education-unit-create-page .master-create-heading {
-    display: none !important;
-}
-
-html body .education-unit-create-page .master-form,
-html body .education-unit-create-page .master-form label,
-html body .education-unit-create-page .master-form input,
-html body .education-unit-create-page .master-form select,
-html body .education-unit-create-page .master-form button,
-html body .education-unit-create-page .master-form .button,
-html body .education-unit-create-page .switch-field {
-    font-size: 14px !important;
-    line-height: 1.25 !important;
-}
-
-html body .education-unit-create-page .master-form label,
-html body .education-unit-create-page .switch-field {
-    font-weight: 500 !important;
-}
-
-html body .education-unit-create-page .master-form input,
-html body .education-unit-create-page .master-form select {
-    font-weight: 400 !important;
-}
-
-@media (width <= 1180px) {
-    html body .academic-year-card-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-}
-
-@media (width <= 760px) {
-    html body .academic-year-page .student-flat-header {
-        align-items: stretch !important;
-        flex-direction: column !important;
+    main.master-flat-page .master-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        margin-bottom: 12px;
     }
 
-    html body .academic-year-page .master-sample-heading h1 {
-        font-size: 20px !important;
+    main.master-flat-page .master-data-filter-panel {
+        grid-template-columns: 1fr;
+        padding: 14px;
     }
 
-    html body .academic-year-card-toolbar {
-        align-items: stretch !important;
-        justify-content: stretch !important;
+    main.master-flat-page .master-data-filter-panel label,
+    main.master-flat-page .master-data-filter-search,
+    main.master-flat-page:is(.academic-year-page, .education-unit-page, .data-role-page) .master-data-filter-search,
+    main.master-flat-page.data-user-page .master-data-filter-search,
+    main.master-flat-page .master-data-filter-actions {
+        grid-column: 1;
     }
 
-    html body .academic-year-length {
-        width: 100% !important;
+    main.master-flat-page .master-data-filter-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
     }
 
-    html body .academic-year-card-grid {
-        grid-template-columns: 1fr !important;
+    main.master-flat-page .master-data-filter-actions .button {
+        min-width: 0;
+        width: 100%;
     }
 
-    html body .academic-year-card-top {
-        align-items: flex-start !important;
+    main.master-flat-page .master-data-count {
+        display: grid;
     }
 
-    html body .academic-year-card-footer {
-        align-items: stretch !important;
-        flex-direction: column !important;
+    main.master-flat-page .master-data-table {
+        min-width: 760px;
     }
 
-    html body .academic-year-card-footer .table-actions {
-        justify-content: flex-end !important;
-    }
-}
-
-/* TAHUN PELAJARAN ADD BUTTON MOTION LOCK */
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button {
-    color: #004528 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
-    font-weight: 700 !important;
-    transform: scale(1) !important;
-    translate: 0 0 !important;
-    transition: background-color .16s ease, border-color .16s ease, box-shadow .16s ease, transform .16s ease !important;
-    will-change: translate, transform !important;
-}
-
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button svg,
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button .icon {
-    color: #004528 !important;
-    stroke: #004528 !important;
-}
-
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button:hover {
-    color: #004528 !important;
-    background: #e9f8ef !important;
-    border-color: #004528 !important;
-    box-shadow: 0 14px 26px rgba(0, 69, 40, .18) !important;
-    transform: scale(1.025) !important;
-    animation: academicYearAddButtonFloat .68s ease-in-out infinite alternate !important;
-}
-
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button:active {
-    translate: 0 0 !important;
-    transform: scale(.98) !important;
-    animation: none !important;
-}
-
-/* TAHUN PELAJARAN ADD BUTTON MATCH UNIT PENDIDIKAN */
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button {
-    height: 46px !important;
-    min-height: 46px !important;
-    padding:0 20px !important;
-    color: #ffffff !important;
-    background: #004528 !important;
-    border: 1px solid #004528 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    transform: translateY(0) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
-}
-
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button svg,
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button .icon {
-    color: #ffffff !important;
-    stroke: #ffffff !important;
-}
-
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
-    transform: translateY(-2px) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-}
-
-html body .app-shell .main-panel .academic-year-page .student-title-actions > a.button.student-add-button.master-primary-add-button.academic-year-add-button:active {
-    transform: translateY(0) scale(.98) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-}
-
-@keyframes academicYearAddButtonFloat {
-    from {
-        translate: 0 -2px;
+    main.master-create-page .master-create-card {
+        max-width: none;
     }
 
-    to {
-        translate: 0 -8px;
+    main.master-create-page .master-create-form,
+    main.master-create-page .fee-type-simple,
+    main.master-create-page .fee-discount-simple,
+    main.master-create-page .role-permission-grid,
+    .academic-year-edit-modal .master-form,
+    .education-unit-edit-modal .master-form,
+    .class-edit-modal .master-form,
+    .fee-type-edit-modal .master-form,
+    .fee-discount-edit-modal .master-form,
+    .data-role-edit-modal .master-form,
+    .data-user-edit-modal .master-form,
+    .fee-type-edit-modal .fee-type-simple,
+    .fee-discount-edit-modal .fee-discount-simple,
+    .data-role-edit-modal .role-permission-grid {
+        grid-template-columns: 1fr;
     }
-}
-
-/* UNIT PENDIDIKAN CARD VIEW */
-html body .education-unit-page {
-    background: #f9fafb !important;
-}
-
-html body .education-unit-page .master-flat-workspace {
-    padding-bottom:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .education-unit-page .student-flat-header {
-    align-items: flex-end !important;
-    margin-bottom:16px !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .education-unit-page .master-sample-heading h1 {
-    color: #111c2c !important;
-    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.15 !important;
-    letter-spacing: 0 !important;
-}
-
-html body .education-unit-page .master-sample-heading p {
-    margin-top:6px !important;
-    color: #404942 !important;
-    font-size: 16px !important;
-    line-height: 1.45 !important;
-}
-
-html body .education-unit-page .master-primary-add-button {
-    height: 46px !important;
-    min-height: 46px !important;
-    padding:0 20px !important;
-    color: #ffffff !important;
-    background: #004528 !important;
-    border-color: #004528 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    transform: translateY(0) !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
-}
-
-html body .education-unit-page .master-primary-add-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
-}
-
-html body .education-unit-card-section {
-    display: grid !important;
-    gap:20px !important;
-}
-
-html body .education-unit-active-year {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap:8px !important;
-    width: fit-content !important;
-    min-height: 38px !important;
-    padding:8px 14px !important;
-    color: #404942 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-}
-
-html body .education-unit-active-year i {
-    width: 8px !important;
-    height: 8px !important;
-    border-radius: 999px !important;
-    background: #0d5f36 !important;
-}
-
-html body .education-unit-active-year strong {
-    color: #111c2c !important;
-    font-weight: 700 !important;
-}
-
-html body .education-unit-card-toolbar {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap:16px !important;
-    margin:0 !important;
-    padding:16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
-}
-
-html body .education-unit-length {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap:8px !important;
-    margin:0 !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    white-space: nowrap !important;
-}
-
-html body .education-unit-length select {
-    width: 82px !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    padding:0 10px !important;
-    color: #111c2c !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-weight: 700 !important;
-}
-
-html body .education-unit-search {
-    position: relative !important;
-    display: block !important;
-    width: min(320px, 100%) !important;
-    margin:0 !important;
-}
-
-html body .education-unit-search .icon {
-    position: absolute !important;
-    left: 14px !important;
-    top: 50% !important;
-    width: 20px !important;
-    height: 20px !important;
-    color: #707971 !important;
-    transform: translateY(-50%) !important;
-    pointer-events: none !important;
-}
-
-html body .education-unit-search input {
-    width: 100% !important;
-    height: 44px !important;
-    min-height: 44px !important;
-    padding:0 14px 0 32px !important;
-    color: #111c2c !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    line-height: 44px !important;
-}
-
-html body .education-unit-search input:focus {
-    border-color: #004528 !important;
-    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
-    outline: 0 !important;
-}
-
-html body .education-unit-card-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap:12px !important;
-}
-
-html body .education-unit-card {
-    display: grid !important;
-    gap:16px !important;
-    min-height: 176px !important;
-    padding:16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
-    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease !important;
-}
-
-html body .education-unit-card:hover {
-    transform: translateY(-2px) !important;
-    border-color: #157144 !important;
-    box-shadow: 0 8px 18px rgba(17, 28, 44, .08) !important;
-}
-
-html body .education-unit-card-top {
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: space-between !important;
-    gap:12px !important;
-    padding-bottom:12px !important;
-    border-bottom: 1px solid #d1d5db !important;
-}
-
-html body .education-unit-card-badges,
-html body .education-unit-card-top .table-actions {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap:8px !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .education-unit-card-top .table-actions form {
-    display: inline-flex !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .education-unit-code {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-height: 28px !important;
-    padding:4px 12px !important;
-    color: #004528 !important;
-    background: #e7eeff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-}
-
-html body .education-unit-status {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-height: 28px !important;
-    padding:4px 12px !important;
-    border-radius: 999px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-}
-
-html body .education-unit-status.is-active {
-    color: #0d5f36 !important;
-    background: #e9f8ef !important;
-}
-
-html body .education-unit-status.is-inactive {
-    color: #404942 !important;
-    background: #fbfdf8 !important;
-}
-
-html body .education-unit-card-top .icon-button {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 34px !important;
-    min-width: 34px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    margin:0 !important;
-    padding:0 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-}
-
-html body .education-unit-card-top .edit-button {
-    color: #004528 !important;
-}
-
-html body .education-unit-card-top .delete-button {
-    color: #ba1a1a !important;
-    border-color: #ffdad6 !important;
-}
-
-html body .education-unit-card-top .icon-button:hover {
-    background: #fbfdf8 !important;
-}
-
-html body .education-unit-card-top .delete-button:hover {
-    background: #ffdad6 !important;
-}
-
-html body .education-unit-card-top .icon-button .icon {
-    width: 18px !important;
-    height: 18px !important;
-}
-
-html body .education-unit-card-name {
-    display: flex !important;
-    align-items: center !important;
-    gap:12px !important;
-    min-width: 0 !important;
-}
-
-html body .education-unit-card-name > span {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 42px !important;
-    min-width: 42px !important;
-    height: 42px !important;
-    color: #004528 !important;
-    background: #e9f8ef !important;
-    border-radius: 8px !important;
-}
-
-html body .education-unit-card-name .icon {
-    width: 22px !important;
-    height: 22px !important;
-}
-
-html body .education-unit-card-name strong {
-    min-width: 0 !important;
-    color: #111c2c !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    line-height: 1.28 !important;
-    overflow-wrap: anywhere !important;
-}
-
-html body .education-unit-card-meta {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap:12px !important;
-    margin-top:4px !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    line-height: 1.35 !important;
-}
-
-html body .education-unit-card-meta strong {
-    color: #111c2c !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-html body .education-unit-empty {
-    display: grid !important;
-    grid-column: 1 / -1 !important;
-    place-items: center !important;
-    gap:6px !important;
-    min-height: 160px !important;
-    padding:24px !important;
-    text-align: center !important;
-    background: #ffffff !important;
-    border: 1px dashed #d1d5db !important;
-    border-radius: 12px !important;
-}
-
-html body .education-unit-empty strong {
-    color: #111c2c !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-html body .education-unit-empty span {
-    color: #707971 !important;
-    font-size: 14px !important;
-}
-
-html body .education-unit-card-section .pagination-wrap {
-    margin-top:0 !important;
-}
-
-/* UNIT PENDIDIKAN WHITE + TYPOGRAPHY FINAL LOCK */
-html:has(.education-unit-page),
-html:has(.education-unit-page) body,
-html body:has(.education-unit-page),
-html body:has(.education-unit-page) .app-shell,
-html body:has(.education-unit-page) .main-panel,
-html body:has(.education-unit-page) .student-page.master-flat-page.education-unit-page,
-html body:has(.education-unit-page) .education-unit-page,
-html body:has(.education-unit-page) .education-unit-card-section {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-}
-
-html body:has(.education-unit-page) .education-unit-page::before,
-html body:has(.education-unit-page) .education-unit-page::after,
-html body:has(.education-unit-page) .main-panel::before,
-html body:has(.education-unit-page) .main-panel::after {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-}
-
-html body .education-unit-page,
-html body .education-unit-page * {
-    letter-spacing: 0 !important;
-}
-
-html body .education-unit-page * {
-    font-size: 14px !important;
-}
-
-html body .education-unit-page .master-sample-heading h1 {
-    margin:0 !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-}
-
-html body .education-unit-page .master-sample-heading {
-    display: grid !important;
-    gap:4px !important;
-    align-content: start !important;
-}
-
-html body .education-unit-page .master-sample-heading p {
-    margin:0 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-}
-
-html body .app-shell .main-panel .education-unit-page .student-title-actions > a.button.student-add-button.master-primary-add-button {
-    height: 46px !important;
-    min-height: 46px !important;
-    padding:0 20px !important;
-    color: #ffffff !important;
-    background: #004528 !important;
-    border: 1px solid #004528 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    transform: translateY(0) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
-}
-
-html body .app-shell .main-panel .education-unit-page .student-title-actions > a.button.student-add-button.master-primary-add-button svg,
-html body .app-shell .main-panel .education-unit-page .student-title-actions > a.button.student-add-button.master-primary-add-button .icon {
-    color: #ffffff !important;
-    stroke: #ffffff !important;
-}
-
-html body .app-shell .main-panel .education-unit-page .student-title-actions > a.button.student-add-button.master-primary-add-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
-    transform: translateY(-2px) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-}
-
-html body .app-shell .main-panel .education-unit-page .student-title-actions > a.button.student-add-button.master-primary-add-button:active {
-    transform: translateY(0) scale(.98) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-}
-
-html body .education-unit-card-top {
-    padding-bottom:0 !important;
-    border-bottom: 0 !important;
-}
-
-html body .education-unit-card-section .pagination-wrap {
-    padding-top:0 !important;
-    border-top: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .education-unit-page .master-primary-add-button {
-    font-size: 14px !important;
-    font-weight: 700 !important;
-}
-
-html body .education-unit-card-toolbar {
-    justify-content: flex-end !important;
-}
-
-html body .education-unit-code,
-html body .education-unit-status {
-    font-size: 14px !important;
-    font-weight: 700 !important;
-}
-
-html body .education-unit-card-name strong {
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-html body .education-unit-card-meta strong {
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-html body .education-unit-empty strong {
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-/* UNIT PENDIDIKAN GRAY ACCENT FINAL LOCK */
-html body .education-unit-page .education-unit-code {
-    color: #404942 !important;
-    background: #f9fafb !important;
-    border-color: #d1d5db !important;
-}
-
-html body .education-unit-page .education-unit-status.is-inactive {
-    color: #404942 !important;
-    background: #f9fafb !important;
-}
-
-html body .education-unit-page .education-unit-card-top .icon-button:hover {
-    background: #f9fafb !important;
-}
-
-@media (width <= 760px) {
-    html body .education-unit-page .student-flat-header {
-        align-items: stretch !important;
-        flex-direction: column !important;
-    }
-
-    html body .education-unit-page .master-sample-heading h1 {
-        font-size: 20px !important;
-    }
-
-    html body .education-unit-card-toolbar {
-        align-items: stretch !important;
-        flex-direction: column !important;
-    }
-
-    html body .education-unit-length,
-    html body .education-unit-search {
-        width: 100% !important;
-    }
-
-    html body .education-unit-card-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    html body .education-unit-card-top {
-        align-items: flex-start !important;
-    }
-}
-
-/* DATA KELAS CARD VIEW */
-html body .class-page {
-    background: #f9fafb !important;
-}
-
-html body .class-page .master-flat-workspace {
-    padding-bottom:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .class-page .student-flat-header {
-    align-items: flex-end !important;
-    margin-bottom:20px !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .class-page .master-sample-heading h1 {
-    color: #111c2c !important;
-    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.15 !important;
-    letter-spacing: 0 !important;
-}
-
-html body .class-page .master-sample-heading p {
-    margin-top:6px !important;
-    color: #404942 !important;
-    font-size: 16px !important;
-    line-height: 1.45 !important;
-}
-
-html body .class-page .master-primary-add-button {
-    height: 46px !important;
-    min-height: 46px !important;
-    padding:0 20px !important;
-    color: #ffffff !important;
-    background: #004528 !important;
-    border-color: #004528 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    transform: translateY(0) !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
-}
-
-html body .class-page .master-primary-add-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
-}
-
-html body .class-card-section {
-    display: grid !important;
-    gap:20px !important;
-}
-
-html body .class-card-filter {
-    display: grid !important;
-    gap:16px !important;
-    margin:0 !important;
-    padding:16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
-}
-
-html body .class-card-search {
-    position: relative !important;
-    display: block !important;
-    width: 100% !important;
-    margin:0 !important;
-}
-
-html body .class-card-search .icon {
-    position: absolute !important;
-    left: 14px !important;
-    top: 50% !important;
-    width: 20px !important;
-    height: 20px !important;
-    color: #707971 !important;
-    transform: translateY(-50%) !important;
-    pointer-events: none !important;
-}
-
-html body .class-card-search input {
-    box-sizing: border-box !important;
-    width: 100% !important;
-    height: 46px !important;
-    min-height: 46px !important;
-    padding:0 14px 0 32px !important;
-    color: #111c2c !important;
-    background: #f9fafb !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    line-height: 46px !important;
-}
-
-html body .class-card-filter-grid {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap:12px !important;
-}
-
-html body .class-card-filter-grid label {
-    display: grid !important;
-    gap:6px !important;
-    margin:0 !important;
-    min-width: 0 !important;
-}
-
-html body .class-card-filter-grid span {
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1.25 !important;
-}
-
-html body .class-card-filter-grid select {
-    box-sizing: border-box !important;
-    width: 100% !important;
-    height: 46px !important;
-    min-height: 46px !important;
-    padding:0 12px !important;
-    color: #111c2c !important;
-    background: #f9fafb !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    line-height: 46px !important;
-}
-
-html body .class-card-search input:focus,
-html body .class-card-filter-grid select:focus {
-    border-color: #004528 !important;
-    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
-    outline: 0 !important;
-}
-
-html body .class-card-filter-actions {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap:10px !important;
-}
-
-html body .class-card-search-button,
-html body .class-card-reset-button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100% !important;
-    height: 46px !important;
-    min-height: 46px !important;
-    margin:0 !important;
-    padding:0 16px !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    text-decoration: none !important;
-}
-
-html body .class-card-search-button {
-    color: #ffffff !important;
-    background: #004528 !important;
-    border: 1px solid #004528 !important;
-}
-
-html body .class-card-search-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-}
-
-html body .class-card-reset-button {
-    color: #404942 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-}
-
-html body .class-card-reset-button:hover {
-    color: #111c2c !important;
-    background: #fbfdf8 !important;
-}
-
-html body .class-card-list {
-    display: grid !important;
-    gap:16px !important;
-}
-
-html body .class-card-item {
-    display: grid !important;
-    gap:14px !important;
-    padding:16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
-    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease !important;
-}
-
-html body .class-card-item:hover {
-    transform: translateY(-2px) !important;
-    border-color: rgba(0, 69, 40, .38) !important;
-    box-shadow: 0 8px 18px rgba(17, 28, 44, .08) !important;
-}
-
-html body .class-card-top {
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: space-between !important;
-    gap:14px !important;
-}
-
-html body .class-card-title {
-    display: grid !important;
-    gap:8px !important;
-    min-width: 0 !important;
-}
-
-html body .class-card-status {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: fit-content !important;
-    min-height: 26px !important;
-    padding:4px 12px !important;
-    border-radius: 999px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-}
-
-html body .class-card-status.is-active {
-    color: #0d5f36 !important;
-    background: #e9f8ef !important;
-}
-
-html body .class-card-status.is-inactive {
-    color: #404942 !important;
-    background: #fbfdf8 !important;
-}
-
-html body .class-card-title strong {
-    color: #111c2c !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-    overflow-wrap: anywhere !important;
-}
-
-html body .class-card-top .table-actions {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap:4px !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .class-card-top .table-actions form {
-    display: inline-flex !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .class-card-top .icon-button {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 36px !important;
-    min-width: 36px !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    margin:0 !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-}
-
-html body .class-card-top .edit-button {
-    color: #004528 !important;
-}
-
-html body .class-card-top .delete-button {
-    color: #ba1a1a !important;
-}
-
-html body .class-card-top .icon-button:hover {
-    background: #fbfdf8 !important;
-}
-
-html body .class-card-top .delete-button:hover {
-    background: #ffdad6 !important;
-}
-
-html body .class-card-top .icon-button .icon {
-    width: 20px !important;
-    height: 20px !important;
-}
-
-html body .class-card-meta {
-    display: grid !important;
-    gap:12px !important;
-}
-
-html body .class-card-meta span {
-    display: flex !important;
-    align-items: center !important;
-    gap:12px !important;
-    min-width: 0 !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    line-height: 1.35 !important;
-}
-
-html body .class-card-meta .icon {
-    width: 18px !important;
-    min-width: 18px !important;
-    height: 18px !important;
-    color: #707971 !important;
-}
-
-html body .class-card-meta b {
-    min-width: 0 !important;
-    color: #404942 !important;
-    font-weight: 500 !important;
-    overflow-wrap: anywhere !important;
-}
-
-html body .class-card-empty {
-    display: grid !important;
-    place-items: center !important;
-    gap:6px !important;
-    min-height: 160px !important;
-    padding:24px !important;
-    text-align: center !important;
-    background: #ffffff !important;
-    border: 1px dashed #d1d5db !important;
-    border-radius: 12px !important;
-}
-
-html body .class-card-empty strong {
-    color: #111c2c !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-html body .class-card-empty span {
-    color: #707971 !important;
-    font-size: 14px !important;
-}
-
-html body .class-card-section .pagination-wrap {
-    margin-top:0 !important;
-}
-
-@media (width >= 900px) {
-    html body .class-card-list {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
-}
-
-@media (width <= 760px) {
-    html body .class-page .student-flat-header {
-        align-items: stretch !important;
-        flex-direction: column !important;
-    }
-
-    html body .class-page .master-sample-heading h1 {
-        font-size: 20px !important;
-    }
-
-    html body .class-card-filter-grid,
-    html body .class-card-filter-actions {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-/* MASTER STANDARD: TAHUN PELAJARAN + UNIT PENDIDIKAN */
-html:has(.academic-year-page),
-html:has(.education-unit-page),
-html:has(.academic-year-create-page),
-html:has(.education-unit-create-page),
-html:has(.academic-year-page) body,
-html:has(.education-unit-page) body,
-html:has(.academic-year-create-page) body,
-html:has(.education-unit-create-page) body,
-html body:has(.academic-year-page),
-html body:has(.education-unit-page),
-html body:has(.academic-year-create-page),
-html body:has(.education-unit-create-page),
-html body:has(.academic-year-page) .app-shell,
-html body:has(.education-unit-page) .app-shell,
-html body:has(.academic-year-create-page) .app-shell,
-html body:has(.education-unit-create-page) .app-shell,
-html body:has(.academic-year-page) .main-panel,
-html body:has(.education-unit-page) .main-panel,
-html body:has(.academic-year-create-page) .main-panel,
-html body:has(.education-unit-create-page) .main-panel,
-html body .academic-year-page,
-html body .education-unit-page,
-html body .academic-year-create-page,
-html body .education-unit-create-page {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body :is(.academic-year-page, .education-unit-page, .academic-year-create-page, .education-unit-create-page),
-html body :is(.academic-year-page, .education-unit-page, .academic-year-create-page, .education-unit-create-page) * {
-    letter-spacing: 0 !important;
-}
-
-html body :is(.academic-year-page, .education-unit-page, .academic-year-create-page, .education-unit-create-page) * {
-    font-size: 14px !important;
-}
-
-html body :is(.academic-year-page, .education-unit-page) .master-flat-workspace {
-    margin:0 0 20px !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body :is(.academic-year-page, .education-unit-page) .student-flat-header {
-    align-items: flex-end !important;
-    gap:16px !important;
-    margin:0 !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body :is(.academic-year-page, .education-unit-page) .master-sample-heading,
-html body :is(.academic-year-create-page, .education-unit-create-page) .master-hero > div {
-    display: grid !important;
-    gap:4px !important;
-    align-content: start !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body :is(.academic-year-page, .education-unit-page) .master-sample-heading h1,
-html body :is(.academic-year-create-page, .education-unit-create-page) .master-hero h1 {
-    margin:0 !important;
-    color: #111c2c !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.15 !important;
-}
-
-html body :is(.academic-year-page, .education-unit-page) .master-sample-heading p,
-html body :is(.academic-year-create-page, .education-unit-create-page) .master-hero p {
-    margin:0 !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.45 !important;
-}
-
-html body :is(.academic-year-page, .education-unit-page) .student-title-actions > a.button.student-add-button.master-primary-add-button {
-    height: 46px !important;
-    min-height: 46px !important;
-    padding:0 20px !important;
-    color: #ffffff !important;
-    background: #004528 !important;
-    border: 1px solid #004528 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    transform: translateY(0) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
-}
-
-html body :is(.academic-year-page, .education-unit-page) .student-title-actions > a.button.student-add-button.master-primary-add-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
-    transform: translateY(-2px) !important;
-    animation: none !important;
-}
-
-html body :is(.academic-year-page, .education-unit-page) .student-title-actions > a.button.student-add-button.master-primary-add-button svg,
-html body :is(.academic-year-page, .education-unit-page) .student-title-actions > a.button.student-add-button.master-primary-add-button .icon {
-    color: #ffffff !important;
-    stroke: #ffffff !important;
-}
-
-html body :is(.academic-year-card-section, .education-unit-card-section) {
-    display: grid !important;
-    gap:16px !important;
-    background: #ffffff !important;
-}
-
-html body :is(.academic-year-card-grid, .education-unit-card-grid) {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-    gap:16px !important;
-}
-
-html body :is(.academic-year-card, .education-unit-card) {
-    min-height: 150px !important;
-    padding:16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
-}
-
-html body :is(.academic-year-card:hover, .education-unit-card:hover) {
-    border-color: #707971 !important;
-    box-shadow: 0 8px 18px rgba(17, 28, 44, .08) !important;
-}
-
-html body :is(.academic-year-card-top, .education-unit-card-top, .academic-year-card-footer) {
-    border: 0 !important;
-}
-
-html body .academic-year-card-dates {
-    display: grid !important;
-    gap:6px !important;
-    padding:0 !important;
-    color: #404942 !important;
-}
-
-html body .academic-year-card-dates span,
-html body .academic-year-card-dates strong {
-    font-size: 14px !important;
-    line-height: 1.35 !important;
-}
-
-html body .academic-year-card-dates strong {
-    color: #111c2c !important;
-    font-weight: 700 !important;
-}
-
-html body .academic-year-card-footer {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap:0 !important;
-    margin-top:auto !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .academic-year-card-footer .table-actions {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap:6px !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .academic-year-card-footer .table-actions form {
-    display: inline-flex !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .academic-year-card-footer .icon-button {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 36px !important;
-    min-width: 36px !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    margin:0 !important;
-    padding:0 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-}
-
-html body .academic-year-card-footer .edit-button {
-    color: #004528 !important;
-}
-
-html body .academic-year-card-footer .delete-button {
-    color: #ef1f2d !important;
-}
-
-html body .academic-year-card-footer .icon-button .icon {
-    width: 18px !important;
-    height: 18px !important;
-}
-
-html body .academic-year-page .academic-year-card {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) max-content !important;
-    align-items: start !important;
-    gap:16px 16px !important;
-}
-
-html body .academic-year-page .academic-year-card-top {
-    grid-column: 1 / -1 !important;
-}
-
-html body .academic-year-page .academic-year-card-dates {
-    grid-column: 1 !important;
-}
-
-html body .academic-year-page .academic-year-card-footer {
-    grid-column: 2 !important;
-    align-self: end !important;
-    margin:0 !important;
-}
-
-html body :is(.academic-year-status.is-inactive, .education-unit-status.is-inactive, .academic-year-card-icon, .education-unit-code) {
-    color: #404942 !important;
-    background: #f9fafb !important;
-    border-color: #d1d5db !important;
-}
-
-html body :is(.academic-year-create-page, .education-unit-create-page) .master-hero {
-    margin:0 0 20px !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body :is(.academic-year-create-page, .education-unit-create-page) .master-create-card {
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    box-shadow: none !important;
-}
-
-html body :is(.academic-year-create-page, .education-unit-create-page) .master-create-heading {
-    display: none !important;
-}
-
-html body :is(.academic-year-create-page, .education-unit-create-page) :is(.master-form, .master-form label, .master-form input, .master-form select, .master-form button, .master-form .button, .switch-field) {
-    font-size: 14px !important;
-    line-height: 1.25 !important;
-}
-
-@media (width <= 760px) {
-    html body :is(.academic-year-page, .education-unit-page) .student-flat-header {
-        align-items: stretch !important;
-        flex-direction: column !important;
-    }
-
-    html body :is(.academic-year-card-grid, .education-unit-card-grid) {
-        grid-template-columns: 1fr !important;
-    }
-
-    html body .academic-year-page .academic-year-card {
-        grid-template-columns: 1fr !important;
-    }
-
-    html body .academic-year-page .academic-year-card-footer {
-        grid-column: 1 !important;
-        justify-content: flex-end !important;
-    }
-
-}
-
-/* MASTER STANDARD: KELAS */
-html:has(.class-page),
-html:has(.class-page) body,
-html body:has(.class-page),
-html body:has(.class-page) .app-shell,
-html body:has(.class-page) .main-panel,
-html body .class-page {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body .class-page,
-html body .class-page * {
-    letter-spacing: 0 !important;
-}
-
-html body .class-page * {
-    font-size: 14px !important;
-}
-
-html body .class-page .master-flat-workspace {
-    margin:0 0 20px !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .class-page .student-flat-header {
-    align-items: flex-end !important;
-    gap:16px !important;
-    margin:0 !important;
-    padding:0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .class-page .master-sample-heading {
-    display: grid !important;
-    gap:4px !important;
-    align-content: start !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .class-page .master-sample-heading h1 {
-    margin:0 !important;
-    color: #111c2c !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.15 !important;
-}
-
-html body .class-page .master-sample-heading p {
-    margin:0 !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.45 !important;
-}
-
-html body .class-page .student-title-actions > a.button.student-add-button.master-primary-add-button {
-    height: 46px !important;
-    min-height: 46px !important;
-    padding:0 20px !important;
-    color: #ffffff !important;
-    background: #004528 !important;
-    border: 1px solid #004528 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    transform: translateY(0) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
-}
-
-html body .class-page .student-title-actions > a.button.student-add-button.master-primary-add-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
-    transform: translateY(-2px) !important;
-    animation: none !important;
-}
-
-html body .class-page .student-title-actions > a.button.student-add-button.master-primary-add-button svg,
-html body .class-page .student-title-actions > a.button.student-add-button.master-primary-add-button .icon {
-    color: #ffffff !important;
-    stroke: #ffffff !important;
-}
-
-html body .class-card-section {
-    display: grid !important;
-    gap:16px !important;
-    background: #ffffff !important;
-}
-
-/* KELAS ADD BUTTON MATCH TAHUN PELAJARAN FINAL LOCK */
-html body .app-shell .main-panel .class-page .student-title-actions > a.button.student-add-button.master-primary-add-button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap:10px !important;
-    width: auto !important;
-    min-width: 0 !important;
-    height: 46px !important;
-    min-height: 46px !important;
-    margin:0 !important;
-    padding:0 20px !important;
-    color: #ffffff !important;
-    background: #004528 !important;
-    border: 1px solid #004528 !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .05) !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    text-decoration: none !important;
-    transform: translateY(0) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-    transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease !important;
-}
-
-html body .app-shell .main-panel .class-page .student-title-actions > a.button.student-add-button.master-primary-add-button svg,
-html body .app-shell .main-panel .class-page .student-title-actions > a.button.student-add-button.master-primary-add-button .icon {
-    width: 20px !important;
-    height: 20px !important;
-    color: #ffffff !important;
-    stroke: #ffffff !important;
-}
-
-html body .app-shell .main-panel .class-page .student-title-actions > a.button.student-add-button.master-primary-add-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-    box-shadow: 0 10px 20px rgba(0, 69, 40, .16) !important;
-    transform: translateY(-2px) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-}
-
-html body .app-shell .main-panel .class-page .student-title-actions > a.button.student-add-button.master-primary-add-button:active {
-    transform: translateY(0) scale(.98) !important;
-    translate: 0 0 !important;
-    animation: none !important;
-}
-
-html body .class-card-filter {
-    display: grid !important;
-    grid-template-columns: 160px 140px 130px minmax(220px, 260px) max-content !important;
-    align-items: end !important;
-    gap:12px !important;
-    margin:0 !important;
-    padding:16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
-}
-
-html body .class-card-search {
-    position: relative !important;
-    display: block !important;
-    width: 100% !important;
-    margin:0 !important;
-}
-
-html body .class-card-search .icon {
-    position: absolute !important;
-    left: 12px !important;
-    top: 50% !important;
-    width: 18px !important;
-    height: 18px !important;
-    color: #404942 !important;
-    transform: translateY(-50%) !important;
-    pointer-events: none !important;
-}
-
-html body .class-card-search input {
-    box-sizing: border-box !important;
-    width: 100% !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    margin:0 !important;
-    padding:0 12px 0 32px !important;
-    color: #111c2c !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 40px !important;
-}
-
-html body .class-card-filter-grid {
-    display: contents !important;
-}
-
-/* TAMBAH KELAS FINAL LOCK */
-html:has(.class-create-page),
-html:has(.class-create-page) body,
-html body:has(.class-create-page),
-html body:has(.class-create-page) .app-shell,
-html body:has(.class-create-page) .main-panel,
-html body:has(.class-create-page) .class-create-page,
-html body:has(.class-create-page) .master-hero,
-html body:has(.class-create-page) .master-create-card,
-html body:has(.class-create-page) .master-form {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body:has(.class-create-page) .class-create-page::before,
-html body:has(.class-create-page) .class-create-page::after,
-html body:has(.class-create-page) .main-panel::before,
-html body:has(.class-create-page) .main-panel::after {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    background-image: none !important;
-}
-
-html body .class-create-page,
-html body .class-create-page * {
-    letter-spacing: 0 !important;
-}
-
-html body .class-create-page * {
-    font-size: 14px !important;
-}
-
-html body .class-create-page .master-hero {
-    margin:0 0 20px !important;
-    padding:0 !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .class-create-page .master-hero > div {
-    display: grid !important;
-    gap:4px !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .class-create-page .master-hero h1 {
-    margin:0 !important;
-    color: #111c2c !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.15 !important;
-}
-
-html body .class-create-page .master-hero p {
-    margin:0 !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.45 !important;
-}
-
-html body .class-create-page .master-create-card {
-    border: 1px solid #d1d5db !important;
-    box-shadow: none !important;
-}
-
-html body .class-create-page .master-create-heading {
-    display: none !important;
-}
-
-html body .class-create-page .master-form,
-html body .class-create-page .master-form label,
-html body .class-create-page .master-form input,
-html body .class-create-page .master-form select,
-html body .class-create-page .master-form button,
-html body .class-create-page .master-form .button,
-html body .class-create-page .switch-field {
-    font-size: 14px !important;
-    line-height: 1.25 !important;
-}
-
-html body .class-create-page .master-form label,
-html body .class-create-page .switch-field {
-    font-weight: 500 !important;
-}
-
-html body .class-create-page .master-form input,
-html body .class-create-page .master-form select {
-    font-weight: 400 !important;
-}
-
-html body .class-card-filter-grid label {
-    display: grid !important;
-    gap:6px !important;
-    margin:0 !important;
-    min-width: 0 !important;
-}
-
-html body .class-card-filter-grid span {
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.25 !important;
-}
-
-html body .class-card-filter-grid select {
-    box-sizing: border-box !important;
-    width: 100% !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    padding:0 12px !important;
-    color: #111c2c !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 40px !important;
-}
-
-html body .class-card-filter-grid select:focus {
-    border-color: #004528 !important;
-    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
-    outline: 0 !important;
-}
-
-html body .class-card-search input:focus {
-    border-color: #004528 !important;
-    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
-    outline: 0 !important;
-}
-
-html body .class-card-filter-actions {
-    display: flex !important;
-    align-items: end !important;
-    gap:10px !important;
-}
-
-html body .class-card-search-button,
-html body .class-card-reset-button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 96px !important;
-    min-width: 96px !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    margin:0 !important;
-    padding:0 14px !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    text-decoration: none !important;
-    white-space: nowrap !important;
-}
-
-html body .class-card-search-button {
-    color: #ffffff !important;
-    background: #004528 !important;
-    border: 1px solid #004528 !important;
-}
-
-html body .class-card-search-button:hover {
-    color: #ffffff !important;
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-}
-
-html body .class-card-reset-button {
-    color: #404942 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-}
-
-html body .class-card-reset-button:hover {
-    color: #111c2c !important;
-    background: #f9fafb !important;
-}
-
-html body .class-card-list {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-    gap:16px !important;
-}
-
-html body .class-card-item {
-    min-height: 150px !important;
-    padding:16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 12px !important;
-    box-shadow: none !important;
-}
-
-html body .class-card-item:hover {
-    border-color: #707971 !important;
-    box-shadow: 0 8px 18px rgba(17, 28, 44, .08) !important;
-}
-
-html body .class-card-top {
-    border: 0 !important;
-}
-
-html body .class-card-status {
-    font-size: 14px !important;
-    font-weight: 700 !important;
-}
-
-html body .class-card-status.is-inactive {
-    color: #404942 !important;
-    background: #f9fafb !important;
-}
-
-html body .class-card-title strong {
-    font-size: 20px !important;
-    font-weight: 700 !important;
-}
-
-html body .class-card-meta span,
-html body .class-card-meta b,
-html body .class-card-empty span {
-    font-size: 14px !important;
-}
-
-html body .class-card-empty strong {
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-html body .class-card-top .icon-button:hover {
-    background: #f9fafb !important;
-}
-
-html body .class-card-top .delete-button:hover {
-    background: #f9fafb !important;
-}
-
-/* KELAS CARD ACTION BUTTON STANDARD */
-html body .class-card-top .table-actions {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap:6px !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .class-card-top .table-actions form {
-    display: inline-flex !important;
-    margin:0 !important;
-    padding:0 !important;
-}
-
-html body .class-card-top .icon-button {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 34px !important;
-    min-width: 34px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    margin:0 !important;
-    padding:0 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-}
-
-html body .class-card-top .edit-button {
-    color: #004528 !important;
-}
-
-html body .class-card-top .delete-button {
-    color: #ba1a1a !important;
-    border-color: #ffdad6 !important;
-}
-
-html body .class-card-top .icon-button:hover {
-    background: #fbfdf8 !important;
-}
-
-html body .class-card-top .delete-button:hover {
-    background: #ffdad6 !important;
-}
-
-html body .class-card-top .icon-button .icon {
-    width: 18px !important;
-    height: 18px !important;
-}
-
-html body .class-card-section .pagination-wrap {
-    margin-top:0 !important;
-    padding-top:0 !important;
-    border-top: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .class-card-section .pagination-wrap p {
-    display: none !important;
-}
-
-@media (width <= 760px) {
-    html body .class-page .student-flat-header {
-        align-items: stretch !important;
-        flex-direction: column !important;
-    }
-
-    html body .class-card-filter,
-    html body .class-card-filter-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    html body .class-card-filter-grid {
-        display: grid !important;
-        gap:12px !important;
-    }
-
-    html body .class-card-search {
-        width: 100% !important;
-    }
-
-    html body .class-card-filter-actions,
-    html body .class-card-search-button,
-    html body .class-card-reset-button {
-        width: 100% !important;
-    }
-
-    html body .class-card-list {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-/* KELAS COUNT TEXT FINAL LOCK */
-html body .class-page .class-card-count {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap:14px !important;
-    flex-wrap: wrap !important;
-    margin:-4px 0 0 !important;
-    padding:0 !important;
-    color: #707971 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
-    letter-spacing: 0 !important;
-    text-align: left !important;
-}
-
-html body .class-page .class-card-length,
-html body .class-page .class-card-length label {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap:8px !important;
-    margin:0 !important;
-    padding:0 !important;
-    color: #707971 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
-}
-
-html body .class-page .class-card-length select {
-    box-sizing: border-box !important;
-    width: 78px !important;
-    min-width: 78px !important;
-    height: 34px !important;
-    min-height: 34px !important;
-    margin:0 !important;
-    padding:0 10px !important;
-    color: #111c2c !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    line-height: 34px !important;
-}
-
-html body .class-page .class-card-length select:focus {
-    border-color: #004528 !important;
-    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12) !important;
-    outline: 0 !important;
-}
-
-html body .class-page .class-card-count > span {
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
 }

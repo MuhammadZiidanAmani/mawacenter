@@ -29,10 +29,10 @@
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
             <button class="icon-button notification-button" aria-label="Notifikasi">{!! $icon('bell') !!}<span></span></button>
-            <button class="icon-button logout-button" type="button" aria-label="Keluar" title="Keluar">{!! $icon('logout') !!}</button>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
-        <main class="finance-page settings-page">
+        <main class="settings-page">
             @if(session('success'))
                 <div class="result-modal-backdrop show" data-alert><div class="result-modal success-result"><span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>
             @endif
@@ -40,16 +40,15 @@
                 <div class="result-modal-backdrop show" data-alert><div class="result-modal error-result"><span class="result-icon">!</span><strong>Perlu Diperiksa</strong><p>{{ $errors->first() }}</p><button type="button" class="button button-primary" data-alert-close>OK</button></div></div>
             @endif
 
-            <section class="hero master-hero">
+            <section class="settings-heading">
                 <div>
-                    <p class="eyebrow">Sistem - Pengaturan</p>
                     <h1>Pengaturan Akun</h1>
                     <p>Kelola nama, username, email, dan password akun yang sedang digunakan.</p>
                 </div>
             </section>
 
             <div class="settings-layout">
-                <form method="POST" action="{{ route('settings.update') }}" class="card settings-form">
+                <form method="POST" action="{{ route('settings.update') }}" class="settings-card settings-form">
                     @csrf
                     @method('PUT')
                     <div class="settings-form-head"><span>{!! $icon('user') !!}</span><div><strong>Profil Akun</strong><small>Perubahan hanya berlaku untuk akun login saat ini.</small></div></div>
@@ -89,7 +88,7 @@
                 </form>
 
                 <aside class="settings-side">
-                    <section class="card setup-card account-summary-card">
+                    <section class="settings-card account-summary-card">
                         <div class="settings-form-head"><span>{!! $icon('role') !!}</span><div><strong>Ringkasan Akun</strong><small>Informasi akun aktif saat ini.</small></div></div>
                         <div class="account-summary">
                             <span><small>Nama</small><strong>{{ $user->name }}</strong></span>

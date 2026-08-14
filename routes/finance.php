@@ -25,6 +25,7 @@ Route::prefix('keuangan/pembayaran/spp')->name('finance.spp.')->controller(SppPa
     Route::post('/import', 'import')->name('import');
     Route::post('/', 'store')->name('store');
     Route::post('/{sppPayment}/corrections', 'correct')->name('correct');
+    Route::get('/{sppPayment}/proof', 'proof')->name('proof');
     Route::get('/{sppPayment}/receipt/download', 'downloadReceipt')->name('receipt.download');
     Route::get('/{sppPayment}/receipt', 'receipt')->name('receipt');
     Route::get('/{sppPayment}', 'show')->name('show');
@@ -40,6 +41,7 @@ Route::prefix('keuangan/pembayaran/lain-lain')->name('finance.other.')->controll
     Route::post('/import/preview', 'previewImport')->name('import.preview');
     Route::post('/import', 'import')->name('import');
     Route::post('/', 'store')->name('store');
+    Route::get('/{otherPayment}/proof', 'proof')->name('proof');
     Route::get('/{otherPayment}/receipt/download', 'downloadReceipt')->name('receipt.download');
     Route::get('/{otherPayment}/receipt', 'receipt')->name('receipt');
     Route::get('/{otherPayment}', 'show')->name('show');
@@ -58,6 +60,7 @@ Route::post('keuangan/tagihan/transfer', [GuardianPortalController::class, 'stor
 
 Route::prefix('keuangan/verifikasi-transfer')->name('finance.transfer-verifications.')->controller(TransferVerificationController::class)->group(function () {
     Route::get('/', 'index')->name('index');
+    Route::get('/{transfer}/proof', 'proof')->name('proof');
     Route::post('/{transfer}/terima', 'accept')->name('accept');
     Route::post('/{transfer}/tolak', 'reject')->name('reject');
 });

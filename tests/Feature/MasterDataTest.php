@@ -25,6 +25,7 @@ use App\Support\StudentXlsx;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class MasterDataTest extends TestCase
@@ -146,6 +147,49 @@ class MasterDataTest extends TestCase
         $this->get('/manajemen-siswa/naik-kelas')->assertOk();
         $this->get('/manajemen-siswa/rapikan-identitas')->assertOk();
         $this->get('/manajemen-siswa/data-siswa/jadikan-alumni-kelas?unit_id='.$unit->id.'&class_id='.$class->id.'&year_id='.$year->id)->assertOk();
+    }
+
+    public function test_unit_scoped_student_permission_cannot_access_other_units(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $assignedUnit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'MA', 'name' => 'Madrasah Aliyah', 'is_active' => true]);
+        $assignedClass = SchoolClass::create(['education_unit_id' => $assignedUnit->id, 'name' => 'I A', 'level' => 'Kelas I', 'is_active' => true]);
+        $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'X A', 'level' => 'Kelas X', 'is_active' => true]);
+        $assignedStudent = Student::create(['nis' => 'UNIT-001', 'name' => 'Siswa Unit Boleh', 'gender' => 'L', 'school_class_id' => $assignedClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        $otherStudent = Student::create(['nis' => 'UNIT-002', 'name' => 'Siswa Unit Rahasia', 'gender' => 'P', 'school_class_id' => $otherClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+
+        Role::updateOrCreate(['key' => 'bendahara'], [
+            'name' => 'Bendahara Unit',
+            'permissions' => ['students.view', 'students.update', 'students.export'],
+            'is_active' => true,
+        ]);
+        $unitUser = User::factory()->create(['role' => 'bendahara']);
+        $unitUser->educationUnits()->attach($assignedUnit->id);
+
+        $this->actingAs($unitUser)
+            ->get('/manajemen-siswa/data-siswa')
+            ->assertOk()
+            ->assertSee('Siswa Unit Boleh')
+            ->assertDontSee('Siswa Unit Rahasia')
+            ->assertSee('<option value="'.$assignedUnit->id.'" >MI</option>', false)
+            ->assertDontSee('<option value="'.$otherUnit->id.'" >MA</option>', false);
+
+        $this->actingAs($unitUser)
+            ->get('/manajemen-siswa/kualitas-data?indicator=active-without-nisn')
+            ->assertOk()
+            ->assertSee('Siswa Unit Boleh')
+            ->assertDontSee('Siswa Unit Rahasia');
+
+        $this->actingAs($unitUser)
+            ->get('/manajemen-siswa/data-siswa/'.$assignedStudent->id.'/edit')
+            ->assertOk();
+        $this->actingAs($unitUser)
+            ->get('/manajemen-siswa/data-siswa/'.$otherStudent->id.'/edit')
+            ->assertForbidden();
+        $this->actingAs($unitUser)
+            ->get('/master-data/students/export?unit_id='.$otherUnit->id)
+            ->assertForbidden();
     }
 
     public function test_student_data_quality_dashboard_shows_operational_indicators_and_permissions(): void
@@ -608,6 +652,168 @@ class MasterDataTest extends TestCase
         $this->assertSame([$student->id], $audit->student_ids);
         $this->assertSame($unit->id, (int) $audit->metadata['filters']['unit_id']);
         $this->assertStringContainsString('data-siswa-ra-b1-2025-2026-aktif-cari-audit-', $audit->metadata['filename']);
+
+        $this->delete('/master-data/students/'.$student->id)->assertRedirect();
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'students.delete',
+            'subject_type' => Student::class,
+            'subject_id' => $student->id,
+            'student_count' => 1,
+        ]);
+    }
+
+    public function test_financial_master_and_user_access_mutations_are_audited_without_passwords(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '1A', 'level' => 'Kelas 1', 'is_active' => true]);
+        $student = Student::create([
+            'nis' => 'AUD-FIN-001',
+            'name' => 'Siswa Audit Finansial',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'entry_date' => '2025-07-01',
+            'is_active' => true,
+        ]);
+
+        $this->post('/master-data/fee-types', [
+            'name' => 'Daftar Ulang Audit',
+            'payment_group' => 'daftar-ulang',
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'school_class_id' => $class->id,
+            'amount' => 150000,
+            'is_active' => 1,
+        ])->assertRedirect();
+        $feeType = FeeType::where('name', 'Daftar Ulang Audit')->firstOrFail();
+        $this->assertDatabaseHas('audit_logs', ['action' => 'master.fee_type.create', 'subject_type' => FeeType::class]);
+
+        $this->put('/master-data/fee-types/'.$feeType->id, [
+            'name' => 'Daftar Ulang Audit Update',
+            'payment_group' => 'daftar-ulang',
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'school_class_id' => $class->id,
+            'amount' => 175000,
+            'is_active' => 1,
+        ])->assertRedirect();
+        $this->assertDatabaseHas('audit_logs', ['action' => 'master.fee_type.update', 'subject_type' => FeeType::class, 'subject_id' => $feeType->id]);
+
+        $this->post('/master-data/fee-discounts', [
+            'student_id' => $student->id,
+            'source_type' => 'fee_type',
+            'fee_type_id' => $feeType->id,
+            'discount_type' => 'amount',
+            'discount_value' => 25000,
+            'start_date' => '2026-07-01',
+            'is_active' => 1,
+        ])->assertRedirect();
+        $discount = FeeDiscount::where('student_id', $student->id)->firstOrFail();
+        $this->assertDatabaseHas('audit_logs', ['action' => 'master.fee_discount.create', 'subject_type' => FeeDiscount::class, 'subject_id' => $discount->id, 'student_count' => 1]);
+
+        $this->put('/master-data/fee-discounts/'.$discount->id, [
+            'student_id' => $student->id,
+            'source_type' => 'fee_type',
+            'fee_type_id' => $feeType->id,
+            'discount_type' => 'amount',
+            'discount_value' => 30000,
+            'start_date' => '2026-07-01',
+            'is_active' => 1,
+        ])->assertRedirect();
+        $this->assertDatabaseHas('audit_logs', ['action' => 'master.fee_discount.update', 'subject_type' => FeeDiscount::class, 'subject_id' => $discount->id]);
+
+        $this->post('/master-data/data-roles', [
+            'key' => 'auditor_unit',
+            'name' => 'Auditor Unit',
+            'permissions' => ['payments.view_unit'],
+            'is_active' => 1,
+        ])->assertRedirect();
+        $role = Role::where('key', 'auditor_unit')->firstOrFail();
+        $this->assertDatabaseHas('audit_logs', ['action' => 'master.role.create', 'subject_type' => Role::class, 'subject_id' => $role->id]);
+
+        $this->put('/master-data/data-roles/'.$role->id, [
+            'key' => 'auditor_unit',
+            'name' => 'Auditor Unit Update',
+            'permissions' => ['payments.view_unit', 'payments.cash.create'],
+            'is_active' => 1,
+        ])->assertRedirect();
+        $this->assertDatabaseHas('audit_logs', ['action' => 'master.role.update', 'subject_type' => Role::class, 'subject_id' => $role->id]);
+
+        $this->post('/master-data/data-users', [
+            'name' => 'User Audit',
+            'username' => 'useraudit',
+            'email' => 'audit@example.test',
+            'role' => 'auditor_unit',
+            'password' => 'password123',
+            'education_unit_ids' => [$unit->id],
+        ])->assertRedirect();
+        $user = User::where('username', 'useraudit')->firstOrFail();
+        $userAudit = AuditLog::where('action', 'master.user.create')->where('subject_id', $user->id)->firstOrFail();
+        $this->assertArrayNotHasKey('password', $userAudit->after_values);
+
+        $this->put('/master-data/data-users/'.$user->id, [
+            'name' => 'User Audit Update',
+            'username' => 'useraudit',
+            'email' => 'audit-update@example.test',
+            'role' => 'auditor_unit',
+            'password' => '',
+            'education_unit_ids' => [$unit->id],
+        ])->assertRedirect();
+        $this->assertDatabaseHas('audit_logs', ['action' => 'master.user.update', 'subject_type' => User::class, 'subject_id' => $user->id]);
+
+        $this->delete('/master-data/fee-discounts/'.$discount->id)->assertRedirect();
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'master.fee_discount.delete',
+            'subject_type' => FeeDiscount::class,
+            'subject_id' => $discount->id,
+        ]);
+    }
+
+    public function test_student_import_respects_user_unit_scope_and_is_audited(): void
+    {
+        Storage::fake('local');
+
+        Role::updateOrCreate(['key' => 'bendahara'], [
+            'name' => 'Bendahara Unit',
+            'permissions' => ['students.import'],
+            'is_active' => true,
+        ]);
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $assignedUnit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'MA', 'name' => 'Madrasah Aliyah', 'is_active' => true]);
+        SchoolClass::create(['education_unit_id' => $assignedUnit->id, 'name' => '1A', 'level' => 'Kelas 1', 'is_active' => true]);
+        SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => '10A', 'level' => 'Kelas 10', 'is_active' => true]);
+        $user = User::factory()->create(['role' => 'bendahara']);
+        $user->educationUnits()->attach($assignedUnit->id);
+
+        $path = tempnam(sys_get_temp_dir(), 'student-import-');
+        StudentXlsx::write($path, [
+            ['NIS', 'Nama', 'Jenis Kelamin', 'Unit Pendidikan', 'Kelas', 'Tanggal Masuk', 'Status Masuk', 'Status'],
+            ['STU-IMP-001', 'Siswa Import MI', 'L', 'MI', '1A', '2025-07-01', 'Baru', 'Aktif'],
+            ['STU-IMP-002', 'Siswa Import MA', 'P', 'MA', '10A', '2025-07-01', 'Baru', 'Aktif'],
+        ]);
+        $token = '22222222-2222-4222-8222-222222222222';
+        Storage::disk('local')->put('student-imports/'.$token.'.xlsx', file_get_contents($path));
+        @unlink($path);
+
+        $this->actingAs($user)
+            ->withSession([
+                'student_imports.'.$token => [
+                    'path' => 'student-imports/'.$token.'.xlsx',
+                    'name' => 'students.xlsx',
+                    'academic_year_id' => $year->id,
+                    'preview' => [],
+                ],
+            ])
+            ->post('/master-data/students/import', ['token' => $token])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('students', ['nis' => 'STU-IMP-001']);
+        $this->assertDatabaseMissing('students', ['nis' => 'STU-IMP-002']);
+        $audit = AuditLog::where('action', 'students.import')->firstOrFail();
+        $this->assertSame(1, (int) $audit->metadata['imported']);
+        $this->assertSame(1, (int) $audit->metadata['failed_rows']);
     }
 
     public function test_all_master_create_forms_use_dedicated_pages(): void

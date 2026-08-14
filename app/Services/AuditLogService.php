@@ -8,6 +8,28 @@ use Illuminate\Support\Collection;
 
 class AuditLogService
 {
+    public function recordOperation(
+        string $action,
+        array $metadata = [],
+        array $beforeValues = [],
+        array $afterValues = [],
+        ?Request $request = null,
+        ?string $subjectType = null,
+        ?int $subjectId = null,
+        iterable $studentIds = [],
+    ): AuditLog {
+        return $this->recordStudentOperation(
+            $action,
+            $studentIds,
+            $metadata,
+            $beforeValues,
+            $afterValues,
+            $request,
+            $subjectType,
+            $subjectId,
+        );
+    }
+
     public function recordStudentOperation(
         string $action,
         iterable $studentIds = [],

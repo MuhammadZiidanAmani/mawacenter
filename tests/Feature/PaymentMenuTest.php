@@ -3,15 +3,20 @@
 namespace Tests\Feature;
 
 use App\Models\AcademicYear;
+use App\Models\AuditLog;
 use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\Role;
 use App\Models\SchoolClass;
+use App\Models\SppPayment;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\StudentXlsx;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PaymentMenuTest extends TestCase
@@ -695,6 +700,11 @@ class PaymentMenuTest extends TestCase
             'status' => 'Pending',
             'payment_status' => 'Pending',
         ]);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'payments.other.update',
+            'subject_type' => OtherPayment::class,
+            'subject_id' => $payment->id,
+        ]);
         $this->getJson('/keuangan/pembayaran/lain-lain/quote?category=daftar-ulang&student_id='.$student->id.'&fee_type_id='.$feeType->id)
             ->assertOk()
             ->assertJson([
@@ -715,6 +725,11 @@ class PaymentMenuTest extends TestCase
         $this->delete(route('finance.other.destroy', $payment))
             ->assertRedirect('/keuangan/pembayaran/lain-lain?category=daftar-ulang');
         $this->assertDatabaseMissing('other_payments', ['id' => $payment->id]);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'payments.other.delete',
+            'subject_type' => OtherPayment::class,
+            'subject_id' => $payment->id,
+        ]);
     }
 
     public function test_registration_payment_can_use_future_inactive_academic_year(): void
@@ -818,5 +833,380 @@ class PaymentMenuTest extends TestCase
             ->getJson('/keuangan/pembayaran/lain-lain/quote?category=daftar-ulang&student_id='.$student->id.'&fee_type_id='.$feeType->id)
             ->assertUnprocessable()
             ->assertJsonValidationErrors('fee_type_id');
+    }
+
+    public function test_unit_scoped_cashier_cannot_access_spp_student_or_payment_from_another_unit(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $assignedUnit = EducationUnit::create(['code' => 'RA', 'name' => 'RA Mambaul Hikmah', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        SchoolClass::create(['education_unit_id' => $assignedUnit->id, 'name' => 'A1', 'level' => 'A1', 'is_active' => true]);
+        $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'I A', 'level' => 'Kelas I', 'is_active' => true]);
+        $otherStudent = Student::create([
+            'nis' => '880001',
+            'name' => 'Siswa Unit Lain',
+            'gender' => 'L',
+            'school_class_id' => $otherClass->id,
+            'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-01-01',
+            'is_active' => true,
+        ]);
+
+        FeeType::create([
+            'education_unit_id' => $otherUnit->id,
+            'payment_group' => 'spp',
+            'code' => 'SPP-MI-TEST',
+            'name' => 'SPP MI Test',
+            'amount' => 100000,
+            'period' => 'Bulanan',
+            'is_active' => true,
+        ]);
+        $payment = SppPayment::create([
+            'student_id' => $otherStudent->id,
+            'transaction_at' => '2026-07-01 08:00:00',
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'original_amount' => 100000,
+            'discount_amount' => 0,
+            'total_amount' => 100000,
+            'paid_amount' => 100000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+        $payment->items()->create([
+            'student_id' => $otherStudent->id,
+            'year' => 2026,
+            'month' => 7,
+            'original_amount' => 100000,
+            'discount_amount' => 0,
+            'total_amount' => 100000,
+            'paid_amount' => 100000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+
+        $this->actingAs($this->scopedCashier($assignedUnit));
+
+        $this->getJson('/keuangan/pembayaran/spp/quote?student_id='.$otherStudent->id.'&month_count=1')->assertForbidden();
+        $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$otherStudent->id)->assertForbidden();
+        $this->post('/keuangan/pembayaran/spp', [
+            'transaction_date' => '2026-07-02',
+            'transaction_time' => '08:30:00',
+            'student_id' => $otherStudent->id,
+            'month_count' => 1,
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'paid_amount' => 100000,
+        ])->assertForbidden();
+        $this->getJson(route('finance.spp.show', $payment))->assertForbidden();
+        $this->get(route('finance.spp.receipt', $payment))->assertForbidden();
+        $this->put(route('finance.spp.update', $payment), [
+            'transaction_date' => '2026-07-02',
+            'transaction_time' => '08:30:00',
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+        ])->assertForbidden();
+        $this->post(route('finance.spp.correct', $payment), [
+            'new_paid_amount' => 50000,
+            'reason' => 'Test akses lintas unit',
+        ])->assertForbidden();
+        $this->delete(route('finance.spp.destroy', $payment))->assertForbidden();
+
+        $this->assertDatabaseHas('spp_payments', ['id' => $payment->id, 'paid_amount' => 100000]);
+    }
+
+    public function test_unit_scoped_cashier_cannot_access_other_payment_student_or_payment_from_another_unit(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $assignedUnit = EducationUnit::create(['code' => 'RA', 'name' => 'RA Mambaul Hikmah', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'PONPES', 'name' => 'PONPES Mambaul Hikmah', 'is_active' => true]);
+        SchoolClass::create(['education_unit_id' => $assignedUnit->id, 'name' => 'A1', 'level' => 'A1', 'is_active' => true]);
+        $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'Asrama', 'level' => 'Asrama', 'is_active' => true]);
+        $otherStudent = Student::create([
+            'nis' => '880002',
+            'name' => 'Santri Unit Lain',
+            'gender' => 'P',
+            'school_class_id' => $otherClass->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        $registrationFee = FeeType::create([
+            'education_unit_id' => $otherUnit->id,
+            'payment_group' => 'daftar-ulang',
+            'code' => 'DU-PONPES-TEST',
+            'name' => 'Daftar Ulang PONPES Test',
+            'amount' => 500000,
+            'period' => 'Sekali Bayar',
+            'is_active' => true,
+        ]);
+        $laundryFee = FeeType::create([
+            'education_unit_id' => $otherUnit->id,
+            'payment_group' => 'laundry',
+            'code' => 'LAUNDRY-PONPES-TEST',
+            'name' => 'Laundry PONPES Test',
+            'amount' => 50000,
+            'period' => 'Bulanan',
+            'is_active' => true,
+        ]);
+        $payment = OtherPayment::create([
+            'student_id' => $otherStudent->id,
+            'fee_type_id' => $registrationFee->id,
+            'transaction_at' => '2026-07-01 08:00:00',
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'original_amount' => 500000,
+            'discount_amount' => 0,
+            'total_amount' => 500000,
+            'paid_amount' => 500000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+
+        $this->actingAs($this->scopedCashier($assignedUnit));
+
+        $this->getJson('/keuangan/pembayaran/lain-lain/quote?category=daftar-ulang&student_id='.$otherStudent->id.'&fee_type_id='.$registrationFee->id)->assertForbidden();
+        $this->getJson('/keuangan/pembayaran/lain-lain/months?category=laundry&student_id='.$otherStudent->id.'&fee_type_id='.$laundryFee->id.'&year=2026')->assertForbidden();
+        $this->post('/keuangan/pembayaran/lain-lain?category=daftar-ulang', [
+            'transaction_date' => '2026-07-02',
+            'transaction_time' => '08:30:00',
+            'student_id' => $otherStudent->id,
+            'fee_type_id' => $registrationFee->id,
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'paid_amount' => 500000,
+        ])->assertForbidden();
+        $this->getJson(route('finance.other.show', $payment))->assertForbidden();
+        $this->get(route('finance.other.receipt', $payment))->assertForbidden();
+        $this->put(route('finance.other.update', $payment), [
+            'transaction_date' => '2026-07-02',
+            'transaction_time' => '08:30:00',
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+        ])->assertForbidden();
+        $this->delete(route('finance.other.destroy', $payment))->assertForbidden();
+
+        $this->assertDatabaseHas('other_payments', ['id' => $payment->id, 'paid_amount' => 500000]);
+    }
+
+    public function test_transfer_payment_proof_is_stored_privately_and_served_with_payment_access(): void
+    {
+        Storage::fake('local');
+        Storage::fake('public');
+        CarbonImmutable::setTestNow('2026-07-15 09:00:00');
+
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'RA', 'name' => 'RA Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'I A', 'level' => 'Kelas I', 'is_active' => true]);
+        SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'A1', 'level' => 'A1', 'is_active' => true]);
+        $student = Student::create([
+            'nis' => '880003',
+            'name' => 'Siswa Transfer Proof',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01',
+            'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id,
+            'payment_group' => 'spp',
+            'code' => 'SPP-MI-PROOF',
+            'name' => 'SPP MI Proof',
+            'amount' => 100000,
+            'period' => 'Bulanan',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->post(route('finance.payments.store'), [
+                'student_id' => $student->id,
+                'search' => $student->name,
+                'bill_keys' => [$student->id.':spp'],
+                'payment_method' => 'Transfer',
+                'paid_amount' => 100000,
+                'transfer_proof' => UploadedFile::fake()->create('proof.pdf', 12, 'application/pdf'),
+            ])
+            ->assertRedirect(route('finance.payments.index', [
+                'search' => $student->name,
+                'student_id' => $student->id,
+            ]));
+
+        $payment = SppPayment::firstOrFail();
+        $this->assertNotNull($payment->transfer_proof_path);
+        Storage::disk('local')->assertExists($payment->transfer_proof_path);
+        Storage::disk('public')->assertMissing($payment->transfer_proof_path);
+
+        $this->get(route('finance.spp.proof', $payment))->assertOk();
+
+        $this->actingAs($this->scopedCashier($otherUnit))
+            ->get(route('finance.spp.proof', $payment))
+            ->assertForbidden();
+
+        CarbonImmutable::setTestNow();
+    }
+
+    public function test_scoped_cashier_bulk_payment_cannot_include_linked_student_from_another_unit(): void
+    {
+        CarbonImmutable::setTestNow('2026-07-15 09:00:00');
+
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $assignedUnit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'PONPES', 'name' => 'PONPES Mambaul Hikmah', 'is_active' => true]);
+        $assignedClass = SchoolClass::create(['education_unit_id' => $assignedUnit->id, 'name' => '1A', 'level' => 'Kelas 1', 'is_active' => true]);
+        $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'Asrama', 'level' => 'Asrama', 'is_active' => true]);
+        $identity = Student::create([
+            'nis' => 'BULK-001',
+            'name' => 'Siswa Bulk Scope',
+            'gender' => 'L',
+            'school_class_id' => $assignedClass->id,
+            'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01',
+            'is_active' => true,
+        ]);
+        $linkedOtherUnit = Student::create([
+            'identity_student_id' => $identity->id,
+            'nis' => 'BULK-PP',
+            'name' => 'Siswa Bulk Scope',
+            'gender' => 'L',
+            'school_class_id' => $otherClass->id,
+            'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01',
+            'is_active' => true,
+        ]);
+        FeeType::create(['education_unit_id' => $assignedUnit->id, 'academic_year_id' => $year->id, 'payment_group' => 'spp', 'code' => 'SPP-MI-BULK', 'name' => 'SPP MI Bulk', 'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true]);
+        FeeType::create(['education_unit_id' => $otherUnit->id, 'academic_year_id' => $year->id, 'payment_group' => 'spp', 'code' => 'SPP-PP-BULK', 'name' => 'SPP PP Bulk', 'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true]);
+
+        $this->actingAs($this->scopedCashier($assignedUnit))
+            ->post(route('finance.payments.store'), [
+                'student_id' => $identity->id,
+                'search' => $identity->name,
+                'bill_keys' => [$identity->id.':spp', $linkedOtherUnit->id.':spp'],
+                'payment_method' => 'Cash',
+                'paid_amount' => 100000,
+            ])
+            ->assertRedirect(route('finance.payments.index', [
+                'search' => $identity->name,
+                'student_id' => $identity->id,
+            ]));
+
+        $this->assertDatabaseHas('spp_payments', ['student_id' => $identity->id, 'paid_amount' => 100000]);
+        $this->assertDatabaseMissing('spp_payments', ['student_id' => $linkedOtherUnit->id]);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'payments.bulk_create',
+            'student_count' => 1,
+        ]);
+
+        CarbonImmutable::setTestNow();
+    }
+
+    public function test_other_payment_import_is_unit_scoped_and_audited(): void
+    {
+        Storage::fake('local');
+        CarbonImmutable::setTestNow('2026-07-15 09:00:00');
+
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $assignedUnit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'MA', 'name' => 'MA Mambaul Hikmah', 'is_active' => true]);
+        $assignedClass = SchoolClass::create(['education_unit_id' => $assignedUnit->id, 'name' => '1A', 'level' => 'Kelas 1', 'is_active' => true]);
+        $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => '10A', 'level' => 'Kelas 10', 'is_active' => true]);
+        $assignedStudent = Student::create(['nis' => 'IMP-001', 'name' => 'Siswa Import Unit', 'gender' => 'L', 'school_class_id' => $assignedClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        $otherStudent = Student::create(['nis' => 'IMP-002', 'name' => 'Siswa Import Lain', 'gender' => 'P', 'school_class_id' => $otherClass->id, 'academic_year_id' => $year->id, 'is_active' => true]);
+        FeeType::create(['education_unit_id' => $assignedUnit->id, 'academic_year_id' => $year->id, 'payment_group' => 'daftar-ulang', 'code' => 'DU-MI-IMPORT', 'name' => 'Daftar Ulang Import', 'amount' => 100000, 'period' => 'Sekali Bayar', 'creates_bill' => true, 'is_active' => true]);
+        FeeType::create(['education_unit_id' => $otherUnit->id, 'academic_year_id' => $year->id, 'payment_group' => 'daftar-ulang', 'code' => 'DU-MA-IMPORT', 'name' => 'Daftar Ulang Import', 'amount' => 100000, 'period' => 'Sekali Bayar', 'creates_bill' => true, 'is_active' => true]);
+
+        $path = tempnam(sys_get_temp_dir(), 'other-import-');
+        StudentXlsx::write($path, [
+            ['NIS', 'Nama', 'Kategori Pembayaran', 'Jenis Pendidikan', 'Kelas', 'Cara Bayar', 'Nominal', 'Waktu', 'Petugas'],
+            [$assignedStudent->nis, $assignedStudent->name, 'Daftar Ulang Import', 'MI', '1A', 'Cash', '100000', '2026-07-15 09:00:00', 'Tester'],
+            [$otherStudent->nis, $otherStudent->name, 'Daftar Ulang Import', 'MA', '10A', 'Cash', '100000', '2026-07-15 09:05:00', 'Tester'],
+        ]);
+        $token = '11111111-1111-4111-8111-111111111111';
+        Storage::disk('local')->put('other-payment-imports/'.$token.'.xlsx', file_get_contents($path));
+        @unlink($path);
+
+        $this->actingAs($this->scopedCashier($assignedUnit))
+            ->withSession([
+                'other_payment_imports.'.$token => [
+                    'path' => 'other-payment-imports/'.$token.'.xlsx',
+                    'name' => 'other-payments.xlsx',
+                    'mappings' => [],
+                ],
+            ])
+            ->post(route('finance.other.import', ['category' => 'daftar-ulang']), ['token' => $token])
+            ->assertRedirect(route('finance.payments.import'));
+
+        $this->assertDatabaseHas('other_payments', ['student_id' => $assignedStudent->id, 'paid_amount' => 100000]);
+        $this->assertDatabaseMissing('other_payments', ['student_id' => $otherStudent->id]);
+        $audit = AuditLog::where('action', 'payments.other.import')->firstOrFail();
+        $this->assertSame(1, (int) $audit->metadata['imported']);
+        $this->assertSame(1, (int) $audit->metadata['failed_rows']);
+
+        CarbonImmutable::setTestNow();
+    }
+
+    public function test_other_payment_proof_is_served_with_payment_access(): void
+    {
+        Storage::fake('local');
+
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'PONPES Mambaul Hikmah', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'RA', 'name' => 'RA Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'Asrama', 'level' => 'Asrama', 'is_active' => true]);
+        SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'A1', 'level' => 'A1', 'is_active' => true]);
+        $student = Student::create([
+            'nis' => '880004',
+            'name' => 'Santri Proof',
+            'gender' => 'P',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        $feeType = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'payment_group' => 'daftar-ulang',
+            'code' => 'DU-PROOF',
+            'name' => 'Daftar Ulang Proof',
+            'amount' => 500000,
+            'period' => 'Sekali Bayar',
+            'is_active' => true,
+        ]);
+        Storage::disk('local')->put('payment-proofs/other-proof.pdf', 'proof');
+        $payment = OtherPayment::create([
+            'student_id' => $student->id,
+            'fee_type_id' => $feeType->id,
+            'transaction_at' => '2026-07-01 08:00:00',
+            'payment_method' => 'Transfer',
+            'transfer_proof_path' => 'payment-proofs/other-proof.pdf',
+            'status' => 'Diterima',
+            'original_amount' => 500000,
+            'discount_amount' => 0,
+            'total_amount' => 500000,
+            'paid_amount' => 500000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.other.proof', $payment))
+            ->assertOk();
+
+        $this->actingAs($this->scopedCashier($otherUnit))
+            ->get(route('finance.other.proof', $payment))
+            ->assertForbidden();
+    }
+
+    private function scopedCashier(EducationUnit $unit): User
+    {
+        Role::updateOrCreate(['key' => 'kasir'], [
+            'name' => 'Kasir',
+            'permissions' => ['payments.cash.create', 'payments.view_unit', 'payments.verify_transfer'],
+            'is_active' => true,
+        ]);
+
+        $user = User::factory()->create(['role' => 'kasir']);
+        $user->educationUnits()->attach($unit->id);
+
+        return $user;
     }
 }

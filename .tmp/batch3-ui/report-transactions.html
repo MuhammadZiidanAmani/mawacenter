@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Transaksi Pembayaran - MA'WA CENTER</title>
+    <link rel="preload" as="style" href="file:///C:/Projects/mawacenter/public/build/assets/app-CMfw4ZIf.css" /><link rel="modulepreload" as="script" href="file:///C:/Projects/mawacenter/public/build/assets/app-g3cJn-6F.js" /><link rel="stylesheet" href="file:///C:/Projects/mawacenter/public/build/assets/app-CMfw4ZIf.css" /><script type="module" src="file:///C:/Projects/mawacenter/public/build/assets/app-g3cJn-6F.js"></script></head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar" data-sidebar>
+    <div class="brand"><div class="brand-mark"><img src="http://127.0.0.1:8000/images/mawa-center-mark.png" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
+    <nav class="sidebar-nav">
+                <a href="http://127.0.0.1:8000" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>Dashboard</span></a>
+                        <div class="nav-group nested-nav ">
+            <button type="button" class="nav-item nav-parent " data-nav-toggle aria-expanded="false"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Manajemen Siswa</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                                <a href="http://127.0.0.1:8000/manajemen-siswa/data-siswa" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Data Siswa</span></a>
+                <a href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Kualitas Data</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/></svg><span>Rapikan Identitas</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/pindah-kelas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4-4m-4 4 4 4"/></svg><span>Pindah Kelas</span></a>
+                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m0 0-5 5m5-5 5 5"/></svg><span>Naik Kelas</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/alumni" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Data Alumni</span></a>
+                            </div>
+        </div>
+                        <a href="http://127.0.0.1:8000/keuangan/pembayaran" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h2"/></svg><span>Pembayaran</span></a>
+                        <a href="http://127.0.0.1:8000/keuangan/verifikasi-transfer" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/></svg><span>Verifikasi Transfer</span></a>
+                        <a href="http://127.0.0.1:8000/keuangan/tagihan" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>Tagihan</span></a>
+                        <div class="nav-group nested-nav open">
+            <button type="button" class="nav-item nav-parent active" data-nav-toggle aria-expanded="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Laporan</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                <a href="http://127.0.0.1:8000/laporan/transaksi" class="active"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Transaksi Pembayaran</span></a>
+                <a href="http://127.0.0.1:8000/laporan/spp-perbulan" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>SPP Perbulan</span></a>
+                <a href="http://127.0.0.1:8000/laporan/spp-tahun-pelajaran" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>SPP Pertahun</span></a>
+                <a href="http://127.0.0.1:8000/laporan/rekap-unit" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Rekap Per Unit</span></a>
+            </div>
+        </div>
+                        <div class="nav-group master-nav ">
+            <button type="button" class="nav-item nav-parent " data-master-nav-toggle aria-expanded="false"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Data Master</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                                    <a href="http://127.0.0.1:8000/master-data?tab=academic-years" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Tahun Pelajaran</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=education-units" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>Unit Pendidikan</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=classes" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Kelas</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=fee-types" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>Kategori Pembayaran</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=fee-discounts" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/></svg><span>Keringanan Biaya</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=data-roles" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/></svg><span>Data Role</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=data-users" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Data User</span></a>
+                            </div>
+        </div>
+                        <a href="http://127.0.0.1:8000/pengaturan" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/></svg><span>Pengaturan</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
+            </nav>
+</aside>
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+    <div class="main-panel">
+        <header class="topbar">
+            <button class="icon-button menu-toggle always-visible" data-sidebar-toggle><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+            <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>2026/2027</strong></div>
+            <div class="topbar-spacer"></div>
+            <button class="icon-button notification-button"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></button>
+            <form method="POST" action="http://127.0.0.1:8000/logout" class="logout-form">
+    <input type="hidden" name="_token" value="4sB14wZkESyvlbbn0vafTYt6PBDfaht1z5xHLPVh" autocomplete="off">    <button class="icon-button logout-button" type="submit" aria-label="Keluar" title="Keluar"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></svg></button>
+</form>
+        </header>
+
+        <main class="report-page-v2 report-page-transactions">
+            <section class="report-workspace-v2">
+                <div class="report-heading-v2">
+                    <div>
+                        <h1>Transaksi Pembayaran</h1>
+                        <p>Rekap pembayaran harian berdasarkan periode, unit, kelas, dan petugas.</p>
+                    </div>
+                                            <div class="report-export-actions">
+                            <a href="http://127.0.0.1:8000/laporan/transaksi/export/xlsx" class="button report-export-button"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 19h16"/></svg> XLSX</a>
+                            <a href="http://127.0.0.1:8000/laporan/transaksi/export/pdf" class="button report-export-button secondary"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> PDF</a>
+                        </div>
+                                    </div>
+
+                <form method="GET" action="http://127.0.0.1:8000/laporan/transaksi" class="report-filter-card-v2 report-filter-transactions">
+                                            <label class="">
+                            <span>Tanggal Dari</span>
+                                                            <input type="date" name="date_from" value="2026-08-14">
+                                                    </label>
+                                            <label class="">
+                            <span>Tanggal Sampai</span>
+                                                            <input type="date" name="date_to" value="2026-08-14">
+                                                    </label>
+                                            <label class="">
+                            <span>Unit Pendidikan</span>
+                                                            <select name="unit_id"  data-student-filter-unit    >
+                                                                                                                    <option value=""   selected>Semua</option>
+                                                                                                                    <option value="2"   >PAUD</option>
+                                                                                                                    <option value="3"   >RA</option>
+                                                                                                                    <option value="4"   >MI</option>
+                                                                                                                    <option value="5"   >MTs</option>
+                                                                                                                    <option value="6"   >MA</option>
+                                                                                                                    <option value="7"   >ULYA</option>
+                                                                                                                    <option value="8"   >PONPES</option>
+                                                                    </select>
+                                                    </label>
+                                            <label class="">
+                            <span>Kelas</span>
+                                                            <select name="class_id"   data-student-filter-class data-class-requires-unit   >
+                                                                                                                    <option value=""   selected>Semua</option>
+                                                                                                                    <option value="3"  data-unit-id="2"   >KELOMPOK BERMAIN</option>
+                                                                                                                    <option value="138"  data-unit-id="3"   >A1 BUNG HATTA</option>
+                                                                                                                    <option value="139"  data-unit-id="3"   >A2 CUT MEUTIA</option>
+                                                                                                                    <option value="140"  data-unit-id="3"   >A3 PATTIMURA</option>
+                                                                                                                    <option value="141"  data-unit-id="3"   >A4 RASUNA SAID</option>
+                                                                                                                    <option value="142"  data-unit-id="3"   >B1 HASANUDDIN</option>
+                                                                                                                    <option value="143"  data-unit-id="3"   >B2 CUT NYAK DIEN</option>
+                                                                                                                    <option value="144"  data-unit-id="3"   >B3 DIPONEGORO</option>
+                                                                                                                    <option value="145"  data-unit-id="3"   >B4 DEWI SARTIKA</option>
+                                                                                                                    <option value="146"  data-unit-id="3"   >B5 TEUKU UMAR</option>
+                                                                                                                    <option value="147"  data-unit-id="3"   >B6 KARTINI</option>
+                                                                                                                    <option value="148"  data-unit-id="3"   >B7 KI HAJAR</option>
+                                                                                                                    <option value="149"  data-unit-id="3"   >KELUAR</option>
+                                                                                                                    <option value="85"  data-unit-id="4"   >1A</option>
+                                                                                                                    <option value="86"  data-unit-id="4"   >1B</option>
+                                                                                                                    <option value="94"  data-unit-id="4"   >2A.1</option>
+                                                                                                                    <option value="95"  data-unit-id="4"   >2A.2</option>
+                                                                                                                    <option value="97"  data-unit-id="4"   >2B.1</option>
+                                                                                                                    <option value="98"  data-unit-id="4"   >2B.2</option>
+                                                                                                                    <option value="87"  data-unit-id="4"   >3A</option>
+                                                                                                                    <option value="91"  data-unit-id="4"   >3B</option>
+                                                                                                                    <option value="88"  data-unit-id="4"   >4A</option>
+                                                                                                                    <option value="92"  data-unit-id="4"   >4B</option>
+                                                                                                                    <option value="89"  data-unit-id="4"   >5A</option>
+                                                                                                                    <option value="93"  data-unit-id="4"   >5B</option>
+                                                                                                                    <option value="90"  data-unit-id="4"   >6A</option>
+                                                                                                                    <option value="96"  data-unit-id="4"   >6B</option>
+                                                                                                                    <option value="99"  data-unit-id="5"   >7A</option>
+                                                                                                                    <option value="100"  data-unit-id="5"   >7B</option>
+                                                                                                                    <option value="101"  data-unit-id="5"   >7C</option>
+                                                                                                                    <option value="102"  data-unit-id="5"   >7D</option>
+                                                                                                                    <option value="103"  data-unit-id="5"   >7E</option>
+                                                                                                                    <option value="104"  data-unit-id="5"   >8A</option>
+                                                                                                                    <option value="105"  data-unit-id="5"   >8B</option>
+                                                                                                                    <option value="106"  data-unit-id="5"   >8C</option>
+                                                                                                                    <option value="107"  data-unit-id="5"   >8D</option>
+                                                                                                                    <option value="108"  data-unit-id="5"   >8E</option>
+                                                                                                                    <option value="109"  data-unit-id="5"   >8F</option>
+                                                                                                                    <option value="110"  data-unit-id="5"   >9A</option>
+                                                                                                                    <option value="111"  data-unit-id="5"   >9B</option>
+                                                                                                                    <option value="112"  data-unit-id="5"   >9C</option>
+                                                                                                                    <option value="113"  data-unit-id="5"   >9D</option>
+                                                                                                                    <option value="114"  data-unit-id="5"   >9E</option>
+                                                                                                                    <option value="115"  data-unit-id="5"   >9F</option>
+                                                                                                                    <option value="116"  data-unit-id="5"   >LULUSAN 2024/2025</option>
+                                                                                                                    <option value="78"  data-unit-id="6"   >10A</option>
+                                                                                                                    <option value="79"  data-unit-id="6"   >10B</option>
+                                                                                                                    <option value="81"  data-unit-id="6"   >11A</option>
+                                                                                                                    <option value="80"  data-unit-id="6"   >11B</option>
+                                                                                                                    <option value="82"  data-unit-id="6"   >12A</option>
+                                                                                                                    <option value="83"  data-unit-id="6"   >12B</option>
+                                                                                                                    <option value="84"  data-unit-id="6"   >LULUSAN 2024/2025</option>
+                                                                                                                    <option value="77"  data-unit-id="7"   >12C</option>
+                                                                                                                    <option value="133"  data-unit-id="8"   >10A</option>
+                                                                                                                    <option value="134"  data-unit-id="8"   >10B</option>
+                                                                                                                    <option value="136"  data-unit-id="8"   >11A</option>
+                                                                                                                    <option value="135"  data-unit-id="8"   >11B</option>
+                                                                                                                    <option value="128"  data-unit-id="8"   >12A</option>
+                                                                                                                    <option value="129"  data-unit-id="8"   >12B</option>
+                                                                                                                    <option value="137"  data-unit-id="8"   >12C</option>
+                                                                                                                    <option value="117"  data-unit-id="8"   >7A</option>
+                                                                                                                    <option value="118"  data-unit-id="8"   >7B</option>
+                                                                                                                    <option value="119"  data-unit-id="8"   >7D</option>
+                                                                                                                    <option value="120"  data-unit-id="8"   >7E</option>
+                                                                                                                    <option value="121"  data-unit-id="8"   >8A</option>
+                                                                                                                    <option value="122"  data-unit-id="8"   >8B</option>
+                                                                                                                    <option value="123"  data-unit-id="8"   >8D</option>
+                                                                                                                    <option value="124"  data-unit-id="8"   >8E</option>
+                                                                                                                    <option value="125"  data-unit-id="8"   >9A</option>
+                                                                                                                    <option value="126"  data-unit-id="8"   >9B</option>
+                                                                                                                    <option value="127"  data-unit-id="8"   >9D</option>
+                                                                                                                    <option value="132"  data-unit-id="8"   >9E</option>
+                                                                                                                    <option value="131"  data-unit-id="8"   >BANAT SALAF</option>
+                                                                                                                    <option value="130"  data-unit-id="8"   >BANIN SALAF</option>
+                                                                    </select>
+                                                    </label>
+                                            <label class="">
+                            <span>Petugas</span>
+                                                            <select name="operator_name"    >
+                                                                                                                    <option value=""   selected>Semua</option>
+                                                                                                                    <option value="Bilal Muadzin"   >Bilal Muadzin</option>
+                                                                                                                    <option value="Isa Absir"   >Isa Absir</option>
+                                                                                                                    <option value="Muzaki"   >Muzaki</option>
+                                                                                                                    <option value="Ziidan Amani"   >Ziidan Amani</option>
+                                                                    </select>
+                                                    </label>
+                    
+                    
+                    <div class="report-filter-actions-v2">
+                        <button class="button report-apply-button">Terapkan</button>
+                        <a class="button report-reset-button" href="http://127.0.0.1:8000/laporan/transaksi">Reset</a>
+                    </div>
+                </form>
+
+                
+                
+                                                                                <section class="report-chart-dashboard-v3" aria-label="Diagram semua transaksi">
+                            <div class="report-chart-card-v3 report-chart-unit-v3">
+                                <div class="report-chart-card-head-v3">
+                                    <div>
+                                        <h2>Pembayaran per Unit Pendidikan</h2>
+                                        <p>Total pembayaran yang diterima dari setiap unit pendidikan.</p>
+                                    </div>
+                                </div>
+
+                                <div class="report-unit-chart-v4">
+                                                                            <div class="report-unit-axis-v4">
+                                                                                            <span>Rp4</span>
+                                                                                            <span>Rp3</span>
+                                                                                            <span>Rp2</span>
+                                                                                            <span>Rp1</span>
+                                                                                            <span>Rp0</span>
+                                                                                    </div>
+                                        <div class="report-unit-plot-v4">
+                                            <div class="report-unit-grid-v4" aria-hidden="true">
+                                                                                                    <i></i>
+                                                                                                    <i></i>
+                                                                                                    <i></i>
+                                                                                                    <i></i>
+                                                                                                    <i></i>
+                                                                                            </div>
+                                            <div class="report-unit-bars-v4" style="--unit-count: 7;">
+                                                                                                                                                        <div style="--bar-height: 2%;" title="PAUD MAMBAUL HIKMAH Rp 0">
+                                                        <i></i>
+                                                        <span>PAUD</span>
+                                                    </div>
+                                                                                                                                                        <div style="--bar-height: 2%;" title="RA MAMBAUL HIKMAH Rp 0">
+                                                        <i></i>
+                                                        <span>RA</span>
+                                                    </div>
+                                                                                                                                                        <div style="--bar-height: 2%;" title="MI MAMBAUL HIKMAH Rp 0">
+                                                        <i></i>
+                                                        <span>MI</span>
+                                                    </div>
+                                                                                                                                                        <div style="--bar-height: 2%;" title="MTs MAMBAUL HIKMAH Rp 0">
+                                                        <i></i>
+                                                        <span>MTs</span>
+                                                    </div>
+                                                                                                                                                        <div style="--bar-height: 2%;" title="MA MAMBAUL HIKMAH Rp 0">
+                                                        <i></i>
+                                                        <span>MA</span>
+                                                    </div>
+                                                                                                                                                        <div style="--bar-height: 2%;" title="KESETARAAN ULYA MAMBAUL HIKMAH Rp 0">
+                                                        <i></i>
+                                                        <span>ULYA</span>
+                                                    </div>
+                                                                                                                                                        <div style="--bar-height: 2%;" title="PONPES MAMBAUL HIKMAH Rp 0">
+                                                        <i></i>
+                                                        <span>PONPES</span>
+                                                    </div>
+                                                                                            </div>
+                                        </div>
+                                                                    </div>
+
+                                <div class="report-payment-method-summary-v3" aria-label="Ringkasan cara bayar">
+                                    <div class="report-payment-method-total-v3">
+                                        <span>Jumlah Penerimaan</span>
+                                        <strong>Rp 0</strong>
+                                        <small>0 transaksi diterima</small>
+                                    </div>
+                                    <div class="report-payment-method-split-v3">
+                                                                                    <div>
+                                                <span>Cash</span>
+                                                <strong>Rp 0</strong>
+                                                <small>0 transaksi</small>
+                                            </div>
+                                                                                    <div>
+                                                <span>Transfer</span>
+                                                <strong>Rp 0</strong>
+                                                <small>0 transaksi</small>
+                                            </div>
+                                                                            </div>
+                                </div>
+                            </div>
+
+                            <div class="report-chart-card-v3 report-chart-class-v3">
+                                <div class="report-chart-card-head-v3">
+                                    <div>
+                                        <h2>Pembayaran per Kelas</h2>
+                                        <p>Rincian pendapatan per kelas.</p>
+                                    </div>
+                                </div>
+
+                                <div class="report-class-progress-v3">
+                                                                            <div class="report-chart-empty-v3">Belum ada penerimaan kelas.</div>
+                                                                    </div>
+                            </div>
+                        </section>
+                                    
+                                    <section class="report-summary-table-section">
+                        <div class="table-wrap">
+                            <table class="report-table-v2 report-summary-table-v2">
+                                <thead>
+                                    <tr>
+                                                                                    <th>No</th>
+                                                                                    <th>Unit Pendidikan</th>
+                                                                                    <th>Jumlah Transaksi</th>
+                                                                                    <th>Cash</th>
+                                                                                    <th>Transfer</th>
+                                                                                    <th>Jumlah Penerimaan</th>
+                                                                            </tr>
+                                </thead>
+                                <tbody>
+                                                                            <tr>
+                                                                                            <td class="report-number-cell">
+                                                                                                            1
+                                                                                                    </td>
+                                                                                            <td class="report-text-cell">
+                                                                                                            PAUD MAMBAUL HIKMAH
+                                                                                                    </td>
+                                                                                            <td class="report-number-cell">
+                                                                                                            0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                    </tr>
+                                                                            <tr>
+                                                                                            <td class="report-number-cell">
+                                                                                                            2
+                                                                                                    </td>
+                                                                                            <td class="report-text-cell">
+                                                                                                            RA MAMBAUL HIKMAH
+                                                                                                    </td>
+                                                                                            <td class="report-number-cell">
+                                                                                                            0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                    </tr>
+                                                                            <tr>
+                                                                                            <td class="report-number-cell">
+                                                                                                            3
+                                                                                                    </td>
+                                                                                            <td class="report-text-cell">
+                                                                                                            MI MAMBAUL HIKMAH
+                                                                                                    </td>
+                                                                                            <td class="report-number-cell">
+                                                                                                            0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                    </tr>
+                                                                            <tr>
+                                                                                            <td class="report-number-cell">
+                                                                                                            4
+                                                                                                    </td>
+                                                                                            <td class="report-text-cell">
+                                                                                                            MTs MAMBAUL HIKMAH
+                                                                                                    </td>
+                                                                                            <td class="report-number-cell">
+                                                                                                            0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                    </tr>
+                                                                            <tr>
+                                                                                            <td class="report-number-cell">
+                                                                                                            5
+                                                                                                    </td>
+                                                                                            <td class="report-text-cell">
+                                                                                                            MA MAMBAUL HIKMAH
+                                                                                                    </td>
+                                                                                            <td class="report-number-cell">
+                                                                                                            0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                    </tr>
+                                                                            <tr>
+                                                                                            <td class="report-number-cell">
+                                                                                                            6
+                                                                                                    </td>
+                                                                                            <td class="report-text-cell">
+                                                                                                            KESETARAAN ULYA MAMBAUL HIKMAH
+                                                                                                    </td>
+                                                                                            <td class="report-number-cell">
+                                                                                                            0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                    </tr>
+                                                                            <tr>
+                                                                                            <td class="report-number-cell">
+                                                                                                            7
+                                                                                                    </td>
+                                                                                            <td class="report-text-cell">
+                                                                                                            PONPES MAMBAUL HIKMAH
+                                                                                                    </td>
+                                                                                            <td class="report-number-cell">
+                                                                                                            0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                    </tr>
+                                                                    </tbody>
+                                                                                                        <tfoot>
+                                        <tr>
+                                            <td colspan="2" class="report-total-label-cell">Total Keseluruhan</td>
+                                                                                            <td class="report-number-cell">
+                                                                                                            0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                            <td class="report-money-cell">
+                                                                                                            Rp 0
+                                                                                                    </td>
+                                                                                    </tr>
+                                    </tfoot>
+                                                            </table>
+                        </div>
+                    </section>
+                
+                                <div class="report-table-toolbar-v2">
+                    <form method="GET" action="http://127.0.0.1:8000/laporan/transaksi" class="report-page-size-form">
+                                                <label>Tampilkan
+                            <select name="per_page" onchange="this.form.submit()">
+                                                                    <option value="10" selected>10</option>
+                                                                    <option value="25" >25</option>
+                                                                    <option value="50" >50</option>
+                                                                    <option value="100" >100</option>
+                                                                    <option value="500" >500</option>
+                                                                <option value="all" >All</option>
+                            </select>
+                            data
+                        </label>
+                    </form>
+                                                                        <form method="GET" action="http://127.0.0.1:8000/laporan/transaksi" class="report-student-search-card">
+                                                                <label>
+                                    <span>Cari Siswa</span>
+                                    <span class="report-student-search-input">
+                                        <svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                                        <input type="search" name="student_search" value="" placeholder="Nama / NIS / NISN" autocomplete="off">
+                                    </span>
+                                </label>
+                            </form>
+                                                            </div>
+
+                <section class="report-table-section-v2">
+                    <div class="table-wrap">
+                        <table class="report-table-v2 report-main-table-v2 is-empty">
+                            <thead>
+                                <tr>
+                                                                                                                    <th class="">
+                                                                                            No
+                                                                                    </th>
+                                                                                                                    <th class="report-sortable-heading">
+                                                                                            <a class="report-sort-link" href="http://127.0.0.1:8000/laporan/transaksi?sort=date&amp;direction=asc" aria-label="Urutkan Tanggal naik" title="Urutkan Tanggal naik">
+                                                    <span>Tanggal</span>
+                                                    <span class="report-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                                                                                                    </a>
+                                                                                    </th>
+                                                                                                                    <th class="report-sortable-heading">
+                                                                                            <a class="report-sort-link" href="http://127.0.0.1:8000/laporan/transaksi?sort=nis&amp;direction=asc" aria-label="Urutkan NIS naik" title="Urutkan NIS naik">
+                                                    <span>NIS</span>
+                                                    <span class="report-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                                                                                                    </a>
+                                                                                    </th>
+                                                                                                                    <th class="report-sortable-heading">
+                                                                                            <a class="report-sort-link" href="http://127.0.0.1:8000/laporan/transaksi?sort=student&amp;direction=asc" aria-label="Urutkan Nama Siswa naik" title="Urutkan Nama Siswa naik">
+                                                    <span>Nama Siswa</span>
+                                                    <span class="report-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                                                                                                    </a>
+                                                                                    </th>
+                                                                                                                    <th class="report-sortable-heading">
+                                                                                            <a class="report-sort-link" href="http://127.0.0.1:8000/laporan/transaksi?sort=unit&amp;direction=asc" aria-label="Urutkan Unit naik" title="Urutkan Unit naik">
+                                                    <span>Unit</span>
+                                                    <span class="report-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                                                                                                    </a>
+                                                                                    </th>
+                                                                                                                    <th class="report-sortable-heading">
+                                                                                            <a class="report-sort-link" href="http://127.0.0.1:8000/laporan/transaksi?sort=class&amp;direction=asc" aria-label="Urutkan Kelas naik" title="Urutkan Kelas naik">
+                                                    <span>Kelas</span>
+                                                    <span class="report-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                                                                                                    </a>
+                                                                                    </th>
+                                                                                                                    <th class="report-sortable-heading">
+                                                                                            <a class="report-sort-link" href="http://127.0.0.1:8000/laporan/transaksi?sort=type&amp;direction=asc" aria-label="Urutkan Jenis Pembayaran naik" title="Urutkan Jenis Pembayaran naik">
+                                                    <span>Jenis Pembayaran</span>
+                                                    <span class="report-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                                                                                                    </a>
+                                                                                    </th>
+                                                                                                                    <th class="report-sortable-heading">
+                                                                                            <a class="report-sort-link" href="http://127.0.0.1:8000/laporan/transaksi?sort=method&amp;direction=asc" aria-label="Urutkan Cara Bayar naik" title="Urutkan Cara Bayar naik">
+                                                    <span>Cara Bayar</span>
+                                                    <span class="report-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                                                                                                    </a>
+                                                                                    </th>
+                                                                                                                    <th class="report-sortable-heading">
+                                                                                            <a class="report-sort-link" href="http://127.0.0.1:8000/laporan/transaksi?sort=operator&amp;direction=asc" aria-label="Urutkan Petugas naik" title="Urutkan Petugas naik">
+                                                    <span>Petugas</span>
+                                                    <span class="report-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                                                                                                    </a>
+                                                                                    </th>
+                                                                                                                    <th class="report-sortable-heading">
+                                                                                            <a class="report-sort-link" href="http://127.0.0.1:8000/laporan/transaksi?sort=amount&amp;direction=asc" aria-label="Urutkan Nominal naik" title="Urutkan Nominal naik">
+                                                    <span>Nominal</span>
+                                                    <span class="report-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></span>
+                                                                                                    </a>
+                                                                                    </th>
+                                                                    </tr>
+                            </thead>
+                            <tbody>
+                                                                    <tr>
+                                        <td colspan="10" class="empty-state">
+                                            Belum ada data pada filter ini.
+                                        </td>
+                                    </tr>
+                                                            </tbody>
+                                                    </table>
+                    </div>
+                </section>
+
+                                                                                <div class="report-pagination report-pagination-summary-only">
+                            <p>Menampilkan 0 data</p>
+                        </div>
+                                                </section>
+
+                            <div class="modal-backdrop" data-other-edit-modal>
+                    <div class="form-modal spp-edit-modal">
+                        <div class="form-modal-header">
+                            <div>
+                                <p class="eyebrow">Pembayaran</p>
+                                <h2>Edit Transaksi</h2>
+                            </div>
+                            <button type="button" class="icon-button" data-other-crud-close>&times;</button>
+                        </div>
+                        <form method="POST" data-other-edit-form class="master-form spp-edit-form">
+                            <input type="hidden" name="_token" value="4sB14wZkESyvlbbn0vafTYt6PBDfaht1z5xHLPVh" autocomplete="off">                            <input type="hidden" name="_method" value="PUT">                            <input type="hidden" name="return_url" value="http://localhost/laporan/transaksi">
+                            <div class="spp-edit-readonly"><span data-other-edit-summary>Data siswa dan kategori pembayaran tidak dapat diubah.</span></div>
+                            <label>Tanggal Transaksi<input type="date" name="transaction_date" required></label>
+                            <label>Jam Transaksi (WIB)<input type="text" name="transaction_time" inputmode="numeric" placeholder="Contoh: 18.00" pattern="(?:[01]\d|2[0-3])[.:][0-5]\d" required></label>
+                            <label>Cara Bayar<select name="payment_method" required><option>Cash</option><option>Transfer</option></select></label>
+                            <label>Status Penerimaan<select name="status" required><option>Diterima</option><option>Pending</option></select></label>
+                            <div class="form-actions span-2">
+                                <button type="button" class="button button-secondary" data-other-crud-close>Batal</button>
+                                <button class="button button-primary">Simpan Perubahan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                    </main>
+        <footer class="app-footer" aria-label="Copyright">
+    &copy; 2026 Ma'wa Center
+</footer>
+    </div>
+</div>
+</body>
+</html>
