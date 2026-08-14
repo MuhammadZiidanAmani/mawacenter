@@ -866,6 +866,30 @@ class MasterDataTest extends TestCase
             ->assertDontSee('<select name="education_unit_id" required><option value="1">', false);
     }
 
+    public function test_master_data_uses_table_toolbar_footer_summary_and_sortable_headings(): void
+    {
+        foreach ([
+            'academic-years' => 'sort=name&amp;direction=asc',
+            'education-units' => 'sort=code&amp;direction=asc',
+            'classes' => 'sort=name&amp;direction=asc',
+            'fee-types' => 'sort=amount&amp;direction=asc',
+            'fee-discounts' => 'sort=student&amp;direction=asc',
+            'data-roles' => 'sort=users_count&amp;direction=asc',
+            'data-users' => 'sort=email&amp;direction=asc',
+        ] as $tab => $sortLink) {
+            $this->get('/master-data?tab='.$tab)
+                ->assertOk()
+                ->assertSee('master-table-toolbar', false)
+                ->assertSee('master-table-search', false)
+                ->assertSee('master-data-pagination-footer', false)
+                ->assertSee('master-sort-link', false)
+                ->assertSee('Cari data')
+                ->assertSee('Menampilkan')
+                ->assertSee($sortLink, false)
+                ->assertDontSee('list-sort-heading', false);
+        }
+    }
+
     public function test_all_master_data_can_be_created(): void
     {
         $this->post('/master-data/academic-years', ['name' => '2025/2026', 'is_active' => 1])->assertRedirect();
@@ -926,7 +950,7 @@ class MasterDataTest extends TestCase
 
         $this->get('/master-data?tab=classes')
             ->assertOk()
-            ->assertSee('<td><strong>2</strong></td>', false)
+            ->assertSee('<td>Madrasah Tsanawiyah</td><td>2</td>', false)
             ->assertSee('<option value="'.$year->id.'" selected>'.$year->name.'</option>', false)
             ->assertViewHas('data', fn ($data) => $data->total() === 5
                 && $data->getCollection()->firstWhere('name', 'Kelas MTs')->students_count === 2);
@@ -1002,10 +1026,10 @@ class MasterDataTest extends TestCase
         $this->get('/master-data?tab=academic-years')
             ->assertOk()
             ->assertSee('academic-year-table', false)
-            ->assertSee('<th>Tahun Pelajaran</th>', false)
-            ->assertSee('<th>Mulai</th>', false)
-            ->assertSee('<th>Sampai</th>', false)
-            ->assertSee('<th>Status</th>', false)
+            ->assertSee('Urutkan Tahun Pelajaran naik')
+            ->assertSee('Urutkan Mulai naik')
+            ->assertSee('Urutkan Sampai naik')
+            ->assertSee('Urutkan Status naik')
             ->assertDontSee('<th>Jumlah Siswa</th>', false)
             ->assertDontSee('<th>Dibuat</th>', false);
     }
@@ -1218,7 +1242,7 @@ class MasterDataTest extends TestCase
             ->assertSee('2025/2026')
             ->assertSee('Rp 1.250.000')
             ->assertDontSee('<th>Tahun Pelajaran</th>', false)
-            ->assertSee('<th>Status</th>', false)
+            ->assertSee('Urutkan Status naik')
             ->assertDontSee('<th>Kelompok</th>', false)
             ->assertDontSee('<th>Periode</th>', false)
             ->assertDontSee('Set Daftar Ulang');
@@ -1281,8 +1305,8 @@ class MasterDataTest extends TestCase
             ->assertDontSee('Set Biaya')
             ->assertDontSee('Yang Dibayarkan')
             ->assertDontSee('data-spp-row-toggle="fee-discount-', false)
-            ->assertSee('<th>Unit</th>', false)
-            ->assertSee('<th>Kelas</th>', false)
+            ->assertSee('Urutkan Unit naik')
+            ->assertSee('Urutkan Kelas naik')
             ->assertDontSee('<th>Status</th>', false)
             ->assertDontSee('Periode')
             ->assertDontSee('Rp 300.000');

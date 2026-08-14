@@ -78,7 +78,11 @@ class MasterDataController extends Controller
         $data = match ($tab) {
             'academic-years' => AcademicYear::withCount('students')
                 ->when($search, fn ($query) => $query->where('name', 'like', "%{$search}%"))
-                ->orderByDesc('name')
+                ->when(
+                    in_array($listSort, ['name', 'start_date', 'end_date', 'is_active'], true),
+                    fn ($query) => $query->orderBy($listSort, $listDirection),
+                    fn ($query) => $query->orderByDesc('name')
+                )
                 ->paginate($perPage)->withQueryString(),
             'education-units' => EducationUnit::withCount('schoolClasses')
                 ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('code', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")))
@@ -155,17 +159,26 @@ class MasterDataController extends Controller
                 return $query->paginate($feeTypePerPage)->withQueryString();
             })(),
             'fee-discounts' => (function () use ($request, $search, $feeDiscountYearId, $feeDiscountStatus, $listSort, $listDirection, $perPage, $unitIds) {
-                $query = FeeDiscount::with(['student.schoolClass.educationUnit', 'feeType'])
-                    ->when($search, fn ($query) => $query->whereHas('student', fn ($q) => $q->where('name', 'like', "%{$search}%")->orWhere('nis', 'like', "%{$search}%")))
+                $query = FeeDiscount::select('fee_discounts.*')
+                    ->with(['student.schoolClass.educationUnit', 'feeType'])
+                    ->leftJoin('students', 'students.id', '=', 'fee_discounts.student_id')
+                    ->leftJoin('school_classes', 'school_classes.id', '=', 'students.school_class_id')
+                    ->leftJoin('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                    ->leftJoin('fee_types', 'fee_types.id', '=', 'fee_discounts.fee_type_id')
+                    ->when($search, fn ($query) => $query->where(fn ($q) => $q->where('students.name', 'like', "%{$search}%")->orWhere('students.nis', 'like', "%{$search}%")))
                     ->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereHas('student.schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
                     ->when($request->integer('unit_id'), fn ($query, $unitId) => $query->whereHas('student.schoolClass', fn ($class) => $class->where('education_unit_id', $unitId)))
                     ->when($request->integer('class_id'), fn ($query, $classId) => $query->whereHas('student', fn ($student) => $student->where('school_class_id', $classId)))
                     ->when($feeDiscountYearId, fn ($query, $yearId) => $query->whereHas('student', fn ($student) => $student->where('academic_year_id', $yearId)))
-                    ->when($feeDiscountStatus !== null && $feeDiscountStatus !== 'all', fn ($query) => $query->where('is_active', $feeDiscountStatus === 'active'))
+                    ->when($feeDiscountStatus !== null && $feeDiscountStatus !== 'all', fn ($query) => $query->where('fee_discounts.is_active', $feeDiscountStatus === 'active'))
                     ->orderBy(match ($listSort) {
-                        'student' => 'student_id', 'payment' => 'source_type',
-                        'discount' => 'discount_value', 'is_active' => 'is_active',
-                        default => 'created_at',
+                        'student' => 'students.name',
+                        'unit' => 'education_units.code',
+                        'class' => 'school_classes.name',
+                        'payment' => 'fee_types.name',
+                        'discount' => 'fee_discounts.discount_value',
+                        'is_active' => 'fee_discounts.is_active',
+                        default => 'fee_discounts.created_at',
                     }, $listSort ? $listDirection : 'desc');
 
                 $feeDiscountPerPage = $request->query('per_page') === 'all'

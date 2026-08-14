@@ -17,6 +17,9 @@
         'school' => '<path d="m3 10 9-5 9 5-9 5-9-5Z"/><path d="M7 12v5c3 2 7 2 10 0v-5"/>',
         'info' => '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
         'calendar' => '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+        'sort' => '<path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/>',
+        'sort-up' => '<path d="m7 14 5-5 5 5"/>',
+        'sort-down' => '<path d="m7 10 5 5 5-5"/>',
     ];
     $icon = fn ($name, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$icons[$name].'</svg>';
     $selectedUnitId = $filters['unit_id'] ?? null;
@@ -77,11 +80,10 @@
                             </select>
                         </label>
                     </div>
-                    <label class="student-reference-search student-fee-filter-search">
-                        <span>Cari alumni</span>
-                        {!! $icon('search') !!}
-                        <input name="search" value="{{ $filters['search'] }}" placeholder="Nama, NIS, NISN, unit, kelas..." aria-label="Cari alumni berdasarkan nama, NIS, NISN, unit, kelas, tahun, atau alasan nonaktif">
-                    </label>
+                    @if($filters['search'] !== '')<input type="hidden" name="search" value="{{ $filters['search'] }}">@endif
+                    <input type="hidden" name="per_page" value="{{ $filters['per_page'] }}">
+                    @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}">@endif
+                    @if(request('direction'))<input type="hidden" name="direction" value="{{ request('direction') }}">@endif
                     <div class="student-filter-actions student-fee-card-filter-actions fee-type-card-filter-actions">
                         <button class="button student-fee-card-search-button fee-type-card-search-button" type="submit" aria-label="Tampilkan data alumni">Terapkan</button>
                         <a href="{{ route('student-management.alumni.index') }}" class="button student-fee-card-reset-button fee-type-card-reset-button">Reset</a>
@@ -90,9 +92,9 @@
             </section>
 
             <section class="card master-card student-data-card student-list-table-card">
-                <div class="student-reference-card-count">
+                <div class="student-reference-card-count student-management-table-toolbar">
                     <form method="GET" action="{{ route('student-management.alumni.index') }}" class="student-reference-card-length">
-                    @foreach(request()->except(['per_page', 'page']) as $key => $value)
+                    @foreach(request()->except(['per_page', 'page', 'search']) as $key => $value)
                             @if(is_scalar($value))
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                             @endif
@@ -107,9 +109,20 @@
                             alumni
                         </label>
                     </form>
-                    <span>
-                        {{ ($alumni->total() ?? 0) > 0 ? 'Menampilkan '.number_format($alumni->firstItem(), 0, ',', '.').'-'.number_format($alumni->lastItem(), 0, ',', '.').' dari '.number_format($alumni->total(), 0, ',', '.').' alumni' : 'Menampilkan 0 dari 0 alumni' }}
-                    </span>
+                    <form method="GET" action="{{ route('student-management.alumni.index') }}" class="report-student-search-card student-management-search-card" role="search">
+                        @foreach(request()->except(['search', 'page']) as $key => $value)
+                            @if(is_scalar($value))
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endif
+                        @endforeach
+                        <label>
+                            <span>Cari alumni</span>
+                            <span class="master-table-search-input">
+                                {!! $icon('search') !!}
+                                <input type="search" name="search" value="{{ $filters['search'] }}" placeholder="Nama, NIS, NISN, unit, kelas..." aria-label="Cari alumni">
+                            </span>
+                        </label>
+                    </form>
                 </div>
 
                 <div class="table-wrap alumni-table-wrap">
@@ -130,14 +143,14 @@
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>NIS</th>
+                                @include('partials.master-sort-heading', ['column' => 'nis', 'label' => 'NIS'])
                                 <th>NISN</th>
-                                <th>Nama Siswa</th>
-                                <th>JK</th>
-                                <th>Unit</th>
-                                <th>Kelas</th>
-                                <th>Tahun</th>
-                                <th>Tanggal Keluar</th>
+                                @include('partials.master-sort-heading', ['column' => 'name', 'label' => 'Nama Siswa'])
+                                @include('partials.master-sort-heading', ['column' => 'gender', 'label' => 'JK'])
+                                @include('partials.master-sort-heading', ['column' => 'unit', 'label' => 'Unit'])
+                                @include('partials.master-sort-heading', ['column' => 'class', 'label' => 'Kelas'])
+                                @include('partials.master-sort-heading', ['column' => 'year', 'label' => 'Tahun'])
+                                @include('partials.master-sort-heading', ['column' => 'exit_date', 'label' => 'Tanggal Keluar'])
                                 <th>Alasan</th>
                                 <th>Aksi</th>
                             </tr>
@@ -173,23 +186,62 @@
                     </table>
                 </div>
 
-                @if($alumni->hasPages())
-                    @php
-                        $alumniPageUrl = fn ($page) => route('student-management.alumni.index', array_merge(request()->except('page'), ['page' => $page]));
-                    @endphp
-                    <nav class="pagination-wrap alumni-pagination" aria-label="Navigasi halaman alumni">
-                        @if($alumni->onFirstPage())
-                            <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
-                        @else
-                            <a class="student-page-button" href="{{ $alumniPageUrl($alumni->currentPage() - 1) }}" rel="prev">Sebelumnya</a>
-                        @endif
-                        @if($alumni->hasMorePages())
-                            <a class="student-page-button" href="{{ $alumniPageUrl($alumni->currentPage() + 1) }}" rel="next">Berikutnya</a>
-                        @else
-                            <span class="student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
-                        @endif
-                    </nav>
-                @endif
+                @php
+                    $alumniCurrentPage = $alumni->currentPage();
+                    $alumniLastPage = $alumni->lastPage();
+                    $alumniStartPage = max(1, $alumniCurrentPage - 1);
+                    $alumniEndPage = min($alumniLastPage, $alumniCurrentPage + 1);
+                    if ($alumniCurrentPage <= 2) {
+                        $alumniEndPage = min($alumniLastPage, 3);
+                    }
+                    if ($alumniCurrentPage >= $alumniLastPage - 1) {
+                        $alumniStartPage = max(1, $alumniLastPage - 2);
+                    }
+                    $alumniPageUrl = fn ($page) => route('student-management.alumni.index', array_merge(request()->except('page'), ['page' => $page]));
+                    $alumniResultSummary = ($alumni->total() ?? 0) > 0
+                        ? 'Menampilkan '.number_format($alumni->firstItem(), 0, ',', '.').'-'.number_format($alumni->lastItem(), 0, ',', '.').' dari '.number_format($alumni->total(), 0, ',', '.').' alumni'
+                        : 'Menampilkan 0 dari 0 alumni';
+                @endphp
+                <nav class="pagination-wrap alumni-pagination student-report-pagination" aria-label="Navigasi halaman alumni">
+                    <p>{{ $alumniResultSummary }}</p>
+                    @if($alumni->hasPages())
+                        <div class="student-pagination-links">
+                            @if($alumni->onFirstPage())
+                                <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                            @else
+                                <a class="student-page-button" href="{{ $alumniPageUrl($alumniCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
+                            @endif
+
+                            @if($alumniStartPage > 1)
+                                <a class="student-page-button is-number" href="{{ $alumniPageUrl(1) }}" aria-label="Halaman 1">1</a>
+                                @if($alumniStartPage > 2)
+                                    <span class="student-page-ellipsis" aria-hidden="true">...</span>
+                                @endif
+                            @endif
+
+                            @for($page = $alumniStartPage; $page <= $alumniEndPage; $page++)
+                                @if($page === $alumniCurrentPage)
+                                    <span class="student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
+                                @else
+                                    <a class="student-page-button is-number" href="{{ $alumniPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                @endif
+                            @endfor
+
+                            @if($alumniEndPage < $alumniLastPage)
+                                @if($alumniEndPage < $alumniLastPage - 1)
+                                    <span class="student-page-ellipsis" aria-hidden="true">...</span>
+                                @endif
+                                <a class="student-page-button is-number" href="{{ $alumniPageUrl($alumniLastPage) }}" aria-label="Halaman {{ $alumniLastPage }}">{{ $alumniLastPage }}</a>
+                            @endif
+
+                            @if($alumni->hasMorePages())
+                                <a class="student-page-button" href="{{ $alumniPageUrl($alumniCurrentPage + 1) }}" rel="next">Berikutnya</a>
+                            @else
+                                <span class="student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
+                            @endif
+                        </div>
+                    @endif
+                </nav>
             </section>
         </main>
         @include('partials.app-footer')

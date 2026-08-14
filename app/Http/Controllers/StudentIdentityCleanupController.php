@@ -25,10 +25,15 @@ class StudentIdentityCleanupController extends Controller
         $candidates = $this->duplicateCandidates($students, $filters);
         $linkedGroups = $this->linkedIdentityGroups($students, $filters);
 
+        $rows = $this->sortIdentityRows(
+            $this->identityRows($candidates, $linkedGroups),
+            $filters
+        );
+
         return view('student-management.identity-cleanup', [
             ...$this->sharedViewData(),
             'candidates' => $this->paginateCandidates(
-                $this->identityRows($candidates, $linkedGroups),
+                $rows,
                 $request,
                 $filters['per_page']
             ),
@@ -217,6 +222,10 @@ class StudentIdentityCleanupController extends Controller
             'year_id' => $request->query('year_id'),
             'search' => trim((string) $request->query('search', '')),
             'per_page' => (string) $request->query('per_page', '10'),
+            'sort' => in_array($request->query('sort'), ['name', 'reason', 'confidence', 'count'], true)
+                ? $request->query('sort')
+                : null,
+            'direction' => $request->query('direction') === 'desc' ? 'desc' : 'asc',
         ];
     }
 
@@ -327,6 +336,42 @@ class StudentIdentityCleanupController extends Controller
             ->map(fn (array $candidate) => [...$candidate, 'row_type' => 'candidate'])
             ->concat($linkedGroups->map(fn (array $group) => [...$group, 'row_type' => 'linked']))
             ->values();
+    }
+
+    private function sortIdentityRows(Collection $rows, array $filters): Collection
+    {
+        if (! $filters['sort']) {
+            return $rows;
+        }
+
+        return $rows
+            ->sortBy(
+                fn (array $row) => $this->identityRowSortValue($row, $filters['sort']),
+                SORT_REGULAR,
+                $filters['direction'] === 'desc'
+            )
+            ->values();
+    }
+
+    private function identityRowSortValue(array $row, string $sort): mixed
+    {
+        return match ($sort) {
+            'name' => Str::lower($row['name'] ?? ''),
+            'reason' => Str::lower($row['reason'] ?? ''),
+            'confidence' => $this->confidenceRank($row['confidence'] ?? ''),
+            'count' => $row['students']->count(),
+            default => Str::lower($row['name'] ?? ''),
+        };
+    }
+
+    private function confidenceRank(string $confidence): int
+    {
+        return match ($confidence) {
+            'Kuat', 'Gabungan' => 1,
+            'Sedang' => 2,
+            'Perlu cek' => 3,
+            default => 4,
+        };
     }
 
     private function candidateMatchesSearch(array $candidate, string $needle): bool

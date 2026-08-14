@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Naik Kelas - MA'WA CENTER</title>
+    <link rel="preload" as="style" href="http://127.0.0.1:8000/build/assets/app-BrXua9ew.css" /><link rel="modulepreload" as="script" href="http://127.0.0.1:8000/build/assets/app-g3cJn-6F.js" /><link rel="stylesheet" href="http://127.0.0.1:8000/build/assets/app-BrXua9ew.css" /><script type="module" src="http://127.0.0.1:8000/build/assets/app-g3cJn-6F.js"></script>    <style>
+        html body .class-movement-standard-page {
+            display: grid !important;
+            gap:16px !important;
+            min-height: calc(100vh - 64px) !important;
+            padding:24px 32px !important;
+            background: #ffffff !important;
+            color: #020617 !important;
+        }
+
+        html body .class-movement-standard-page .student-list-filter-card {
+            width: 100% !important;
+            margin:0 !important;
+            padding:0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        html body .class-movement-standard-page .student-list-table-card {
+            width: 100% !important;
+            margin:0 !important;
+            padding:0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        html body .class-movement-standard-page .class-movement-filter-card {
+            display: grid !important;
+            gap:16px !important;
+            margin:0 !important;
+        }
+
+        html body .class-movement-standard-page > .class-movement-v6-filter {
+            display: grid !important;
+            gap:16px !important;
+            margin:0 auto !important;
+        }
+
+        html body .class-movement-standard-page .student-flat-header {
+            display: flex !important;
+            align-items: flex-start !important;
+            justify-content: space-between !important;
+            gap:16px !important;
+            min-height: 0 !important;
+            height: auto !important;
+            margin:0 !important;
+            padding:0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        html body .class-movement-standard-page .student-master-heading {
+            display: grid !important;
+            gap:4px !important;
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        html body .class-movement-standard-page .student-master-heading h1 {
+            margin:0 !important;
+            color: #111c2c !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            line-height: 1.25 !important;
+            letter-spacing: 0 !important;
+        }
+
+        html body .class-movement-standard-page .student-master-heading p {
+            margin:0 !important;
+            color: #404942 !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.4 !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter {
+            display: grid !important;
+            grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
+            grid-template-rows: auto !important;
+            align-items: end !important;
+            gap:12px !important;
+            width: 100% !important;
+            margin:0 !important;
+            padding:16px !important;
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter-grid {
+            display: contents !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter-grid label,
+        html body .class-movement-standard-page .student-reference-search {
+            display: grid !important;
+            gap:6px !important;
+            min-width: 0 !important;
+            margin:0 !important;
+            color: #404942 !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.25 !important;
+            text-transform: none !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(1) { grid-column: 1 !important; grid-row: 1 !important; }
+        html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(2) { grid-column: 2 !important; grid-row: 1 !important; }
+
+        html body .class-movement-standard-page .student-reference-search {
+            position: relative !important;
+            grid-column: 3 !important;
+            grid-row: 1 !important;
+            display: block !important;
+            width: 100% !important;
+            align-self: end !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter-grid label > span {
+            color: #404942 !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.25 !important;
+            text-transform: none !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-search > span {
+            display: none !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter select,
+        html body .class-movement-standard-page .student-reference-search input {
+            box-sizing: border-box !important;
+            width: 100% !important;
+            height: 40px !important;
+            min-height: 40px !important;
+            margin:0 !important;
+            color: #111c2c !important;
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 40px !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter select {
+            padding:0 10px !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-search input {
+            padding:0 12px 0 32px !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-search .icon {
+            position: absolute !important;
+            left: 12px !important;
+            top: 50% !important;
+            width: 18px !important;
+            height: 18px !important;
+            color: #404942 !important;
+            transform: translateY(-50%) !important;
+            pointer-events: none !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter .student-filter-actions {
+            grid-column: 4 !important;
+            grid-row: 1 !important;
+            display: inline-flex !important;
+            align-items: end !important;
+            justify-content: flex-start !important;
+            gap:10px !important;
+            width: auto !important;
+            min-width: 0 !important;
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter .student-fee-card-search-button,
+        html body .class-movement-standard-page .student-reference-filter .student-fee-card-reset-button,
+        html body .class-movement-standard-page .student-reference-filter .fee-type-card-search-button,
+        html body .class-movement-standard-page .student-reference-filter .fee-type-card-reset-button {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 96px !important;
+            min-width: 96px !important;
+            max-width: 96px !important;
+            height: 40px !important;
+            min-height: 40px !important;
+            max-height: 40px !important;
+            margin:0 !important;
+            padding:0 14px !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            font-size: 14px !important;
+            font-weight: 700 !important;
+            line-height: 1 !important;
+            text-decoration: none !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter .student-fee-card-search-button,
+        html body .class-movement-standard-page .student-reference-filter .fee-type-card-search-button {
+            color: #ffffff !important;
+            background: #004528 !important;
+            border: 1px solid #004528 !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter .student-fee-card-search-button:hover,
+        html body .class-movement-standard-page .student-reference-filter .fee-type-card-search-button:hover {
+            color: #ffffff !important;
+            background: #0d5f36 !important;
+            border-color: #0d5f36 !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-filter .student-fee-card-reset-button,
+        html body .class-movement-standard-page .student-reference-filter .fee-type-card-reset-button {
+            color: #404942 !important;
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-pagination,
+        html body .class-movement-standard-page .class-promotion-pagination {
+            display: none !important;
+        }
+
+        html body .class-movement-standard-page .class-movement-v6-card {
+            display: grid !important;
+            gap:14px !important;
+            width: 100% !important;
+            margin:0 !important;
+            padding:0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+        }
+
+        html body .class-movement-standard-page .class-movement-list-card {
+            display: grid !important;
+            gap:14px !important;
+            width: 100% !important;
+            margin:0 !important;
+            padding:16px !important;
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+        }
+
+        html body .class-movement-standard-page .class-movement-card-count {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            flex-wrap: wrap !important;
+            gap:14px !important;
+            width: 100% !important;
+            margin:0 0 12px !important;
+            padding:0 !important;
+            color: #707971 !important;
+            background: transparent !important;
+            border: 0 !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.35 !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-card-length,
+        html body .class-movement-standard-page .student-reference-card-length label {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap:8px !important;
+            margin:0 !important;
+            padding:0 !important;
+            color: #707971 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.35 !important;
+        }
+
+        html body .class-movement-standard-page .student-reference-card-length select {
+            width: 78px !important;
+            min-width: 78px !important;
+            height: 34px !important;
+            min-height: 34px !important;
+            padding:0 10px !important;
+            color: #111c2c !important;
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-list-head,
+        html body .class-movement-standard-page .class-promotion-list-head {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap:12px !important;
+            width: 100% !important;
+            margin:0 !important;
+            padding:0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-list-head > strong,
+        html body .class-movement-standard-page .class-promotion-list-head > strong {
+            color: #111c2c !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            line-height: 1.25 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-check-all,
+        html body .class-movement-standard-page .class-promotion-check-all {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap:8px !important;
+            margin:0 !important;
+            color: #707971 !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1 !important;
+            text-transform: none !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-student-list,
+        html body .class-movement-standard-page .class-promotion-student-list {
+            display: grid !important;
+            gap:12px !important;
+            width: 100% !important;
+            margin:0 !important;
+            padding:0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-student-card,
+        html body .class-movement-standard-page .class-promotion-student-card {
+            display: grid !important;
+            grid-template-columns: 22px minmax(0, 1fr) max-content !important;
+            align-items: start !important;
+            gap:12px !important;
+            min-height: 86px !important;
+            margin:0 !important;
+            padding:16px !important;
+            color: #111c2c !important;
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 8px !important;
+            box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
+            transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-student-card:hover,
+        html body .class-movement-standard-page .class-promotion-student-card:hover,
+        html body .class-movement-standard-page .class-transfer-student-card:has(input:checked),
+        html body .class-movement-standard-page .class-promotion-student-card:has(input:checked) {
+            border-color: #157144 !important;
+            box-shadow: 0 8px 18px rgba(17, 28, 44, .08) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-student-card input[type="checkbox"],
+        html body .class-movement-standard-page .class-promotion-student-card input[type="checkbox"] {
+            width: auto !important;
+            height: auto !important;
+            margin:4px 0 0 !important;
+            accent-color: auto !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-student-main,
+        html body .class-movement-standard-page .class-promotion-student-main {
+            display: grid !important;
+            gap:6px !important;
+            min-width: 0 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-student-main > strong,
+        html body .class-movement-standard-page .class-promotion-student-main > strong {
+            margin:0 !important;
+            color: #020617 !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            line-height: 1.3 !important;
+            word-break: break-word !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-student-meta,
+        html body .class-movement-standard-page .class-promotion-student-meta {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap:8px 14px !important;
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-student-meta span,
+        html body .class-movement-standard-page .class-promotion-student-meta span {
+            display: grid !important;
+            gap:4px !important;
+            min-width: 0 !important;
+            color: #404942 !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.35 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-student-meta small,
+        html body .class-movement-standard-page .class-promotion-student-meta small {
+            color: #707971 !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.3 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-student-meta b,
+        html body .class-movement-standard-page .class-promotion-student-meta b,
+        html body .class-movement-standard-page .class-transfer-nis,
+        html body .class-movement-standard-page .class-promotion-nis {
+            color: #404942 !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.35 !important;
+            white-space: nowrap !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-empty,
+        html body .class-movement-standard-page .class-promotion-empty {
+            display: grid !important;
+            place-items: center !important;
+            gap:6px !important;
+            min-height: 128px !important;
+            margin:0 !important;
+            padding:32px 20px !important;
+            color: #707971 !important;
+            background: #ffffff !important;
+            border: 1px dashed #d1d5db !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            text-align: center !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-empty strong,
+        html body .class-movement-standard-page .class-promotion-empty strong {
+            color: #111c2c !important;
+            font-size: 14px !important;
+            font-weight: 700 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-empty span,
+        html body .class-movement-standard-page .class-promotion-empty span {
+            color: #707971 !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-action-panel,
+        html body .class-movement-standard-page .class-promotion-action-panel {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) 74px !important;
+            gap:12px 16px !important;
+            align-items: end !important;
+            width: 100% !important;
+            margin:0 !important;
+            padding:16px !important;
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+        }
+
+        html body .class-movement-standard-page.class-promotion-page .class-promotion-action-panel {
+            grid-template-columns: minmax(180px, 220px) minmax(0, 1fr) 74px !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-action-panel label,
+        html body .class-movement-standard-page .class-promotion-action-panel label {
+            display: grid !important;
+            gap:6px !important;
+            margin:0 !important;
+            color: #404942 !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+            line-height: 1.25 !important;
+            text-transform: none !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-action-panel select,
+        html body .class-movement-standard-page .class-promotion-action-panel select {
+            width: 100% !important;
+            height: 40px !important;
+            min-height: 40px !important;
+            padding:0 12px !important;
+            color: #111c2c !important;
+            background: #ffffff !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            font-size: 14px !important;
+            font-weight: 400 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-selected-count,
+        html body .class-movement-standard-page .class-promotion-selected-count {
+            display: grid !important;
+            place-items: center !important;
+            gap:4px !important;
+            min-height: 40px !important;
+            margin:0 !important;
+            color: #707971 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-selected-count span,
+        html body .class-movement-standard-page .class-promotion-selected-count span {
+            color: #707971 !important;
+            font-size: 14px !important;
+            font-weight: 700 !important;
+            line-height: 1 !important;
+            text-transform: uppercase !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-selected-count output,
+        html body .class-movement-standard-page .class-promotion-selected-count output {
+            color: #004528 !important;
+            font-size: 20px !important;
+            font-weight: 700 !important;
+            line-height: 1 !important;
+        }
+
+        html body .class-movement-standard-page .class-transfer-action-panel .class-movement-submit,
+        html body .class-movement-standard-page .class-promotion-action-panel .class-movement-submit {
+            grid-column: 1 / -1 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap:10px !important;
+            width: 100% !important;
+            height: 46px !important;
+            min-height: 46px !important;
+            padding:0 16px !important;
+            color: #ffffff !important;
+            background: #004528 !important;
+            border: 1px solid #004528 !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            font-size: 14px !important;
+            font-weight: 700 !important;
+        }
+
+        @media (width <= 1180px) {
+            html body .class-movement-standard-page .student-reference-filter {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+
+            html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(1),
+            html body .class-movement-standard-page .student-reference-filter-grid label:nth-child(2),
+            html body .class-movement-standard-page .student-reference-search,
+            html body .class-movement-standard-page .student-reference-filter .student-filter-actions {
+                grid-column: auto !important;
+                grid-row: auto !important;
+            }
+        }
+
+        @media (width <= 760px) {
+            html body .class-movement-standard-page {
+                padding:16px !important;
+            }
+
+            html body .class-movement-standard-page .student-list-filter-card,
+            html body .class-movement-standard-page .class-movement-filter-card {
+                gap:16px !important;
+                margin-bottom:0 !important;
+            }
+
+            html body .class-movement-standard-page .student-reference-filter {
+                grid-template-columns: 1fr !important;
+            }
+
+            html body .class-movement-standard-page .student-reference-filter .student-filter-actions {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                align-items: stretch !important;
+                gap:10px !important;
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+
+            html body .class-movement-standard-page .student-reference-filter .student-fee-card-search-button,
+            html body .class-movement-standard-page .student-reference-filter .student-fee-card-reset-button,
+            html body .class-movement-standard-page .student-reference-filter .fee-type-card-search-button,
+            html body .class-movement-standard-page .student-reference-filter .fee-type-card-reset-button {
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: none !important;
+            }
+
+            html body .class-movement-standard-page .class-movement-v6-card {
+                margin-top:0 !important;
+            }
+
+            html body .class-movement-standard-page .class-movement-card-count,
+            html body .class-movement-standard-page .class-transfer-list-head,
+            html body .class-movement-standard-page .class-promotion-list-head {
+                align-items: flex-start !important;
+                flex-direction: column !important;
+            }
+
+            html body .class-movement-standard-page .class-transfer-action-panel,
+            html body .class-movement-standard-page .class-promotion-action-panel,
+            html body .class-movement-standard-page.class-promotion-page .class-promotion-action-panel {
+                grid-template-columns: 1fr !important;
+            }
+
+            html body .class-movement-standard-page .class-transfer-student-card,
+            html body .class-movement-standard-page .class-promotion-student-card {
+                grid-template-columns: 22px minmax(0, 1fr) !important;
+            }
+
+            html body .class-movement-standard-page .class-transfer-nis,
+            html body .class-movement-standard-page .class-promotion-nis {
+                grid-column: 2 !important;
+            }
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
+            grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
+            grid-template-rows: auto !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1) {
+            grid-column: 1 !important;
+            grid-row: 1 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2) {
+            grid-column: 2 !important;
+            grid-row: 1 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search {
+            grid-column: 3 !important;
+            grid-row: 1 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+            grid-column: 4 !important;
+            grid-row: 1 !important;
+            align-self: end !important;
+            width: auto !important;
+            min-width: 0 !important;
+        }
+
+        @media (width <= 760px) {
+            html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
+                grid-template-columns: 1fr !important;
+            }
+
+            html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(1),
+            html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-card-filter-grid label:nth-child(2),
+            html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-fee-filter-search,
+            html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+                grid-column: auto !important;
+                grid-row: auto !important;
+            }
+
+            html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                width: 100% !important;
+            }
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > .student-list-filter-card,
+        html body .app-shell .main-panel main.class-movement-standard-page > .class-movement-data-card {
+            width: min(100%, 1200px) !important;
+            max-width: 1200px !important;
+            margin-left:auto !important;
+            margin-right:auto !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > .student-list-filter-card {
+            display: grid !important;
+            gap:16px !important;
+            margin-top:0 !important;
+            margin-bottom:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > .student-list-filter-card > .student-flat-header,
+        html body .app-shell .main-panel main.class-movement-standard-page > .class-movement-data-card > .student-reference-card-count,
+        html body .app-shell .main-panel main.class-movement-standard-page > .class-movement-data-card > .class-movement-card {
+            margin-top:0 !important;
+            margin-bottom:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > .class-movement-data-card {
+            display: grid !important;
+            gap:16px !important;
+            margin-top:0 !important;
+            margin-bottom:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > #classMovementQueryForm {
+            display: none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page {
+            display: grid !important;
+            align-content: start !important;
+            justify-items: center !important;
+            gap:16px !important;
+            padding:24px 32px 32px !important;
+            background: #ffffff !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.class-movement-data-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.class-movement-data-card {
+            box-sizing: border-box !important;
+            width: min(100%, 1200px) !important;
+            max-width: 1200px !important;
+            margin:0 auto !important;
+            padding:0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.class-movement-data-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.class-movement-data-card {
+            display: grid !important;
+            gap:16px !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter > .student-flat-header,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter > .student-flat-header {
+            min-height: 0 !important;
+            height: auto !important;
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter .student-master-heading,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter .student-master-heading {
+            display: grid !important;
+            gap:4px !important;
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter .student-master-heading h1,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter .student-master-heading p,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter .student-master-heading h1,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter .student-master-heading p {
+            margin:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.class-movement-data-card > .student-reference-card-count,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.class-movement-data-card > .class-movement-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.class-movement-data-card > .student-reference-card-count,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.class-movement-data-card > .class-movement-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen .class-movement-list-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page .class-movement-list-card {
+            margin:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.class-movement-data-card > .student-reference-card-count,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.class-movement-data-card > .student-reference-card-count {
+            min-height: 40px !important;
+            align-items: center !important;
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.class-movement-data-card > .class-movement-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.class-movement-data-card > .class-movement-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen .class-movement-list-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page .class-movement-list-card {
+            gap:16px !important;
+        }
+
+        @media (width <= 760px) {
+            html body .app-shell .main-panel main.class-movement-standard-page > .student-list-filter-card,
+            html body .app-shell .main-panel main.class-movement-standard-page > .class-movement-data-card {
+                width: 100% !important;
+                max-width: none !important;
+            }
+
+            html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen,
+            html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page {
+                padding:16px !important;
+            }
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page {
+            display: block !important;
+            padding:24px 32px 32px !important;
+            background: #ffffff !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter {
+            display: block !important;
+            width: min(100%, 1200px) !important;
+            max-width: 1200px !important;
+            margin:0 auto 16px !important;
+            padding:0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter > .student-flat-header,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter > .student-flat-header {
+            min-height: 0 !important;
+            height: auto !important;
+            margin:0 0 16px !important;
+            padding:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter {
+            margin:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > #classMovementQueryForm,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > #classMovementQueryForm {
+            display: none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.class-movement-data-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.class-movement-data-card {
+            display: block !important;
+            width: min(100%, 1200px) !important;
+            max-width: 1200px !important;
+            margin:0 auto !important;
+            padding:0 !important;
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.class-movement-data-card > .student-reference-card-count,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.class-movement-data-card > .student-reference-card-count {
+            min-height: 0 !important;
+            margin:0 0 16px !important;
+            padding:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.class-movement-data-card > .class-movement-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.class-movement-data-card > .class-movement-card {
+            margin:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen .class-movement-list-card,
+        html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page .class-movement-list-card {
+            margin:0 !important;
+        }
+
+        @media (width <= 760px) {
+            html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen,
+            html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page {
+                padding:16px !important;
+            }
+
+            html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.student-list-filter-card.class-movement-v6-filter,
+            html body .app-shell .main-panel main.class-movement-standard-page.class-transfer-screen > section.class-movement-data-card,
+            html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.student-list-filter-card.class-movement-v6-filter,
+            html body .app-shell .main-panel main.class-movement-standard-page.class-promotion-page > section.class-movement-data-card {
+                width: 100% !important;
+                max-width: none !important;
+            }
+        }
+        /* Final head lock: class movement spacing follows ai/standar aplikasi.md. */
+        html body .app-shell .main-panel main.class-movement-standard-page {
+            display: block !important;
+            gap:0 !important;
+            row-gap:0 !important;
+            padding:24px 32px 32px !important;
+            background:#ffffff !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter {
+            display: block !important;
+            width:min(100%, 1200px) !important;
+            max-width:1200px !important;
+            margin:0 auto 16px !important;
+            padding:0 !important;
+            border:0 !important;
+            box-shadow:none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > .student-flat-header {
+            display:block !important;
+            min-height:0 !important;
+            height:auto !important;
+            margin:0 0 16px !important;
+            padding:0 !important;
+            border:0 !important;
+            box-shadow:none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .student-master-heading {
+            display:grid !important;
+            gap:4px !important;
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .student-master-heading h1,
+        html body .app-shell .main-panel main.class-movement-standard-page .student-master-heading p {
+            margin:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .student-master-heading h1 {
+            font-size:20px !important;
+            font-weight:700 !important;
+            line-height:1.25 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .student-master-heading p {
+            font-size:14px !important;
+            font-weight:400 !important;
+            line-height:1.4 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter {
+            display:grid !important;
+            grid-template-columns: 160px 150px minmax(220px, 300px) max-content !important;
+            align-items:end !important;
+            gap:12px !important;
+            width:100% !important;
+            margin:0 !important;
+            padding:16px !important;
+            background:#ffffff !important;
+            border:1px solid #d1d5db !important;
+            border-radius:12px !important;
+            box-shadow:none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid {
+            display:contents !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label,
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-search {
+            display:grid !important;
+            gap:8px !important;
+            min-width:0 !important;
+            margin:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label:nth-child(1) {
+            grid-column:1 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label:nth-child(2) {
+            grid-column:2 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label > span {
+            color:#404942 !important;
+            font-size:14px !important;
+            font-weight:400 !important;
+            line-height:1.25 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter select,
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter input[name="search"] {
+            box-sizing:border-box !important;
+            width:100% !important;
+            min-width:0 !important;
+            height:40px !important;
+            min-height:40px !important;
+            margin:0 !important;
+            color:#111c2c !important;
+            background:#ffffff !important;
+            border:1px solid #d1d5db !important;
+            border-radius:8px !important;
+            box-shadow:none !important;
+            font-size:14px !important;
+            font-weight:400 !important;
+            line-height:40px !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter select {
+            padding:0 12px !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-search {
+            grid-column:3 !important;
+            position:relative !important;
+            display:block !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-search > span {
+            display:none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-search .icon {
+            position:absolute !important;
+            left:14px !important;
+            top:50% !important;
+            width:18px !important;
+            height:18px !important;
+            color:#404942 !important;
+            transform:translateY(-50%) !important;
+            pointer-events:none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter input[name="search"] {
+            padding:0 14px 0 42px !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-filter-actions {
+            grid-column:4 !important;
+            display:grid !important;
+            grid-template-columns:96px 96px !important;
+            gap:10px !important;
+            align-items:end !important;
+            width:auto !important;
+            min-width:0 !important;
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-filter-actions .button {
+            width:96px !important;
+            min-width:96px !important;
+            height:40px !important;
+            min-height:40px !important;
+            margin:0 !important;
+            padding:0 16px !important;
+            border-radius:8px !important;
+            font-size:14px !important;
+            font-weight:700 !important;
+            line-height:1 !important;
+        }
+
+        @media (width <= 1180px) {
+            html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter {
+                grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+            }
+
+            html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label:nth-child(1),
+            html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-filter-grid > label:nth-child(2),
+            html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-reference-search,
+            html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-filter-actions {
+                grid-column:auto !important;
+            }
+        }
+
+        @media (width <= 760px) {
+            html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter {
+                grid-template-columns:1fr !important;
+                padding:16px !important;
+            }
+
+            html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-filter-actions {
+                grid-template-columns:1fr 1fr !important;
+                width:100% !important;
+            }
+
+            html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter > .student-filter-actions .button {
+                width:100% !important;
+                min-width:0 !important;
+            }
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > #classMovementQueryForm {
+            display:none !important;
+            margin:0 !important;
+            padding:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.class-movement-data-card {
+            display:block !important;
+            width:min(100%, 1200px) !important;
+            max-width:1200px !important;
+            margin:0 auto !important;
+            padding:0 !important;
+            border:0 !important;
+            box-shadow:none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.class-movement-data-card > .student-reference-card-count {
+            display:flex !important;
+            align-items:center !important;
+            justify-content:space-between !important;
+            min-height:0 !important;
+            margin:0 0 16px !important;
+            padding:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.class-movement-data-card > .class-movement-card,
+        html body .app-shell .main-panel main.class-movement-standard-page .class-movement-list-card {
+            margin:0 !important;
+        }
+
+        @media (width <= 760px) {
+            html body .app-shell .main-panel main.class-movement-standard-page {
+                padding:16px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar" data-sidebar>
+    <div class="brand"><div class="brand-mark"><img src="http://127.0.0.1:8000/images/mawa-center-mark.png" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
+    <nav class="sidebar-nav">
+                <a href="http://localhost" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>Dashboard</span></a>
+                        <div class="nav-group nested-nav open">
+            <button type="button" class="nav-item nav-parent active" data-nav-toggle aria-expanded="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Manajemen Siswa</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                                <a href="http://127.0.0.1:8000/manajemen-siswa/data-siswa" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Data Siswa</span></a>
+                <a href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Kualitas Data</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/></svg><span>Rapikan Identitas</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/pindah-kelas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4-4m-4 4 4 4"/></svg><span>Pindah Kelas</span></a>
+                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas" class="active"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m0 0-5 5m5-5 5 5"/></svg><span>Naik Kelas</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/alumni" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Data Alumni</span></a>
+                            </div>
+        </div>
+                        <a href="http://127.0.0.1:8000/keuangan/pembayaran" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h2"/></svg><span>Pembayaran</span></a>
+                        <a href="http://127.0.0.1:8000/keuangan/verifikasi-transfer" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/></svg><span>Verifikasi Transfer</span></a>
+                        <a href="http://127.0.0.1:8000/keuangan/tagihan" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>Tagihan</span></a>
+                        <div class="nav-group nested-nav ">
+            <button type="button" class="nav-item nav-parent " data-nav-toggle aria-expanded="false"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Laporan</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                <a href="http://127.0.0.1:8000/laporan/transaksi" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Transaksi Pembayaran</span></a>
+                <a href="http://127.0.0.1:8000/laporan/spp-perbulan" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>SPP Perbulan</span></a>
+                <a href="http://127.0.0.1:8000/laporan/spp-tahun-pelajaran" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>SPP Pertahun</span></a>
+                <a href="http://127.0.0.1:8000/laporan/rekap-unit" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Rekap Per Unit</span></a>
+            </div>
+        </div>
+                        <div class="nav-group master-nav ">
+            <button type="button" class="nav-item nav-parent " data-master-nav-toggle aria-expanded="false"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Data Master</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                                    <a href="http://127.0.0.1:8000/master-data?tab=academic-years" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Tahun Pelajaran</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=education-units" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>Unit Pendidikan</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=classes" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Kelas</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=fee-types" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>Kategori Pembayaran</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=fee-discounts" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/></svg><span>Keringanan Biaya</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=data-roles" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/></svg><span>Data Role</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=data-users" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Data User</span></a>
+                            </div>
+        </div>
+                        <a href="http://127.0.0.1:8000/pengaturan" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/></svg><span>Pengaturan</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
+            </nav>
+</aside>
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+    <div class="main-panel">
+        <header class="topbar">
+            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar" title="Buka atau tutup sidebar"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+            <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>2026/2027</strong></div>
+            <div class="topbar-spacer"></div>
+            <button class="icon-button notification-button" type="button" aria-label="Notifikasi" title="Notifikasi"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></button>
+            <form method="POST" action="http://127.0.0.1:8000/logout" class="logout-form">
+    <input type="hidden" name="_token" value="3eeUarmJsVnp4RepEHinoOdDWMA4s4Ky9xhJ4bqg" autocomplete="off">    <button class="icon-button logout-button" type="submit" aria-label="Keluar" title="Keluar"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></svg></button>
+</form>
+        </header>
+
+        <main class="class-movement-standard-page class-promotion-screen">
+                        
+            <section class="student-workspace student-list-filter-card class-movement-v6-filter">
+                <div class="student-flat-header">
+                    <div class="student-master-heading">
+                        <h1>Naik Kelas</h1>
+                        <p>Pilih tahun pelajaran dan kelas tujuan, centang siswa yang akan diproses, lalu konfirmasi kenaikan kelas.</p>
+                    </div>
+                </div>
+
+                <form id="class-movement-filter" method="GET" action="http://127.0.0.1:8000/manajemen-siswa/naik-kelas" class="class-movement-filter-panel" data-student-filter-panel>
+                    <div class="class-movement-filter-grid">
+                        <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">Semua</option><option value="2" >PAUD</option><option value="3" >RA</option><option value="4" >MI</option><option value="5" >MTs</option><option value="6" >MA</option><option value="7" >ULYA</option><option value="8" >PONPES</option></select></label>
+                        <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">Semua</option><option value="3" data-unit-id="2" >KELOMPOK BERMAIN</option><option value="138" data-unit-id="3" >A1 BUNG HATTA</option><option value="139" data-unit-id="3" >A2 CUT MEUTIA</option><option value="140" data-unit-id="3" >A3 PATTIMURA</option><option value="141" data-unit-id="3" >A4 RASUNA SAID</option><option value="142" data-unit-id="3" >B1 HASANUDDIN</option><option value="143" data-unit-id="3" >B2 CUT NYAK DIEN</option><option value="144" data-unit-id="3" >B3 DIPONEGORO</option><option value="145" data-unit-id="3" >B4 DEWI SARTIKA</option><option value="146" data-unit-id="3" >B5 TEUKU UMAR</option><option value="147" data-unit-id="3" >B6 KARTINI</option><option value="148" data-unit-id="3" >B7 KI HAJAR</option><option value="149" data-unit-id="3" >KELUAR</option><option value="85" data-unit-id="4" >1A</option><option value="86" data-unit-id="4" >1B</option><option value="94" data-unit-id="4" >2A.1</option><option value="95" data-unit-id="4" >2A.2</option><option value="97" data-unit-id="4" >2B.1</option><option value="98" data-unit-id="4" >2B.2</option><option value="87" data-unit-id="4" >3A</option><option value="91" data-unit-id="4" >3B</option><option value="88" data-unit-id="4" >4A</option><option value="92" data-unit-id="4" >4B</option><option value="89" data-unit-id="4" >5A</option><option value="93" data-unit-id="4" >5B</option><option value="90" data-unit-id="4" >6A</option><option value="96" data-unit-id="4" >6B</option><option value="99" data-unit-id="5" >7A</option><option value="100" data-unit-id="5" >7B</option><option value="101" data-unit-id="5" >7C</option><option value="102" data-unit-id="5" >7D</option><option value="103" data-unit-id="5" >7E</option><option value="104" data-unit-id="5" >8A</option><option value="105" data-unit-id="5" >8B</option><option value="106" data-unit-id="5" >8C</option><option value="107" data-unit-id="5" >8D</option><option value="108" data-unit-id="5" >8E</option><option value="109" data-unit-id="5" >8F</option><option value="110" data-unit-id="5" >9A</option><option value="111" data-unit-id="5" >9B</option><option value="112" data-unit-id="5" >9C</option><option value="113" data-unit-id="5" >9D</option><option value="114" data-unit-id="5" >9E</option><option value="115" data-unit-id="5" >9F</option><option value="116" data-unit-id="5" >LULUSAN 2024/2025</option><option value="78" data-unit-id="6" >10A</option><option value="79" data-unit-id="6" >10B</option><option value="81" data-unit-id="6" >11A</option><option value="80" data-unit-id="6" >11B</option><option value="82" data-unit-id="6" >12A</option><option value="83" data-unit-id="6" >12B</option><option value="84" data-unit-id="6" >LULUSAN 2024/2025</option><option value="77" data-unit-id="7" >12C</option><option value="133" data-unit-id="8" >10A</option><option value="134" data-unit-id="8" >10B</option><option value="136" data-unit-id="8" >11A</option><option value="135" data-unit-id="8" >11B</option><option value="128" data-unit-id="8" >12A</option><option value="129" data-unit-id="8" >12B</option><option value="137" data-unit-id="8" >12C</option><option value="117" data-unit-id="8" >7A</option><option value="118" data-unit-id="8" >7B</option><option value="119" data-unit-id="8" >7D</option><option value="120" data-unit-id="8" >7E</option><option value="121" data-unit-id="8" >8A</option><option value="122" data-unit-id="8" >8B</option><option value="123" data-unit-id="8" >8D</option><option value="124" data-unit-id="8" >8E</option><option value="125" data-unit-id="8" >9A</option><option value="126" data-unit-id="8" >9B</option><option value="127" data-unit-id="8" >9D</option><option value="132" data-unit-id="8" >9E</option><option value="131" data-unit-id="8" >BANAT SALAF</option><option value="130" data-unit-id="8" >BANIN SALAF</option></select></label>
+                    </div>
+                                        <input type="hidden" name="per_page" value="10">
+                                                            <div class="class-movement-filter-actions">
+                        <button class="button class-movement-apply-button">Terapkan</button>
+                        <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas" class="button class-movement-reset-button">Reset</a>
+                    </div>
+                </form>
+            </section>
+
+            <form id="classMovementQueryForm" method="GET" action="http://127.0.0.1:8000/manajemen-siswa/naik-kelas">
+                <input type="hidden" name="unit_id" value="">
+                <input type="hidden" name="class_id" value="">
+                <input type="hidden" name="year_id" value="2">
+                                            </form>
+
+            <section class="card master-card student-data-card student-list-table-card class-movement-data-card">
+            <div class="student-reference-card-count student-management-table-toolbar">
+                <form method="GET" action="http://127.0.0.1:8000/manajemen-siswa/naik-kelas" class="student-reference-card-length">
+                                        <label>Tampilkan
+                        <select name="per_page" onchange="this.form.submit()" aria-label="Jumlah siswa yang ditampilkan">
+                                                            <option value="10" selected>10</option>
+                                                            <option value="25" >25</option>
+                                                            <option value="50" >50</option>
+                                                            <option value="100" >100</option>
+                                                            <option value="500" >500</option>
+                                                        <option value="all" >Semua</option>
+                        </select>
+                        siswa
+                    </label>
+                </form>
+                <form method="GET" action="http://127.0.0.1:8000/manajemen-siswa/naik-kelas" class="report-student-search-card student-management-search-card" role="search">
+                                        <label>
+                        <span>Cari siswa</span>
+                        <span class="master-table-search-input">
+                            <svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                            <input name="search" value="" placeholder="Nama atau NIS..." aria-label="Cari siswa">
+                        </span>
+                    </label>
+                </form>
+            </div>
+
+            <form method="POST" action="http://127.0.0.1:8000/manajemen-siswa/naik-kelas" class="class-movement-card class-movement-v6-card " data-class-movement-form data-class-movement-action-label="naikkan kelas">
+                <input type="hidden" name="_token" value="3eeUarmJsVnp4RepEHinoOdDWMA4s4Ky9xhJ4bqg" autocomplete="off">                <input type="hidden" name="source_year_id" value="2">
+                <input type="hidden" name="unit_id" value="">
+                <input type="hidden" name="class_id" value="">
+
+                                <section class="class-movement-list-card">
+                    <div class="class-promotion-list-head">
+                        <strong>Daftar Siswa</strong>
+                        <label class="class-promotion-check-all">
+                            <span>Pilih Semua</span>
+                            <input type="checkbox" aria-label="Pilih semua siswa" data-class-movement-check-all>
+                        </label>
+                    </div>
+
+                    <div class="class-promotion-student-list">
+                                                    <label class="class-promotion-student-card" data-class-movement-row data-search="260313 achmad achsin sakho paud kelompok bermain 2026/2027">
+                                <input type="checkbox" name="student_ids[]" value="4041" data-class-movement-student>
+                                <span class="class-promotion-student-main">
+                                    <strong>ACHMAD ACHSIN SAKHO</strong>
+                                    <span class="class-promotion-student-meta">
+                                        <span><small>Unit</small><b>PAUD</b></span>
+                                        <span><small>Kelas Saat Ini</small><b>KELOMPOK BERMAIN</b></span>
+                                        <span><small>Tahun Pelajaran</small><b>2026/2027</b></span>
+                                    </span>
+                                </span>
+                                <span class="class-promotion-nis">NIS: 260313</span>
+                            </label>
+                                                    <label class="class-promotion-student-card" data-class-movement-row data-search="260327 adzkiya yumna shakila paud kelompok bermain 2026/2027">
+                                <input type="checkbox" name="student_ids[]" value="4042" data-class-movement-student>
+                                <span class="class-promotion-student-main">
+                                    <strong>ADZKIYA YUMNA SHAKILA</strong>
+                                    <span class="class-promotion-student-meta">
+                                        <span><small>Unit</small><b>PAUD</b></span>
+                                        <span><small>Kelas Saat Ini</small><b>KELOMPOK BERMAIN</b></span>
+                                        <span><small>Tahun Pelajaran</small><b>2026/2027</b></span>
+                                    </span>
+                                </span>
+                                <span class="class-promotion-nis">NIS: 260327</span>
+                            </label>
+                                                    <label class="class-promotion-student-card" data-class-movement-row data-search="250301 afifa zea aiyra paud kelompok bermain 2026/2027">
+                                <input type="checkbox" name="student_ids[]" value="33" data-class-movement-student>
+                                <span class="class-promotion-student-main">
+                                    <strong>AFIFA ZEA AIYRA</strong>
+                                    <span class="class-promotion-student-meta">
+                                        <span><small>Unit</small><b>PAUD</b></span>
+                                        <span><small>Kelas Saat Ini</small><b>KELOMPOK BERMAIN</b></span>
+                                        <span><small>Tahun Pelajaran</small><b>2026/2027</b></span>
+                                    </span>
+                                </span>
+                                <span class="class-promotion-nis">NIS: 250301</span>
+                            </label>
+                                                    <label class="class-promotion-student-card" data-class-movement-row data-search="250305 ahla zakiyya hashiena paud kelompok bermain 2026/2027">
+                                <input type="checkbox" name="student_ids[]" value="37" data-class-movement-student>
+                                <span class="class-promotion-student-main">
+                                    <strong>AHLA ZAKIYYA HASHIENA</strong>
+                                    <span class="class-promotion-student-meta">
+                                        <span><small>Unit</small><b>PAUD</b></span>
+                                        <span><small>Kelas Saat Ini</small><b>KELOMPOK BERMAIN</b></span>
+                                        <span><small>Tahun Pelajaran</small><b>2026/2027</b></span>
+                                    </span>
+                                </span>
+                                <span class="class-promotion-nis">NIS: 250305</span>
+                            </label>
+                                                    <label class="class-promotion-student-card" data-class-movement-row data-search="250307 ahmad annajmus staqib paud kelompok bermain 2026/2027">
+                                <input type="checkbox" name="student_ids[]" value="39" data-class-movement-student>
+                                <span class="class-promotion-student-main">
+                                    <strong>AHMAD ANNAJMUS STAQIB</strong>
+                                    <span class="class-promotion-student-meta">
+                                        <span><small>Unit</small><b>PAUD</b></span>
+                                        <span><small>Kelas Saat Ini</small><b>KELOMPOK BERMAIN</b></span>
+                                        <span><small>Tahun Pelajaran</small><b>2026/2027</b></span>
+                                    </span>
+                                </span>
+                                <span class="class-promotion-nis">NIS: 250307</span>
+                            </label>
+                                                    <label class="class-promotion-student-card" data-class-movement-row data-search="250310 ahmad bunayya paud kelompok bermain 2026/2027">
+                                <input type="checkbox" name="student_ids[]" value="42" data-class-movement-student>
+                                <span class="class-promotion-student-main">
+                                    <strong>AHMAD BUNAYYA</strong>
+                                    <span class="class-promotion-student-meta">
+                                        <span><small>Unit</small><b>PAUD</b></span>
+                                        <span><small>Kelas Saat Ini</small><b>KELOMPOK BERMAIN</b></span>
+                                        <span><small>Tahun Pelajaran</small><b>2026/2027</b></span>
+                                    </span>
+                                </span>
+                                <span class="class-promotion-nis">NIS: 250310</span>
+                            </label>
+                                                    <label class="class-promotion-student-card" data-class-movement-row data-search="260333 ahmad haidar hakim paud kelompok bermain 2026/2027">
+                                <input type="checkbox" name="student_ids[]" value="4043" data-class-movement-student>
+                                <span class="class-promotion-student-main">
+                                    <strong>AHMAD HAIDAR HAKIM</strong>
+                                    <span class="class-promotion-student-meta">
+                                        <span><small>Unit</small><b>PAUD</b></span>
+                                        <span><small>Kelas Saat Ini</small><b>KELOMPOK BERMAIN</b></span>
+                                        <span><small>Tahun Pelajaran</small><b>2026/2027</b></span>
+                                    </span>
+                                </span>
+                                <span class="class-promotion-nis">NIS: 260333</span>
+                            </label>
+                                                    <label class="class-promotion-student-card" data-class-movement-row data-search="260325 akhmad azka khusain paud kelompok bermain 2026/2027">
+                                <input type="checkbox" name="student_ids[]" value="4044" data-class-movement-student>
+                                <span class="class-promotion-student-main">
+                                    <strong>AKHMAD AZKA KHUSAIN</strong>
+                                    <span class="class-promotion-student-meta">
+                                        <span><small>Unit</small><b>PAUD</b></span>
+                                        <span><small>Kelas Saat Ini</small><b>KELOMPOK BERMAIN</b></span>
+                                        <span><small>Tahun Pelajaran</small><b>2026/2027</b></span>
+                                    </span>
+                                </span>
+                                <span class="class-promotion-nis">NIS: 260325</span>
+                            </label>
+                                                    <label class="class-promotion-student-card" data-class-movement-row data-search="250300 haidar mukti ilyas paud kelompok bermain 2026/2027">
+                                <input type="checkbox" name="student_ids[]" value="32" data-class-movement-student>
+                                <span class="class-promotion-student-main">
+                                    <strong>HAIDAR MUKTI ILYAS</strong>
+                                    <span class="class-promotion-student-meta">
+                                        <span><small>Unit</small><b>PAUD</b></span>
+                                        <span><small>Kelas Saat Ini</small><b>KELOMPOK BERMAIN</b></span>
+                                        <span><small>Tahun Pelajaran</small><b>2026/2027</b></span>
+                                    </span>
+                                </span>
+                                <span class="class-promotion-nis">NIS: 250300</span>
+                            </label>
+                                                    <label class="class-promotion-student-card" data-class-movement-row data-search="260320 hanan salih arisalbani paud kelompok bermain 2026/2027">
+                                <input type="checkbox" name="student_ids[]" value="4045" data-class-movement-student>
+                                <span class="class-promotion-student-main">
+                                    <strong>HANAN SALIH ARISALBANI</strong>
+                                    <span class="class-promotion-student-meta">
+                                        <span><small>Unit</small><b>PAUD</b></span>
+                                        <span><small>Kelas Saat Ini</small><b>KELOMPOK BERMAIN</b></span>
+                                        <span><small>Tahun Pelajaran</small><b>2026/2027</b></span>
+                                    </span>
+                                </span>
+                                <span class="class-promotion-nis">NIS: 260320</span>
+                            </label>
+                                                                            <div class="empty-state class-promotion-empty" data-class-movement-empty hidden><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></div>
+                                            </div>
+
+                                            <div class="pagination-wrap class-promotion-pagination"><nav role="navigation" aria-label="Pagination Navigation">
+
+        <div class="flex gap-2 items-center justify-between sm:hidden">
+
+                            <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 cursor-not-allowed leading-5 rounded-md dark:text-gray-300 dark:bg-gray-700 dark:border-gray-600">
+                    &laquo; Previous
+                </span>
+            
+                            <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=2" rel="next" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-800 bg-white border border-gray-300 leading-5 rounded-md hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-800 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:focus:border-blue-700 dark:active:bg-gray-700 dark:active:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-900 dark:hover:text-gray-200">
+                    Next &raquo;
+                </a>
+            
+        </div>
+
+        <div class="hidden sm:flex-1 sm:flex sm:gap-2 sm:items-center sm:justify-between">
+
+            <div>
+                <p class="text-sm text-gray-700 leading-5 dark:text-gray-600">
+                    Showing
+                                            <span class="font-medium">1</span>
+                        to
+                        <span class="font-medium">10</span>
+                                        of
+                    <span class="font-medium">2009</span>
+                    results
+                </p>
+            </div>
+
+            <div>
+                <span class="inline-flex rtl:flex-row-reverse shadow-sm rounded-md">
+
+                    
+                                            <span aria-disabled="true" aria-label="&amp;laquo; Previous">
+                            <span class="inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-not-allowed rounded-l-md leading-5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400" aria-hidden="true">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </span>
+                        </span>
+                    
+                    
+                                            
+                        
+                        
+                                                                                                                        <span aria-current="page">
+                                        <span class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 cursor-default leading-5 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">1</span>
+                                    </span>
+                                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=2" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 2">
+                                        2
+                                    </a>
+                                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=3" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 3">
+                                        3
+                                    </a>
+                                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=4" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 4">
+                                        4
+                                    </a>
+                                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=5" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 5">
+                                        5
+                                    </a>
+                                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=6" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 6">
+                                        6
+                                    </a>
+                                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=7" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 7">
+                                        7
+                                    </a>
+                                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=8" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 8">
+                                        8
+                                    </a>
+                                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=9" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 9">
+                                        9
+                                    </a>
+                                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=10" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 10">
+                                        10
+                                    </a>
+                                                                                                                                
+                                                    <span aria-disabled="true">
+                                <span class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 cursor-default leading-5 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300">...</span>
+                            </span>
+                        
+                        
+                                                                    
+                        
+                        
+                                                                                                                        <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=200" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 200">
+                                        200
+                                    </a>
+                                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=201" class="inline-flex items-center px-4 py-2 -ml-px text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 hover:text-gray-700 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:text-gray-300 dark:active:bg-gray-700 dark:focus:border-blue-800 hover:bg-gray-100 dark:hover:bg-gray-900" aria-label="Go to page 201">
+                                        201
+                                    </a>
+                                                                                                        
+                    
+                                            <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=2" rel="next" class="inline-flex items-center px-2 py-2 -ml-px text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md leading-5 hover:text-gray-400 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-500 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:active:bg-gray-700 dark:focus:border-blue-800 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-gray-300" aria-label="Next &amp;raquo;">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                                    </span>
+            </div>
+        </div>
+    </nav>
+</div>
+                                    </section>
+
+                <div class="class-promotion-action-panel">
+                    <label>Tahun Pelajaran Tujuan
+                        <select name="target_year_id" required>
+                                                            <option value="2" >2026/2027</option>
+                                                            <option value="3" selected>2025/2026</option>
+                                                    </select>
+                    </label>
+                    <label>Kelas Tujuan
+                        <select name="target_class_id" required data-class-movement-target>
+                            <option value="">Pilih kelas tujuan...</option>
+                                                            <option value="3" >PAUD - KELOMPOK BERMAIN</option>
+                                                            <option value="138" >RA - A1 BUNG HATTA</option>
+                                                            <option value="139" >RA - A2 CUT MEUTIA</option>
+                                                            <option value="140" >RA - A3 PATTIMURA</option>
+                                                            <option value="141" >RA - A4 RASUNA SAID</option>
+                                                            <option value="142" >RA - B1 HASANUDDIN</option>
+                                                            <option value="143" >RA - B2 CUT NYAK DIEN</option>
+                                                            <option value="144" >RA - B3 DIPONEGORO</option>
+                                                            <option value="145" >RA - B4 DEWI SARTIKA</option>
+                                                            <option value="146" >RA - B5 TEUKU UMAR</option>
+                                                            <option value="147" >RA - B6 KARTINI</option>
+                                                            <option value="148" >RA - B7 KI HAJAR</option>
+                                                            <option value="149" >RA - KELUAR</option>
+                                                            <option value="85" >MI - 1A</option>
+                                                            <option value="86" >MI - 1B</option>
+                                                            <option value="94" >MI - 2A.1</option>
+                                                            <option value="95" >MI - 2A.2</option>
+                                                            <option value="97" >MI - 2B.1</option>
+                                                            <option value="98" >MI - 2B.2</option>
+                                                            <option value="87" >MI - 3A</option>
+                                                            <option value="91" >MI - 3B</option>
+                                                            <option value="88" >MI - 4A</option>
+                                                            <option value="92" >MI - 4B</option>
+                                                            <option value="89" >MI - 5A</option>
+                                                            <option value="93" >MI - 5B</option>
+                                                            <option value="90" >MI - 6A</option>
+                                                            <option value="96" >MI - 6B</option>
+                                                            <option value="99" >MTs - 7A</option>
+                                                            <option value="100" >MTs - 7B</option>
+                                                            <option value="101" >MTs - 7C</option>
+                                                            <option value="102" >MTs - 7D</option>
+                                                            <option value="103" >MTs - 7E</option>
+                                                            <option value="104" >MTs - 8A</option>
+                                                            <option value="105" >MTs - 8B</option>
+                                                            <option value="106" >MTs - 8C</option>
+                                                            <option value="107" >MTs - 8D</option>
+                                                            <option value="108" >MTs - 8E</option>
+                                                            <option value="109" >MTs - 8F</option>
+                                                            <option value="110" >MTs - 9A</option>
+                                                            <option value="111" >MTs - 9B</option>
+                                                            <option value="112" >MTs - 9C</option>
+                                                            <option value="113" >MTs - 9D</option>
+                                                            <option value="114" >MTs - 9E</option>
+                                                            <option value="115" >MTs - 9F</option>
+                                                            <option value="116" >MTs - LULUSAN 2024/2025</option>
+                                                            <option value="78" >MA - 10A</option>
+                                                            <option value="79" >MA - 10B</option>
+                                                            <option value="81" >MA - 11A</option>
+                                                            <option value="80" >MA - 11B</option>
+                                                            <option value="82" >MA - 12A</option>
+                                                            <option value="83" >MA - 12B</option>
+                                                            <option value="84" >MA - LULUSAN 2024/2025</option>
+                                                            <option value="77" >ULYA - 12C</option>
+                                                            <option value="133" >PONPES - 10A</option>
+                                                            <option value="134" >PONPES - 10B</option>
+                                                            <option value="136" >PONPES - 11A</option>
+                                                            <option value="135" >PONPES - 11B</option>
+                                                            <option value="128" >PONPES - 12A</option>
+                                                            <option value="129" >PONPES - 12B</option>
+                                                            <option value="137" >PONPES - 12C</option>
+                                                            <option value="117" >PONPES - 7A</option>
+                                                            <option value="118" >PONPES - 7B</option>
+                                                            <option value="119" >PONPES - 7D</option>
+                                                            <option value="120" >PONPES - 7E</option>
+                                                            <option value="121" >PONPES - 8A</option>
+                                                            <option value="122" >PONPES - 8B</option>
+                                                            <option value="123" >PONPES - 8D</option>
+                                                            <option value="124" >PONPES - 8E</option>
+                                                            <option value="125" >PONPES - 9A</option>
+                                                            <option value="126" >PONPES - 9B</option>
+                                                            <option value="127" >PONPES - 9D</option>
+                                                            <option value="132" >PONPES - 9E</option>
+                                                            <option value="131" >PONPES - BANAT SALAF</option>
+                                                            <option value="130" >PONPES - BANIN SALAF</option>
+                                                    </select>
+                    </label>
+                    <div class="class-promotion-selected-count">
+                        <span>Terpilih</span>
+                        <output data-class-movement-count aria-live="polite">0</output>
+                    </div>
+                    <button class="button button-primary class-movement-submit" data-class-movement-submit disabled><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m0 0-5 5m5-5 5 5"/></svg> Proses Naik Kelas</button>
+                </div>
+                            </form>
+                        <nav class="class-movement-pagination student-report-pagination" aria-label="Navigasi halaman naik kelas">
+                <p>Menampilkan 1-10 dari 2.009 siswa</p>
+                                    <div class="student-pagination-links">
+                                                    <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                        
+                        
+                                                                                    <span class="student-page-button is-number is-active" aria-current="page">1</span>
+                                                                                                                <a class="student-page-button is-number" href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=2" aria-label="Halaman 2">2</a>
+                                                                                                                <a class="student-page-button is-number" href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=3" aria-label="Halaman 3">3</a>
+                                                    
+                                                                                    <span class="student-page-ellipsis" aria-hidden="true">...</span>
+                                                        <a class="student-page-button is-number" href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=201" aria-label="Halaman 201">201</a>
+                        
+                                                    <a class="student-page-button" href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas?page=2" rel="next">Berikutnya</a>
+                                            </div>
+                            </nav>
+            </section>
+        </main>
+        <footer class="app-footer" aria-label="Copyright">
+    &copy; 2026 Ma'wa Center
+</footer>
+    </div>
+</div>
+<style data-class-movement-spacing-lock>
+    html body .app-shell .main-panel main.class-movement-standard-page {
+        display: block !important;
+        gap:0 !important;
+        row-gap:0 !important;
+        padding:24px 32px 32px !important;
+        background:#ffffff !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter {
+        display: block !important;
+        width: min(100%, 1200px) !important;
+        max-width: 1200px !important;
+        margin:0 auto 16px !important;
+        padding:0 !important;
+        border:0 !important;
+        box-shadow:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > .student-flat-header {
+        display:block !important;
+        min-height:0 !important;
+        height:auto !important;
+        margin:0 0 16px !important;
+        padding:0 !important;
+        border:0 !important;
+        box-shadow:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .student-master-heading {
+        display:grid !important;
+        gap:4px !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .student-master-heading h1,
+    html body .app-shell .main-panel main.class-movement-standard-page .student-master-heading p {
+        margin:0 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .student-master-heading h1 {
+        font-size:20px !important;
+        font-weight:700 !important;
+        line-height:1.25 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .student-master-heading p {
+        font-size:14px !important;
+        font-weight:400 !important;
+        line-height:1.4 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter {
+        margin:0 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > #classMovementQueryForm {
+        display:none !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.class-movement-data-card {
+        display:block !important;
+        width:min(100%, 1200px) !important;
+        max-width:1200px !important;
+        margin:0 auto !important;
+        padding:0 !important;
+        border:0 !important;
+        box-shadow:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.class-movement-data-card > .student-reference-card-count {
+        display:flex !important;
+        align-items:center !important;
+        justify-content:space-between !important;
+        min-height:0 !important;
+        margin:0 0 16px !important;
+        padding:0 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.class-movement-data-card > .class-movement-card,
+    html body .app-shell .main-panel main.class-movement-standard-page .class-movement-list-card {
+        margin:0 !important;
+    }
+
+    /* Final filter lock: mirror Data Siswa filter card without changing block spacing. */
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
+        display:grid !important;
+        grid-template-columns:160px 150px minmax(220px, 300px) max-content !important;
+        grid-template-rows:auto !important;
+        align-items:end !important;
+        justify-content:stretch !important;
+        gap:12px !important;
+        width:100% !important;
+        margin:0 !important;
+        padding:16px !important;
+        background:#ffffff !important;
+        border:1px solid #d1d5db !important;
+        border-radius:12px !important;
+        box-shadow:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid {
+        display:contents !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label {
+        display:grid !important;
+        gap:6px !important;
+        min-width:0 !important;
+        margin:0 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label:nth-child(1) { grid-column:1 !important; grid-row:1 !important; }
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label:nth-child(2) { grid-column:2 !important; grid-row:1 !important; }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid span {
+        color:#404942 !important;
+        font-size:14px !important;
+        font-weight:400 !important;
+        line-height:1.25 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid select,
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-filter-search input {
+        box-sizing:border-box !important;
+        display:block !important;
+        width:100% !important;
+        min-width:0 !important;
+        height:40px !important;
+        min-height:40px !important;
+        margin:0 !important;
+        color:#111c2c !important;
+        background:#ffffff !important;
+        border:1px solid #d1d5db !important;
+        border-radius:8px !important;
+        box-shadow:none !important;
+        font-size:14px !important;
+        font-weight:400 !important;
+        line-height:40px !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid select {
+        padding:0 12px !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-filter-search {
+        position:relative !important;
+        display:block !important;
+        grid-column:3 !important;
+        grid-row:1 !important;
+        width:100% !important;
+        min-width:0 !important;
+        margin:0 !important;
+        align-self:end !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-filter-search > span {
+        display:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-filter-search .icon {
+        position:absolute !important;
+        left:12px !important;
+        top:50% !important;
+        width:18px !important;
+        height:18px !important;
+        color:#404942 !important;
+        transform:translateY(-50%) !important;
+        pointer-events:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-filter-search input {
+        padding:0 12px 0 32px !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+        grid-column:4 !important;
+        grid-row:1 !important;
+        display:flex !important;
+        align-items:end !important;
+        justify-content:flex-start !important;
+        gap:10px !important;
+        width:auto !important;
+        min-width:0 !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions .button {
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        width:96px !important;
+        min-width:96px !important;
+        max-width:96px !important;
+        height:40px !important;
+        min-height:40px !important;
+        max-height:40px !important;
+        margin:0 !important;
+        padding:0 14px !important;
+        border-radius:8px !important;
+        box-shadow:none !important;
+        font-size:14px !important;
+        font-weight:700 !important;
+        line-height:1 !important;
+        text-decoration:none !important;
+        white-space:nowrap !important;
+    }
+
+    /* Isolated filter layout: this is the one that should paint in the browser. */
+    html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter.class-movement-filter-panel {
+        box-sizing:border-box !important;
+        display:grid !important;
+        grid-template-columns:160px 150px minmax(220px, 300px) max-content !important;
+        grid-template-rows:auto !important;
+        align-items:end !important;
+        justify-content:stretch !important;
+        gap:12px !important;
+        width:100% !important;
+        max-width:100% !important;
+        margin:0 !important;
+        padding:16px !important;
+        background:#ffffff !important;
+        border:1px solid #d1d5db !important;
+        border-radius:12px !important;
+        box-shadow:none !important;
+        overflow:visible !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid {
+        display:contents !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label,
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search {
+        box-sizing:border-box !important;
+        display:grid !important;
+        gap:6px !important;
+        min-width:0 !important;
+        width:100% !important;
+        margin:0 !important;
+        padding:0 !important;
+        color:#404942 !important;
+        background:transparent !important;
+        border:0 !important;
+        box-shadow:none !important;
+        font-size:14px !important;
+        font-weight:400 !important;
+        line-height:1.25 !important;
+        text-transform:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label:nth-child(1) { grid-column:1 !important; grid-row:1 !important; }
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label:nth-child(2) { grid-column:2 !important; grid-row:1 !important; }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label > span,
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search > span {
+        color:#404942 !important;
+        font-size:14px !important;
+        font-weight:400 !important;
+        line-height:1.25 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid select,
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search input {
+        box-sizing:border-box !important;
+        display:block !important;
+        position:static !important;
+        width:100% !important;
+        min-width:0 !important;
+        max-width:none !important;
+        height:40px !important;
+        min-height:40px !important;
+        max-height:40px !important;
+        margin:0 !important;
+        color:#111c2c !important;
+        background:#ffffff !important;
+        border:1px solid #d1d5db !important;
+        border-radius:8px !important;
+        box-shadow:none !important;
+        font-size:14px !important;
+        font-weight:400 !important;
+        line-height:40px !important;
+        transform:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid select {
+        padding:0 12px !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search {
+        position:relative !important;
+        display:block !important;
+        grid-column:3 !important;
+        grid-row:1 !important;
+        align-self:end !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search > span {
+        display:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search .icon {
+        position:absolute !important;
+        left:12px !important;
+        top:50% !important;
+        width:18px !important;
+        height:18px !important;
+        color:#404942 !important;
+        transform:translateY(-50%) !important;
+        pointer-events:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search input {
+        padding:0 12px 0 32px !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-actions {
+        grid-column:4 !important;
+        grid-row:1 !important;
+        display:flex !important;
+        align-items:end !important;
+        justify-content:flex-start !important;
+        gap:10px !important;
+        width:auto !important;
+        min-width:0 !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-actions .button {
+        box-sizing:border-box !important;
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        width:96px !important;
+        min-width:96px !important;
+        max-width:96px !important;
+        height:40px !important;
+        min-height:40px !important;
+        max-height:40px !important;
+        margin:0 !important;
+        padding:0 14px !important;
+        border-radius:8px !important;
+        box-shadow:none !important;
+        font-size:14px !important;
+        font-weight:700 !important;
+        line-height:1 !important;
+        text-decoration:none !important;
+        white-space:nowrap !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-apply-button {
+        color:#ffffff !important;
+        background:#004528 !important;
+        border:1px solid #004528 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-apply-button:hover {
+        color:#ffffff !important;
+        background:#0d5f36 !important;
+        border-color:#0d5f36 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-reset-button {
+        color:#404942 !important;
+        background:#ffffff !important;
+        border:1px solid #d1d5db !important;
+    }
+
+    @media (width <= 760px) {
+        html body .app-shell .main-panel main.class-movement-standard-page {
+            padding:16px !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
+            grid-template-columns:1fr !important;
+            padding:16px !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label:nth-child(1),
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-card-filter-grid label:nth-child(2),
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-fee-filter-search,
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+            grid-column:auto !important;
+            grid-row:auto !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions {
+            display:grid !important;
+            grid-template-columns:1fr 1fr !important;
+            width:100% !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter .student-filter-actions.student-fee-card-filter-actions.fee-type-card-filter-actions .button {
+            width:100% !important;
+            min-width:0 !important;
+            max-width:none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter.class-movement-filter-panel {
+            grid-template-columns:1fr !important;
+            padding:16px !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label:nth-child(1),
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-grid label:nth-child(2),
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-search,
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-actions {
+            grid-column:auto !important;
+            grid-row:auto !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-actions {
+            display:grid !important;
+            grid-template-columns:1fr 1fr !important;
+            width:100% !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-actions .button {
+            width:100% !important;
+            min-width:0 !important;
+            max-width:none !important;
+        }
+    }
+</style>
+</body>
+</html>

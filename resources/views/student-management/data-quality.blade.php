@@ -18,6 +18,9 @@
         'check' => '<path d="M20 6 9 17l-5-5"/>',
         'edit' => '<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/>',
         'link' => '<path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.1-1.1"/>',
+        'sort' => '<path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/>',
+        'sort-up' => '<path d="m7 14 5-5 5 5"/>',
+        'sort-down' => '<path d="m7 10 5 5 5-5"/>',
     ];
     $icon = fn ($name, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$icons[$name].'</svg>';
     $formatNumber = fn ($value) => number_format((int) $value, 0, ',', '.');
@@ -88,14 +91,9 @@
                             @endforeach
                         </select>
                     </label>
-                    <label>
-                        <span>Tampilkan</span>
-                        <select name="per_page">
-                            @foreach ([10, 25, 50, 100] as $size)
-                                <option value="{{ $size }}" @selected($perPage === (string) $size)>{{ $size }}</option>
-                            @endforeach
-                        </select>
-                    </label>
+                    <input type="hidden" name="per_page" value="{{ $perPage }}">
+                    @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}">@endif
+                    @if(request('direction'))<input type="hidden" name="direction" value="{{ request('direction') }}">@endif
                     <div class="data-quality-filter-actions">
                         <button class="button button-primary" type="submit">Terapkan</button>
                         <a class="button button-secondary" href="{{ route('student-management.data-quality.index') }}">Reset</a>
@@ -113,14 +111,29 @@
                         <a class="button button-secondary" href="{{ route('student-management.identity-cleanup.index') }}">Rapikan Identitas</a>
                     @endif
                 </div>
+                <div class="student-reference-card-count student-management-table-toolbar">
+                    <form method="GET" action="{{ route('student-management.data-quality.index') }}" class="student-reference-card-length">
+                        <input type="hidden" name="indicator" value="{{ $selectedIndicator }}">
+                        @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}">@endif
+                        @if(request('direction'))<input type="hidden" name="direction" value="{{ request('direction') }}">@endif
+                        <label>Tampilkan
+                            <select name="per_page" onchange="this.form.submit()" aria-label="Jumlah data kualitas yang ditampilkan">
+                                @foreach ([10, 25, 50, 100] as $size)
+                                    <option value="{{ $size }}" @selected($perPage === (string) $size)>{{ $size }}</option>
+                                @endforeach
+                            </select>
+                            data
+                        </label>
+                    </form>
+                </div>
                 @if($selectedDetail['type'] === 'duplicates')
                     <div class="table-wrap data-quality-table-wrap">
                         <table class="data-table student-flat-table data-quality-table data-quality-duplicate-table">
                             <thead>
                                 <tr>
-                                    <th>Kandidat</th>
-                                    <th>Alasan</th>
-                                    <th>Confidence</th>
+                                    @include('partials.master-sort-heading', ['column' => 'name', 'label' => 'Kandidat'])
+                                    @include('partials.master-sort-heading', ['column' => 'reason', 'label' => 'Alasan'])
+                                    @include('partials.master-sort-heading', ['column' => 'confidence', 'label' => 'Confidence'])
                                     <th>Data Terdampak</th>
                                     @if($canManageIdentityCleanup)
                                         <th>Aksi</th>
@@ -160,12 +173,12 @@
                         <table class="data-table student-flat-table data-quality-table data-quality-student-table">
                             <thead>
                                 <tr>
-                                    <th>NIS</th>
-                                    <th>Nama Siswa</th>
-                                    <th>Konteks</th>
-                                    <th>Tanggal Masuk</th>
-                                    <th>Mulai Tagihan</th>
-                                    <th>Status Keluar</th>
+                                    @include('partials.master-sort-heading', ['column' => 'nis', 'label' => 'NIS'])
+                                    @include('partials.master-sort-heading', ['column' => 'name', 'label' => 'Nama Siswa'])
+                                    @include('partials.master-sort-heading', ['column' => 'context', 'label' => 'Konteks'])
+                                    @include('partials.master-sort-heading', ['column' => 'entry_date', 'label' => 'Tanggal Masuk'])
+                                    @include('partials.master-sort-heading', ['column' => 'billing_start_date', 'label' => 'Mulai Tagihan'])
+                                    @include('partials.master-sort-heading', ['column' => 'exit_date', 'label' => 'Status Keluar'])
                                     @if($canUpdateStudents)
                                         <th>Aksi</th>
                                     @endif
@@ -199,22 +212,59 @@
                     </div>
                 @endif
 
-                <div class="data-quality-pagination">
-                    <span>
-                        {{ $selectedDetail['rows']->total() > 0 ? 'Menampilkan '.$formatNumber($selectedDetail['rows']->firstItem()).'-'.$formatNumber($selectedDetail['rows']->lastItem()).' dari '.$formatNumber($selectedDetail['rows']->total()).' data' : 'Menampilkan 0 dari 0 data' }}
-                    </span>
+                @php
+                    $qualityRows = $selectedDetail['rows'];
+                    $qualityCurrentPage = $qualityRows->currentPage();
+                    $qualityLastPage = $qualityRows->lastPage();
+                    $qualityStartPage = max(1, $qualityCurrentPage - 1);
+                    $qualityEndPage = min($qualityLastPage, $qualityCurrentPage + 1);
+                    if ($qualityCurrentPage <= 2) {
+                        $qualityEndPage = min($qualityLastPage, 3);
+                    }
+                    if ($qualityCurrentPage >= $qualityLastPage - 1) {
+                        $qualityStartPage = max(1, $qualityLastPage - 2);
+                    }
+                    $qualityPageUrl = fn ($page) => route('student-management.data-quality.index', array_merge(request()->except('page'), ['page' => $page]));
+                    $qualityResultSummary = $qualityRows->total() > 0
+                        ? 'Menampilkan '.$formatNumber($qualityRows->firstItem()).'-'.$formatNumber($qualityRows->lastItem()).' dari '.$formatNumber($qualityRows->total()).' data'
+                        : 'Menampilkan 0 dari 0 data';
+                @endphp
+                <div class="data-quality-pagination student-report-pagination">
+                    <p>{{ $qualityResultSummary }}</p>
                     @if($selectedDetail['rows']->lastPage() > 1)
-                        <div class="data-quality-pagination-links" aria-label="Navigasi halaman kualitas data">
-                            @if($selectedDetail['rows']->onFirstPage())
-                                <span class="data-quality-page-button is-disabled">Sebelumnya</span>
+                        <div class="data-quality-pagination-links student-pagination-links" aria-label="Navigasi halaman kualitas data">
+                            @if($qualityRows->onFirstPage())
+                                <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
                             @else
-                                <a class="data-quality-page-button" href="{{ $selectedDetail['rows']->previousPageUrl() }}">Sebelumnya</a>
+                                <a class="student-page-button" href="{{ $qualityPageUrl($qualityCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
                             @endif
-                            <span class="data-quality-page-current">Halaman {{ $formatNumber($selectedDetail['rows']->currentPage()) }} dari {{ $formatNumber($selectedDetail['rows']->lastPage()) }}</span>
-                            @if($selectedDetail['rows']->hasMorePages())
-                                <a class="data-quality-page-button" href="{{ $selectedDetail['rows']->nextPageUrl() }}">Berikutnya</a>
+
+                            @if($qualityStartPage > 1)
+                                <a class="student-page-button is-number" href="{{ $qualityPageUrl(1) }}" aria-label="Halaman 1">1</a>
+                                @if($qualityStartPage > 2)
+                                    <span class="student-page-ellipsis" aria-hidden="true">...</span>
+                                @endif
+                            @endif
+
+                            @for($page = $qualityStartPage; $page <= $qualityEndPage; $page++)
+                                @if($page === $qualityCurrentPage)
+                                    <span class="student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
+                                @else
+                                    <a class="student-page-button is-number" href="{{ $qualityPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                @endif
+                            @endfor
+
+                            @if($qualityEndPage < $qualityLastPage)
+                                @if($qualityEndPage < $qualityLastPage - 1)
+                                    <span class="student-page-ellipsis" aria-hidden="true">...</span>
+                                @endif
+                                <a class="student-page-button is-number" href="{{ $qualityPageUrl($qualityLastPage) }}" aria-label="Halaman {{ $qualityLastPage }}">{{ $qualityLastPage }}</a>
+                            @endif
+
+                            @if($qualityRows->hasMorePages())
+                                <a class="student-page-button" href="{{ $qualityPageUrl($qualityCurrentPage + 1) }}" rel="next">Berikutnya</a>
                             @else
-                                <span class="data-quality-page-button is-disabled">Berikutnya</span>
+                                <span class="student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
                             @endif
                         </div>
                     @endif

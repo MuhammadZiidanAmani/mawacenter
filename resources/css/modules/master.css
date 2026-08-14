@@ -84,20 +84,29 @@ main.master-flat-page .student-title-actions {
     gap: 8px;
 }
 
-main.master-flat-page .student-add-button,
 main.master-flat-page .master-primary-add-button {
+    height: 40px;
     min-height: 40px;
+    padding: 0 14px;
     color: #ffffff;
     background: var(--master-primary);
     border-color: var(--master-primary);
     box-shadow: none;
+    transform: none;
+    transition: background-color .16s ease, border-color .16s ease, color .16s ease;
 }
 
-main.master-flat-page .student-add-button:hover,
 main.master-flat-page .master-primary-add-button:hover {
     color: #ffffff;
     background: var(--master-primary-hover);
     border-color: var(--master-primary-hover);
+    box-shadow: none;
+    transform: none;
+}
+
+main.master-flat-page .master-primary-add-button .icon {
+    width: 18px;
+    height: 18px;
 }
 
 main.master-flat-page > .master-card.master-flat-card {
@@ -107,56 +116,6 @@ main.master-flat-page > .master-card.master-flat-card {
     border: 0;
     border-radius: 0;
     box-shadow: none;
-}
-
-main.master-flat-page .master-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 0 0 16px;
-    padding: 4px;
-    overflow-x: visible;
-    background: #ffffff;
-    border: 1px solid var(--master-border);
-    border-radius: var(--app-radius);
-}
-
-main.master-flat-page .master-tabs a {
-    display: inline-flex;
-    min-width: max-content;
-    min-height: 40px;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 12px;
-    color: var(--master-label);
-    background: transparent;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1;
-}
-
-main.master-flat-page .master-tabs a:hover,
-main.master-flat-page .master-tabs a.active {
-    color: var(--master-primary);
-    background: var(--app-success-soft);
-}
-
-main.master-flat-page .master-tabs b {
-    display: inline-grid;
-    min-width: 26px;
-    min-height: 24px;
-    place-items: center;
-    padding: 0 8px;
-    color: var(--master-muted);
-    background: #ffffff;
-    border: 1px solid var(--master-border-soft);
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1;
 }
 
 main.master-flat-page .master-data-filter-panel {
@@ -173,6 +132,16 @@ main.master-flat-page .master-data-filter-panel {
     box-shadow: none;
 }
 
+main.master-flat-page .master-fee-filter-panel,
+main.master-flat-page .master-discount-filter-panel {
+    grid-template-columns:
+        minmax(170px, 1.25fr)
+        minmax(150px, 1fr)
+        minmax(150px, .95fr)
+        minmax(150px, .95fr)
+        max-content;
+}
+
 main.master-flat-page .master-data-filter-panel label {
     display: grid;
     grid-column: span 3;
@@ -181,14 +150,14 @@ main.master-flat-page .master-data-filter-panel label {
     margin: 0;
     color: var(--master-label);
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.25;
 }
 
 main.master-flat-page .master-data-filter-panel label > span {
     color: var(--master-label);
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 400;
     line-height: 1.25;
 }
 
@@ -229,11 +198,29 @@ main.master-flat-page .master-data-filter-search input {
 
 main.master-flat-page .master-data-filter-actions {
     display: flex;
-    grid-column: span 2;
+    grid-column: span 3;
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
     min-width: 0;
+}
+
+main.master-flat-page .master-class-filter-panel .master-data-filter-actions,
+main.master-flat-page .master-fee-filter-panel .master-data-filter-actions,
+main.master-flat-page .master-discount-filter-panel .master-data-filter-actions {
+    grid-column: 10 / -1;
+}
+
+main.master-flat-page .master-fee-filter-panel label,
+main.master-flat-page .master-discount-filter-panel label {
+    grid-column: auto;
+}
+
+main.master-flat-page .master-fee-filter-panel .master-data-filter-actions,
+main.master-flat-page .master-discount-filter-panel .master-data-filter-actions {
+    grid-column: auto;
+    justify-content: flex-end;
+    align-self: end;
 }
 
 main.master-flat-page .master-data-filter-actions .button {
@@ -258,11 +245,12 @@ main.master-flat-page .master-data-reset-button {
     border-color: var(--master-border);
 }
 
-main.master-flat-page .master-data-count {
+main.master-flat-page .master-table-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 14px;
     margin: 0 0 16px;
     color: var(--master-muted);
     font-size: 14px;
@@ -271,7 +259,9 @@ main.master-flat-page .master-data-count {
 }
 
 main.master-flat-page .master-data-length,
-main.master-flat-page .master-data-length label {
+main.master-flat-page .master-data-length label,
+main.master-flat-page .master-table-search,
+main.master-flat-page .master-table-search label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -284,6 +274,62 @@ main.master-flat-page .master-data-length label {
 main.master-flat-page .master-data-length select {
     width: 86px;
     min-height: 36px;
+}
+
+main.master-flat-page .master-table-search {
+    min-width: 0;
+    justify-content: flex-end;
+}
+
+main.master-flat-page .master-table-search label {
+    gap: 10px;
+    color: var(--master-label);
+}
+
+main.master-flat-page .master-table-search label > span:first-child {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+main.master-flat-page .master-table-search-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 280px;
+    max-width: 100%;
+    min-height: 36px;
+    padding: 0 10px;
+    color: var(--master-text);
+    background: #ffffff;
+    border: 1px solid var(--master-border);
+    border-radius: 8px;
+}
+
+main.master-flat-page .master-table-search-input:focus-within {
+    border-color: var(--master-primary);
+    box-shadow: 0 0 0 3px rgba(0, 69, 40, .12);
+}
+
+main.master-flat-page .master-table-search-input .icon {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    color: var(--master-muted);
+}
+
+main.master-flat-page .master-table-search-input input {
+    width: 100%;
+    min-width: 0;
+    height: 34px;
+    padding: 0;
+    color: var(--master-text);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-size: 14px;
+    line-height: 34px;
+    outline: 0;
 }
 
 main.master-flat-page .table-wrap {
@@ -364,6 +410,57 @@ main.master-flat-page .master-data-table th {
     font-weight: 500;
 }
 
+main.master-flat-page .master-sort-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    max-width: 100%;
+    color: var(--master-label);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.35;
+    text-decoration: none;
+    white-space: normal;
+}
+
+main.master-flat-page .master-sort-link:hover,
+main.master-flat-page .master-sortable-heading.is-sorted .master-sort-link {
+    color: var(--master-primary);
+}
+
+main.master-flat-page .master-sort-indicator {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    align-items: center;
+    justify-content: center;
+    color: var(--master-muted);
+}
+
+main.master-flat-page .master-sort-indicator .icon {
+    width: 14px;
+    height: 14px;
+    stroke-width: 2.2;
+}
+
+main.master-flat-page .master-sortable-heading.is-sorted .master-sort-indicator {
+    color: var(--master-primary);
+}
+
+main.master-flat-page .master-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 main.master-flat-page .master-data-table td:nth-child(2),
 main.master-flat-page .education-unit-table td:nth-child(3),
 main.master-flat-page .data-role-table td:nth-child(4),
@@ -395,7 +492,7 @@ main.master-flat-page .master-data-table tbody tr:last-child td {
 main.master-flat-page .role-permission-summary {
     color: var(--master-label);
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 500;
 }
 
 main.master-flat-page .table-actions {
@@ -467,6 +564,60 @@ main.master-flat-page .pagination-wrap {
     margin-top: 16px;
 }
 
+main.master-flat-page .master-data-pagination-footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    color: var(--master-muted);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+main.master-flat-page .master-data-pagination-footer .pagination-wrap {
+    margin-top: 0;
+}
+
+main.master-flat-page .master-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+main.master-flat-page .master-page-link {
+    display: inline-flex;
+    min-width: 36px;
+    min-height: 36px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    color: var(--master-label);
+    background: #ffffff;
+    border: 1px solid var(--master-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+}
+
+main.master-flat-page .master-page-link.is-active {
+    color: #ffffff;
+    background: var(--master-primary);
+    border-color: var(--master-primary);
+    font-weight: 700;
+}
+
+main.master-flat-page .master-page-link.is-disabled,
+main.master-flat-page .master-page-link.is-ellipsis {
+    color: var(--master-muted);
+    background: var(--app-neutral-soft);
+}
+
 main.master-flat-page .pagination-wrap nav {
     display: flex;
     flex-wrap: wrap;
@@ -481,6 +632,7 @@ main.master-flat-page .pagination-wrap nav > div:last-child {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    justify-content: flex-end;
     gap: 6px;
 }
 
@@ -712,6 +864,16 @@ main.master-create-page .form-actions {
         grid-column: span 4;
     }
 
+    main.master-flat-page .master-fee-filter-panel,
+    main.master-flat-page .master-discount-filter-panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    main.master-flat-page .master-fee-filter-panel label,
+    main.master-flat-page .master-discount-filter-panel label {
+        grid-column: auto;
+    }
+
     main.master-flat-page .master-data-filter-actions {
         grid-column: 1 / -1;
         justify-content: flex-start;
@@ -734,12 +896,6 @@ main.master-create-page .form-actions {
         width: 100%;
     }
 
-    main.master-flat-page .master-tabs {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        margin-bottom: 12px;
-    }
-
     main.master-flat-page .master-data-filter-panel {
         grid-template-columns: 1fr;
         padding: 14px;
@@ -753,6 +909,13 @@ main.master-create-page .form-actions {
         grid-column: 1;
     }
 
+    main.master-flat-page .master-class-filter-panel .master-data-filter-actions,
+    main.master-flat-page .master-fee-filter-panel .master-data-filter-actions,
+    main.master-flat-page .master-discount-filter-panel .master-data-filter-actions {
+        grid-column: 1;
+        justify-content: stretch;
+    }
+
     main.master-flat-page .master-data-filter-actions {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -764,8 +927,23 @@ main.master-create-page .form-actions {
         width: 100%;
     }
 
-    main.master-flat-page .master-data-count {
+    main.master-flat-page .master-table-toolbar,
+    main.master-flat-page .master-table-search,
+    main.master-flat-page .master-table-search label,
+    main.master-flat-page .master-data-pagination-footer {
         display: grid;
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+    }
+
+    main.master-flat-page .master-table-search-input {
+        width: 100%;
+    }
+
+    main.master-flat-page .master-pagination,
+    main.master-flat-page .master-data-pagination-footer .pagination-wrap nav,
+    main.master-flat-page .pagination-wrap nav > div:last-child {
+        justify-content: flex-start;
     }
 
     main.master-flat-page .master-data-table {

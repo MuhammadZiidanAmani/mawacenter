@@ -53,6 +53,9 @@ class StudentDataQualityController extends Controller
         $perPage = in_array((string) $request->query('per_page', '10'), ['10', '25', '50', '100'], true)
             ? (string) $request->query('per_page', '10')
             : '10';
+        $selectedType = $indicatorOptions[$selectedIndicator]['type'];
+        $sort = $this->sortFromRequest($request, $selectedType);
+        $direction = $request->query('direction') === 'desc' ? 'desc' : 'asc';
         $detailRows = match ($selectedIndicator) {
             'active-without-nisn' => $activeWithoutNisn,
             'active-without-entry-date' => $activeWithoutEntryDate,
@@ -60,6 +63,7 @@ class StudentDataQualityController extends Controller
             'inactive-without-exit-data' => $inactiveWithoutExitData,
             default => $duplicateCandidates,
         };
+        $detailRows = $this->sortRows($detailRows, $selectedType, $sort, $direction);
         $selectedDetail = [
             ...$indicatorOptions[$selectedIndicator],
             'key' => $selectedIndicator,
@@ -72,6 +76,8 @@ class StudentDataQualityController extends Controller
             'selectedIndicator' => $selectedIndicator,
             'selectedDetail' => $selectedDetail,
             'perPage' => $perPage,
+            'sort' => $sort,
+            'direction' => $direction,
             'summary' => [
                 'active_students' => $activeStudents->count(),
                 'inactive_students' => $inactiveStudents->count(),
@@ -131,6 +137,56 @@ class StudentDataQualityController extends Controller
             'canUpdateStudents' => $canUpdateStudents,
             'canManageIdentityCleanup' => $canManageIdentityCleanup,
         ]);
+    }
+
+    private function sortFromRequest(Request $request, string $type): ?string
+    {
+        $allowed = $type === 'duplicates'
+            ? ['name', 'reason', 'confidence', 'count']
+            : ['nis', 'name', 'context', 'entry_date', 'billing_start_date', 'exit_date'];
+        $sort = $request->string('sort')->value();
+
+        return in_array($sort, $allowed, true) ? $sort : null;
+    }
+
+    private function sortRows(Collection $rows, string $type, ?string $sort, string $direction): Collection
+    {
+        if ($sort === null) {
+            return $rows;
+        }
+
+        $descending = $direction === 'desc';
+
+        return $rows
+            ->sortBy(function ($row) use ($type, $sort) {
+                if ($type === 'duplicates') {
+                    return match ($sort) {
+                        'reason' => Str::lower($row['reason'] ?? ''),
+                        'confidence' => ['Kuat' => 1, 'Sedang' => 2, 'Perlu cek' => 3][$row['confidence'] ?? ''] ?? 4,
+                        'count' => $row['students']->count(),
+                        default => Str::lower($row['name'] ?? ''),
+                    };
+                }
+
+                return match ($sort) {
+                    'nis' => $row->nis ?? '',
+                    'context' => $this->studentContextValue($row),
+                    'entry_date' => $row->entry_date?->timestamp ?? 0,
+                    'billing_start_date' => $row->billing_start_date?->timestamp ?? 0,
+                    'exit_date' => $row->exit_date?->timestamp ?? 0,
+                    default => Str::lower($row->name ?? ''),
+                };
+            }, SORT_REGULAR, $descending)
+            ->values();
+    }
+
+    private function studentContextValue(Student $student): string
+    {
+        return collect([
+            $student->schoolClass?->educationUnit?->code,
+            $student->schoolClass?->name,
+            $student->academicYear?->name,
+        ])->filter()->implode(' / ');
     }
 
     private function indicatorOptions(): array

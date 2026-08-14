@@ -1146,6 +1146,9 @@
         'arrow-up' => '<path d="M12 19V5m0 0-5 5m5-5 5 5"/>',
         'filter' => '<path d="M4 5h16l-6 7v5l-4 2v-7Z"/>',
         'chevron' => '<path d="m6 9 6 6 6-6"/>',
+        'sort' => '<path d="m7 15 5 5 5-5M7 9l5-5 5 5"/>',
+        'sort-up' => '<path d="m7 10 5-5 5 5M12 5v14"/>',
+        'sort-down' => '<path d="M12 5v14m-5-5 5 5 5-5"/>',
     ];
     $icon = fn ($name, $class = '') => '<svg class="icon '.$class.'" viewBox="0 0 24 24" aria-hidden="true">'.$icons[$name].'</svg>';
     $isPromotion = $mode === 'promotion';
@@ -1205,11 +1208,7 @@
                         <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">Semua</option>@foreach ($educationUnits as $unit)<option value="{{ $unit->id }}" @selected($filters['unit_id'] == $unit->id)>{{ $unit->code }}</option>@endforeach</select></label>
                         <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">Semua</option>@foreach ($classes as $class)<option value="{{ $class->id }}" data-unit-id="{{ $class->education_unit_id }}" @selected($filters['class_id'] == $class->id)>{{ $class->name }}</option>@endforeach</select></label>
                     </div>
-                    <label class="class-movement-filter-search">
-                        <span>Cari siswa</span>
-                        {!! $icon('search') !!}
-                        <input name="search" value="{{ $filters['search'] }}" placeholder="Nama atau NIS..." aria-label="Cari siswa">
-                    </label>
+                    @if($filters['search'] !== '')<input type="hidden" name="search" value="{{ $filters['search'] }}">@endif
                     <input type="hidden" name="per_page" value="{{ $filters['per_page'] }}">
                     @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}">@endif
                     @if(request('direction'))<input type="hidden" name="direction" value="{{ request('direction') }}">@endif
@@ -1229,9 +1228,9 @@
             </form>
 
             <section class="card master-card student-data-card student-list-table-card class-movement-data-card">
-            <div class="student-reference-card-count">
+            <div class="student-reference-card-count student-management-table-toolbar">
                 <form method="GET" action="{{ $indexRoute }}" class="student-reference-card-length">
-                    @foreach(request()->except(['per_page', 'page', 'status']) as $key => $value)
+                    @foreach(request()->except(['per_page', 'page', 'status', 'search']) as $key => $value)
                         @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                     @endforeach
                     <label>Tampilkan
@@ -1244,9 +1243,18 @@
                         siswa
                     </label>
                 </form>
-                <span>
-                    {{ $studentTotal > 0 ? 'Menampilkan '.number_format($studentFirst, 0, ',', '.').'-'.number_format($studentLast, 0, ',', '.').' dari '.number_format($studentTotal, 0, ',', '.').' siswa' : 'Menampilkan 0 dari 0 siswa' }}
-                </span>
+                <form method="GET" action="{{ $indexRoute }}" class="report-student-search-card student-management-search-card" role="search">
+                    @foreach(request()->except(['search', 'page']) as $key => $value)
+                        @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
+                    @endforeach
+                    <label>
+                        <span>Cari siswa</span>
+                        <span class="master-table-search-input">
+                            {!! $icon('search') !!}
+                            <input name="search" value="{{ $filters['search'] }}" placeholder="Nama atau NIS..." aria-label="Cari siswa">
+                        </span>
+                    </label>
+                </form>
             </div>
 
             <form method="POST" action="{{ $actionRoute }}" class="class-movement-card class-movement-v6-card {{ $isPromotion ? '' : 'class-transfer-card-mode' }}" data-class-movement-form data-class-movement-action-label="{{ $isPromotion ? 'naikkan kelas' : 'pindahkan kelas' }}">
@@ -1259,31 +1267,52 @@
                 <section class="class-movement-list-card">
                     <div class="class-transfer-list-head">
                         <strong>Daftar Siswa</strong>
-                        <label class="class-transfer-check-all">
-                            <span>Pilih Semua</span>
-                            <input type="checkbox" aria-label="Pilih semua siswa" data-class-movement-check-all>
-                        </label>
                     </div>
 
-                    <div class="class-transfer-student-list">
-                        @forelse ($students as $student)
-                            <label class="class-transfer-student-card" data-class-movement-row data-search="{{ strtolower(implode(' ', [$student->nis, $student->name, $student->schoolClass?->educationUnit?->code ?? '-', $student->schoolClass?->name ?? '-', $student->academicYear?->name ?? '-'])) }}">
-                                <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" data-class-movement-student>
-                                <span class="class-transfer-student-main">
-                                    <strong>{{ $student->name }}</strong>
-                                    <span class="class-transfer-student-meta">
-                                        <span><small>Unit</small><b>{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</b></span>
-                                        <span><small>Kelas Saat Ini</small><b>{{ $student->schoolClass?->name ?? '-' }}</b></span>
-                                    </span>
-                                </span>
-                                <span class="class-transfer-nis">NIS: {{ $student->nis }}</span>
-                            </label>
-                        @empty
-                            <div class="empty-state class-transfer-empty" data-class-movement-empty><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></div>
-                        @endforelse
-                        @if($students->isNotEmpty())
-                            <div class="empty-state class-transfer-empty" data-class-movement-empty hidden><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></div>
-                        @endif
+                    <div class="table-wrap class-movement-table-wrap">
+                        <table class="student-hybrid-table class-movement-student-table class-transfer-table">
+                            <colgroup>
+                                <col class="movement-col-check">
+                                <col class="movement-col-nis">
+                                <col class="movement-col-name">
+                                <col class="movement-col-unit">
+                                <col class="movement-col-class">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th class="movement-check-column">
+                                        <label class="class-transfer-check-all">
+                                            <span>Pilih</span>
+                                            <input type="checkbox" aria-label="Pilih semua siswa" data-class-movement-check-all>
+                                        </label>
+                                    </th>
+                                    @include('partials.master-sort-heading', ['column' => 'nis', 'label' => 'NIS', 'icon' => $icon, 'thClass' => 'movement-center-column'])
+                                    @include('partials.master-sort-heading', ['column' => 'name', 'label' => 'Nama Siswa', 'icon' => $icon, 'thClass' => 'movement-name-column'])
+                                    @include('partials.master-sort-heading', ['column' => 'unit', 'label' => 'Unit', 'icon' => $icon, 'thClass' => 'movement-center-column'])
+                                    @include('partials.master-sort-heading', ['column' => 'class', 'label' => 'Kelas Saat Ini', 'icon' => $icon, 'thClass' => 'movement-center-column'])
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($students as $student)
+                                    <tr class="class-movement-student-row" data-class-movement-row data-search="{{ strtolower(implode(' ', [$student->nis, $student->name, $student->schoolClass?->educationUnit?->code ?? '-', $student->schoolClass?->name ?? '-', $student->academicYear?->name ?? '-'])) }}">
+                                        <td class="movement-cell-check" data-label="Pilih"><input type="checkbox" name="student_ids[]" value="{{ $student->id }}" aria-label="Pilih {{ $student->name }}" data-class-movement-student></td>
+                                        <td class="movement-cell-nis" data-label="NIS">{{ $student->nis }}</td>
+                                        <td class="movement-cell-main" data-label="Nama Siswa"><strong>{{ $student->name }}</strong></td>
+                                        <td class="movement-cell-support" data-label="Unit">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</td>
+                                        <td class="movement-cell-support" data-label="Kelas Saat Ini">{{ $student->schoolClass?->name ?? '-' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr data-class-movement-empty>
+                                        <td colspan="5" class="empty-state class-transfer-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
+                                    </tr>
+                                @endforelse
+                                @if($students->isNotEmpty())
+                                    <tr data-class-movement-empty hidden>
+                                        <td colspan="5" class="empty-state class-transfer-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
                     </div>
 
                     @if(method_exists($students, 'links'))
@@ -1311,32 +1340,55 @@
                 <section class="class-movement-list-card">
                     <div class="class-promotion-list-head">
                         <strong>Daftar Siswa</strong>
-                        <label class="class-promotion-check-all">
-                            <span>Pilih Semua</span>
-                            <input type="checkbox" aria-label="Pilih semua siswa" data-class-movement-check-all>
-                        </label>
                     </div>
 
-                    <div class="class-promotion-student-list">
-                        @forelse ($students as $student)
-                            <label class="class-promotion-student-card" data-class-movement-row data-search="{{ strtolower(implode(' ', [$student->nis, $student->name, $student->schoolClass?->educationUnit?->code ?? '-', $student->schoolClass?->name ?? '-', $student->academicYear?->name ?? '-'])) }}">
-                                <input type="checkbox" name="student_ids[]" value="{{ $student->id }}" data-class-movement-student>
-                                <span class="class-promotion-student-main">
-                                    <strong>{{ $student->name }}</strong>
-                                    <span class="class-promotion-student-meta">
-                                        <span><small>Unit</small><b>{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</b></span>
-                                        <span><small>Kelas Saat Ini</small><b>{{ $student->schoolClass?->name ?? '-' }}</b></span>
-                                        <span><small>Tahun Pelajaran</small><b>{{ $student->academicYear?->name ?? '-' }}</b></span>
-                                    </span>
-                                </span>
-                                <span class="class-promotion-nis">NIS: {{ $student->nis }}</span>
-                            </label>
-                        @empty
-                            <div class="empty-state class-promotion-empty" data-class-movement-empty><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></div>
-                        @endforelse
-                        @if($students->isNotEmpty())
-                            <div class="empty-state class-promotion-empty" data-class-movement-empty hidden><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></div>
-                        @endif
+                    <div class="table-wrap class-movement-table-wrap">
+                        <table class="student-hybrid-table class-movement-student-table class-promotion-table">
+                            <colgroup>
+                                <col class="movement-col-check">
+                                <col class="movement-col-nis">
+                                <col class="movement-col-name">
+                                <col class="movement-col-unit">
+                                <col class="movement-col-class">
+                                <col class="movement-col-year">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th class="movement-check-column">
+                                        <label class="class-promotion-check-all">
+                                            <span>Pilih</span>
+                                            <input type="checkbox" aria-label="Pilih semua siswa" data-class-movement-check-all>
+                                        </label>
+                                    </th>
+                                    @include('partials.master-sort-heading', ['column' => 'nis', 'label' => 'NIS', 'icon' => $icon, 'thClass' => 'movement-center-column'])
+                                    @include('partials.master-sort-heading', ['column' => 'name', 'label' => 'Nama Siswa', 'icon' => $icon, 'thClass' => 'movement-name-column'])
+                                    @include('partials.master-sort-heading', ['column' => 'unit', 'label' => 'Unit', 'icon' => $icon, 'thClass' => 'movement-center-column'])
+                                    @include('partials.master-sort-heading', ['column' => 'class', 'label' => 'Kelas Saat Ini', 'icon' => $icon, 'thClass' => 'movement-center-column'])
+                                    @include('partials.master-sort-heading', ['column' => 'year', 'label' => 'Tahun Pelajaran', 'icon' => $icon, 'thClass' => 'movement-center-column'])
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($students as $student)
+                                    <tr class="class-movement-student-row" data-class-movement-row data-search="{{ strtolower(implode(' ', [$student->nis, $student->name, $student->schoolClass?->educationUnit?->code ?? '-', $student->schoolClass?->name ?? '-', $student->academicYear?->name ?? '-'])) }}">
+                                        <td class="movement-cell-check" data-label="Pilih"><input type="checkbox" name="student_ids[]" value="{{ $student->id }}" aria-label="Pilih {{ $student->name }}" data-class-movement-student></td>
+                                        <td class="movement-cell-nis" data-label="NIS">{{ $student->nis }}</td>
+                                        <td class="movement-cell-main" data-label="Nama Siswa"><strong>{{ $student->name }}</strong></td>
+                                        <td class="movement-cell-support" data-label="Unit">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</td>
+                                        <td class="movement-cell-support" data-label="Kelas Saat Ini">{{ $student->schoolClass?->name ?? '-' }}</td>
+                                        <td class="movement-cell-support" data-label="Tahun Pelajaran">{{ $student->academicYear?->name ?? '-' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr data-class-movement-empty>
+                                        <td colspan="6" class="empty-state class-promotion-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
+                                    </tr>
+                                @endforelse
+                                @if($students->isNotEmpty())
+                                    <tr data-class-movement-empty hidden>
+                                        <td colspan="6" class="empty-state class-promotion-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
                     </div>
 
                     @if(method_exists($students, 'links'))
@@ -1368,6 +1420,62 @@
                 </div>
                 @endif
             </form>
+            @php
+                $movementCurrentPage = method_exists($students, 'currentPage') ? $students->currentPage() : 1;
+                $movementLastPage = method_exists($students, 'lastPage') ? $students->lastPage() : 1;
+                $movementStartPage = max(1, $movementCurrentPage - 1);
+                $movementEndPage = min($movementLastPage, $movementCurrentPage + 1);
+                if ($movementCurrentPage <= 2) {
+                    $movementEndPage = min($movementLastPage, 3);
+                }
+                if ($movementCurrentPage >= $movementLastPage - 1) {
+                    $movementStartPage = max(1, $movementLastPage - 2);
+                }
+                $movementPageUrl = fn ($page) => $indexRoute.'?'.http_build_query(array_merge(request()->except('page'), ['page' => $page]));
+                $movementResultSummary = $studentTotal > 0
+                    ? 'Menampilkan '.number_format($studentFirst, 0, ',', '.').'-'.number_format($studentLast, 0, ',', '.').' dari '.number_format($studentTotal, 0, ',', '.').' siswa'
+                    : 'Menampilkan 0 dari 0 siswa';
+            @endphp
+            <nav class="class-movement-pagination student-report-pagination" aria-label="Navigasi halaman {{ strtolower($title) }}">
+                <p>{{ $movementResultSummary }}</p>
+                @if(method_exists($students, 'hasPages') && $students->hasPages())
+                    <div class="student-pagination-links">
+                        @if($students->onFirstPage())
+                            <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                        @else
+                            <a class="student-page-button" href="{{ $movementPageUrl($movementCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
+                        @endif
+
+                        @if($movementStartPage > 1)
+                            <a class="student-page-button is-number" href="{{ $movementPageUrl(1) }}" aria-label="Halaman 1">1</a>
+                            @if($movementStartPage > 2)
+                                <span class="student-page-ellipsis" aria-hidden="true">...</span>
+                            @endif
+                        @endif
+
+                        @for($page = $movementStartPage; $page <= $movementEndPage; $page++)
+                            @if($page === $movementCurrentPage)
+                                <span class="student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
+                            @else
+                                <a class="student-page-button is-number" href="{{ $movementPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                            @endif
+                        @endfor
+
+                        @if($movementEndPage < $movementLastPage)
+                            @if($movementEndPage < $movementLastPage - 1)
+                                <span class="student-page-ellipsis" aria-hidden="true">...</span>
+                            @endif
+                            <a class="student-page-button is-number" href="{{ $movementPageUrl($movementLastPage) }}" aria-label="Halaman {{ $movementLastPage }}">{{ $movementLastPage }}</a>
+                        @endif
+
+                        @if($students->hasMorePages())
+                            <a class="student-page-button" href="{{ $movementPageUrl($movementCurrentPage + 1) }}" rel="next">Berikutnya</a>
+                        @else
+                            <span class="student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
+                        @endif
+                    </div>
+                @endif
+            </nav>
             </section>
         </main>
         @include('partials.app-footer')
@@ -1589,7 +1697,7 @@
     html body .app-shell .main-panel main.class-movement-standard-page > section.student-list-filter-card.class-movement-v6-filter > form#class-movement-filter.class-movement-filter-panel {
         box-sizing:border-box !important;
         display:grid !important;
-        grid-template-columns:160px 150px minmax(220px, 300px) max-content !important;
+        grid-template-columns:160px 150px max-content !important;
         grid-template-rows:auto !important;
         align-items:end !important;
         justify-content:stretch !important;
@@ -1694,7 +1802,7 @@
     }
 
     html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel .class-movement-filter-actions {
-        grid-column:4 !important;
+        grid-column:3 !important;
         grid-row:1 !important;
         display:flex !important;
         align-items:end !important;
@@ -1799,6 +1907,186 @@
             width:100% !important;
             min-width:0 !important;
             max-width:none !important;
+        }
+    }
+</style>
+<style data-class-movement-hybrid-lock>
+    html body .app-shell .main-panel main.class-movement-standard-page .class-movement-table-wrap {
+        display:block !important;
+        width:100% !important;
+        overflow-x:auto !important;
+        background:#ffffff !important;
+        border:1px solid #d1d5db !important;
+        border-radius:8px !important;
+        box-shadow:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-table {
+        width:100% !important;
+        border-collapse:separate !important;
+        border-spacing:0 !important;
+        table-layout:fixed !important;
+        background:#ffffff !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .class-transfer-table {
+        min-width:780px !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .class-promotion-table {
+        min-width:900px !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-table th,
+    html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-table td {
+        height:40px !important;
+        padding:10px 12px !important;
+        border:0 !important;
+        border-bottom:1px solid #e5e7eb !important;
+        color:#020617 !important;
+        background:#ffffff !important;
+        font-size:14px !important;
+        font-weight:400 !important;
+        line-height:1.35 !important;
+        vertical-align:middle !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-table th {
+        color:#334155 !important;
+        background:#fbfdf8 !important;
+        font-weight:500 !important;
+        text-align:center !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-table .master-sort-link {
+        display:inline-flex !important;
+        align-items:center !important;
+        justify-content:center !important;
+        gap:6px !important;
+        color:#334155 !important;
+        font-size:14px !important;
+        font-weight:500 !important;
+        line-height:1.35 !important;
+        text-decoration:none !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-table .master-sort-indicator {
+        display:inline-flex !important;
+        width:16px !important;
+        height:16px !important;
+        align-items:center !important;
+        justify-content:center !important;
+        color:#707971 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .movement-cell-main strong {
+        display:block !important;
+        color:#020617 !important;
+        font-size:14px !important;
+        font-weight:700 !important;
+        line-height:1.35 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page :is(.movement-cell-check, .movement-cell-nis, .movement-cell-support) {
+        text-align:center !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page .movement-cell-main {
+        text-align:left !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page :is(.class-transfer-check-all, .class-promotion-check-all) {
+        justify-content:center !important;
+        gap:6px !important;
+        color:#334155 !important;
+        font-size:14px !important;
+        font-weight:500 !important;
+    }
+
+    html body .app-shell .main-panel main.class-movement-standard-page :is(.class-transfer-check-all, .class-promotion-check-all) input,
+    html body .app-shell .main-panel main.class-movement-standard-page .movement-cell-check input {
+        width:16px !important;
+        height:16px !important;
+        margin:0 !important;
+    }
+
+    @media (width <= 760px) {
+        html body .app-shell .main-panel main.class-movement-standard-page .class-movement-table-wrap {
+            overflow:visible !important;
+            background:transparent !important;
+            border:0 !important;
+            border-radius:0 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-table,
+        html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-table tbody {
+            display:block !important;
+            min-width:0 !important;
+            background:transparent !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-table colgroup,
+        html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-table thead {
+            display:none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-row {
+            display:grid !important;
+            grid-template-columns:22px minmax(0, 1fr) max-content !important;
+            gap:6px 10px !important;
+            width:100% !important;
+            margin:0 0 10px !important;
+            padding:12px !important;
+            background:#ffffff !important;
+            border:1px solid #d1d5db !important;
+            border-radius:8px !important;
+            box-shadow:none !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-row td {
+            display:block !important;
+            width:auto !important;
+            height:auto !important;
+            min-height:0 !important;
+            padding:0 !important;
+            border:0 !important;
+            background:transparent !important;
+            text-align:left !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .movement-cell-check {
+            grid-column:1 !important;
+            grid-row:1 / span 2 !important;
+            display:flex !important;
+            align-items:flex-start !important;
+            justify-content:center !important;
+            padding-top:2px !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .movement-cell-main {
+            grid-column:2 !important;
+            grid-row:1 !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .movement-cell-nis {
+            grid-column:3 !important;
+            grid-row:1 !important;
+            justify-self:end !important;
+            color:#404942 !important;
+            white-space:nowrap !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .movement-cell-support {
+            grid-column:2 / 4 !important;
+            color:#707971 !important;
+            text-align:left !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .movement-cell-nis::before,
+        html body .app-shell .main-panel main.class-movement-standard-page .movement-cell-support::before {
+            content:attr(data-label) ": " !important;
+            color:#707971 !important;
+            font-weight:400 !important;
         }
     }
 </style>

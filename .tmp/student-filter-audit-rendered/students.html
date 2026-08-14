@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Master Data - MA'WA CENTER</title>
+    <link rel="preload" as="style" href="http://127.0.0.1:8000/build/assets/app-BveGL1dL.css" /><link rel="modulepreload" as="script" href="http://127.0.0.1:8000/build/assets/app-g3cJn-6F.js" /><link rel="stylesheet" href="http://127.0.0.1:8000/build/assets/app-BveGL1dL.css" /><script type="module" src="http://127.0.0.1:8000/build/assets/app-g3cJn-6F.js"></script>            <style data-student-data-filter-card-lock>
+            @media (max-width: 960px) {
+                html body.student-data-body,
+                html body.student-data-body .app-shell,
+                html body.student-data-body .main-panel,
+                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) {
+                    max-width:100vw !important;
+                    overflow-x:hidden !important;
+                }
+
+                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-list-filter-card.student-reference-align-lock {
+                    width:calc(100vw - 32px) !important;
+                    max-width:calc(100vw - 32px) !important;
+                    min-width:0 !important;
+                }
+
+                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-list-filter-card.student-reference-align-lock > .student-flat-header {
+                    display:grid !important;
+                    grid-template-columns:1fr !important;
+                    width:100% !important;
+                    min-width:0 !important;
+                    max-width:100% !important;
+                }
+
+                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) .student-title-actions {
+                    display:grid !important;
+                    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+                    gap:8px !important;
+                    width:100% !important;
+                    min-width:0 !important;
+                    max-width:100% !important;
+                }
+
+                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) .student-title-actions :is(.student-add-button, .action-purple, .action-green) {
+                    width:100% !important;
+                    min-width:0 !important;
+                    max-width:100% !important;
+                    justify-content:center !important;
+                    padding-inline:10px !important;
+                    overflow:hidden !important;
+                    text-overflow:ellipsis !important;
+                    white-space:nowrap !important;
+                }
+
+                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
+                    grid-template-columns:1fr !important;
+                    width:100% !important;
+                    max-width:100% !important;
+                    min-width:0 !important;
+                    overflow:hidden !important;
+                }
+
+                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-reference-filter-grid,
+                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
+                    grid-column:auto !important;
+                    grid-row:auto !important;
+                    width:100% !important;
+                    min-width:0 !important;
+                }
+
+                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-reference-filter-grid {
+                    grid-template-columns:1fr !important;
+                }
+
+                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
+                    display:grid !important;
+                    grid-template-columns:1fr 1fr !important;
+                    gap:8px !important;
+                }
+
+                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions .button {
+                    width:100% !important;
+                    min-width:0 !important;
+                    max-width:100% !important;
+                }
+            }
+        </style>
+    </head>
+<body class="student-data-body">
+<div class="app-shell">
+    <aside class="sidebar" data-sidebar>
+    <div class="brand"><div class="brand-mark"><img src="http://127.0.0.1:8000/images/mawa-center-mark.png" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
+    <nav class="sidebar-nav">
+                <a href="http://127.0.0.1:8000" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>Dashboard</span></a>
+                        <div class="nav-group nested-nav open">
+            <button type="button" class="nav-item nav-parent active" data-nav-toggle aria-expanded="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Manajemen Siswa</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                                <a href="http://127.0.0.1:8000/manajemen-siswa/data-siswa" class="active"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Data Siswa</span></a>
+                <a href="http://127.0.0.1:8000/manajemen-siswa/kualitas-data" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Kualitas Data</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/rapikan-identitas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/></svg><span>Rapikan Identitas</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/pindah-kelas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4-4m-4 4 4 4"/></svg><span>Pindah Kelas</span></a>
+                <a href="http://127.0.0.1:8000/manajemen-siswa/naik-kelas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m0 0-5 5m5-5 5 5"/></svg><span>Naik Kelas</span></a>
+                                                <a href="http://127.0.0.1:8000/manajemen-siswa/alumni" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Data Alumni</span></a>
+                            </div>
+        </div>
+                        <a href="http://127.0.0.1:8000/keuangan/pembayaran" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h2"/></svg><span>Pembayaran</span></a>
+                        <a href="http://127.0.0.1:8000/keuangan/verifikasi-transfer" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/></svg><span>Verifikasi Transfer</span></a>
+                        <a href="http://127.0.0.1:8000/keuangan/tagihan" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>Tagihan</span></a>
+                        <div class="nav-group nested-nav ">
+            <button type="button" class="nav-item nav-parent " data-nav-toggle aria-expanded="false"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Laporan</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                <a href="http://127.0.0.1:8000/laporan/transaksi" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Transaksi Pembayaran</span></a>
+                <a href="http://127.0.0.1:8000/laporan/spp-perbulan" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>SPP Perbulan</span></a>
+                <a href="http://127.0.0.1:8000/laporan/spp-tahun-pelajaran" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>SPP Pertahun</span></a>
+                <a href="http://127.0.0.1:8000/laporan/rekap-unit" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Rekap Per Unit</span></a>
+            </div>
+        </div>
+                        <div class="nav-group master-nav ">
+            <button type="button" class="nav-item nav-parent " data-master-nav-toggle aria-expanded="false"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Data Master</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                                    <a href="http://127.0.0.1:8000/master-data?tab=academic-years" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Tahun Pelajaran</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=education-units" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>Unit Pendidikan</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=classes" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Kelas</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=fee-types" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>Kategori Pembayaran</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=fee-discounts" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/></svg><span>Keringanan Biaya</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=data-roles" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/></svg><span>Data Role</span></a>
+                                    <a href="http://127.0.0.1:8000/master-data?tab=data-users" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Data User</span></a>
+                            </div>
+        </div>
+                        <a href="http://127.0.0.1:8000/pengaturan" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/></svg><span>Pengaturan</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
+            </nav>
+</aside>
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+
+    <div class="main-panel">
+        <header class="topbar">
+            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar" title="Buka atau tutup sidebar"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+            <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>2026/2027</strong></div>
+            <div class="topbar-spacer"></div>
+            <button class="icon-button notification-button" type="button" aria-label="Notifikasi" title="Notifikasi"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span></span></button>
+            <form method="POST" action="http://127.0.0.1:8000/logout" class="logout-form">
+    <input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off">    <button class="icon-button logout-button" type="submit" aria-label="Keluar" title="Keluar"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></svg></button>
+</form>
+        </header>
+        <main class="student-page">
+                                    
+                                    
+                            <section class="student-workspace student-list-filter-card student-reference-align-lock">
+                                        <div class="student-flat-header">
+                        <div class="student-master-heading">
+                            <h1>Data Siswa</h1>
+                            <p>Kelola identitas, kelas, wali, dan status siswa.</p>
+                        </div>
+                        <div class="student-title-actions student-export-actions">
+                                                        <a href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/create" class="button student-add-button"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Tambah</a>
+                                                                                                                <a href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/import" class="button action-purple"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L7 9m5-5 5 5M5 20h14"/></svg> Import</a>
+                                                                                    <a href="http://127.0.0.1:8000/master-data/students/export?year_id=2&amp;status=active" class="button action-green"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 19h16"/></svg> Export</a>
+                                                                                    <a href="http://127.0.0.1:8000/master-data/students/template" class="button action-green"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 19h16"/></svg> Template</a>
+                                                    </div>
+                    </div>
+
+                    <form id="student-data-filter" method="GET" action="http://127.0.0.1:8000/manajemen-siswa/data-siswa" class="student-filter-panel student-reference-filter student-fee-card-filter" data-student-filter-panel>
+                        <input type="hidden" name="per_page" value="10">
+                        <input type="hidden" name="year_id" value="2">
+                                                                        <div class="student-reference-filter-grid student-fee-card-filter-grid">
+                            <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit><option value="">Semua</option><option value="2" >PAUD</option><option value="3" >RA</option><option value="4" >MI</option><option value="5" >MTs</option><option value="6" >MA</option><option value="7" >ULYA</option><option value="8" >PONPES</option></select></label>
+                            <label><span>Kelas</span><select name="class_id" data-student-filter-class><option value="">Semua</option><option value="3" data-unit-id="2" >KELOMPOK BERMAIN</option><option value="138" data-unit-id="3" >A1 BUNG HATTA</option><option value="139" data-unit-id="3" >A2 CUT MEUTIA</option><option value="140" data-unit-id="3" >A3 PATTIMURA</option><option value="141" data-unit-id="3" >A4 RASUNA SAID</option><option value="142" data-unit-id="3" >B1 HASANUDDIN</option><option value="143" data-unit-id="3" >B2 CUT NYAK DIEN</option><option value="144" data-unit-id="3" >B3 DIPONEGORO</option><option value="145" data-unit-id="3" >B4 DEWI SARTIKA</option><option value="146" data-unit-id="3" >B5 TEUKU UMAR</option><option value="147" data-unit-id="3" >B6 KARTINI</option><option value="148" data-unit-id="3" >B7 KI HAJAR</option><option value="149" data-unit-id="3" >KELUAR</option><option value="85" data-unit-id="4" >1A</option><option value="86" data-unit-id="4" >1B</option><option value="94" data-unit-id="4" >2A.1</option><option value="95" data-unit-id="4" >2A.2</option><option value="97" data-unit-id="4" >2B.1</option><option value="98" data-unit-id="4" >2B.2</option><option value="87" data-unit-id="4" >3A</option><option value="91" data-unit-id="4" >3B</option><option value="88" data-unit-id="4" >4A</option><option value="92" data-unit-id="4" >4B</option><option value="89" data-unit-id="4" >5A</option><option value="93" data-unit-id="4" >5B</option><option value="90" data-unit-id="4" >6A</option><option value="96" data-unit-id="4" >6B</option><option value="99" data-unit-id="5" >7A</option><option value="100" data-unit-id="5" >7B</option><option value="101" data-unit-id="5" >7C</option><option value="102" data-unit-id="5" >7D</option><option value="103" data-unit-id="5" >7E</option><option value="104" data-unit-id="5" >8A</option><option value="105" data-unit-id="5" >8B</option><option value="106" data-unit-id="5" >8C</option><option value="107" data-unit-id="5" >8D</option><option value="108" data-unit-id="5" >8E</option><option value="109" data-unit-id="5" >8F</option><option value="110" data-unit-id="5" >9A</option><option value="111" data-unit-id="5" >9B</option><option value="112" data-unit-id="5" >9C</option><option value="113" data-unit-id="5" >9D</option><option value="114" data-unit-id="5" >9E</option><option value="115" data-unit-id="5" >9F</option><option value="116" data-unit-id="5" >LULUSAN 2024/2025</option><option value="78" data-unit-id="6" >10A</option><option value="79" data-unit-id="6" >10B</option><option value="81" data-unit-id="6" >11A</option><option value="80" data-unit-id="6" >11B</option><option value="82" data-unit-id="6" >12A</option><option value="83" data-unit-id="6" >12B</option><option value="84" data-unit-id="6" >LULUSAN 2024/2025</option><option value="77" data-unit-id="7" >12C</option><option value="133" data-unit-id="8" >10A</option><option value="134" data-unit-id="8" >10B</option><option value="136" data-unit-id="8" >11A</option><option value="135" data-unit-id="8" >11B</option><option value="128" data-unit-id="8" >12A</option><option value="129" data-unit-id="8" >12B</option><option value="137" data-unit-id="8" >12C</option><option value="117" data-unit-id="8" >7A</option><option value="118" data-unit-id="8" >7B</option><option value="119" data-unit-id="8" >7D</option><option value="120" data-unit-id="8" >7E</option><option value="121" data-unit-id="8" >8A</option><option value="122" data-unit-id="8" >8B</option><option value="123" data-unit-id="8" >8D</option><option value="124" data-unit-id="8" >8E</option><option value="125" data-unit-id="8" >9A</option><option value="126" data-unit-id="8" >9B</option><option value="127" data-unit-id="8" >9D</option><option value="132" data-unit-id="8" >9E</option><option value="131" data-unit-id="8" >BANAT SALAF</option><option value="130" data-unit-id="8" >BANIN SALAF</option></select></label>
+                            <label><span>Status Data</span><select name="status"><option value="active" selected>Aktif</option><option value="inactive" >Nonaktif</option><option value="all" >Semua</option></select></label>
+                        </div>
+                        <div class="student-filter-actions student-fee-card-filter-actions student-data-filter-actions">
+                            <button class="button student-fee-card-search-button fee-type-card-search-button" aria-label="Tampilkan data">Terapkan</button>
+                            <a href="http://127.0.0.1:8000/manajemen-siswa/data-siswa" class="button student-fee-card-reset-button fee-type-card-reset-button">Reset</a>
+                        </div>
+                    </form>
+                </section>
+                        
+                        <section class="card master-card student-data-card student-list-table-card student-reference-align-lock      ">
+                                                
+                                                        <div class="student-reference-card-count student-table-toolbar-v2">
+                        <form method="GET" action="http://127.0.0.1:8000/manajemen-siswa/data-siswa" class="student-reference-card-length student-page-size-form">
+                                                            <input type="hidden" name="tab" value="students">                                                        <label>Tampilkan
+                                <select name="per_page" onchange="this.form.submit()" aria-label="Jumlah siswa yang ditampilkan">
+                                                                            <option value="10" selected>10</option>
+                                                                            <option value="25" >25</option>
+                                                                            <option value="50" >50</option>
+                                                                            <option value="100" >100</option>
+                                                                            <option value="500" >500</option>
+                                                                        <option value="all" >Semua</option>
+                                </select>
+                                siswa
+                            </label>
+                        </form>
+                        <form method="GET" action="http://127.0.0.1:8000/manajemen-siswa/data-siswa" class="report-student-search-card" role="search">
+                                                            <input type="hidden" name="tab" value="students">                                                        <label>
+                                <span>Cari Siswa</span>
+                                <span class="report-student-search-input">
+                                    <svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                                    <input type="search" name="search" value="" placeholder="Nama / NIS / NISN" autocomplete="off" aria-label="Cari siswa">
+                                </span>
+                            </label>
+                        </form>
+                    </div>
+                                                <div class="table-wrap"><table class="data-table  student-flat-table student-master-table student-standard-table-v2       ">
+                                                                    <colgroup>
+                            <col class="student-col-no">
+                            <col class="student-col-nis">
+                            <col class="student-col-name">
+                            <col class="student-col-gender">
+                            <col class="student-col-unit">
+                            <col class="student-col-class">
+                            <col class="student-col-actions">
+                        </colgroup>
+                        <thead><tr>
+                            <th>No</th>
+                                                                                            <th class="student-sortable-heading">
+                                    <a class="student-sort-link" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa?tab=students&amp;sort=nis&amp;direction=asc" aria-label="Urutkan NIS naik">
+                                        <span>NIS</span>
+                                        <span class="student-sort-indicator"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/></svg></span>
+                                                                            </a>
+                                </th>
+                                                                                            <th class="student-sortable-heading">
+                                    <a class="student-sort-link" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa?tab=students&amp;sort=name&amp;direction=asc" aria-label="Urutkan Nama naik">
+                                        <span>Nama</span>
+                                        <span class="student-sort-indicator"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/></svg></span>
+                                                                            </a>
+                                </th>
+                                                                                            <th class="student-sortable-heading">
+                                    <a class="student-sort-link" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa?tab=students&amp;sort=gender&amp;direction=asc" aria-label="Urutkan JK naik">
+                                        <span>JK</span>
+                                        <span class="student-sort-indicator"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/></svg></span>
+                                                                            </a>
+                                </th>
+                                                                                            <th class="student-sortable-heading">
+                                    <a class="student-sort-link" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa?tab=students&amp;sort=unit&amp;direction=asc" aria-label="Urutkan Unit naik">
+                                        <span>Unit</span>
+                                        <span class="student-sort-indicator"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/></svg></span>
+                                                                            </a>
+                                </th>
+                                                                                            <th class="student-sortable-heading student-class-column">
+                                    <a class="student-sort-link" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa?tab=students&amp;sort=class&amp;direction=asc" aria-label="Urutkan Kelas naik">
+                                        <span>Kelas</span>
+                                        <span class="student-sort-indicator"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/></svg></span>
+                                                                            </a>
+                                </th>
+                                                        <th class="student-action-column">Aksi</th>
+                        </tr></thead>
+                        <tbody><tr><td>1</td><td>220005</td><td>A. FAREL AL FAHREZI</td><td>L</td><td>PONPES</td><td class="student-class-cell">10A</td><td class="student-actions-cell"><div class="table-actions student-ghost-actions">
+            <a class="icon-button edit-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/3627/edit?tab=students" title="Edit" aria-label="Edit data">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </a>
+                <form method="POST" action="http://127.0.0.1:8000/master-data/students/3627?tab=students" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>2</td><td>250111</td><td>A. RIZQON MAULANA</td><td>L</td><td>MTs</td><td class="student-class-cell">7C</td><td class="student-actions-cell"><div class="table-actions student-ghost-actions">
+            <a class="icon-button edit-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/2661/edit?tab=students" title="Edit" aria-label="Edit data">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </a>
+                <form method="POST" action="http://127.0.0.1:8000/master-data/students/2661?tab=students" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>3</td><td>202089</td><td>A&#039;SYA FATATUS SALMA</td><td>P</td><td>PONPES</td><td class="student-class-cell">12B</td><td class="student-actions-cell"><div class="table-actions student-ghost-actions">
+            <a class="icon-button edit-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/3512/edit?tab=students" title="Edit" aria-label="Edit data">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </a>
+                <form method="POST" action="http://127.0.0.1:8000/master-data/students/3512?tab=students" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>4</td><td>250062</td><td>ABDILLAH SAEFI HAMMAM</td><td>L</td><td>MA</td><td class="student-class-cell">10A</td><td class="student-actions-cell"><div class="table-actions student-ghost-actions">
+            <a class="icon-button edit-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/2068/edit?tab=students" title="Edit" aria-label="Edit data">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </a>
+                <form method="POST" action="http://127.0.0.1:8000/master-data/students/2068?tab=students" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>5</td><td>220001</td><td>ABDILLAH SAEFI HAMMAM</td><td>L</td><td>PONPES</td><td class="student-class-cell">10A</td><td class="student-actions-cell"><div class="table-actions student-ghost-actions">
+            <a class="icon-button edit-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/3626/edit?tab=students" title="Edit" aria-label="Edit data">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </a>
+                <form method="POST" action="http://127.0.0.1:8000/master-data/students/3626?tab=students" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>6</td><td>220179</td><td>ABDIROHMAN MUHAMMAD</td><td>L</td><td>MI</td><td class="student-class-cell">4A</td><td class="student-actions-cell"><div class="table-actions student-ghost-actions">
+            <a class="icon-button edit-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/2334/edit?tab=students" title="Edit" aria-label="Edit data">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </a>
+                <form method="POST" action="http://127.0.0.1:8000/master-data/students/2334?tab=students" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>7</td><td>210121</td><td>ABDUL GADIR ASSEGAF</td><td>L</td><td>MI</td><td class="student-class-cell">5A</td><td class="student-actions-cell"><div class="table-actions student-ghost-actions">
+            <a class="icon-button edit-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/2369/edit?tab=students" title="Edit" aria-label="Edit data">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </a>
+                <form method="POST" action="http://127.0.0.1:8000/master-data/students/2369?tab=students" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>8</td><td>230238</td><td>ABDUL JABBAR</td><td>L</td><td>MI</td><td class="student-class-cell">4A</td><td class="student-actions-cell"><div class="table-actions student-ghost-actions">
+            <a class="icon-button edit-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/2364/edit?tab=students" title="Edit" aria-label="Edit data">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </a>
+                <form method="POST" action="http://127.0.0.1:8000/master-data/students/2364?tab=students" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>9</td><td>250001</td><td>ABDUL QADIR RAMADHAN</td><td>L</td><td>MA</td><td class="student-class-cell">10A</td><td class="student-actions-cell"><div class="table-actions student-ghost-actions">
+            <a class="icon-button edit-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/2048/edit?tab=students" title="Edit" aria-label="Edit data">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </a>
+                <form method="POST" action="http://127.0.0.1:8000/master-data/students/2048?tab=students" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>10</td><td>220196</td><td>ABDUL QADIR RAMADHAN</td><td>L</td><td>PONPES</td><td class="student-class-cell">10A</td><td class="student-actions-cell"><div class="table-actions student-ghost-actions">
+            <a class="icon-button edit-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa/3674/edit?tab=students" title="Edit" aria-label="Edit data">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </a>
+                <form method="POST" action="http://127.0.0.1:8000/master-data/students/3674?tab=students" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr></tbody>
+                                    </table></div>
+                                                                                <nav class="pagination-wrap student-report-pagination" aria-label="Navigasi halaman data siswa">
+                            <p>Menampilkan 1-10 dari 2.009 siswa</p>
+                            <div class="student-pagination-links">
+                                                                    <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                                
+                                
+                                                                                                            <span class="student-page-button is-number is-active" aria-current="page">1</span>
+                                                                                                                                                <a class="student-page-button is-number" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa?tab=students&amp;page=2" aria-label="Halaman 2">2</a>
+                                                                                                                                                <a class="student-page-button is-number" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa?tab=students&amp;page=3" aria-label="Halaman 3">3</a>
+                                                                    
+                                                                                                            <span class="student-page-ellipsis" aria-hidden="true">...</span>
+                                                                        <a class="student-page-button is-number" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa?tab=students&amp;page=201" aria-label="Halaman 201">201</a>
+                                
+                                                                    <a class="student-page-button" href="http://127.0.0.1:8000/manajemen-siswa/data-siswa?tab=students&amp;page=2" rel="next">Berikutnya</a>
+                                                            </div>
+                        </nav>
+                                                </section>
+                                            </main>
+        <footer class="app-footer" aria-label="Copyright">
+    &copy; 2026 Ma'wa Center
+</footer>
+    </div>
+</div>
+
+<div class="modal-backdrop        " data-modal>
+    <div class="form-modal">
+        <div class="form-modal-header"><div><p class="eyebrow">Master Data</p><h2 data-modal-title>Edit Data</h2></div><button class="icon-button" type="button" data-modal-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
+        <form method="POST" action="http://127.0.0.1:8000/master-data/students" data-master-form data-store-action="http://127.0.0.1:8000/master-data/students" class="master-form">
+            <input type="hidden" name="_token" value="X37gI4LcWdPHJbW0f2wNHlSvKtr01tldAONKoroN" autocomplete="off"> <input type="hidden" name="_method" value="POST" data-form-method>
+            <div class="span-2 student-existing-choice">
+        <strong>Data siswa</strong>
+        <p>Pilih siswa yang sudah ada jika siswa akan didaftarkan ke unit pendidikan lain.</p>
+    </div>
+    <label class="span-2" data-existing-student-field>Siswa yang sudah ada (opsional)
+        <div class="student-search-picker" data-student-picker data-student-optional>
+            <input type="search" placeholder="Ketik nama atau NIS siswa..." autocomplete="off" data-student-search>
+            <select name="existing_student_id" data-student-source data-existing-student><option value="">Input sebagai siswa baru</option></select>
+            <div class="student-search-results" data-student-results hidden></div>
+        </div>
+        <small>Identitas, alamat, dan data orang tua akan diambil otomatis.</small>
+    </label>
+        <label>NIS <input name="nis" required value=""></label>
+    <label>NISN <input name="nisn" value=""></label>
+    <div class="student-personal-fields span-2" data-new-student-fields>
+    <label class="span-2">Nama Siswa <input name="name" required value=""></label>
+    <label>Tempat Lahir <input name="birth_place" value=""></label><label>Tanggal Lahir <input type="date" name="birth_date" value=""></label>
+    <label>Jenis Kelamin <select name="gender" required><option value="L" selected>Laki-laki</option><option value="P" >Perempuan</option></select></label>
+    </div>
+    <label>Unit Pendidikan <select name="education_unit_id" required data-student-unit><option value="">Pilih Unit Pendidikan</option><option value="2" >PAUD - PAUD MAMBAUL HIKMAH</option><option value="3" >RA - RA MAMBAUL HIKMAH</option><option value="4" >MI - MI MAMBAUL HIKMAH</option><option value="5" >MTs - MTs MAMBAUL HIKMAH</option><option value="6" >MA - MA MAMBAUL HIKMAH</option><option value="7" >ULYA - KESETARAAN ULYA MAMBAUL HIKMAH</option><option value="8" >PONPES - PONPES MAMBAUL HIKMAH</option></select></label>
+    <label>Kelas <select name="school_class_id" required data-student-class><option value="">Pilih Kelas</option><option value="3" data-unit-id="2" >KELOMPOK BERMAIN</option><option value="138" data-unit-id="3" >A1 BUNG HATTA</option><option value="139" data-unit-id="3" >A2 CUT MEUTIA</option><option value="140" data-unit-id="3" >A3 PATTIMURA</option><option value="141" data-unit-id="3" >A4 RASUNA SAID</option><option value="142" data-unit-id="3" >B1 HASANUDDIN</option><option value="143" data-unit-id="3" >B2 CUT NYAK DIEN</option><option value="144" data-unit-id="3" >B3 DIPONEGORO</option><option value="145" data-unit-id="3" >B4 DEWI SARTIKA</option><option value="146" data-unit-id="3" >B5 TEUKU UMAR</option><option value="147" data-unit-id="3" >B6 KARTINI</option><option value="148" data-unit-id="3" >B7 KI HAJAR</option><option value="149" data-unit-id="3" >KELUAR</option><option value="85" data-unit-id="4" >1A</option><option value="86" data-unit-id="4" >1B</option><option value="94" data-unit-id="4" >2A.1</option><option value="95" data-unit-id="4" >2A.2</option><option value="97" data-unit-id="4" >2B.1</option><option value="98" data-unit-id="4" >2B.2</option><option value="87" data-unit-id="4" >3A</option><option value="91" data-unit-id="4" >3B</option><option value="88" data-unit-id="4" >4A</option><option value="92" data-unit-id="4" >4B</option><option value="89" data-unit-id="4" >5A</option><option value="93" data-unit-id="4" >5B</option><option value="90" data-unit-id="4" >6A</option><option value="96" data-unit-id="4" >6B</option><option value="99" data-unit-id="5" >7A</option><option value="100" data-unit-id="5" >7B</option><option value="101" data-unit-id="5" >7C</option><option value="102" data-unit-id="5" >7D</option><option value="103" data-unit-id="5" >7E</option><option value="104" data-unit-id="5" >8A</option><option value="105" data-unit-id="5" >8B</option><option value="106" data-unit-id="5" >8C</option><option value="107" data-unit-id="5" >8D</option><option value="108" data-unit-id="5" >8E</option><option value="109" data-unit-id="5" >8F</option><option value="110" data-unit-id="5" >9A</option><option value="111" data-unit-id="5" >9B</option><option value="112" data-unit-id="5" >9C</option><option value="113" data-unit-id="5" >9D</option><option value="114" data-unit-id="5" >9E</option><option value="115" data-unit-id="5" >9F</option><option value="116" data-unit-id="5" >LULUSAN 2024/2025</option><option value="78" data-unit-id="6" >10A</option><option value="79" data-unit-id="6" >10B</option><option value="81" data-unit-id="6" >11A</option><option value="80" data-unit-id="6" >11B</option><option value="82" data-unit-id="6" >12A</option><option value="83" data-unit-id="6" >12B</option><option value="84" data-unit-id="6" >LULUSAN 2024/2025</option><option value="77" data-unit-id="7" >12C</option><option value="133" data-unit-id="8" >10A</option><option value="134" data-unit-id="8" >10B</option><option value="136" data-unit-id="8" >11A</option><option value="135" data-unit-id="8" >11B</option><option value="128" data-unit-id="8" >12A</option><option value="129" data-unit-id="8" >12B</option><option value="137" data-unit-id="8" >12C</option><option value="117" data-unit-id="8" >7A</option><option value="118" data-unit-id="8" >7B</option><option value="119" data-unit-id="8" >7D</option><option value="120" data-unit-id="8" >7E</option><option value="121" data-unit-id="8" >8A</option><option value="122" data-unit-id="8" >8B</option><option value="123" data-unit-id="8" >8D</option><option value="124" data-unit-id="8" >8E</option><option value="125" data-unit-id="8" >9A</option><option value="126" data-unit-id="8" >9B</option><option value="127" data-unit-id="8" >9D</option><option value="132" data-unit-id="8" >9E</option><option value="131" data-unit-id="8" >BANAT SALAF</option><option value="130" data-unit-id="8" >BANIN SALAF</option></select></label>
+    <label>Tahun Pelajaran <select name="academic_year_id" required><option value="2" selected>2026/2027</option><option value="3" >2025/2026</option></select></label>
+    <label>Tanggal Masuk <input type="date" name="entry_date" required value="2026-08-14"></label>
+    <label>Mulai Tagihan Khusus <input type="date" name="billing_start_date" value=""></label>
+    <label>Status Masuk
+        <select name="intake_status" required>
+                            <option value="returning" selected>Siswa Lama</option>
+                            <option value="new" >Siswa Baru</option>
+                            <option value="transfer" >Pindahan</option>
+                    </select>
+    </label>
+    <div class="student-personal-fields span-2" data-new-student-fields>
+    <label>Nama Ayah <input name="father_name" value=""></label><label>Nama Ibu <input name="mother_name" value=""></label>
+    <label>No. WA Ayah <input name="father_whatsapp" value="" placeholder="08xxxxxxxxxx" data-father-whatsapp></label>
+    <label>No. WA Ibu <span class="student-whatsapp-copy"><input name="mother_whatsapp" value="" placeholder="08xxxxxxxxxx" data-mother-whatsapp><button type="button" class="button button-secondary" data-copy-father-whatsapp>Samakan dengan Ayah</button></span></label>
+    <label>Provinsi <select name="province" data-student-region="province"><option value="">Pilih Provinsi</option></select></label>
+    <label>Kabupaten/Kota <select name="city" data-student-region="city" disabled><option value="">Pilih Kabupaten/Kota</option></select></label>
+    <label>Kecamatan <select name="district" data-student-region="district" disabled><option value="">Pilih Kecamatan</option></select></label>
+    <label>Desa <select name="village" data-student-region="village" disabled><option value="">Pilih Desa</option></select></label>
+    <label class="span-2">Alamat <input name="address" value=""></label>
+    </div>
+    <label class="switch-field span-2"><input type="checkbox" name="is_active" value="1" checked data-student-status><span></span> Siswa aktif</label>
+    <div class="student-inactive-fields span-2" data-inactive-fields hidden>
+        <label>Tanggal Keluar <input type="date" name="exit_date" value=""></label>
+        <label>Alasan Nonaktif <input name="inactive_reason" value="" placeholder="Contoh: Lulus, pindah, mengundurkan diri"></label>
+    </div>
+            <div class="form-actions span-2"><button type="button" class="button button-secondary" data-modal-close>Batal</button><button class="button button-primary">Simpan Data</button></div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

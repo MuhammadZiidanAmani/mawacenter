@@ -1453,7 +1453,6 @@ body .finance-page .payment-create-page form.payment-registration-v1-form .payme
 body .button.button-primary,
 body .button.student-add-button,
 body .button.student-search-button,
-body .master-primary-add-button,
 body .payment-import-entry-button,
 body .spp-preview-button,
 body .spp-confirm-button,
@@ -1470,7 +1469,6 @@ body .payment-flat-page .payment-option-buttons-flat a{
 body .button.button-primary:hover,
 body .button.student-add-button:hover,
 body .button.student-search-button:hover,
-body .master-primary-add-button:hover,
 body .payment-import-entry-button:hover,
 body .spp-preview-button:hover,
 body .spp-confirm-button:hover,
@@ -1487,7 +1485,6 @@ body .payment-flat-page .payment-option-buttons-flat a:hover{
 body .button.button-primary svg,
 body .button.student-add-button svg,
 body .button.student-search-button svg,
-body .master-primary-add-button svg,
 body .payment-import-entry-button svg,
 body .spp-preview-button svg,
 body .spp-confirm-button svg,
@@ -1498,7 +1495,6 @@ body .class-movement-submit svg{
 body .button.button-primary:focus-visible,
 body .button.student-add-button:focus-visible,
 body .button.student-search-button:focus-visible,
-body .master-primary-add-button:focus-visible,
 body .payment-import-entry-button:focus-visible{
     outline:0!important;
     box-shadow:0 0 0 3px var(--mawa-button-primary-focus)!important;
@@ -1508,7 +1504,6 @@ body .payment-import-entry-button:focus-visible{
 html body .app-shell .main-panel .button.button-primary,
 html body .app-shell .main-panel .button.student-add-button,
 html body .app-shell .main-panel .button.student-search-button,
-html body .app-shell .main-panel .master-primary-add-button,
 html body .app-shell .main-panel .payment-import-entry-button,
 html body .app-shell .main-panel .spp-preview-button,
 html body .app-shell .main-panel .spp-confirm-button,
@@ -1530,7 +1525,6 @@ html body .payment-receipt-page .payment-receipt-next-unit summary{
 html body .app-shell .main-panel .button.button-primary:hover,
 html body .app-shell .main-panel .button.student-add-button:hover,
 html body .app-shell .main-panel .button.student-search-button:hover,
-html body .app-shell .main-panel .master-primary-add-button:hover,
 html body .app-shell .main-panel .payment-import-entry-button:hover,
 html body .app-shell .main-panel .spp-preview-button:hover,
 html body .app-shell .main-panel .spp-confirm-button:hover,
