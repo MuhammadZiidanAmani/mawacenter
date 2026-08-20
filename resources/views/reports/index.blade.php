@@ -38,15 +38,15 @@
             @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
-        <main class="student-page report-flat-page">
+        <main class="student-page report-flat-page report-legacy-page">
             <section class="student-workspace report-workspace">
                 <div class="student-flat-header">
                     <h1>Laporan Pembayaran</h1>
                     <div class="student-title-actions">
                         @if($canExportReports)
-                        <a href="{{ route('reports.export', request()->query()) }}" class="button student-add-button">{!! $icon('download') !!} Export CSV</a>
+                        <a href="{{ route('reports.export', request()->query()) }}" class="button student-add-button">{!! $icon('download') !!} Export</a>
                         @endif
-                        <a href="{{ route('reports.index') }}" class="button action-orange">Reset</a>
+                        <a href="{{ route('reports.index') }}" class="button button-secondary">Reset</a>
                     </div>
                 </div>
 
@@ -99,19 +99,19 @@
                         @foreach($reportQuery(['per_page']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
-                        <label>Show
+                        <label>Tampilkan
                             <select name="per_page" onchange="this.form.submit()">
                                 @foreach([10, 25, 50, 100, 500] as $size)<option value="{{ $size }}" @selected(request('per_page', 10) == $size)>{{ $size }}</option>@endforeach
-                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                <option value="all" @selected(request('per_page') === 'all')>Semua</option>
                             </select>
-                            entries
+                            data
                         </label>
                     </form>
                     <form method="GET" action="{{ route('reports.index') }}" class="student-table-search">
                         @foreach($reportQuery(['search']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
-                        <label>Search: <input name="search" value="{{ request('search') }}" aria-label="Cari laporan berdasarkan nama atau NIS"></label>
+                        <label>Cari data <input name="search" value="{{ request('search') }}" aria-label="Cari laporan berdasarkan nama atau NIS" placeholder="Nama, NIS, kategori..."></label>
                     </form>
                 </div>
 

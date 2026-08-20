@@ -6,7 +6,7 @@
     <title>Master Data - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @if(($tab ?? null) === 'students')
-        <style data-student-data-filter-card-lock>
+        <style data-student-data-mobile-final-lock>
             @media (max-width: 960px) {
                 html body.student-data-body,
                 html body.student-data-body .app-shell,
@@ -16,33 +16,49 @@
                     overflow-x:hidden !important;
                 }
 
-                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-list-filter-card.student-reference-align-lock {
-                    width:calc(100vw - 32px) !important;
-                    max-width:calc(100vw - 32px) !important;
-                    min-width:0 !important;
-                }
-
-                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-list-filter-card.student-reference-align-lock > .student-flat-header {
-                    display:grid !important;
-                    grid-template-columns:1fr !important;
+                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) {
+                    box-sizing:border-box !important;
                     width:100% !important;
                     min-width:0 !important;
-                    max-width:100% !important;
+                    padding:16px !important;
                 }
 
-                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) .student-title-actions {
+                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-reference-align-lock {
+                    box-sizing:border-box !important;
+                    width:100% !important;
+                    max-width:100% !important;
+                    min-width:0 !important;
+                    margin-inline:0 !important;
+                    overflow:hidden !important;
+                }
+
+                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-list-filter-card.student-reference-align-lock > .student-flat-header,
+                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-list-filter-card.student-reference-align-lock .student-title-actions {
                     display:grid !important;
-                    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+                    grid:auto / 1fr !important;
                     gap:8px !important;
                     width:100% !important;
                     min-width:0 !important;
                     max-width:100% !important;
                 }
 
-                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) .student-title-actions :is(.student-add-button, .action-purple, .action-green) {
+                html body.student-data-body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock .student-title-actions.student-export-actions {
+                    display:grid !important;
+                    grid:auto / 1fr !important;
+                    gap:8px !important;
                     width:100% !important;
                     min-width:0 !important;
                     max-width:100% !important;
+                }
+
+                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) .student-title-actions :is(.button, .student-add-button, .action-purple, .action-green),
+                html body.student-data-body form#student-data-filter .student-filter-actions .button,
+                html body.student-data-body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock .student-title-actions.student-export-actions :is(.button, .student-add-button, .action-purple, .action-green) {
+                    box-sizing:border-box !important;
+                    width:100% !important;
+                    min-width:0 !important;
+                    max-width:100% !important;
+                    height:40px !important;
                     justify-content:center !important;
                     padding-inline:10px !important;
                     overflow:hidden !important;
@@ -50,36 +66,22 @@
                     white-space:nowrap !important;
                 }
 
-                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter {
-                    grid-template-columns:1fr !important;
-                    width:100% !important;
-                    max-width:100% !important;
-                    min-width:0 !important;
-                    overflow:hidden !important;
-                }
-
-                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-reference-filter-grid,
-                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
+                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter,
+                html body.student-data-body form#student-data-filter .student-reference-filter-grid,
+                html body.student-data-body form#student-data-filter .student-filter-actions.student-data-filter-actions {
+                    display:grid !important;
+                    grid:auto / 1fr !important;
                     grid-column:auto !important;
                     grid-row:auto !important;
                     width:100% !important;
                     min-width:0 !important;
-                }
-
-                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-reference-filter-grid {
-                    grid-template-columns:1fr !important;
-                }
-
-                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions {
-                    display:grid !important;
-                    grid-template-columns:1fr 1fr !important;
-                    gap:8px !important;
-                }
-
-                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter .student-filter-actions.student-data-filter-actions .button {
-                    width:100% !important;
-                    min-width:0 !important;
                     max-width:100% !important;
+                    overflow:hidden !important;
+                }
+
+                html body.student-data-body form#student-data-filter .student-filter-actions.student-data-filter-actions {
+                    grid:auto / 1fr 1fr !important;
+                    gap:8px !important;
                 }
             }
         </style>
@@ -156,6 +158,10 @@
     ];
     $createDescription = 'Pastikan data yang dimasukkan sudah benar.';
     $canManageCurrentMasterTab = $canAccess($masterTabPermissions[$tab] ?? 'master.manage');
+    $masterReturnQuery = collect(request()->query())
+        ->filter(fn ($value) => is_scalar($value) && $value !== '')
+        ->all();
+    $masterReturnQuery['tab'] = $tab;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', [
@@ -175,9 +181,12 @@
         </header>
         <main class="{{ $showCreate ? ($tab === 'students' ? 'student-page student-create-page' : 'master-create-page'.($tab === 'academic-years' ? ' academic-year-create-page' : '').($tab === 'education-units' ? ' education-unit-create-page' : '').($tab === 'classes' ? ' class-create-page' : '').($tab === 'fee-types' ? ' fee-type-create-page' : '').($tab === 'fee-discounts' ? ' fee-discount-create-page' : '').($tab === 'data-roles' ? ' data-role-create-page' : '').($tab === 'data-users' ? ' data-user-create-page' : '')) : ($tab === 'students' ? ('student-page'.($showStudentImport ? ' student-import-page' : '')) : 'master-flat-page'.($tab === 'academic-years' ? ' academic-year-page' : '').($tab === 'education-units' ? ' education-unit-page' : '').($tab === 'classes' ? ' class-page' : '').($tab === 'fee-types' ? ' master-fee-type-page' : '').($tab === 'fee-discounts' ? ' master-fee-discount-page' : '').($tab === 'data-roles' ? ' data-role-page' : '').($tab === 'data-users' ? ' data-user-page' : '')) }}">
             @if (session('success'))
-                <div class="result-modal-backdrop show" data-alert>
-                    <div class="result-modal success-result">
-                        <span class="result-icon">✓</span><strong>Sukses!</strong><p>{{ session('success') }}</p><button type="button" class="button button-primary" data-alert-close>OK</button>
+                <div class="result-modal-backdrop master-result-modal-backdrop show" data-alert role="dialog" aria-modal="true" aria-labelledby="master-success-title">
+                    <div class="result-modal success-result master-result-modal" role="document">
+                        <span class="result-icon master-result-icon" aria-hidden="true">{!! $icon('check') !!}</span>
+                        <strong id="master-success-title">Sukses!</strong>
+                        <p>{{ session('success') }}</p>
+                        <button type="button" class="button button-primary master-result-button" data-alert-close>OK</button>
                     </div>
                 </div>
             @endif
@@ -234,10 +243,10 @@
                     @if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))
                     <div class="master-create-heading"><div><strong>Informasi {{ $labels[$tab][0] }}</strong><span>{{ $createDescription }}</span></div></div>
                     @endif
-                    <form method="POST" action="{{ route('master.'.$tab.'.store') }}" class="master-form master-create-form">
+                    <form method="POST" action="{{ route('master.'.$tab.'.store', $masterReturnQuery) }}" class="master-form master-create-form">
                         @csrf
                         @include('master.partials.form-fields')
-                        <div class="form-actions span-2"><a href="{{ $tab === 'students' ? route('student-management.students.index') : route('master.index', ['tab' => $tab]) }}" class="button button-secondary">Batal</a><button class="button button-primary">Simpan Data</button></div>
+                        <div class="form-actions span-2"><a href="{{ $tab === 'students' ? route('student-management.students.index') : route('master.index', $masterReturnQuery) }}" class="button button-secondary">Batal</a><button class="button button-primary">Simpan Data</button></div>
                     </form>
                 </section>
                 @endif
@@ -253,7 +262,7 @@
 
                     <form method="POST" action="{{ route('master.students.import.preview') }}" enctype="multipart/form-data" class="student-import-page-form">
                         @csrf
-                        <label class="student-import-page-upload">
+                        <label class="student-import-page-upload" data-student-import-upload>
                             <input type="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required data-spp-import-file>
                             <span class="student-import-upload-icon">{!! $icon('upload') !!}</span>
                             <strong data-spp-import-filename>Pilih file Excel data siswa</strong>
@@ -283,7 +292,7 @@
                     @endif
                     @if($canManageCurrentMasterTab)
                     <div class="student-title-actions">
-                        <a href="{{ route('master.create', ['tab' => $tab]) }}" class="button master-primary-add-button">{!! $icon('plus') !!} Tambah</a>
+                        <a href="{{ route('master.create', $masterReturnQuery) }}" class="button master-primary-add-button">{!! $icon('plus') !!} Tambah</a>
                     </div>
                     @endif
                 </div>
@@ -330,9 +339,6 @@
                             @endif
                             @if ($canExportStudents)
                             <a href="{{ route('master.students.export', $studentExportQuery) }}" class="button action-green">{!! $icon('download') !!} Export</a>
-                            @endif
-                            @if ($canImportStudents)
-                            <a href="{{ route('master.students.template') }}" class="button action-green">{!! $icon('download') !!} Template</a>
                             @endif
                         </div>
                     </div>
@@ -1300,7 +1306,7 @@
 <div class="modal-backdrop {{ $errors->any() && ! $errors->has('file') ? 'show' : '' }} {{ $tab === 'academic-years' ? 'academic-year-edit-modal' : '' }} {{ $tab === 'education-units' ? 'education-unit-edit-modal' : '' }} {{ $tab === 'classes' ? 'class-edit-modal' : '' }} {{ $tab === 'fee-types' ? 'fee-type-edit-modal' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-edit-modal' : '' }} {{ $tab === 'data-roles' ? 'data-role-edit-modal' : '' }} {{ $tab === 'data-users' ? 'data-user-edit-modal' : '' }}" data-modal>
     <div class="form-modal">
         <div class="form-modal-header"><div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Master Data</p>@endif<h2 data-modal-title>Edit Data</h2></div><button class="icon-button" type="button" data-modal-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
-        <form method="POST" action="{{ route('master.'.$tab.'.store') }}" data-master-form data-store-action="{{ route('master.'.$tab.'.store') }}" class="master-form">
+        <form method="POST" action="{{ $tab === 'students' ? route('master.students.store') : route('master.'.$tab.'.store', $masterReturnQuery) }}" data-master-form data-store-action="{{ $tab === 'students' ? route('master.students.store') : route('master.'.$tab.'.store', $masterReturnQuery) }}" class="master-form">
             @csrf <input type="hidden" name="_method" value="POST" data-form-method>
             @include('master.partials.form-fields')
             <div class="form-actions span-2"><button type="button" class="button button-secondary" data-modal-close>Batal</button><button class="button button-primary">Simpan Data</button></div>

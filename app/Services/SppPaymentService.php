@@ -542,6 +542,76 @@ class SppPaymentService
         return $payment;
     }
 
+    public function correctTransaction(SppPayment $payment, array $data): SppPayment
+    {
+        $newPaidAmount = (int) $data['new_paid_amount'];
+
+        $payment = DB::transaction(function () use ($payment, $data, $newPaidAmount) {
+            $payment = SppPayment::query()
+                ->with(['student.academicYear', 'student.schoolClass.educationUnit', 'items'])
+                ->lockForUpdate()
+                ->findOrFail($payment->id);
+            $oldPaidAmount = (int) $payment->paid_amount;
+
+            $payment->update([
+                'transaction_at' => ($data['transaction_date'] ?? $payment->transaction_at->format('Y-m-d')).' '.($data['transaction_time'] ?? $payment->transaction_at->format('H:i:s')),
+                'payment_method' => $data['payment_method'] ?? $payment->payment_method,
+                'status' => $data['status'] ?? $payment->status,
+            ]);
+
+            $this->reallocatePaidAmount($payment->refresh(), $newPaidAmount);
+
+            if ($newPaidAmount < $oldPaidAmount) {
+                $payment->corrections()->create([
+                    'old_paid_amount' => $oldPaidAmount,
+                    'new_paid_amount' => $newPaidAmount,
+                    'refund_amount' => $oldPaidAmount - $newPaidAmount,
+                    'reason' => $data['reason'],
+                ]);
+            }
+
+            return $payment->refresh();
+        });
+
+        $this->bills->syncSppPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'items']));
+
+        return $payment;
+    }
+
+    public function cancel(SppPayment $payment, string $reason): SppPayment
+    {
+        return DB::transaction(function () use ($payment) {
+            $payment = SppPayment::query()
+                ->with(['student.academicYear', 'student.schoolClass.educationUnit', 'items'])
+                ->lockForUpdate()
+                ->findOrFail($payment->id);
+
+            if ($payment->status === 'Dibatalkan') {
+                throw ValidationException::withMessages([
+                    'reason' => 'Transaksi ini sudah dibatalkan.',
+                ]);
+            }
+
+            $this->bills->removePayment('spp', $payment->id);
+            foreach ($payment->items as $item) {
+                $item->update([
+                    'paid_amount' => 0,
+                    'remaining_amount' => (int) $item->total_amount,
+                    'payment_status' => 'Dibatalkan',
+                ]);
+            }
+
+            $payment->update([
+                'status' => 'Dibatalkan',
+                'paid_amount' => 0,
+                'remaining_amount' => (int) $payment->total_amount,
+                'payment_status' => 'Dibatalkan',
+            ]);
+
+            return $payment->refresh();
+        });
+    }
+
     private function reallocatePaidAmount(SppPayment $payment, int $newPaidAmount): void
     {
         $items = $payment->items()->orderBy('year')->orderBy('month')->get();

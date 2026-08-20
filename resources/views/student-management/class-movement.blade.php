@@ -372,8 +372,8 @@
             background: #ffffff !important;
             border: 1px solid #d1d5db !important;
             border-radius: 8px !important;
-            box-shadow: 0 1px 2px rgba(17, 28, 44, .04) !important;
-            transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease !important;
+            box-shadow: none !important;
+            transition: background-color .16s ease, border-color .16s ease, color .16s ease !important;
         }
 
         html body .class-movement-standard-page .class-transfer-student-card:hover,
@@ -381,8 +381,9 @@
         html body .class-movement-standard-page .class-transfer-student-card:has(input:checked),
         html body .class-movement-standard-page .class-promotion-student-card:has(input:checked) {
             border-color: #157144 !important;
-            box-shadow: 0 8px 18px rgba(17, 28, 44, .08) !important;
-            transform: translateY(-1px) !important;
+            background: #fbfdf8 !important;
+            box-shadow: none !important;
+            transform: none !important;
         }
 
         html body .class-movement-standard-page .class-transfer-student-card input[type="checkbox"],
@@ -560,8 +561,9 @@
             justify-content: center !important;
             gap:10px !important;
             width: 100% !important;
-            height: 46px !important;
-            min-height: 46px !important;
+            height: 40px !important;
+            min-height: 40px !important;
+            max-height: 40px !important;
             padding:0 16px !important;
             color: #ffffff !important;
             background: #004528 !important;
@@ -2087,6 +2089,89 @@
             content:attr(data-label) ": " !important;
             color:#707971 !important;
             font-weight:400 !important;
+        }
+    }
+</style>
+<style data-class-movement-mobile-final-lock>
+    @media (max-width: 960px) {
+        html body,
+        html body .app-shell,
+        html body .app-shell .main-panel,
+        html body .app-shell .main-panel main.class-movement-standard-page {
+            max-width:100vw !important;
+            overflow-x:hidden !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page {
+            box-sizing:border-box !important;
+            width:100% !important;
+            min-width:0 !important;
+            padding:16px !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page > :is(section, .student-list-filter-card, .class-movement-data-card) {
+            box-sizing:border-box !important;
+            width:100% !important;
+            max-width:100% !important;
+            min-width:0 !important;
+            margin-inline:0 !important;
+            overflow:hidden !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page :is(.student-flat-header, .student-management-table-toolbar, .student-management-search-card, .student-management-search-card label, .student-reference-card-count, .student-report-pagination) {
+            display:grid !important;
+            grid-template-columns:1fr !important;
+            gap:10px !important;
+            width:100% !important;
+            min-width:0 !important;
+            max-width:100% !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter.class-movement-filter-panel,
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter .class-movement-filter-grid {
+            display:grid !important;
+            grid-template-columns:1fr !important;
+            gap:12px !important;
+            width:100% !important;
+            min-width:0 !important;
+            max-width:100% !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter .class-movement-filter-grid label,
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter .class-movement-filter-search,
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter .class-movement-filter-actions {
+            grid-column:auto !important;
+            grid-row:auto !important;
+            width:100% !important;
+            min-width:0 !important;
+            max-width:100% !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter .class-movement-filter-actions {
+            display:grid !important;
+            grid-template-columns:1fr 1fr !important;
+            gap:8px !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter .class-movement-filter-actions .button,
+        html body .app-shell .main-panel main.class-movement-standard-page form#class-movement-filter :is(select, input),
+        html body .app-shell .main-panel main.class-movement-standard-page :is(.master-table-search-input, .master-table-search-input input) {
+            box-sizing:border-box !important;
+            width:100% !important;
+            min-width:0 !important;
+            max-width:100% !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page :is(.class-movement-table-wrap, .table-wrap) {
+            width:100% !important;
+            max-width:100% !important;
+            overflow-x:auto !important;
+        }
+
+        html body .app-shell .main-panel main.class-movement-standard-page .class-movement-student-row {
+            width:100% !important;
+            min-width:0 !important;
+            max-width:100% !important;
         }
     }
 </style>

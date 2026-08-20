@@ -54,6 +54,8 @@
     $guardianTotal = $isGuardianView ? (int) $guardianBills->sum('remaining_amount') : 0;
     $canSyncBills = auth()->user()?->isSuperAdmin() || (auth()->user()?->hasPermission('payments.verify_transfer') ?? false);
     $canCreateCashPayment = auth()->user()?->hasPermission('payments.cash.create') ?? false;
+    $billSyncRun = $billSyncRun ?? null;
+    $billSyncActive = $billSyncRun?->isActive() ?? false;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'bills'])
@@ -89,10 +91,38 @@
                             @endforeach
                             <input type="hidden" name="year" value="{{ $year }}">
                             <input type="hidden" name="until_month" value="{{ $untilMonth }}">
-                            <button type="submit" class="button bill-sync-button" title="Sinkron tagihan sesuai filter aktif" aria-label="Sinkron tagihan sesuai filter aktif">{!! $icon('refresh') !!}<span>Sinkron Tagihan</span></button>
+                            <button type="submit" class="button bill-sync-button" title="Sinkron tagihan sesuai filter aktif" aria-label="Sinkron tagihan sesuai filter aktif" @disabled($billSyncActive)>{!! $icon('refresh') !!}<span>{{ $billSyncActive ? 'Sinkron Berjalan' : 'Sinkron Tagihan' }}</span></button>
                         </form>
                     @endif
                 </div>
+
+                @if(! $isGuardianView && $billSyncRun)
+                    <section
+                        class="bill-sync-progress-card"
+                        data-bill-sync-progress
+                        data-status-url="{{ route('finance.bills.sync.status', $billSyncRun) }}"
+                        data-progress-url="{{ route('finance.bills.sync.progress', $billSyncRun) }}"
+                        data-csrf="{{ csrf_token() }}"
+                        data-active="{{ $billSyncActive ? 'true' : 'false' }}"
+                    >
+                        <div class="bill-sync-progress-head">
+                            <div>
+                                <strong>Progress Sinkron Tagihan</strong>
+                                <span data-bill-sync-message>{{ $billSyncRun->message ?: 'Menyiapkan sinkron tagihan.' }}</span>
+                            </div>
+                            <b data-bill-sync-percent>{{ (int) $billSyncRun->percent }}%</b>
+                        </div>
+                        <div class="bill-sync-progress-track" aria-hidden="true">
+                            <span data-bill-sync-bar style="width: {{ (int) $billSyncRun->percent }}%"></span>
+                        </div>
+                        <div class="bill-sync-progress-meta">
+                            <span><strong data-bill-sync-processed>{{ number_format((int) $billSyncRun->processed_items, 0, ',', '.') }}</strong> / <strong data-bill-sync-total>{{ number_format((int) $billSyncRun->total_items, 0, ',', '.') }}</strong> diproses</span>
+                            <span>Baru <strong data-bill-sync-created>{{ number_format((int) $billSyncRun->created_items, 0, ',', '.') }}</strong></span>
+                            <span>Dilewati <strong data-bill-sync-skipped>{{ number_format((int) $billSyncRun->skipped_items + (int) $billSyncRun->existing_items, 0, ',', '.') }}</strong></span>
+                            <span>Gagal <strong data-bill-sync-failed>{{ number_format((int) $billSyncRun->failed_items, 0, ',', '.') }}</strong></span>
+                        </div>
+                    </section>
+                @endif
 
                 @if($isGuardianView)
                     @php

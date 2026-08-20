@@ -82,6 +82,88 @@ main.bill-flat-page .bill-sync-button .icon {
     height: 16px;
 }
 
+main.bill-flat-page .bill-sync-button:disabled {
+    cursor: wait;
+    opacity: .72;
+}
+
+main.bill-flat-page .bill-sync-progress-card {
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: none;
+}
+
+main.bill-flat-page .bill-sync-progress-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+main.bill-flat-page .bill-sync-progress-head > div {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+main.bill-flat-page .bill-sync-progress-head strong {
+    color: #020617;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+main.bill-flat-page .bill-sync-progress-head span,
+main.bill-flat-page .bill-sync-progress-meta {
+    color: #707971;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+main.bill-flat-page .bill-sync-progress-head b {
+    color: #004528;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+main.bill-flat-page .bill-sync-progress-track {
+    width: 100%;
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e5e7eb;
+}
+
+main.bill-flat-page .bill-sync-progress-track span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: #004528;
+    transition: width .25s ease;
+}
+
+main.bill-flat-page .bill-sync-progress-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+}
+
+main.bill-flat-page .bill-sync-progress-meta strong {
+    color: #020617;
+    font-weight: 700;
+}
+
 main.bill-flat-page .bill-filter-reset {
     display: inline-flex;
     align-items: center;
@@ -634,8 +716,405 @@ main.bill-flat-page .guardian-cash-note {
     padding: 12px;
 }
 
+/* Detail Tagihan */
+main.bill-detail-web {
+    width: min(100%, 1200px);
+    min-width: 0;
+    margin-inline: auto;
+    padding: 24px 32px 32px;
+}
+
+main.bill-detail-web .bill-detail-web-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+main.bill-detail-web .bill-detail-web-title h1 {
+    margin: 0 0 4px;
+    color: #020617;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+main.bill-detail-web .bill-detail-web-title p,
+main.bill-detail-web .bill-detail-web-field span,
+main.bill-detail-web .bill-detail-web-total span {
+    margin: 0;
+    color: #707971;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+main.bill-detail-web .bill-detail-web-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+main.bill-detail-web .bill-detail-web-actions .button {
+    min-width: 112px;
+    min-height: 40px;
+    border-radius: 8px;
+    box-shadow: none;
+    transform: none;
+}
+
+main.bill-detail-web .bill-detail-action-primary {
+    color: #ffffff;
+    background: #004528;
+    border-color: #004528;
+}
+
+main.bill-detail-web .bill-detail-action-primary:hover {
+    color: #ffffff;
+    background: #0d5f36;
+    border-color: #0d5f36;
+    box-shadow: none;
+    transform: none;
+}
+
+main.bill-detail-web .bill-detail-action-secondary {
+    color: #334155;
+    background: #ffffff;
+    border-color: #d1d5db;
+}
+
+main.bill-detail-web .bill-detail-action-secondary:hover {
+    color: #020617;
+    background: #fbfdf8;
+    border-color: #d1d5db;
+    box-shadow: none;
+    transform: none;
+}
+
+main.bill-detail-web .bill-detail-web-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+main.bill-detail-web .bill-detail-web-panel {
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    background: #ffffff;
+    padding: 20px;
+    box-shadow: none;
+}
+
+main.bill-detail-web .bill-detail-web-panel h2 {
+    margin: 0 0 16px;
+    color: #020617;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+main.bill-detail-web .bill-detail-web-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 24px;
+}
+
+main.bill-detail-web .bill-detail-web-field strong,
+main.bill-detail-web .bill-detail-web-field b {
+    color: #020617;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+main.bill-detail-web .bill-detail-web-status {
+    color: #ef1f2d;
+}
+
+main.bill-detail-web .bill-detail-web-total {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 100%;
+    background: #ffffff;
+}
+
+main.bill-detail-web .bill-detail-web-total strong {
+    margin-top: 8px;
+    color: #004528;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+main.bill-detail-web .bill-detail-web-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    background: #ffffff;
+}
+
+main.bill-detail-web .bill-detail-web-table th,
+main.bill-detail-web .bill-detail-web-table td {
+    height: 40px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #020617;
+    background: #ffffff;
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+}
+
+main.bill-detail-web .bill-detail-web-table th {
+    background: #fbfdf8;
+    color: #334155;
+    font-weight: 500;
+    text-align: center;
+}
+
+main.bill-detail-web .bill-detail-web-table td {
+    text-align: center;
+}
+
+main.bill-detail-web .bill-detail-web-table td:nth-child(2) {
+    text-align: left;
+}
+
+main.bill-detail-web .bill-detail-web-table .is-money {
+    color: #020617;
+    white-space: nowrap;
+}
+
+main.bill-detail-web .bill-detail-web-table tfoot td {
+    background: #f3fbf6;
+    color: #004528;
+    font-weight: 700;
+}
+
+main.bill-detail-web .bill-detail-web-words {
+    margin: 14px 0 0;
+    color: #334155;
+    font-size: 14px;
+    font-style: italic;
+}
+
+main.guardian-page {
+    width: 100%;
+    min-width: 0;
+    padding: 24px 32px 32px;
+    background: #ffffff;
+}
+
+main.guardian-page > :is(.student-flat-header, .guardian-filter, .guardian-transfer-form, .guardian-history-card) {
+    width: min(100%, 1200px);
+    min-width: 0;
+    margin-inline: auto;
+}
+
+main.guardian-page .student-flat-header {
+    margin: 0 0 16px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+main.guardian-page .student-master-heading {
+    display: grid;
+    gap: 4px;
+}
+
+main.guardian-page .student-master-heading h1 {
+    margin: 0;
+    color: #020617;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+main.guardian-page .student-master-heading p {
+    margin: 0;
+    color: #707971;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+main.guardian-page .guardian-filter,
+main.guardian-page .guardian-upload-panel {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+main.guardian-page .guardian-filter {
+    grid-template-columns: minmax(260px, 1fr);
+}
+
+main.guardian-page .guardian-upload-panel {
+    grid-template-columns: minmax(260px, 1fr) max-content;
+    align-items: end;
+}
+
+main.guardian-page :is(.guardian-filter, .guardian-upload-panel) label {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+main.guardian-page :is(.guardian-filter, .guardian-upload-panel) label > span {
+    color: #334155;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+main.guardian-page :is(.guardian-filter, .guardian-upload-panel) :is(select, input[type="file"]) {
+    min-height: 40px;
+    color: #020617;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: none;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+main.guardian-page .guardian-upload-panel .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 14px;
+    color: #ffffff;
+    background: #004528;
+    border: 1px solid #004528;
+    border-radius: 8px;
+    box-shadow: none;
+    transform: none;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+main.guardian-page .guardian-upload-panel .button:hover {
+    color: #ffffff;
+    background: #0d5f36;
+    border-color: #0d5f36;
+    box-shadow: none;
+    transform: none;
+}
+
+main.guardian-page .guardian-transfer-form {
+    display: grid;
+    gap: 16px;
+}
+
+main.guardian-page .bills-data-card {
+    margin: 0 0 16px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+main.guardian-page .table-wrap {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: none;
+}
+
+main.guardian-page :is(.guardian-bill-table, .guardian-history-table) {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+main.guardian-page :is(.guardian-bill-table, .guardian-history-table) th,
+main.guardian-page :is(.guardian-bill-table, .guardian-history-table) td {
+    height: 40px;
+    padding: 8px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    color: #020617;
+    background: #ffffff;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+    vertical-align: middle;
+}
+
+main.guardian-page :is(.guardian-bill-table, .guardian-history-table) th {
+    color: #334155;
+    background: #fbfdf8;
+    font-weight: 500;
+    text-align: center;
+}
+
+main.guardian-page :is(.guardian-bill-table, .guardian-history-table) td strong {
+    color: #020617;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+main.guardian-page .guardian-bill-table td small {
+    display: block;
+    margin-top: 2px;
+    color: #707971;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+main.guardian-page :is(.guardian-bill-table, .guardian-history-table) tfoot td {
+    background: #fbfdf8;
+    color: #004528;
+    font-weight: 700;
+}
+
+main.guardian-page .result-modal-backdrop {
+    background: rgba(15, 23, 42, .24);
+}
+
+main.guardian-page .result-modal {
+    width: min(100%, 420px);
+    padding: 28px 24px 24px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, .10);
+}
+
+main.guardian-page .result-modal .button {
+    height: 40px;
+    min-height: 40px;
+    border-radius: 8px;
+    box-shadow: none;
+    transform: none;
+}
+
 @media (max-width: 1180px) {
     main.bill-flat-page {
+        padding: 20px 24px 32px;
+    }
+
+    main.guardian-page {
         padding: 20px 24px 32px;
     }
 }
@@ -655,8 +1134,41 @@ main.bill-flat-page .guardian-cash-note {
         width: 100%;
     }
 
+    main.bill-flat-page .bill-sync-progress-head {
+        display: grid;
+    }
+
     main.bill-flat-page .bill-pagination {
         justify-content: flex-start;
+    }
+
+    main.bill-detail-web {
+        padding: 16px;
+    }
+
+    main.bill-detail-web .bill-detail-web-head,
+    main.bill-detail-web .bill-detail-web-summary {
+        grid-template-columns: 1fr;
+    }
+
+    main.bill-detail-web .bill-detail-web-head {
+        display: grid;
+    }
+
+    main.bill-detail-web .bill-detail-web-actions {
+        justify-content: flex-start;
+    }
+
+    main.bill-detail-web .bill-detail-web-grid {
+        grid-template-columns: 1fr;
+    }
+
+    main.bill-detail-web .bill-detail-web-table-wrap {
+        overflow-x: auto;
+    }
+
+    main.bill-detail-web .bill-detail-web-table {
+        min-width: 760px;
     }
 }
 
@@ -729,5 +1241,20 @@ main.bill-flat-page .guardian-cash-note {
     main.bill-flat-page .bill-search-field {
         display: grid;
         gap: 6px;
+    }
+
+    main.guardian-page {
+        padding: 16px;
+        overflow-x: hidden;
+    }
+
+    main.guardian-page .guardian-upload-panel {
+        grid-template-columns: 1fr;
+    }
+
+    main.guardian-page .guardian-upload-panel .button,
+    main.guardian-page .guardian-filter,
+    main.guardian-page .guardian-upload-panel {
+        width: 100%;
     }
 }

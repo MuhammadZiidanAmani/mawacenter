@@ -1,6 +1,6 @@
 @php
-    $actionParameters = $type === 'students' ? array_merge([$row], request()->query()) : [$row];
-    $deleteParameters = $type === 'students' ? array_merge([$type, $row->id], request()->query()) : [$type, $row->id];
+    $actionParameters = array_merge([$row], request()->query());
+    $deleteParameters = array_merge([$type, $row->id], request()->query());
     $isStudentAction = $type === 'students';
     $isStudentCardAction = $isStudentAction && ($studentCardAction ?? false);
     $canEditStudent = auth()->user()?->hasPermission('students.update') ?? false;

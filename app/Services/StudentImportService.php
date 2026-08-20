@@ -17,12 +17,12 @@ class StudentImportService
         return $this->process($path, $activeYear, false, $unitIds);
     }
 
-    public function import(string $path, AcademicYear $activeYear, ?array $unitIds = null): array
+    public function import(string $path, AcademicYear $activeYear, ?array $unitIds = null, ?callable $progress = null): array
     {
-        return $this->process($path, $activeYear, true, $unitIds);
+        return $this->process($path, $activeYear, true, $unitIds, $progress);
     }
 
-    private function process(string $path, AcademicYear $activeYear, bool $persist, ?array $unitIds): array
+    private function process(string $path, AcademicYear $activeYear, bool $persist, ?array $unitIds, ?callable $progress = null): array
     {
         [$headers, $rows] = $this->readRows($path);
         $result = [
@@ -37,6 +37,12 @@ class StudentImportService
             'student_ids' => [],
             'rows' => [],
         ];
+        $total = count($rows);
+        $processed = 0;
+        $reportProgress = function () use (&$result, $progress, $total, &$processed): void {
+            $processed++;
+            $this->reportProgress($progress, $result, $total, $processed);
+        };
 
         DB::beginTransaction();
 
@@ -49,6 +55,7 @@ class StudentImportService
                 $row = $this->prepareRow($sourceRow['line'], $sourceRow['values'], $headers);
                 if (isset($row['error'])) {
                     $this->fail($result, $row, $row['message']);
+                    $reportProgress();
 
                     continue;
                 }
@@ -56,6 +63,7 @@ class StudentImportService
                 $unit = $units->first(fn (EducationUnit $item) => $this->matchesUnit($item, $row['unit']));
                 if (! $unit) {
                     $this->fail($result, $row, "Unit Pendidikan \"{$row['unit']}\" tidak ditemukan.");
+                    $reportProgress();
 
                     continue;
                 }
@@ -67,12 +75,7 @@ class StudentImportService
                     ->first();
                 if ($existing && $this->normalizeLookup($existing->name) !== $this->normalizeLookup($row['name'])) {
                     $this->fail($result, $row, "NIS {$row['nis']} pada unit {$unit->code} sudah digunakan oleh {$existing->name}.");
-
-                    continue;
-                }
-
-                if ($this->nisnIsUsedByAnotherStudent($row['nisn'], $existing)) {
-                    $this->fail($result, $row, "NISN {$row['nisn']} sudah digunakan.");
+                    $reportProgress();
 
                     continue;
                 }
@@ -115,6 +118,7 @@ class StudentImportService
                 } catch (Throwable $exception) {
                     $this->fail($result, $row, 'Data siswa tidak dapat diproses: '.$exception->getMessage());
                 }
+                $reportProgress();
             }
 
             if ($persist) {
@@ -133,6 +137,22 @@ class StudentImportService
                 DB::rollBack();
             }
         }
+    }
+
+    private function reportProgress(?callable $progress, array $result, int $total, int $processed): void
+    {
+        if (! $progress) {
+            return;
+        }
+
+        $progress([
+            'total_items' => $total,
+            'processed_items' => $processed,
+            'created_items' => $result['created'],
+            'updated_items' => $result['updated'],
+            'failed_items' => count($result['failures']),
+            'percent' => $total > 0 ? min(100, (int) floor(($processed / $total) * 100)) : 100,
+        ]);
     }
 
     private function readRows(string $path): array
@@ -287,25 +307,6 @@ class StudentImportService
     private function hasHeader(array $row, string $header): bool
     {
         return isset($row['present'][$header]);
-    }
-
-    private function nisnIsUsedByAnotherStudent(?string $nisn, ?Student $student = null): bool
-    {
-        if ($nisn === null) {
-            return false;
-        }
-
-        $query = Student::where('nisn', $nisn);
-        if ($student) {
-            $rootIdentityId = $student->identity_student_id ?: $student->id;
-            $query->where(fn ($query) => $query
-                ->whereKeyNot($rootIdentityId)
-                ->where(fn ($group) => $group
-                    ->whereNull('identity_student_id')
-                    ->orWhere('identity_student_id', '!=', $rootIdentityId)));
-        }
-
-        return $query->exists();
     }
 
     private function matchesUnit(EducationUnit $unit, string $value): bool

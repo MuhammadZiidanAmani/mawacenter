@@ -4,14 +4,17 @@ namespace Tests\Feature;
 
 use App\Models\AcademicYear;
 use App\Models\AuditLog;
+use App\Models\Bill;
 use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\Role;
 use App\Models\SchoolClass;
 use App\Models\SppPayment;
+use App\Models\SppPaymentItem;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\BillService;
 use App\Support\StudentXlsx;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -915,6 +918,213 @@ class PaymentMenuTest extends TestCase
         $this->assertDatabaseHas('spp_payments', ['id' => $payment->id, 'paid_amount' => 100000]);
     }
 
+    public function test_spp_payment_can_be_corrected_and_cancelled_without_deleting_history(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        [$year, $unit, $class, $student] = $this->paymentCorrectionContext();
+        FeeType::create([
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'spp',
+            'code' => 'SPP-CORRECTION',
+            'name' => 'SPP Koreksi',
+            'amount' => 100000,
+            'period' => 'Bulanan',
+            'creates_bill' => true,
+            'is_active' => true,
+        ]);
+        $bill = Bill::create([
+            'student_id' => $student->id,
+            'academic_year_id' => $year->id,
+            'source_type' => 'spp',
+            'generation_key' => hash('sha256', "spp|{$student->id}|2026|7"),
+            'year' => 2026,
+            'month' => 7,
+            'title' => 'SPP Juli 2026',
+            'issue_date' => '2026-07-01',
+            'due_date' => '2026-07-31',
+            'original_amount' => 100000,
+            'discount_amount' => 0,
+            'total_amount' => 100000,
+            'paid_amount' => 100000,
+            'remaining_amount' => 0,
+            'status' => 'Lunas',
+        ]);
+        $payment = SppPayment::create([
+            'student_id' => $student->id,
+            'transaction_at' => '2026-07-10 08:00:00',
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'original_amount' => 100000,
+            'discount_amount' => 0,
+            'total_amount' => 100000,
+            'paid_amount' => 100000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+        SppPaymentItem::create([
+            'spp_payment_id' => $payment->id,
+            'student_id' => $student->id,
+            'year' => 2026,
+            'month' => 7,
+            'original_amount' => 100000,
+            'discount_amount' => 0,
+            'total_amount' => 100000,
+            'paid_amount' => 100000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+        app(BillService::class)->syncSppPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'items']));
+
+        $this->post(route('finance.spp.correct', $payment), [
+            'transaction_date' => '2026-07-11',
+            'transaction_time' => '09.30',
+            'payment_method' => 'Transfer',
+            'status' => 'Diterima',
+            'new_paid_amount' => 60000,
+            'reason' => 'Nominal salah input',
+            'return_url' => '/laporan/transaksi',
+        ])->assertRedirect('/laporan/transaksi');
+
+        $this->assertDatabaseHas('spp_payments', [
+            'id' => $payment->id,
+            'transaction_at' => '2026-07-11 09:30:00',
+            'payment_method' => 'Transfer',
+            'paid_amount' => 60000,
+            'remaining_amount' => 40000,
+            'payment_status' => 'Belum Lunas',
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $bill->id,
+            'paid_amount' => 60000,
+            'remaining_amount' => 40000,
+            'status' => 'Sebagian',
+        ]);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'payments.spp.correct',
+            'subject_type' => SppPayment::class,
+            'subject_id' => $payment->id,
+        ]);
+
+        $this->post(route('finance.spp.cancel', $payment), [
+            'reason' => 'Tidak jadi bayar',
+            'return_url' => '/laporan/transaksi',
+        ])->assertRedirect('/laporan/transaksi');
+
+        $this->assertDatabaseHas('spp_payments', [
+            'id' => $payment->id,
+            'status' => 'Dibatalkan',
+            'paid_amount' => 0,
+            'remaining_amount' => 100000,
+            'payment_status' => 'Dibatalkan',
+        ]);
+        $this->assertDatabaseHas('spp_payment_items', [
+            'spp_payment_id' => $payment->id,
+            'paid_amount' => 0,
+            'remaining_amount' => 100000,
+            'payment_status' => 'Dibatalkan',
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $bill->id,
+            'paid_amount' => 0,
+            'remaining_amount' => 100000,
+        ]);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'payments.spp.cancel',
+            'subject_type' => SppPayment::class,
+            'subject_id' => $payment->id,
+        ]);
+        $this->get('/laporan/transaksi?date_from=2026-07-11&date_to=2026-07-11&payment_status=Dibatalkan')
+            ->assertOk()
+            ->assertSee('Dibatalkan')
+            ->assertSee('Siswa Koreksi');
+    }
+
+    public function test_other_payment_can_be_corrected_and_cancelled_without_deleting_history(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        [$year, $unit, $class, $student] = $this->paymentCorrectionContext();
+        $feeType = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'daftar-ulang',
+            'code' => 'DU-CORRECTION',
+            'name' => 'Daftar Ulang Koreksi',
+            'amount' => 500000,
+            'period' => 'Sekali Bayar',
+            'creates_bill' => true,
+            'is_active' => true,
+        ]);
+        $payment = OtherPayment::create([
+            'student_id' => $student->id,
+            'fee_type_id' => $feeType->id,
+            'transaction_at' => '2026-07-10 08:00:00',
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'original_amount' => 500000,
+            'discount_amount' => 0,
+            'total_amount' => 500000,
+            'paid_amount' => 500000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+        app(BillService::class)->syncOtherPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']));
+        $bill = Bill::where('source_type', 'fee_type')->where('student_id', $student->id)->firstOrFail();
+
+        $this->post(route('finance.other.correct', $payment), [
+            'transaction_date' => '2026-07-11',
+            'transaction_time' => '10.15',
+            'payment_method' => 'Transfer',
+            'status' => 'Diterima',
+            'new_paid_amount' => 300000,
+            'reason' => 'Nominal daftar ulang salah',
+            'return_url' => '/laporan/transaksi',
+        ])->assertRedirect('/laporan/transaksi');
+
+        $this->assertDatabaseHas('other_payments', [
+            'id' => $payment->id,
+            'transaction_at' => '2026-07-11 10:15:00',
+            'payment_method' => 'Transfer',
+            'paid_amount' => 300000,
+            'remaining_amount' => 200000,
+            'payment_status' => 'Belum Lunas',
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $bill->id,
+            'paid_amount' => 300000,
+            'remaining_amount' => 200000,
+            'status' => 'Sebagian',
+        ]);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'payments.other.correct',
+            'subject_type' => OtherPayment::class,
+            'subject_id' => $payment->id,
+        ]);
+
+        $this->post(route('finance.other.cancel', $payment), [
+            'reason' => 'Transaksi dibatalkan wali',
+            'return_url' => '/laporan/transaksi',
+        ])->assertRedirect('/laporan/transaksi');
+
+        $this->assertDatabaseHas('other_payments', [
+            'id' => $payment->id,
+            'status' => 'Dibatalkan',
+            'paid_amount' => 0,
+            'remaining_amount' => 500000,
+            'payment_status' => 'Dibatalkan',
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $bill->id,
+            'paid_amount' => 0,
+            'remaining_amount' => 500000,
+        ]);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'payments.other.cancel',
+            'subject_type' => OtherPayment::class,
+            'subject_id' => $payment->id,
+        ]);
+    }
+
     public function test_unit_scoped_cashier_cannot_access_other_payment_student_or_payment_from_another_unit(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
@@ -1208,5 +1418,23 @@ class PaymentMenuTest extends TestCase
         $user->educationUnits()->attach($unit->id);
 
         return $user;
+    }
+
+    private function paymentCorrectionContext(): array
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true, 'start_date' => '2026-07-01', 'end_date' => '2027-06-30']);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'I A', 'level' => 'Kelas I', 'is_active' => true]);
+        $student = Student::create([
+            'nis' => '990001',
+            'name' => 'Siswa Koreksi',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01',
+            'is_active' => true,
+        ]);
+
+        return [$year, $unit, $class, $student];
     }
 }

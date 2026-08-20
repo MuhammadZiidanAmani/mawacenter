@@ -119,7 +119,7 @@
                             <span>Cari alumni</span>
                             <span class="master-table-search-input">
                                 {!! $icon('search') !!}
-                                <input type="search" name="search" value="{{ $filters['search'] }}" placeholder="Nama, NIS, NISN, unit, kelas..." aria-label="Cari alumni">
+                                <input type="search" name="search" value="{{ $filters['search'] }}" placeholder="Nama, NIS, unit..." aria-label="Cari alumni">
                             </span>
                         </label>
                     </form>
@@ -130,12 +130,9 @@
                         <colgroup>
                             <col class="alumni-col-no">
                             <col class="alumni-col-nis">
-                            <col class="alumni-col-nisn">
                             <col class="alumni-col-name">
                             <col class="alumni-col-gender">
                             <col class="alumni-col-unit">
-                            <col class="alumni-col-class">
-                            <col class="alumni-col-year">
                             <col class="alumni-col-date">
                             <col class="alumni-col-reason">
                             <col class="alumni-col-actions">
@@ -144,12 +141,9 @@
                             <tr>
                                 <th>No</th>
                                 @include('partials.master-sort-heading', ['column' => 'nis', 'label' => 'NIS'])
-                                <th>NISN</th>
                                 @include('partials.master-sort-heading', ['column' => 'name', 'label' => 'Nama Siswa'])
                                 @include('partials.master-sort-heading', ['column' => 'gender', 'label' => 'JK'])
                                 @include('partials.master-sort-heading', ['column' => 'unit', 'label' => 'Unit'])
-                                @include('partials.master-sort-heading', ['column' => 'class', 'label' => 'Kelas'])
-                                @include('partials.master-sort-heading', ['column' => 'year', 'label' => 'Tahun'])
                                 @include('partials.master-sort-heading', ['column' => 'exit_date', 'label' => 'Tanggal Keluar'])
                                 <th>Alasan</th>
                                 <th>Aksi</th>
@@ -160,23 +154,18 @@
                                 <tr>
                                     <td class="alumni-cell-center">{{ $alumni->firstItem() + $loop->index }}</td>
                                     <td class="alumni-cell-center">{{ $student->nis ?: '-' }}</td>
-                                    <td class="alumni-cell-center">{{ $student->nisn ?: '-' }}</td>
                                     <td class="alumni-cell-main"><strong>{{ $student->name }}</strong></td>
                                     <td class="alumni-cell-center">{{ $student->gender === 'L' ? 'L' : 'P' }}</td>
                                     <td class="alumni-cell-center">{{ $student->schoolClass?->educationUnit?->code ?? '-' }}</td>
-                                    <td class="alumni-cell-center">{{ $student->schoolClass?->name ?? '-' }}</td>
-                                    <td class="alumni-cell-center">{{ $student->academicYear?->name ?? '-' }}</td>
                                     <td class="alumni-cell-center">{{ $student->exit_date?->format('d/m/Y') ?? '-' }}</td>
                                     <td class="alumni-cell-center">{{ $student->inactive_reason ?: '-' }}</td>
                                     <td class="alumni-actions-cell">
-                                        <a class="icon-button alumni-action-edit" href="{{ route('student-management.students.edit', array_merge([$student], request()->query())) }}" title="Edit / aktifkan kembali" aria-label="Edit atau aktifkan kembali {{ $student->name }}">
-                                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
-                                        </a>
+                                        <a class="button alumni-restore-button" href="{{ route('student-management.students.edit', array_merge([$student], request()->query())) }}" title="Aktifkan siswa lagi" aria-label="Aktifkan siswa {{ $student->name }} lagi">Aktifkan Lagi</a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="11" class="alumni-empty-cell">
+                                    <td colspan="8" class="alumni-empty-cell">
                                         <strong>Belum ada data alumni</strong>
                                         <span>Data akan muncul setelah siswa dijadikan nonaktif/alumni.</span>
                                     </td>

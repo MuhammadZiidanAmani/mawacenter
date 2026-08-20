@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AcademicYear;
 use App\Models\Bill;
+use App\Models\BillSyncRun;
 use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\GuardianTransferRequest;
@@ -432,6 +433,7 @@ class BillAccessTest extends TestCase
         $this->actingAs($verifier)
             ->post(route('finance.bills.sync', ['unit_id' => $otherUnit->id, 'year' => 2026, 'until_month' => 7]))
             ->assertRedirect();
+        $this->completeLatestBillSyncRun();
 
         $this->assertDatabaseHas('bills', ['student_id' => $assignedStudent->id, 'source_type' => 'spp']);
         $this->assertDatabaseMissing('bills', ['student_id' => $otherStudent->id, 'source_type' => 'spp']);
@@ -519,5 +521,19 @@ class BillAccessTest extends TestCase
             'remaining_amount' => 100000,
             'status' => 'Belum Dibayar',
         ], $overrides));
+    }
+
+    private function completeLatestBillSyncRun(): BillSyncRun
+    {
+        $run = BillSyncRun::latest()->firstOrFail();
+
+        for ($attempt = 0; $attempt < 40 && $run->isActive(); $attempt++) {
+            $this->post(route('finance.bills.sync.progress', $run))->assertOk();
+            $run->refresh();
+        }
+
+        $this->assertSame('completed', $run->status, $run->error_message ?: 'Sinkron tagihan belum selesai.');
+
+        return $run;
     }
 }

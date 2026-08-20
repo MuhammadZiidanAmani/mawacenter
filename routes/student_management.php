@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\MasterDataController;
-use App\Http\Controllers\StudentDataQualityController;
 use App\Http\Controllers\StudentIdentityCleanupController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,7 +20,6 @@ Route::prefix('manajemen-siswa')->name('student-management.')->group(function ()
         Route::get('/alumni', 'studentAlumni')->name('alumni.index');
     });
 
-    Route::get('/kualitas-data', [StudentDataQualityController::class, 'index'])->name('data-quality.index');
     Route::get('/rapikan-identitas', [StudentIdentityCleanupController::class, 'index'])->name('identity-cleanup.index');
     Route::get('/rapikan-identitas/tinjau/{candidateKey}', [StudentIdentityCleanupController::class, 'show'])->name('identity-cleanup.show');
     Route::post('/rapikan-identitas/gabungkan', [StudentIdentityCleanupController::class, 'merge'])->name('identity-cleanup.merge');

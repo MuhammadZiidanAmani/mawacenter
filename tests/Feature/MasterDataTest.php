@@ -7,6 +7,7 @@ use App\Models\AppSetting;
 use App\Models\AuditLog;
 use App\Models\Bill;
 use App\Models\BillManualPayment;
+use App\Models\BillSyncRun;
 use App\Models\EducationUnit;
 use App\Models\FeeDiscount;
 use App\Models\FeeType;
@@ -82,11 +83,11 @@ class MasterDataTest extends TestCase
             ->get('/manajemen-siswa/data-siswa?unit_id='.$unit->id.'&class_id='.$class->id.'&year_id='.$year->id)
             ->assertOk()
             ->assertSee('Data Siswa')
-            ->assertSee('Kualitas Data')
+            ->assertDontSee('Kualitas Data')
             ->assertDontSee('Tambah')
             ->assertDontSee('Import')
             ->assertDontSee('Export')
-            ->assertDontSee('Template')
+            ->assertDontSee('master-data/students/template')
             ->assertDontSee('Jadikan Alumni')
             ->assertDontSee('title="Edit"', false)
             ->assertDontSee('Rapikan Identitas')
@@ -94,7 +95,7 @@ class MasterDataTest extends TestCase
             ->assertDontSee('Naik Kelas');
 
         $this->get('/manajemen-siswa/alumni')->assertOk();
-        $this->get('/manajemen-siswa/kualitas-data')->assertOk();
+        $this->get('/manajemen-siswa/kualitas-data')->assertNotFound();
         $this->get('/manajemen-siswa/data-siswa/create')->assertForbidden();
         $this->post('/master-data/students', [])->assertForbidden();
         $this->get('/manajemen-siswa/data-siswa/'.$student->id.'/edit')->assertForbidden();
@@ -130,17 +131,20 @@ class MasterDataTest extends TestCase
             ->assertSee('Tambah')
             ->assertSee('Import')
             ->assertSee('Export')
-            ->assertSee('Template')
+            ->assertDontSee('master-data/students/template')
             ->assertSee('Jadikan Alumni')
             ->assertSee('title="Edit"', false)
-            ->assertSee('Kualitas Data')
+            ->assertDontSee('Kualitas Data')
             ->assertSee('Rapikan Identitas')
             ->assertSee('Pindah Kelas')
             ->assertSee('Naik Kelas');
 
         $this->get('/manajemen-siswa/data-siswa/create')->assertOk();
         $this->get('/manajemen-siswa/data-siswa/'.$student->id.'/edit')->assertOk();
-        $this->get('/manajemen-siswa/data-siswa/import')->assertOk();
+        $this->get('/manajemen-siswa/data-siswa/import')
+            ->assertOk()
+            ->assertSee('Download Template')
+            ->assertSee('master-data/students/template');
         $this->get('/master-data/students/template')->assertOk();
         $this->get('/master-data/students/export')->assertOk();
         $this->get('/manajemen-siswa/pindah-kelas')->assertOk();
@@ -176,12 +180,6 @@ class MasterDataTest extends TestCase
             ->assertDontSee('<option value="'.$otherUnit->id.'" >MA</option>', false);
 
         $this->actingAs($unitUser)
-            ->get('/manajemen-siswa/kualitas-data?indicator=active-without-nisn')
-            ->assertOk()
-            ->assertSee('Siswa Unit Boleh')
-            ->assertDontSee('Siswa Unit Rahasia');
-
-        $this->actingAs($unitUser)
             ->get('/manajemen-siswa/data-siswa/'.$assignedStudent->id.'/edit')
             ->assertOk();
         $this->actingAs($unitUser)
@@ -189,154 +187,6 @@ class MasterDataTest extends TestCase
             ->assertForbidden();
         $this->actingAs($unitUser)
             ->get('/master-data/students/export?unit_id='.$otherUnit->id)
-            ->assertForbidden();
-    }
-
-    public function test_student_data_quality_dashboard_shows_operational_indicators_and_permissions(): void
-    {
-        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
-        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
-        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'I A', 'level' => 'Kelas I']);
-
-        Student::create([
-            'nis' => 'DQ-001',
-            'nisn' => '9988776655',
-            'name' => 'Data Ganda Satu',
-            'gender' => 'L',
-            'school_class_id' => $class->id,
-            'academic_year_id' => $year->id,
-            'entry_date' => '2025-07-01',
-            'is_active' => true,
-        ]);
-        Student::create([
-            'nis' => 'DQ-002',
-            'nisn' => '9988776655',
-            'name' => 'Data Ganda Dua',
-            'gender' => 'L',
-            'school_class_id' => $class->id,
-            'academic_year_id' => $year->id,
-            'entry_date' => '2025-07-01',
-            'is_active' => true,
-        ]);
-        Student::create([
-            'nis' => 'DQ-003',
-            'name' => 'Tanpa Nisn Aktif',
-            'gender' => 'P',
-            'school_class_id' => $class->id,
-            'academic_year_id' => $year->id,
-            'entry_date' => '2025-07-01',
-            'is_active' => true,
-        ]);
-        Student::create([
-            'nis' => 'DQ-004',
-            'nisn' => '1122334455',
-            'name' => 'Tanpa Tanggal Masuk',
-            'gender' => 'P',
-            'school_class_id' => $class->id,
-            'academic_year_id' => $year->id,
-            'is_active' => true,
-        ]);
-        Student::create([
-            'nis' => 'DQ-005',
-            'nisn' => '2233445566',
-            'name' => 'Masuk Tengah Tahun',
-            'gender' => 'L',
-            'school_class_id' => $class->id,
-            'academic_year_id' => $year->id,
-            'entry_date' => '2025-09-01',
-            'billing_start_date' => null,
-            'is_active' => true,
-        ]);
-        Student::create([
-            'nis' => 'DQ-006',
-            'nisn' => '3344556677',
-            'name' => 'Alumni Belum Lengkap',
-            'gender' => 'P',
-            'school_class_id' => $class->id,
-            'academic_year_id' => $year->id,
-            'is_active' => false,
-        ]);
-        foreach (range(1, 12) as $number) {
-            Student::create([
-                'nis' => 'DQ-NISN-'.str_pad((string) $number, 2, '0', STR_PAD_LEFT),
-                'name' => 'Tanpa Nisn '.str_pad((string) $number, 2, '0', STR_PAD_LEFT),
-                'gender' => 'P',
-                'school_class_id' => $class->id,
-                'academic_year_id' => $year->id,
-                'entry_date' => '2025-07-01',
-                'is_active' => true,
-            ]);
-        }
-
-        Role::create([
-            'key' => 'student_quality_viewer',
-            'name' => 'Student Quality Viewer',
-            'permissions' => ['students.view'],
-            'is_active' => true,
-        ]);
-        $viewer = User::factory()->create(['role' => 'student_quality_viewer']);
-
-        $this->actingAs($viewer)
-            ->get('/manajemen-siswa/kualitas-data')
-            ->assertOk()
-            ->assertSee('Kualitas Data Siswa')
-            ->assertSee('Kandidat duplikat identitas')
-            ->assertSee('Siswa aktif tanpa NISN')
-            ->assertSee('Siswa aktif tanpa tanggal masuk')
-            ->assertSee('Mulai tagihan perlu dicek')
-            ->assertSee('Nonaktif belum lengkap')
-            ->assertSee('name="indicator"', false)
-            ->assertSee('value="active-without-nisn"', false)
-            ->assertSee('indicator=active-without-nisn', false)
-            ->assertSee('Data Ganda Satu')
-            ->assertSee('Menampilkan 1-1 dari 1 data')
-            ->assertDontSee('title="Edit Tanpa Nisn Aktif"', false);
-
-        $this->actingAs($viewer)
-            ->get('/manajemen-siswa/kualitas-data?indicator=active-without-nisn&per_page=10')
-            ->assertOk()
-            ->assertSee('Siswa Aktif Tanpa NISN')
-            ->assertSee('<option value="active-without-nisn" selected>Siswa Aktif Tanpa NISN</option>', false)
-            ->assertSee('Menampilkan 1-10 dari 13 data')
-            ->assertSee('Tanpa Nisn 01')
-            ->assertDontSee('title="Edit Tanpa Nisn 01"', false)
-            ->assertDontSee('Tanpa Nisn 12');
-
-        $this->actingAs($viewer)
-            ->get('/manajemen-siswa/kualitas-data?indicator=active-without-nisn&per_page=10&page=2')
-            ->assertOk()
-            ->assertSee('Menampilkan 11-13 dari 13 data')
-            ->assertSee('Tanpa Nisn 12')
-            ->assertSee('Tanpa Nisn Aktif');
-
-        Role::create([
-            'key' => 'student_quality_editor',
-            'name' => 'Student Quality Editor',
-            'permissions' => ['students.view', 'students.update', 'students.identity_cleanup'],
-            'is_active' => true,
-        ]);
-        $editor = User::factory()->create(['role' => 'student_quality_editor']);
-
-        $this->actingAs($editor)
-            ->get('/manajemen-siswa/kualitas-data?indicator=active-without-nisn')
-            ->assertOk()
-            ->assertSee('title="Edit Tanpa Nisn 01"', false);
-
-        $this->get('/manajemen-siswa/kualitas-data?indicator=duplicate-identities')
-            ->assertOk()
-            ->assertSee('Rapikan Identitas')
-            ->assertSee('Tinjau');
-
-        Role::create([
-            'key' => 'student_quality_blocked',
-            'name' => 'Student Quality Blocked',
-            'permissions' => [],
-            'is_active' => true,
-        ]);
-        $blocked = User::factory()->create(['role' => 'student_quality_blocked']);
-
-        $this->actingAs($blocked)
-            ->get('/manajemen-siswa/kualitas-data')
             ->assertForbidden();
     }
 
@@ -864,6 +714,54 @@ class MasterDataTest extends TestCase
             ->assertOk()
             ->assertSee('<select name="education_unit_id" required><option value="">Pilih Unit Pendidikan</option>', false)
             ->assertDontSee('<select name="education_unit_id" required><option value="1">', false);
+    }
+
+    public function test_master_data_filters_are_preserved_across_create_edit_and_delete_actions(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $class = SchoolClass::create([
+            'education_unit_id' => $unit->id,
+            'name' => 'VII Filter',
+            'level' => 'Kelas VII',
+            'is_active' => true,
+        ]);
+
+        $query = [
+            'tab' => 'classes',
+            'unit_id' => $unit->id,
+            'year_id' => $year->id,
+            'status' => 'active',
+            'search' => 'VII',
+            'per_page' => 25,
+            'sort' => 'name',
+            'direction' => 'desc',
+            'page' => 1,
+        ];
+        $queryString = http_build_query($query);
+        $escapedQueryString = str_replace('&', '&amp;', $queryString);
+
+        $this->get('/master-data?'.$queryString)
+            ->assertOk()
+            ->assertSee('/master-data/create?'.$escapedQueryString, false)
+            ->assertSee('/master-data/classes/'.$class->id.'?'.$escapedQueryString, false)
+            ->assertSee('/master-data?tab=classes"', false);
+
+        $this->get('/master-data/create?'.$queryString)
+            ->assertOk()
+            ->assertSee('/master-data/classes?'.$escapedQueryString, false)
+            ->assertSee('/master-data?'.$escapedQueryString, false);
+
+        $pageTwoQueryString = http_build_query(array_merge($query, ['page' => 2]));
+
+        $this->put('/master-data/classes/'.$class->id.'?'.$pageTwoQueryString, [
+            'education_unit_id' => $unit->id,
+            'name' => 'VII Filter',
+            'is_active' => 1,
+        ])->assertRedirect('/master-data?'.$pageTwoQueryString);
+
+        $this->delete('/master-data/classes/'.$class->id.'?'.$pageTwoQueryString)
+            ->assertRedirect('/master-data?'.$pageTwoQueryString);
     }
 
     public function test_master_data_uses_table_toolbar_footer_summary_and_sortable_headings(): void
@@ -2247,7 +2145,8 @@ class MasterDataTest extends TestCase
         $this->post('/keuangan/tagihan/sync', [
             'year' => 2026,
             'until_month' => 6,
-        ])->assertRedirect('/keuangan/tagihan?year=2026&until_month=6');
+        ])->assertRedirect('/keuangan/tagihan?year=2026&until_month=6&sync_run=1');
+        $this->completeLatestBillSyncRun();
 
         $this->get('/keuangan/tagihan?year=2026&until_month=6&per_page=25&sort=total&direction=desc')
             ->assertOk()
@@ -2291,6 +2190,181 @@ class MasterDataTest extends TestCase
             'month' => 2,
             'remaining_amount' => 600000,
         ]);
+    }
+
+    public function test_bill_sync_progress_tracks_status_and_prevents_duplicate_runs(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'start_date' => '2026-07-01', 'end_date' => '2027-06-30', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PAUD', 'name' => 'PAUD Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'KB', 'level' => 'KB']);
+        $student = Student::create([
+            'nis' => '7601',
+            'name' => 'Siswa Progress Sinkron',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'entry_date' => '2026-07-01',
+            'is_active' => true,
+        ]);
+        $this->createSppCategory($unit, 125000);
+
+        $this->post('/keuangan/tagihan/sync', [
+            'year' => 2026,
+            'until_month' => 7,
+        ])->assertRedirect('/keuangan/tagihan?year=2026&until_month=7&sync_run=1');
+        $this->post('/keuangan/tagihan/sync', [
+            'year' => 2026,
+            'until_month' => 7,
+        ])->assertRedirect('/keuangan/tagihan?year=2026&until_month=7&sync_run=1');
+
+        $this->assertDatabaseCount('bill_sync_runs', 1);
+        $run = BillSyncRun::firstOrFail();
+
+        $this->get(route('finance.bills.sync.status', $run))
+            ->assertOk()
+            ->assertJsonPath('status', 'pending')
+            ->assertJsonPath('percent', 0);
+        $this->get('/keuangan/tagihan?year=2026&until_month=7&sync_run='.$run->id)
+            ->assertOk()
+            ->assertSee('Progress Sinkron Tagihan')
+            ->assertSee('0%');
+
+        $this->completeLatestBillSyncRun();
+        $run->refresh();
+
+        $this->assertSame(100, (int) $run->percent);
+        $this->assertDatabaseHas('bills', [
+            'student_id' => $student->id,
+            'source_type' => 'spp',
+            'year' => 2026,
+            'month' => 7,
+            'remaining_amount' => 125000,
+        ]);
+    }
+
+    public function test_bill_sync_finishes_immediately_when_no_new_bills_exist(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'start_date' => '2026-07-01', 'end_date' => '2027-06-30', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PAUD', 'name' => 'PAUD Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'KB', 'level' => 'KB']);
+        $student = Student::create([
+            'nis' => '7602',
+            'name' => 'Siswa Sudah Sinkron',
+            'gender' => 'P',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'entry_date' => '2026-07-01',
+            'is_active' => true,
+        ]);
+        $this->createSppCategory($unit, 125000);
+
+        $this->post('/keuangan/tagihan/sync', [
+            'year' => 2026,
+            'until_month' => 7,
+        ])->assertRedirect('/keuangan/tagihan?year=2026&until_month=7&sync_run=1');
+        $this->completeLatestBillSyncRun();
+
+        $this->assertDatabaseHas('bills', [
+            'student_id' => $student->id,
+            'source_type' => 'spp',
+            'year' => 2026,
+            'month' => 7,
+            'remaining_amount' => 125000,
+        ]);
+
+        $response = $this->post('/keuangan/tagihan/sync', [
+            'year' => 2026,
+            'until_month' => 7,
+        ])->assertRedirect();
+        $this->assertStringContainsString('sync_run=2', $response->headers->get('Location'));
+
+        $this->assertDatabaseCount('bill_sync_runs', 2);
+        $run = BillSyncRun::orderByDesc('id')->firstOrFail();
+
+        $this->assertSame('completed', $run->status);
+        $this->assertSame('completed', $run->phase);
+        $this->assertSame(100, (int) $run->percent);
+        $this->assertSame(0, (int) $run->total_items);
+        $this->assertSame(0, (int) $run->processed_items);
+        $this->assertSame(0, (int) $run->created_items);
+        $this->assertSame(1, (int) $run->existing_items);
+        $this->assertSame('Semua tagihan sudah tersinkron. Tidak ada tagihan baru untuk dibuat.', $run->message);
+
+        $this->get(route('finance.bills.sync.status', $run))
+            ->assertOk()
+            ->assertJsonPath('status', 'completed')
+            ->assertJsonPath('percent', 100)
+            ->assertJsonPath('total_items', 0)
+            ->assertJsonPath('created_items', 0);
+
+        $this->get('/keuangan/tagihan?year=2026&until_month=7&sync_run='.$run->id)
+            ->assertOk()
+            ->assertSee('Progress Sinkron Tagihan')
+            ->assertSee('Semua tagihan sudah tersinkron')
+            ->assertSee('100%');
+
+        $newStudent = Student::create([
+            'nis' => '7603',
+            'name' => 'Siswa Baru Belum Sinkron',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'entry_date' => '2026-07-01',
+            'is_active' => true,
+        ]);
+
+        $this->post('/keuangan/tagihan/sync', [
+            'year' => 2026,
+            'until_month' => 7,
+        ])->assertRedirect('/keuangan/tagihan?year=2026&until_month=7&sync_run=3');
+        $this->completeLatestBillSyncRun();
+
+        $this->assertDatabaseHas('bills', [
+            'student_id' => $newStudent->id,
+            'source_type' => 'spp',
+            'year' => 2026,
+            'month' => 7,
+            'remaining_amount' => 125000,
+        ]);
+    }
+
+    public function test_bill_sync_processes_large_data_in_progress_batches(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'start_date' => '2026-07-01', 'end_date' => '2027-06-30', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'RA', 'name' => 'RA Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'A1', 'level' => 'A']);
+        $this->createSppCategory($unit, 75000);
+
+        foreach (range(1, 30) as $number) {
+            Student::create([
+                'nis' => '77'.str_pad((string) $number, 3, '0', STR_PAD_LEFT),
+                'name' => 'Siswa Batch '.$number,
+                'gender' => 'L',
+                'school_class_id' => $class->id,
+                'academic_year_id' => $year->id,
+                'entry_date' => '2026-07-01',
+                'is_active' => true,
+            ]);
+        }
+
+        $this->post('/keuangan/tagihan/sync', [
+            'year' => 2027,
+            'until_month' => 6,
+        ])->assertRedirect('/keuangan/tagihan?year=2027&until_month=6&sync_run=1');
+
+        $run = BillSyncRun::firstOrFail();
+        $this->post(route('finance.bills.sync.progress', $run))
+            ->assertOk()
+            ->assertJsonPath('status', 'processing');
+        $run->refresh();
+
+        $this->assertGreaterThan(0, (int) $run->processed_items);
+        $this->assertLessThan(100, (int) $run->percent);
+        $this->assertDatabaseCount('bills', 300);
+
+        $this->completeLatestBillSyncRun();
+
+        $this->assertDatabaseCount('bills', 360);
     }
 
     public function test_spp_generation_uses_default_july_2025_when_billing_start_is_empty(): void
@@ -2475,8 +2549,9 @@ class MasterDataTest extends TestCase
             'year' => 2025,
             'until_month' => 9,
             'student_id' => $student->id,
-        ])->assertRedirect('/keuangan/tagihan?year=2025&until_month=9&student_id='.$student->id)
+        ])->assertRedirect('/keuangan/tagihan?year=2025&until_month=9&student_id='.$student->id.'&sync_run=1')
             ->assertSessionHas('success');
+        $this->completeLatestBillSyncRun();
 
         $this->assertDatabaseHas('bills', [
             'student_id' => $student->id,
@@ -2696,8 +2771,10 @@ class MasterDataTest extends TestCase
         StudentXlsx::write($path, [
             ['No', 'NIS', 'NISN', 'Nama', 'Tempat Lahir', 'Tanggal Lahir', 'Jenis Kelamin', 'Nama Ayah', 'Nama Ibu', 'No. WA Ayah', 'No. WA Ibu', 'Provinsi', 'Kabupaten/Kota', 'Kecamatan', 'Desa', 'Alamat', 'Unit Pendidikan', 'Kelas'],
             [1, '1001', '2001', 'Alya Maharani', 'Jakarta', '37209', 'Perempuan', 'Budi', 'Siti', '0811', '0822', 'Jawa Barat', 'Bandung', 'Coblong', 'Dago', 'Jalan Mawar', 'PONPES', '9A'],
-            [2, '1001', '2002', 'Alya MI', 'Bandung', '', 'Perempuan', '', '', '', '', '', '', '', '', '', 'MI', 'I A'],
-            [3, '', '', 'Data Tidak Valid', '', '', 'Perempuan', '', '', '', '', '', '', '', '', '', 'PONPES', '9A'],
+            [2, '1001', '2001', 'Alya MI', 'Bandung', '', 'Perempuan', '', '', '', '', '', '', '', '', '', 'MI', 'I A'],
+            [3, '1002', '', 'Data NISN Kosong', 'Bandung', '', 'Laki-laki', '', '', '', '', '', '', '', '', '', 'PONPES', '9A'],
+            [4, '1003', '2003', 'Alya Maharani', 'Jakarta', '', 'Perempuan', '', '', '', '', '', '', '', '', '', 'PONPES', '9A'],
+            [5, '', '', 'Data Tidak Valid', '', '', 'Perempuan', '', '', '', '', '', '', '', '', '', 'PONPES', '9A'],
         ]);
         $workbook = file_get_contents($path);
 
@@ -2722,10 +2799,11 @@ class MasterDataTest extends TestCase
             ->assertSee('9A')
             ->assertSee('Alya Maharani')
             ->assertSee('Alya MI')
+            ->assertSee('Data NISN Kosong')
             ->assertSee('Data Tidak Valid')
             ->assertSee('NIS kosong.');
-        $this->assertSame(2, $preview->viewData('studentImportPreview')['valid']);
-        $this->assertSame(2, $preview->viewData('studentImportPreview')['created']);
+        $this->assertSame(4, $preview->viewData('studentImportPreview')['valid']);
+        $this->assertSame(4, $preview->viewData('studentImportPreview')['created']);
         $this->assertSame(0, $preview->viewData('studentImportPreview')['updated']);
         $this->assertCount(1, $preview->viewData('studentImportPreview')['failures']);
         $this->assertDatabaseCount('students', 0);
@@ -2740,13 +2818,22 @@ class MasterDataTest extends TestCase
             'mother_name' => 'Siti',
             'birth_date' => '2001-11-14 00:00:00',
         ]);
+        $this->assertDatabaseHas('students', [
+            'nis' => '1002',
+            'nisn' => null,
+            'name' => 'Data NISN Kosong',
+        ]);
+        $this->assertDatabaseHas('students', [
+            'nis' => '1003',
+            'name' => 'Alya Maharani',
+        ]);
         $this->assertDatabaseHas('school_classes', ['education_unit_id' => $unit->id, 'name' => '9A']);
         $this->assertDatabaseHas('school_classes', ['education_unit_id' => $otherUnit->id, 'name' => 'I A']);
-        $this->assertDatabaseCount('students', 2);
+        $this->assertDatabaseCount('students', 4);
         $importAudit = AuditLog::where('action', 'students.import')->firstOrFail();
-        $this->assertSame(2, $importAudit->student_count);
+        $this->assertSame(4, $importAudit->student_count);
         $this->assertSame('siswa.xlsx', $importAudit->metadata['file_name']);
-        $this->assertSame(2, $importAudit->metadata['imported']);
+        $this->assertSame(4, $importAudit->metadata['imported']);
 
         $duplicateResponse = $this->post('/master-data/students/import/preview', [
             'file' => UploadedFile::fake()->createWithContent('siswa.xlsx', $workbook),
@@ -2754,9 +2841,9 @@ class MasterDataTest extends TestCase
         $duplicateLocation = $duplicateResponse->headers->get('Location');
         $duplicatePreview = $this->get($duplicateLocation)->assertOk();
         $this->assertSame(0, $duplicatePreview->viewData('studentImportPreview')['created']);
-        $this->assertSame(2, $duplicatePreview->viewData('studentImportPreview')['updated']);
+        $this->assertSame(4, $duplicatePreview->viewData('studentImportPreview')['updated']);
         $this->assertSame(0, $duplicatePreview->viewData('studentImportPreview')['duplicates']);
-        $this->assertDatabaseCount('students', 2);
+        $this->assertDatabaseCount('students', 4);
 
         $updatePath = tempnam(sys_get_temp_dir(), 'student-update-test-');
         StudentXlsx::write($updatePath, [
@@ -2786,7 +2873,7 @@ class MasterDataTest extends TestCase
             ->assertRedirect('/manajemen-siswa/data-siswa')
             ->assertSessionHas('success');
 
-        $this->assertDatabaseCount('students', 2);
+        $this->assertDatabaseCount('students', 4);
         $this->assertDatabaseHas('students', [
             'nis' => '1001',
             'name' => 'Alya Maharani',
@@ -2954,8 +3041,9 @@ class MasterDataTest extends TestCase
             ->assertSee('Data Alumni')
             ->assertSee('Kelas')
             ->assertSee('Tahun Pelajaran')
-            ->assertSee('NISN')
-            ->assertSee('Edit atau aktifkan kembali', false)
+            ->assertDontSee('NISN')
+            ->assertSee('Aktifkan Lagi')
+            ->assertDontSee('Edit atau aktifkan kembali', false)
             ->assertDontSee('Siswa Aktif');
 
         $searchCases = [
@@ -3328,5 +3416,19 @@ class MasterDataTest extends TestCase
             'creates_bill' => true,
             'is_active' => true,
         ]);
+    }
+
+    private function completeLatestBillSyncRun(): BillSyncRun
+    {
+        $run = BillSyncRun::orderByDesc('id')->firstOrFail();
+
+        for ($attempt = 0; $attempt < 40 && $run->isActive(); $attempt++) {
+            $this->post(route('finance.bills.sync.progress', $run))->assertOk();
+            $run->refresh();
+        }
+
+        $this->assertSame('completed', $run->status, $run->error_message ?: 'Sinkron tagihan belum selesai.');
+
+        return $run;
     }
 }

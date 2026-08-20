@@ -13,11 +13,30 @@
             <h2>Preview Import Data Siswa</h2>
             <p>Periksa ringkasan validasi sebelum data disimpan.</p>
         </div>
-        <form method="POST" action="{{ route('master.students.import') }}">
+        <form method="POST" action="{{ route('master.students.import') }}" data-student-import-confirm data-progress-url="{{ route('master.students.import.progress', $studentImportToken) }}">
             @csrf
             <input type="hidden" name="token" value="{{ $studentImportToken }}">
-            <button class="button button-primary student-import-confirm {{ $studentImportValid < 1 ? 'is-disabled' : '' }}" @disabled($studentImportValid < 1)>{!! $icon('check') !!} Konfirmasi</button>
+            <button class="button button-primary student-import-confirm {{ $studentImportValid < 1 ? 'is-disabled' : '' }}" @disabled($studentImportValid < 1)>{!! $icon('check') !!} <span data-student-import-confirm-label>Konfirmasi</span></button>
         </form>
+    </div>
+
+    <div class="student-import-progress-card" data-student-import-progress hidden>
+        <div class="student-import-progress-head">
+            <div>
+                <strong data-student-import-progress-status>Menunggu konfirmasi</strong>
+                <span data-student-import-progress-message>Import akan diproses setelah tombol Konfirmasi diklik.</span>
+            </div>
+            <b data-student-import-progress-percent>0%</b>
+        </div>
+        <div class="student-import-progress-track" aria-hidden="true">
+            <span data-student-import-progress-bar style="width: 0%"></span>
+        </div>
+        <div class="student-import-progress-meta">
+            <span>Diproses <strong data-student-import-progress-processed>0</strong>/<strong data-student-import-progress-total>{{ number_format($studentImportTotal, 0, ',', '.') }}</strong></span>
+            <span>Baru <strong data-student-import-progress-created>0</strong></span>
+            <span>Update <strong data-student-import-progress-updated>0</strong></span>
+            <span>Gagal <strong data-student-import-progress-failed>0</strong></span>
+        </div>
     </div>
 
     <div class="student-import-summary-grid" aria-label="Ringkasan preview import">

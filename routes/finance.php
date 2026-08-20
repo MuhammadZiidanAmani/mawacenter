@@ -25,6 +25,7 @@ Route::prefix('keuangan/pembayaran/spp')->name('finance.spp.')->controller(SppPa
     Route::post('/import', 'import')->name('import');
     Route::post('/', 'store')->name('store');
     Route::post('/{sppPayment}/corrections', 'correct')->name('correct');
+    Route::post('/{sppPayment}/cancel', 'cancel')->name('cancel');
     Route::get('/{sppPayment}/proof', 'proof')->name('proof');
     Route::get('/{sppPayment}/receipt/download', 'downloadReceipt')->name('receipt.download');
     Route::get('/{sppPayment}/receipt', 'receipt')->name('receipt');
@@ -41,6 +42,8 @@ Route::prefix('keuangan/pembayaran/lain-lain')->name('finance.other.')->controll
     Route::post('/import/preview', 'previewImport')->name('import.preview');
     Route::post('/import', 'import')->name('import');
     Route::post('/', 'store')->name('store');
+    Route::post('/{otherPayment}/corrections', 'correct')->name('correct');
+    Route::post('/{otherPayment}/cancel', 'cancel')->name('cancel');
     Route::get('/{otherPayment}/proof', 'proof')->name('proof');
     Route::get('/{otherPayment}/receipt/download', 'downloadReceipt')->name('receipt.download');
     Route::get('/{otherPayment}/receipt', 'receipt')->name('receipt');
@@ -54,6 +57,8 @@ Route::prefix('keuangan/tagihan')->name('finance.bills.')->controller(BillContro
     Route::get('/siswa/{student}/download', 'download')->name('download');
     Route::get('/siswa/{student}/print', 'print')->name('print');
     Route::get('/siswa/{student}', 'show')->name('show');
+    Route::get('/sync/{billSyncRun}/progress', 'syncStatus')->name('sync.status');
+    Route::post('/sync/{billSyncRun}/progress', 'syncProgress')->name('sync.progress');
     Route::post('/sync', 'sync')->name('sync');
 });
 Route::post('keuangan/tagihan/transfer', [GuardianPortalController::class, 'store'])->name('finance.bills.transfer');

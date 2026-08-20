@@ -488,6 +488,56 @@ class ReportMenuTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_transaction_report_shows_safe_correction_actions_for_treasurer(): void
+    {
+        [$year, $unit, $class] = $this->schoolContext();
+        $treasurer = User::factory()->create(['role' => 'bendahara']);
+        $treasurer->educationUnits()->attach($unit->id);
+        $student = Student::create([
+            'nis' => '9301',
+            'name' => 'Siswa Aksi Laporan',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        $payment = SppPayment::create([
+            'student_id' => $student->id,
+            'transaction_at' => '2026-06-14 08:00:00',
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'original_amount' => 100000,
+            'discount_amount' => 0,
+            'total_amount' => 100000,
+            'paid_amount' => 100000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+        $cancelledPayment = SppPayment::create([
+            'student_id' => $student->id,
+            'transaction_at' => '2026-06-15 08:00:00',
+            'payment_method' => 'Cash',
+            'status' => 'Dibatalkan',
+            'original_amount' => 100000,
+            'discount_amount' => 0,
+            'total_amount' => 100000,
+            'paid_amount' => 0,
+            'remaining_amount' => 100000,
+            'payment_status' => 'Dibatalkan',
+        ]);
+
+        $this->actingAs($treasurer)
+            ->get('/laporan/transaksi?date_from=2026-06-14&date_to=2026-06-15')
+            ->assertOk()
+            ->assertSee('Aksi')
+            ->assertSee('Status')
+            ->assertSee('value="Dibatalkan"', false)
+            ->assertSee('data-report-correction-url="'.route('finance.spp.correct', $payment).'"', false)
+            ->assertSee('data-report-cancel-url="'.route('finance.spp.cancel', $payment).'"', false)
+            ->assertDontSee('data-report-correction-url="'.route('finance.spp.correct', $cancelledPayment).'"', false)
+            ->assertSee('Dibatalkan');
+    }
+
     public function test_yearly_spp_summary_uses_prd_status_counts_and_payment_dates(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']));

@@ -17,16 +17,39 @@ main.master-create-page {
     width: 100%;
     min-width: 0;
     padding: var(--app-page-padding-y) var(--app-page-padding-x) 32px;
+    overflow-x: hidden;
     color: var(--master-text);
     background: #ffffff;
 }
 
+html:has(.modal-backdrop.show.academic-year-edit-modal),
+html:has(.modal-backdrop.show.education-unit-edit-modal),
+html:has(.modal-backdrop.show.class-edit-modal),
+html:has(.modal-backdrop.show.fee-type-edit-modal),
+html:has(.modal-backdrop.show.fee-discount-edit-modal),
+html:has(.modal-backdrop.show.data-role-edit-modal),
+html:has(.modal-backdrop.show.data-user-edit-modal),
+body:has(.modal-backdrop.show.academic-year-edit-modal),
+body:has(.modal-backdrop.show.education-unit-edit-modal),
+body:has(.modal-backdrop.show.class-edit-modal),
+body:has(.modal-backdrop.show.fee-type-edit-modal),
+body:has(.modal-backdrop.show.fee-discount-edit-modal),
+body:has(.modal-backdrop.show.data-role-edit-modal),
+body:has(.modal-backdrop.show.data-user-edit-modal) {
+    overflow: hidden;
+}
+
 main.master-flat-page > .master-flat-workspace,
-main.master-flat-page > .master-card,
-main.master-create-page > .master-create-heading-section,
-main.master-create-page > .master-create-card {
+main.master-flat-page > .master-card {
     width: min(100%, var(--app-content-width));
     margin-inline: auto;
+}
+
+main.master-create-page > .master-create-heading-section,
+main.master-create-page > .master-create-card {
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
 }
 
 main.master-flat-page > .master-flat-workspace {
@@ -116,6 +139,90 @@ main.master-flat-page > .master-card.master-flat-card {
     border: 0;
     border-radius: 0;
     box-shadow: none;
+}
+
+main.master-flat-page .master-result-modal-backdrop,
+main.master-create-page .master-result-modal-backdrop {
+    z-index: 70;
+    padding: 24px;
+    background: rgba(15, 23, 42, .28);
+}
+
+main.master-flat-page .master-result-modal,
+main.master-create-page .master-result-modal {
+    display: grid;
+    width: min(100%, 420px);
+    max-height: calc(100vh - 48px);
+    justify-items: center;
+    gap: 12px;
+    padding: 28px 24px 24px;
+    overflow: auto;
+    color: var(--master-text);
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid var(--master-border-soft);
+    border-radius: var(--app-radius-panel);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, .14);
+}
+
+main.master-flat-page .master-result-icon,
+main.master-create-page .master-result-icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 2px;
+    color: var(--app-success);
+    background: var(--app-success-soft);
+    border: 1px solid #cfeedd;
+    box-shadow: none;
+    font-size: 0;
+}
+
+main.master-flat-page .master-result-icon .icon,
+main.master-create-page .master-result-icon .icon {
+    width: 26px;
+    height: 26px;
+    stroke-width: 2.6;
+}
+
+main.master-flat-page .master-result-modal > strong,
+main.master-create-page .master-result-modal > strong {
+    color: var(--master-text);
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+main.master-flat-page .master-result-modal > p,
+main.master-create-page .master-result-modal > p {
+    max-width: 320px;
+    color: var(--master-muted);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+main.master-flat-page .master-result-button,
+main.master-create-page .master-result-button {
+    min-width: 88px;
+    height: 40px;
+    min-height: 40px;
+    margin-top: 2px;
+    padding: 0 18px;
+    background: var(--master-primary);
+    border-color: var(--master-primary);
+    border-radius: var(--app-radius);
+    box-shadow: none;
+    transform: none;
+    transition: background-color .16s ease, border-color .16s ease, color .16s ease;
+}
+
+main.master-flat-page .master-result-button:hover,
+main.master-create-page .master-result-button:hover {
+    color: #ffffff;
+    background: var(--master-primary-hover);
+    border-color: var(--master-primary-hover);
+    box-shadow: none;
+    transform: none;
 }
 
 main.master-flat-page .master-data-filter-panel {
@@ -674,7 +781,7 @@ main.master-create-page .master-create-heading-section {
 }
 
 main.master-create-page .master-create-card {
-    max-width: 860px;
+    max-width: none;
     padding: 0;
     overflow: hidden;
     background: #ffffff;
@@ -690,13 +797,14 @@ main.master-create-page .master-create-heading {
 main.master-create-page .master-create-form {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    padding: 20px;
+    gap: 16px;
+    padding: 24px 30px;
 }
 
 main.master-create-page .master-create-form > label,
 main.master-create-page .master-create-form .fee-type-simple-field,
 main.master-create-page .master-create-form .fee-discount-simple-field,
+.fee-type-edit-modal .master-form .fee-type-simple-field,
 main.master-create-page .role-permission-field {
     display: grid;
     gap: 6px;
@@ -719,7 +827,210 @@ main.master-create-page .fee-type-simple,
 main.master-create-page .fee-discount-simple {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 16px;
+}
+
+main.master-create-page.fee-type-create-page .fee-type-simple,
+.fee-type-edit-modal .fee-type-simple {
+    align-items: start;
+}
+
+main.master-create-page.fee-type-create-page .fee-type-simple-field,
+.fee-type-edit-modal .fee-type-simple-field {
+    align-self: start;
+}
+
+main.master-create-page.fee-type-create-page .fee-type-simple-field > span:first-child,
+.fee-type-edit-modal .fee-type-simple-field > span:first-child {
+    display: block;
+    min-height: 20px;
+}
+
+main.master-create-page.fee-type-create-page .fee-type-simple-field :is(input, select, textarea),
+.fee-type-edit-modal .fee-type-simple-field :is(input, select, textarea) {
+    width: 100%;
+    min-height: 40px;
+}
+
+main.master-create-page.fee-type-create-page .fee-type-simple-field small,
+.fee-type-edit-modal .fee-type-simple-field small {
+    margin: 0;
+    color: var(--master-muted, var(--app-muted));
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+main.master-create-page.fee-type-create-page .fee-type-simple-academic-year,
+.fee-type-edit-modal .fee-type-simple-academic-year {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+main.master-create-page.fee-type-create-page .fee-type-simple-class-scope,
+.fee-type-edit-modal .fee-type-simple-class-scope {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+main.master-create-page.fee-type-create-page .fee-type-simple-student-scope,
+.fee-type-edit-modal .fee-type-simple-student-scope {
+    grid-column: 1;
+    grid-row: 4;
+}
+
+main.master-create-page.fee-discount-create-page .master-create-card {
+    max-width: none;
+}
+
+main.master-create-page.fee-discount-create-page .master-create-form {
+    gap: 0;
+    padding: 0;
+}
+
+main.master-create-page.fee-discount-create-page .fee-discount-simple,
+.fee-discount-edit-modal .fee-discount-simple {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 24px 30px;
+}
+
+main.master-create-page.fee-discount-create-page .fee-discount-form-section,
+.fee-discount-edit-modal .fee-discount-form-section {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+}
+
+main.master-create-page.fee-discount-create-page .fee-discount-student-section,
+.fee-discount-edit-modal .fee-discount-student-section {
+    padding-bottom: 2px;
+}
+
+main.master-create-page.fee-discount-create-page .fee-discount-detail-section,
+.fee-discount-edit-modal .fee-discount-detail-section {
+    padding-top: 18px;
+    border-top: 1px solid var(--master-border-soft, var(--app-border-soft));
+}
+
+main.master-create-page.fee-discount-create-page .fee-discount-detail-grid,
+.fee-discount-edit-modal .fee-discount-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    min-width: 0;
+}
+
+main.master-create-page.fee-discount-create-page .fee-discount-student-field,
+.fee-discount-edit-modal .fee-discount-student-field {
+    max-width: none;
+}
+
+main.master-create-page.fee-discount-create-page .fee-discount-student-field .student-search-picker,
+.fee-discount-edit-modal .fee-discount-student-field .student-search-picker {
+    max-width: 100%;
+}
+
+main.master-create-page.fee-discount-create-page .master-create-form > .form-actions,
+.fee-discount-edit-modal .master-form > .form-actions {
+    margin: 0;
+    padding: 16px 30px 24px;
+    border-top: 1px solid var(--master-border-soft, var(--app-border-soft));
+}
+
+main.master-create-page .student-search-picker,
+.form-modal .student-search-picker {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+}
+
+main.master-create-page .student-search-picker select[data-student-source],
+.form-modal .student-search-picker select[data-student-source] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 1px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+main.master-create-page .student-search-picker input[type="search"],
+.form-modal .student-search-picker input[type="search"] {
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+}
+
+main.master-create-page .student-search-results,
+.form-modal .student-search-results {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    display: grid;
+    gap: 2px;
+    max-height: 220px;
+    padding: 6px;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid var(--master-border, var(--app-border));
+    border-radius: var(--app-radius);
+    box-shadow: 0 16px 28px rgba(15, 23, 42, .12);
+}
+
+main.master-create-page .student-search-results[hidden],
+.form-modal .student-search-results[hidden] {
+    display: none;
+}
+
+main.master-create-page .student-search-results button,
+main.master-create-page .student-search-results span,
+.form-modal .student-search-results button,
+.form-modal .student-search-results span {
+    display: block;
+    width: 100%;
+    min-height: 34px;
+    padding: 8px 10px;
+    color: var(--master-text, var(--app-text));
+    background: #ffffff;
+    border: 0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.3;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+main.master-create-page .student-search-results button:hover,
+.form-modal .student-search-results button:hover {
+    color: var(--master-primary, var(--app-primary));
+    background: var(--app-success-subtle);
+}
+
+main.master-create-page .fee-discount-student-field small,
+.form-modal .fee-discount-student-field small {
+    margin: 0;
+    color: var(--master-muted, var(--app-muted));
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+main.master-create-page.fee-discount-create-page .fee-discount-reason-field,
+.fee-discount-edit-modal .fee-discount-reason-field,
+main.master-create-page.fee-discount-create-page .fee-discount-simple-status,
+.fee-discount-edit-modal .fee-discount-simple-status {
+    grid-column: 1 / -1;
 }
 
 main.master-create-page .fee-type-simple-note,
@@ -774,28 +1085,75 @@ main.master-create-page .role-permission-grid input,
     accent-color: var(--app-primary);
 }
 
-main.master-create-page .switch-field,
-.form-modal .switch-field {
+main.master-create-page .master-create-form > label.switch-field,
+main.master-create-page .master-create-form label.switch-field,
+.academic-year-edit-modal .master-form label.switch-field,
+.education-unit-edit-modal .master-form label.switch-field,
+.class-edit-modal .master-form label.switch-field,
+.fee-type-edit-modal .master-form label.switch-field,
+.fee-discount-edit-modal .master-form label.switch-field,
+.data-role-edit-modal .master-form label.switch-field,
+.data-user-edit-modal .master-form label.switch-field {
     display: flex;
     align-items: center;
+    justify-content: flex-start;
     gap: 10px;
+    min-height: 40px;
+    width: fit-content;
+    max-width: 100%;
     color: var(--master-label, var(--app-label));
     font-size: 14px;
     font-weight: 500;
+    line-height: 1.35;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
-main.master-create-page .switch-field input,
-.form-modal .switch-field input {
+main.master-create-page .master-create-form label.switch-field > input[type="checkbox"],
+.academic-year-edit-modal .master-form label.switch-field > input[type="checkbox"],
+.education-unit-edit-modal .master-form label.switch-field > input[type="checkbox"],
+.class-edit-modal .master-form label.switch-field > input[type="checkbox"],
+.fee-type-edit-modal .master-form label.switch-field > input[type="checkbox"],
+.fee-discount-edit-modal .master-form label.switch-field > input[type="checkbox"],
+.data-role-edit-modal .master-form label.switch-field > input[type="checkbox"],
+.data-user-edit-modal .master-form label.switch-field > input[type="checkbox"] {
     width: 18px;
     height: 18px;
     flex: 0 0 18px;
+    margin: 0;
     accent-color: var(--app-primary);
+}
+
+main.master-create-page .master-create-form label.switch-field > span:empty,
+.academic-year-edit-modal .master-form label.switch-field > span:empty,
+.education-unit-edit-modal .master-form label.switch-field > span:empty,
+.class-edit-modal .master-form label.switch-field > span:empty,
+.fee-type-edit-modal .master-form label.switch-field > span:empty,
+.fee-discount-edit-modal .master-form label.switch-field > span:empty,
+.data-role-edit-modal .master-form label.switch-field > span:empty,
+.data-user-edit-modal .master-form label.switch-field > span:empty {
+    display: none;
 }
 
 main.master-create-page .form-actions {
     margin: 4px 0 0;
     padding-top: 16px;
     border-top: 1px solid var(--master-border-soft);
+}
+
+main.master-create-page .form-actions .button,
+.academic-year-edit-modal .form-actions .button,
+.education-unit-edit-modal .form-actions .button,
+.class-edit-modal .form-actions .button,
+.fee-type-edit-modal .form-actions .button,
+.fee-discount-edit-modal .form-actions .button,
+.data-role-edit-modal .form-actions .button,
+.data-user-edit-modal .form-actions .button {
+    height: 40px;
+    min-height: 40px;
+    border-radius: 8px;
+    box-shadow: none;
+    transform: none;
 }
 
 .academic-year-edit-modal .form-modal,
@@ -805,21 +1163,15 @@ main.master-create-page .form-actions {
 .fee-discount-edit-modal .form-modal,
 .data-role-edit-modal .form-modal,
 .data-user-edit-modal .form-modal {
-    width: min(100%, 720px);
+    width: min(calc(100vw - 48px), 860px);
     border-radius: var(--app-radius);
-}
-
-.academic-year-edit-modal .form-modal,
-.education-unit-edit-modal .form-modal,
-.class-edit-modal .form-modal {
-    width: min(100%, 560px);
 }
 
 .fee-type-edit-modal .form-modal,
 .fee-discount-edit-modal .form-modal,
 .data-role-edit-modal .form-modal,
 .data-user-edit-modal .form-modal {
-    width: min(100%, 720px);
+    width: min(calc(100vw - 48px), 860px);
 }
 
 .academic-year-edit-modal .master-form,
@@ -834,12 +1186,19 @@ main.master-create-page .form-actions {
     gap: 14px;
 }
 
-.fee-type-edit-modal .fee-type-simple,
-.fee-discount-edit-modal .fee-discount-simple {
+.fee-type-edit-modal .fee-type-simple {
     display: grid;
     grid-column: 1 / -1;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
+}
+
+.fee-discount-edit-modal .fee-discount-simple {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 20px 24px;
 }
 
 .data-role-edit-modal .role-permission-field,
@@ -950,6 +1309,35 @@ main.master-create-page .form-actions {
         min-width: 760px;
     }
 
+    main.master-flat-page .master-result-modal-backdrop,
+    main.master-create-page .master-result-modal-backdrop {
+        align-items: center;
+        padding: 16px;
+    }
+
+    main.master-flat-page .master-result-modal,
+    main.master-create-page .master-result-modal {
+        width: min(100%, 360px);
+        max-height: calc(100vh - 32px);
+        padding: 24px 18px 20px;
+    }
+
+    main.master-flat-page .master-result-icon,
+    main.master-create-page .master-result-icon {
+        width: 52px;
+        height: 52px;
+    }
+
+    main.master-flat-page .master-result-modal > strong,
+    main.master-create-page .master-result-modal > strong {
+        font-size: 17px;
+    }
+
+    main.master-flat-page .master-result-button,
+    main.master-create-page .master-result-button {
+        width: 100%;
+    }
+
     main.master-create-page .master-create-card {
         max-width: none;
     }
@@ -969,5 +1357,52 @@ main.master-create-page .form-actions {
     .fee-discount-edit-modal .fee-discount-simple,
     .data-role-edit-modal .role-permission-grid {
         grid-template-columns: 1fr;
+    }
+
+    main.master-create-page.fee-discount-create-page .fee-discount-simple,
+    .fee-discount-edit-modal .fee-discount-simple {
+        gap: 14px;
+        padding: 16px;
+    }
+
+    main.master-create-page.fee-discount-create-page .fee-discount-detail-section,
+    .fee-discount-edit-modal .fee-discount-detail-section {
+        padding-top: 14px;
+    }
+
+    main.master-create-page.fee-discount-create-page .fee-discount-detail-grid,
+    .fee-discount-edit-modal .fee-discount-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    main.master-create-page.fee-type-create-page .fee-type-simple-academic-year,
+    main.master-create-page.fee-type-create-page .fee-type-simple-class-scope,
+    main.master-create-page.fee-type-create-page .fee-type-simple-student-scope,
+    .fee-type-edit-modal .fee-type-simple-academic-year,
+    .fee-type-edit-modal .fee-type-simple-class-scope,
+    .fee-type-edit-modal .fee-type-simple-student-scope {
+        grid-column: auto;
+        grid-row: auto;
+    }
+
+    main.master-create-page.fee-discount-create-page .student-search-results,
+    .fee-discount-edit-modal .student-search-results {
+        max-height: 176px;
+    }
+
+    main.master-create-page.fee-discount-create-page .master-create-form > .form-actions,
+    .fee-discount-edit-modal .master-form > .form-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 8px;
+        padding: 14px 16px 16px;
+    }
+
+    main.master-create-page.fee-discount-create-page .master-create-form > .form-actions .button,
+    .fee-discount-edit-modal .master-form > .form-actions .button {
+        width: 100%;
+        min-width: 0;
+        padding-inline: 10px;
     }
 }

@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\AppSetting;
 use App\Models\Bill;
+use App\Models\BillSyncRun;
 use App\Models\EducationUnit;
-use App\Models\FeeType;
 use App\Models\GuardianTransferRequest;
 use App\Models\SchoolClass;
 use App\Models\Student;
@@ -85,6 +85,9 @@ class BillController extends Controller
         $perPage = $this->perPage($request);
         $students = $bills->summaries($year, $untilMonth, $filters, $perPage, $sort, $direction);
         $unitIds = $request->user()?->accessibleUnitIds();
+        $syncRunId = session('bill_sync_run_id') ?: $request->integer('sync_run');
+        $billSyncRun = $syncRunId ? BillSyncRun::find($syncRunId) : null;
+        $billSyncRun ??= BillSyncRun::whereIn('status', ['pending', 'processing'])->latest()->first();
 
         return view('finance.bills', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
@@ -98,6 +101,7 @@ class BillController extends Controller
             'selectedGuardianStudentId' => $selectedGuardianStudentId,
             'guardianBills' => $guardianBills,
             'guardianTransfers' => $guardianTransfers,
+            'billSyncRun' => $billSyncRun,
             'transferAccount' => $this->transferAccount(),
             'educationUnits' => EducationUnit::where('is_active', true)
                 ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
@@ -293,52 +297,35 @@ class BillController extends Controller
 
     public function sync(Request $request, BillService $bills)
     {
-        $this->extendSyncRuntime();
-
         [$year, $untilMonth] = $this->period($request);
         $academicYear = AcademicYear::where('is_active', true)->firstOrFail();
-        $filters = [
-            'unit_id' => $request->integer('unit_id') ?: null,
-            'class_id' => $request->integer('class_id') ?: null,
-            'student_id' => $request->integer('student_id') ?: null,
-            'fee_type_id' => $request->integer('fee_type_id') ?: null,
-            'status' => 'outstanding',
-            'student_search' => $request->string('student_search')->value() ?: null,
-            'student_name' => $request->string('student_name')->value() ?: null,
-            'nis' => $request->string('nis')->value() ?: null,
-        ];
+        $filters = $this->syncFilters($request);
         $this->applyUserScope($request, $filters);
 
-        $result = ['created' => 0, 'existing' => 0, 'skipped' => 0, 'refreshed' => 0];
-        $this->mergeResult($result, $bills->generateSppFromEntryUntil($academicYear, $year, $untilMonth, $filters));
-
-        $feeTypes = FeeType::where('is_active', true)
-            ->where('creates_bill', true)
-            ->when(isset($filters['unit_ids']) && is_array($filters['unit_ids']), fn ($query) => $query->whereIn('education_unit_id', $filters['unit_ids']))
-            ->when(isset($filters['unit_id']) && $filters['unit_id'], fn ($query) => $query->where('education_unit_id', $filters['unit_id']))
-            ->where(function ($query) {
-                $query->whereNull('payment_group')->orWhereNotIn('payment_group', ['spp', 'laundry']);
-            })
-            ->orderBy('name')
-            ->get();
-
-        $this->mergeResult($result, $bills->generateFeeTypes($academicYear, $feeTypes, $year, $untilMonth, $filters));
-        $this->mergeResult($result, $bills->refreshCurrentBillScope($academicYear, $filters));
-        app(AuditLogService::class)->recordOperation(
-            'bills.sync',
-            [
-                'year' => $year,
-                'until_month' => $untilMonth,
-                'academic_year_id' => $academicYear->id,
-                'filters' => $filters,
-            ] + $result,
-            afterValues: ['result' => $result],
-            request: $request,
-        );
+        $run = $bills->createSyncRun($academicYear, $year, $untilMonth, $filters, $request->user()?->id);
+        $message = match (true) {
+            $run->status === 'completed' && (bool) (($run->phase_data ?? [])['no_new_bills'] ?? false) => $run->message ?: 'Semua tagihan sudah tersinkron. Tidak ada tagihan baru untuk dibuat.',
+            $run->wasRecentlyCreated => 'Sinkron tagihan dimulai. Progress akan berjalan bertahap.',
+            default => 'Sinkron tagihan sedang berjalan. Silakan pantau progress.',
+        };
 
         return redirect()
-            ->route('finance.bills.index', $request->only(['year', 'until_month', 'unit_id', 'class_id', 'student_id', 'fee_type_id', 'student_search', 'student_name', 'nis', 'search', 'per_page', 'sort', 'direction']))
-            ->with('success', 'Sinkron tagihan selesai. Baru: '.number_format($result['created'], 0, ',', '.').', sudah ada: '.number_format($result['existing'], 0, ',', '.').', dilewati: '.number_format($result['skipped'], 0, ',', '.').', diperbarui: '.number_format($result['refreshed'], 0, ',', '.').'.');
+            ->route('finance.bills.index', $request->only(['year', 'until_month', 'unit_id', 'class_id', 'student_id', 'fee_type_id', 'student_search', 'student_name', 'nis', 'search', 'per_page', 'sort', 'direction']) + ['sync_run' => $run->id])
+            ->with('success', $message)
+            ->with('bill_sync_run_id', $run->id);
+    }
+
+    public function syncStatus(BillSyncRun $billSyncRun)
+    {
+        return response()->json($this->syncRunPayload($billSyncRun->refresh()));
+    }
+
+    public function syncProgress(Request $request, BillSyncRun $billSyncRun, BillService $bills)
+    {
+        $run = $bills->processSyncRun($billSyncRun);
+        $this->recordSyncAuditIfComplete($request, $run);
+
+        return response()->json($this->syncRunPayload($run));
     }
 
     private function applyUserScope(Request $request, array &$filters): void
@@ -381,6 +368,68 @@ class BillController extends Controller
         if (isset($addition['updated'])) {
             $base['refreshed'] += (int) $addition['updated'];
         }
+    }
+
+    private function syncFilters(Request $request): array
+    {
+        return [
+            'unit_id' => $request->integer('unit_id') ?: null,
+            'class_id' => $request->integer('class_id') ?: null,
+            'student_id' => $request->integer('student_id') ?: null,
+            'fee_type_id' => $request->integer('fee_type_id') ?: null,
+            'status' => 'outstanding',
+            'student_search' => $request->string('student_search')->value() ?: null,
+            'student_name' => $request->string('student_name')->value() ?: null,
+            'nis' => $request->string('nis')->value() ?: null,
+        ];
+    }
+
+    private function syncRunPayload(BillSyncRun $run): array
+    {
+        return [
+            'id' => $run->id,
+            'status' => $run->status,
+            'phase' => $run->phase,
+            'percent' => (int) $run->percent,
+            'total_items' => (int) $run->total_items,
+            'processed_items' => (int) $run->processed_items,
+            'created_items' => (int) $run->created_items,
+            'existing_items' => (int) $run->existing_items,
+            'skipped_items' => (int) $run->skipped_items,
+            'refreshed_items' => (int) $run->refreshed_items,
+            'failed_items' => (int) $run->failed_items,
+            'message' => $run->message,
+            'error_message' => $run->error_message,
+        ];
+    }
+
+    private function recordSyncAuditIfComplete(Request $request, BillSyncRun $run): void
+    {
+        if ($run->status !== 'completed' || $run->audited_at) {
+            return;
+        }
+
+        $result = [
+            'created' => (int) $run->created_items,
+            'existing' => (int) $run->existing_items,
+            'skipped' => (int) $run->skipped_items,
+            'refreshed' => (int) $run->refreshed_items,
+            'failed' => (int) $run->failed_items,
+        ];
+
+        app(AuditLogService::class)->recordOperation(
+            'bills.sync',
+            [
+                'year' => (int) $run->year,
+                'until_month' => (int) $run->until_month,
+                'academic_year_id' => $run->academic_year_id,
+                'filters' => $run->filters ?? [],
+            ] + $result,
+            afterValues: ['result' => $result, 'sync_run_id' => $run->id],
+            request: $request,
+        );
+
+        $run->forceFill(['audited_at' => now()])->save();
     }
 
     private function extendSyncRuntime(): void

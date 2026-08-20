@@ -1,0 +1,368 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Master Data - MA'WA CENTER</title>
+    <link rel="preload" as="style" href="http://127.0.0.1:8000/build/assets/app-Bz1p1Ytk.css" /><link rel="modulepreload" as="script" href="http://127.0.0.1:8000/build/assets/app-Bh-Pgd6I.js" /><link rel="stylesheet" href="http://127.0.0.1:8000/build/assets/app-Bz1p1Ytk.css" /><script type="module" src="http://127.0.0.1:8000/build/assets/app-Bh-Pgd6I.js"></script>    </head>
+<body class="master-data-body">
+<div class="app-shell">
+    <aside class="sidebar" data-sidebar>
+    <div class="brand"><div class="brand-mark"><img src="http://localhost/images/mawa-center-mark.png" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
+    <nav class="sidebar-nav">
+                <a href="http://localhost" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>Dashboard</span></a>
+                        <div class="nav-group nested-nav ">
+            <button type="button" class="nav-item nav-parent " data-nav-toggle aria-expanded="false"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Manajemen Siswa</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                                <a href="http://localhost/manajemen-siswa/data-siswa" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Data Siswa</span></a>
+                <a href="http://localhost/manajemen-siswa/kualitas-data" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Kualitas Data</span></a>
+                                                <a href="http://localhost/manajemen-siswa/rapikan-identitas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/></svg><span>Rapikan Identitas</span></a>
+                                                <a href="http://localhost/manajemen-siswa/pindah-kelas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4-4m-4 4 4 4"/></svg><span>Pindah Kelas</span></a>
+                <a href="http://localhost/manajemen-siswa/naik-kelas" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m0 0-5 5m5-5 5 5"/></svg><span>Naik Kelas</span></a>
+                                                <a href="http://localhost/manajemen-siswa/alumni" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Data Alumni</span></a>
+                            </div>
+        </div>
+                        <a href="http://localhost/keuangan/pembayaran" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h2"/></svg><span>Pembayaran</span></a>
+                        <a href="http://localhost/keuangan/verifikasi-transfer" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/></svg><span>Verifikasi Transfer</span></a>
+                        <a href="http://localhost/keuangan/tagihan" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>Tagihan</span></a>
+                        <div class="nav-group nested-nav ">
+            <button type="button" class="nav-item nav-parent " data-nav-toggle aria-expanded="false"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Laporan</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                <a href="http://localhost/laporan/transaksi" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2"/></svg><span>Transaksi Pembayaran</span></a>
+                <a href="http://localhost/laporan/spp-perbulan" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>SPP Perbulan</span></a>
+                <a href="http://localhost/laporan/spp-tahun-pelajaran" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>SPP Pertahun</span></a>
+                <a href="http://localhost/laporan/rekap-unit" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Rekap Per Unit</span></a>
+            </div>
+        </div>
+                        <div class="nav-group master-nav open">
+            <button type="button" class="nav-item nav-parent active" data-master-nav-toggle aria-expanded="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Data Master</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+            <div class="nav-submenu">
+                                    <a href="http://localhost/master-data?tab=academic-years" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Tahun Pelajaran</span></a>
+                                    <a href="http://localhost/master-data?tab=education-units" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg><span>Unit Pendidikan</span></a>
+                                    <a href="http://localhost/master-data?tab=classes" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v6c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 11v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg><span>Kelas</span></a>
+                                    <a href="http://localhost/master-data?tab=fee-types" class="active"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg><span>Kategori Pembayaran</span></a>
+                                    <a href="http://localhost/master-data?tab=fee-discounts" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h13v2"/><path d="M15 11h7v5h-7a2.5 2.5 0 0 1 0-5Z"/></svg><span>Keringanan Biaya</span></a>
+                                    <a href="http://localhost/master-data?tab=data-roles" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.5 3 8.1 7 10 4-1.9 7-5.5 7-10V6l-7-3Z"/><path d="M9 12l2 2 4-5"/></svg><span>Data Role</span></a>
+                                    <a href="http://localhost/master-data?tab=data-users" class=""><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/></svg><span>Data User</span></a>
+                            </div>
+        </div>
+                        <a href="http://localhost/pengaturan" class="nav-item "><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/></svg><span>Pengaturan</span><svg class="icon nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>
+            </nav>
+</aside>
+    <div class="sidebar-overlay" data-sidebar-overlay></div>
+
+    <div class="main-panel">
+        <header class="topbar">
+            <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar" title="Buka atau tutup sidebar"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+            <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>2026/2027</strong></div>
+            <div class="topbar-spacer"></div>
+            <button class="icon-button notification-button" type="button" aria-label="Notifikasi" title="Notifikasi"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span></span></button>
+            <form method="POST" action="http://localhost/logout" class="logout-form">
+    <input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off">    <button class="icon-button logout-button" type="submit" aria-label="Keluar" title="Keluar"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></svg></button>
+</form>
+        </header>
+        <main class="master-flat-page master-fee-type-page">
+                                    
+                                                <section class="student-workspace master-flat-workspace master-filter-card master-fee-filter-card   ">
+                <div class="student-flat-header">
+                                        <div class="master-sample-heading">
+                        <h1>Kategori Pembayaran</h1>
+                        <p>Atur SPP, daftar ulang, laundry, dan pembayaran lainnya.</p>
+                    </div>
+                                                            <div class="student-title-actions">
+                        <a href="http://localhost/master-data/create?tab=fee-types" class="button master-primary-add-button"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Tambah</a>
+                    </div>
+                                    </div>
+            </section>
+            
+                        
+                        <section class="card master-card student-data-card master-flat-card   fee-type-table-card   ">
+                
+                                                                            <form method="GET" action="http://localhost/master-data" class="master-data-filter-panel master-fee-filter-panel">
+                        <input type="hidden" name="tab" value="fee-types">
+                        <input type="hidden" name="per_page" value="10">
+                        <input type="hidden" name="search" value="">
+                        <input type="hidden" name="sort" value="">
+                        <input type="hidden" name="direction" value="">
+
+                                                    <label><span>Unit Pendidikan</span><select name="unit_id" data-student-filter-unit aria-label="Filter unit pendidikan"><option value="">semua</option><option value="2" >PAUD</option><option value="3" >RA</option><option value="4" >MI</option><option value="5" >MTs</option><option value="6" >MA</option><option value="7" >ULYA</option><option value="8" >PONPES</option></select></label>
+                                                                            <label><span>Kelas</span><select name="class_id" data-student-filter-class aria-label="Filter kelas"><option value="">semua</option><option value="3" data-unit-id="2" >KELOMPOK BERMAIN</option><option value="138" data-unit-id="3" >A1 BUNG HATTA</option><option value="139" data-unit-id="3" >A2 CUT MEUTIA</option><option value="140" data-unit-id="3" >A3 PATTIMURA</option><option value="141" data-unit-id="3" >A4 RASUNA SAID</option><option value="142" data-unit-id="3" >B1 HASANUDDIN</option><option value="143" data-unit-id="3" >B2 CUT NYAK DIEN</option><option value="144" data-unit-id="3" >B3 DIPONEGORO</option><option value="145" data-unit-id="3" >B4 DEWI SARTIKA</option><option value="146" data-unit-id="3" >B5 TEUKU UMAR</option><option value="147" data-unit-id="3" >B6 KARTINI</option><option value="148" data-unit-id="3" >B7 KI HAJAR</option><option value="149" data-unit-id="3" >KELUAR</option><option value="85" data-unit-id="4" >1A</option><option value="86" data-unit-id="4" >1B</option><option value="94" data-unit-id="4" >2A.1</option><option value="95" data-unit-id="4" >2A.2</option><option value="97" data-unit-id="4" >2B.1</option><option value="98" data-unit-id="4" >2B.2</option><option value="87" data-unit-id="4" >3A</option><option value="91" data-unit-id="4" >3B</option><option value="88" data-unit-id="4" >4A</option><option value="92" data-unit-id="4" >4B</option><option value="89" data-unit-id="4" >5A</option><option value="93" data-unit-id="4" >5B</option><option value="90" data-unit-id="4" >6A</option><option value="96" data-unit-id="4" >6B</option><option value="99" data-unit-id="5" >7A</option><option value="100" data-unit-id="5" >7B</option><option value="101" data-unit-id="5" >7C</option><option value="102" data-unit-id="5" >7D</option><option value="103" data-unit-id="5" >7E</option><option value="104" data-unit-id="5" >8A</option><option value="105" data-unit-id="5" >8B</option><option value="106" data-unit-id="5" >8C</option><option value="107" data-unit-id="5" >8D</option><option value="108" data-unit-id="5" >8E</option><option value="109" data-unit-id="5" >8F</option><option value="110" data-unit-id="5" >9A</option><option value="111" data-unit-id="5" >9B</option><option value="112" data-unit-id="5" >9C</option><option value="113" data-unit-id="5" >9D</option><option value="114" data-unit-id="5" >9E</option><option value="115" data-unit-id="5" >9F</option><option value="116" data-unit-id="5" >LULUSAN 2024/2025</option><option value="78" data-unit-id="6" >10A</option><option value="79" data-unit-id="6" >10B</option><option value="81" data-unit-id="6" >11A</option><option value="80" data-unit-id="6" >11B</option><option value="82" data-unit-id="6" >12A</option><option value="83" data-unit-id="6" >12B</option><option value="84" data-unit-id="6" >LULUSAN 2024/2025</option><option value="77" data-unit-id="7" >12C</option><option value="133" data-unit-id="8" >10A</option><option value="134" data-unit-id="8" >10B</option><option value="136" data-unit-id="8" >11A</option><option value="135" data-unit-id="8" >11B</option><option value="128" data-unit-id="8" >12A</option><option value="129" data-unit-id="8" >12B</option><option value="137" data-unit-id="8" >12C</option><option value="117" data-unit-id="8" >7A</option><option value="118" data-unit-id="8" >7B</option><option value="119" data-unit-id="8" >7D</option><option value="120" data-unit-id="8" >7E</option><option value="121" data-unit-id="8" >8A</option><option value="122" data-unit-id="8" >8B</option><option value="123" data-unit-id="8" >8D</option><option value="124" data-unit-id="8" >8E</option><option value="125" data-unit-id="8" >9A</option><option value="126" data-unit-id="8" >9B</option><option value="127" data-unit-id="8" >9D</option><option value="132" data-unit-id="8" >9E</option><option value="131" data-unit-id="8" >BANAT SALAF</option><option value="130" data-unit-id="8" >BANIN SALAF</option></select></label>
+                                                                            <label><span>Tahun Pelajaran</span><select name="year_id" aria-label="Filter tahun pelajaran"><option value="">semua</option><option value="2" selected>2026/2027</option><option value="3" >2025/2026</option></select></label>
+                                                                                                        <label><span>Status Data</span><select name="status" aria-label="Filter status data"><option value="">Semua Status</option><option value="active" selected>Aktif</option><option value="inactive" >Nonaktif</option></select></label>
+                                                                        <div class="master-data-filter-actions">
+                            <button class="button master-data-search-button">Terapkan</button>
+                            <a href="http://localhost/master-data?tab=fee-types" class="button master-data-reset-button">Reset</a>
+                        </div>
+                    </form>
+                    
+                    <div class="master-table-toolbar">
+                        <form method="GET" action="http://localhost/master-data" class="master-data-length">
+                                                        <input type="hidden" name="tab" value="fee-types">
+                            <label>Tampilkan
+                                <select name="per_page" onchange="this.form.submit()" aria-label="Jumlah data yang ditampilkan">
+                                                                            <option value="10" selected>10</option>
+                                                                            <option value="25" >25</option>
+                                                                            <option value="50" >50</option>
+                                                                            <option value="100" >100</option>
+                                                                            <option value="500" >500</option>
+                                                                        <option value="all" >Semua</option>
+                                </select>
+                                kategori
+                            </label>
+                        </form>
+                        <form method="GET" action="http://localhost/master-data" class="master-table-search">
+                                                        <input type="hidden" name="tab" value="fee-types">
+                            <label>
+                                <span>Cari data</span>
+                                <span class="master-table-search-input"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" name="search" value="" placeholder="Cari nama pembayaran..." aria-label="Cari nama pembayaran..."></span>
+                            </label>
+                        </form>
+                    </div>
+                                                <div class="table-wrap"><table class="data-table master-data-table     fee-type-table   ">
+                                            <colgroup>
+                            <col class="fee-type-col-no">
+                            <col class="fee-type-col-name">
+                            <col class="fee-type-col-unit">
+                            <col class="fee-type-col-class">
+                            <col class="fee-type-col-amount">
+                            <col class="fee-type-col-status">
+                            <col class="fee-type-col-actions">
+                        </colgroup>
+                        <thead><tr><th>No</th><th class=" master-sortable-heading">
+    <a class="master-sort-link" href="http://localhost/master-data?tab=fee-types&amp;sort=name&amp;direction=asc" aria-label="Urutkan Nama Pembayaran naik" title="Urutkan Nama Pembayaran naik">
+        <span>Nama Pembayaran</span>
+        <span class="master-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/></svg></span>
+            </a>
+</th>
+<th class=" master-sortable-heading">
+    <a class="master-sort-link" href="http://localhost/master-data?tab=fee-types&amp;sort=unit&amp;direction=asc" aria-label="Urutkan Unit naik" title="Urutkan Unit naik">
+        <span>Unit</span>
+        <span class="master-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/></svg></span>
+            </a>
+</th>
+<th class=" master-sortable-heading">
+    <a class="master-sort-link" href="http://localhost/master-data?tab=fee-types&amp;sort=class&amp;direction=asc" aria-label="Urutkan Tingkat naik" title="Urutkan Tingkat naik">
+        <span>Tingkat</span>
+        <span class="master-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/></svg></span>
+            </a>
+</th>
+<th class=" master-sortable-heading">
+    <a class="master-sort-link" href="http://localhost/master-data?tab=fee-types&amp;sort=amount&amp;direction=asc" aria-label="Urutkan Nominal naik" title="Urutkan Nominal naik">
+        <span>Nominal</span>
+        <span class="master-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/></svg></span>
+            </a>
+</th>
+<th class=" master-sortable-heading">
+    <a class="master-sort-link" href="http://localhost/master-data?tab=fee-types&amp;sort=is_active&amp;direction=asc" aria-label="Urutkan Status naik" title="Urutkan Status naik">
+        <span>Status</span>
+        <span class="master-sort-indicator" aria-hidden="true"><svg class="icon " viewBox="0 0 24 24" aria-hidden="true"><path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/></svg></span>
+            </a>
+</th>
+<th>Aksi</th></tr></thead>
+                        <tbody><tr><td>1</td><td><strong>SPP</strong></td><td>PAUD</td><td>Semua Tingkat</td><td><strong>Rp 50.000</strong></td><td><span class="status success">Aktif</span></td><td><div class="table-actions">
+        <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='{"id":3,"education_unit_id":2,"school_class_id":null,"class_level":null,"student_scope":"all","academic_year_id":2,"payment_group":"spp","code":"SPP","name":"SPP","amount":50000,"period":"Bulanan","creates_bill":true,"is_active":true,"created_at":"2026-07-16T02:31:49.000000Z","updated_at":"2026-07-16T02:31:49.000000Z","education_unit":{"id":2,"code":"PAUD","name":"PAUD MAMBAUL HIKMAH","is_active":true,"created_at":"2026-07-16T02:30:37.000000Z","updated_at":"2026-07-16T02:30:37.000000Z"},"school_class":null,"academic_year":{"id":2,"name":"2026\/2027","start_date":"2026-06-30T17:00:00.000000Z","end_date":"2026-07-29T17:00:00.000000Z","is_active":true,"created_at":"2026-07-14T15:35:55.000000Z","updated_at":"2026-07-14T15:35:55.000000Z"}}' data-update-action="http://localhost/master-data/fee-types/3">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </button>
+            <form method="POST" action="http://localhost/master-data/fee-types/3" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>2</td><td><strong>SPP</strong></td><td>RA</td><td>Semua Tingkat</td><td><strong>Rp 70.000</strong></td><td><span class="status success">Aktif</span></td><td><div class="table-actions">
+        <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='{"id":5,"education_unit_id":3,"school_class_id":null,"class_level":null,"student_scope":"all","academic_year_id":2,"payment_group":"spp","code":"SPP-2","name":"SPP","amount":70000,"period":"Bulanan","creates_bill":true,"is_active":true,"created_at":"2026-07-18T06:42:59.000000Z","updated_at":"2026-07-18T06:42:59.000000Z","education_unit":{"id":3,"code":"RA","name":"RA MAMBAUL HIKMAH","is_active":true,"created_at":"2026-07-17T04:17:11.000000Z","updated_at":"2026-07-17T04:17:11.000000Z"},"school_class":null,"academic_year":{"id":2,"name":"2026\/2027","start_date":"2026-06-30T17:00:00.000000Z","end_date":"2026-07-29T17:00:00.000000Z","is_active":true,"created_at":"2026-07-14T15:35:55.000000Z","updated_at":"2026-07-14T15:35:55.000000Z"}}' data-update-action="http://localhost/master-data/fee-types/5">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </button>
+            <form method="POST" action="http://localhost/master-data/fee-types/5" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>3</td><td><strong>SPP</strong></td><td>MI</td><td>Semua Tingkat</td><td><strong>Rp 60.000</strong></td><td><span class="status success">Aktif</span></td><td><div class="table-actions">
+        <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='{"id":6,"education_unit_id":4,"school_class_id":null,"class_level":null,"student_scope":"all","academic_year_id":2,"payment_group":"spp","code":"SPP-3","name":"SPP","amount":60000,"period":"Bulanan","creates_bill":true,"is_active":true,"created_at":"2026-07-18T06:43:10.000000Z","updated_at":"2026-07-18T06:43:10.000000Z","education_unit":{"id":4,"code":"MI","name":"MI MAMBAUL HIKMAH","is_active":true,"created_at":"2026-07-17T04:17:20.000000Z","updated_at":"2026-07-17T04:17:20.000000Z"},"school_class":null,"academic_year":{"id":2,"name":"2026\/2027","start_date":"2026-06-30T17:00:00.000000Z","end_date":"2026-07-29T17:00:00.000000Z","is_active":true,"created_at":"2026-07-14T15:35:55.000000Z","updated_at":"2026-07-14T15:35:55.000000Z"}}' data-update-action="http://localhost/master-data/fee-types/6">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </button>
+            <form method="POST" action="http://localhost/master-data/fee-types/6" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>4</td><td><strong>DAFTAR ULANG KELAS 7</strong></td><td>MTs</td><td>Kelas 7</td><td><strong>Rp 1.500.000</strong></td><td><span class="status success">Aktif</span></td><td><div class="table-actions">
+        <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='{"id":4,"education_unit_id":5,"school_class_id":null,"class_level":"7","student_scope":"all","academic_year_id":2,"payment_group":"daftar-ulang","code":"DAFTAR-ULANG-KELAS-7","name":"DAFTAR ULANG KELAS 7","amount":1500000,"period":"Sekali Bayar","creates_bill":true,"is_active":true,"created_at":"2026-07-18T03:43:45.000000Z","updated_at":"2026-07-18T03:43:45.000000Z","education_unit":{"id":5,"code":"MTs","name":"MTs MAMBAUL HIKMAH","is_active":true,"created_at":"2026-07-17T04:17:34.000000Z","updated_at":"2026-07-17T04:17:34.000000Z"},"school_class":null,"academic_year":{"id":2,"name":"2026\/2027","start_date":"2026-06-30T17:00:00.000000Z","end_date":"2026-07-29T17:00:00.000000Z","is_active":true,"created_at":"2026-07-14T15:35:55.000000Z","updated_at":"2026-07-14T15:35:55.000000Z"}}' data-update-action="http://localhost/master-data/fee-types/4">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </button>
+            <form method="POST" action="http://localhost/master-data/fee-types/4" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>5</td><td><strong>DAFTAR ULANG KELAS 8</strong></td><td>MTs</td><td>Kelas 8</td><td><strong>Rp 475.000</strong></td><td><span class="status success">Aktif</span></td><td><div class="table-actions">
+        <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='{"id":10,"education_unit_id":5,"school_class_id":null,"class_level":"8","student_scope":"all","academic_year_id":2,"payment_group":"daftar-ulang","code":"DAFTAR-ULANG-KELAS-8","name":"DAFTAR ULANG KELAS 8","amount":475000,"period":"Sekali Bayar","creates_bill":true,"is_active":true,"created_at":"2026-07-21T06:49:54.000000Z","updated_at":"2026-07-21T06:49:54.000000Z","education_unit":{"id":5,"code":"MTs","name":"MTs MAMBAUL HIKMAH","is_active":true,"created_at":"2026-07-17T04:17:34.000000Z","updated_at":"2026-07-17T04:17:34.000000Z"},"school_class":null,"academic_year":{"id":2,"name":"2026\/2027","start_date":"2026-06-30T17:00:00.000000Z","end_date":"2026-07-29T17:00:00.000000Z","is_active":true,"created_at":"2026-07-14T15:35:55.000000Z","updated_at":"2026-07-14T15:35:55.000000Z"}}' data-update-action="http://localhost/master-data/fee-types/10">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </button>
+            <form method="POST" action="http://localhost/master-data/fee-types/10" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>6</td><td><strong>DAFTAR ULANG KELAS 9</strong></td><td>MTs</td><td>Kelas 9</td><td><strong>Rp 1.100.000</strong></td><td><span class="status success">Aktif</span></td><td><div class="table-actions">
+        <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='{"id":11,"education_unit_id":5,"school_class_id":null,"class_level":"9","student_scope":"all","academic_year_id":2,"payment_group":"daftar-ulang","code":"DAFTAR-ULANG-KELAS-9","name":"DAFTAR ULANG KELAS 9","amount":1100000,"period":"Sekali Bayar","creates_bill":true,"is_active":true,"created_at":"2026-07-21T06:50:31.000000Z","updated_at":"2026-07-21T06:50:31.000000Z","education_unit":{"id":5,"code":"MTs","name":"MTs MAMBAUL HIKMAH","is_active":true,"created_at":"2026-07-17T04:17:34.000000Z","updated_at":"2026-07-17T04:17:34.000000Z"},"school_class":null,"academic_year":{"id":2,"name":"2026\/2027","start_date":"2026-06-30T17:00:00.000000Z","end_date":"2026-07-29T17:00:00.000000Z","is_active":true,"created_at":"2026-07-14T15:35:55.000000Z","updated_at":"2026-07-14T15:35:55.000000Z"}}' data-update-action="http://localhost/master-data/fee-types/11">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </button>
+            <form method="POST" action="http://localhost/master-data/fee-types/11" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>7</td><td><strong>SPP</strong></td><td>MTs</td><td>Semua Tingkat</td><td><strong>Rp 60.000</strong></td><td><span class="status success">Aktif</span></td><td><div class="table-actions">
+        <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='{"id":7,"education_unit_id":5,"school_class_id":null,"class_level":null,"student_scope":"all","academic_year_id":2,"payment_group":"spp","code":"SPP-4","name":"SPP","amount":60000,"period":"Bulanan","creates_bill":true,"is_active":true,"created_at":"2026-07-21T06:10:31.000000Z","updated_at":"2026-07-21T06:10:31.000000Z","education_unit":{"id":5,"code":"MTs","name":"MTs MAMBAUL HIKMAH","is_active":true,"created_at":"2026-07-17T04:17:34.000000Z","updated_at":"2026-07-17T04:17:34.000000Z"},"school_class":null,"academic_year":{"id":2,"name":"2026\/2027","start_date":"2026-06-30T17:00:00.000000Z","end_date":"2026-07-29T17:00:00.000000Z","is_active":true,"created_at":"2026-07-14T15:35:55.000000Z","updated_at":"2026-07-14T15:35:55.000000Z"}}' data-update-action="http://localhost/master-data/fee-types/7">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </button>
+            <form method="POST" action="http://localhost/master-data/fee-types/7" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>8</td><td><strong>SPP</strong></td><td>MA</td><td>Semua Tingkat</td><td><strong>Rp 60.000</strong></td><td><span class="status success">Aktif</span></td><td><div class="table-actions">
+        <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='{"id":8,"education_unit_id":6,"school_class_id":null,"class_level":null,"student_scope":"all","academic_year_id":2,"payment_group":"spp","code":"SPP-5","name":"SPP","amount":60000,"period":"Bulanan","creates_bill":true,"is_active":true,"created_at":"2026-07-21T06:10:42.000000Z","updated_at":"2026-07-21T06:10:42.000000Z","education_unit":{"id":6,"code":"MA","name":"MA MAMBAUL HIKMAH","is_active":true,"created_at":"2026-07-17T04:17:44.000000Z","updated_at":"2026-07-17T04:17:44.000000Z"},"school_class":null,"academic_year":{"id":2,"name":"2026\/2027","start_date":"2026-06-30T17:00:00.000000Z","end_date":"2026-07-29T17:00:00.000000Z","is_active":true,"created_at":"2026-07-14T15:35:55.000000Z","updated_at":"2026-07-14T15:35:55.000000Z"}}' data-update-action="http://localhost/master-data/fee-types/8">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </button>
+            <form method="POST" action="http://localhost/master-data/fee-types/8" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>9</td><td><strong>SPP</strong></td><td>ULYA</td><td>Semua Tingkat</td><td><strong>Rp 50.000</strong></td><td><span class="status success">Aktif</span></td><td><div class="table-actions">
+        <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='{"id":12,"education_unit_id":7,"school_class_id":null,"class_level":null,"student_scope":"all","academic_year_id":2,"payment_group":"spp","code":"SPP-7","name":"SPP","amount":50000,"period":"Bulanan","creates_bill":true,"is_active":true,"created_at":"2026-07-21T06:56:49.000000Z","updated_at":"2026-07-21T06:56:49.000000Z","education_unit":{"id":7,"code":"ULYA","name":"KESETARAAN ULYA MAMBAUL HIKMAH","is_active":true,"created_at":"2026-07-17T04:17:57.000000Z","updated_at":"2026-07-17T04:17:57.000000Z"},"school_class":null,"academic_year":{"id":2,"name":"2026\/2027","start_date":"2026-06-30T17:00:00.000000Z","end_date":"2026-07-29T17:00:00.000000Z","is_active":true,"created_at":"2026-07-14T15:35:55.000000Z","updated_at":"2026-07-14T15:35:55.000000Z"}}' data-update-action="http://localhost/master-data/fee-types/12">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </button>
+            <form method="POST" action="http://localhost/master-data/fee-types/12" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr><tr><td>10</td><td><strong>DAFTAR ULANG PONDOK</strong></td><td>PONPES</td><td>Semua Tingkat</td><td><strong>Rp 600.000</strong></td><td><span class="status success">Aktif</span></td><td><div class="table-actions">
+        <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='{"id":13,"education_unit_id":8,"school_class_id":null,"class_level":null,"student_scope":"returning","academic_year_id":2,"payment_group":"daftar-ulang","code":"DAFTAR-ULANG-PONDOK","name":"DAFTAR ULANG PONDOK","amount":600000,"period":"Sekali Bayar","creates_bill":true,"is_active":true,"created_at":"2026-07-21T07:01:26.000000Z","updated_at":"2026-07-21T09:52:45.000000Z","education_unit":{"id":8,"code":"PONPES","name":"PONPES MAMBAUL HIKMAH","is_active":true,"created_at":"2026-07-17T04:18:06.000000Z","updated_at":"2026-07-17T04:18:06.000000Z"},"school_class":null,"academic_year":{"id":2,"name":"2026\/2027","start_date":"2026-06-30T17:00:00.000000Z","end_date":"2026-07-29T17:00:00.000000Z","is_active":true,"created_at":"2026-07-14T15:35:55.000000Z","updated_at":"2026-07-14T15:35:55.000000Z"}}' data-update-action="http://localhost/master-data/fee-types/13">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    </button>
+            <form method="POST" action="http://localhost/master-data/fee-types/13" onsubmit="return confirm('Hapus data ini? Data yang dihapus tidak dapat dikembalikan.')"><input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="DELETE"><button class="icon-button delete-button" title="Hapus" aria-label="Hapus data"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></form>
+    </div>
+</td></tr></tbody>
+                                    </table></div>
+                                    <div class="master-data-pagination-footer">
+                        <span>Menampilkan 1-10 dari 12 kategori</span>
+                                                                                <nav class="master-pagination" aria-label="Navigasi halaman Kategori Pembayaran">
+                                                                    <span class="master-page-link is-disabled" aria-disabled="true">Sebelumnya</span>
+                                
+                                
+                                                                                                            <span class="master-page-link is-number is-active" aria-current="page">1</span>
+                                                                                                                                                <a class="master-page-link is-number" href="http://localhost/master-data?tab=fee-types&amp;page=2" aria-label="Halaman 2">2</a>
+                                                                    
+                                
+                                                                    <a class="master-page-link" href="http://localhost/master-data?tab=fee-types&amp;page=2" rel="next">Berikutnya</a>
+                                                            </nav>
+                                            </div>
+                            </section>
+                                            </main>
+        <footer class="app-footer" aria-label="Copyright">
+    &copy; 2026 Ma'wa Center
+</footer>
+    </div>
+</div>
+
+<div class="modal-backdrop     fee-type-edit-modal   " data-modal>
+    <div class="form-modal">
+        <div class="form-modal-header"><div><h2 data-modal-title>Edit Data</h2></div><button class="icon-button" type="button" data-modal-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
+        <form method="POST" action="http://localhost/master-data/fee-types" data-master-form data-store-action="http://localhost/master-data/fee-types" class="master-form">
+            <input type="hidden" name="_token" value="dl9ttY2WB7wTvXWXCz7cMjPSjE3ZAkIKL8CV8MNo" autocomplete="off"> <input type="hidden" name="_method" value="POST" data-form-method>
+            <div class="fee-type-simple span-2">
+        <label class="fee-type-simple-field">
+            <span>Nama Pembayaran</span>
+            <input name="name" required value="" placeholder="" autocomplete="off">
+        </label>
+
+        <label class="fee-type-simple-field fee-type-simple-short">
+            <span>Kategori Pembayaran</span>
+            <select name="payment_group" required data-fee-category>
+                <option value="spp" selected>SPP</option>
+                <option value="daftar-ulang" >Daftar Ulang</option>
+                <option value="laundry" >Laundry</option>
+                <option value="lain-lain" >Lain-lain</option>
+            </select>
+        </label>
+
+        <label class="fee-type-simple-field fee-type-simple-short">
+            <span>Nominal</span>
+            <input type="text" inputmode="numeric" name="amount" required value="" placeholder="0" data-currency-input>
+        </label>
+
+        <label class="fee-type-simple-field fee-type-simple-short">
+            <span>Unit Pendidikan</span>
+            <select name="education_unit_id" required data-student-unit>
+                <option value="">Pilih Unit</option>
+                <option value="2" >PAUD</option><option value="3" >RA</option><option value="4" >MI</option><option value="5" >MTs</option><option value="6" >MA</option><option value="7" >ULYA</option><option value="8" >PONPES</option>            </select>
+        </label>
+
+        <label class="fee-type-simple-field fee-type-simple-short">
+            <span>Tahun Pelajaran</span>
+            <select name="academic_year_id" required>
+                <option value="2" selected>2026/2027</option><option value="3" >2025/2026</option>            </select>
+        </label>
+
+        <div class="fee-type-simple-field">
+            <span>Berlaku untuk</span>
+            <select name="class_scope" data-registration-scope-select>
+                <option value="all" selected>Semua Tingkat</option>
+                <option value="level" >Tingkat Tertentu</option>
+            </select>
+            <small data-fee-scope-help>Kategori akan berlaku untuk seluruh tingkat pada unit yang dipilih.</small>
+        </div>
+
+        <label class="fee-type-simple-field fee-type-simple-student-scope">
+            <span>Sasaran Siswa</span>
+            <select name="student_scope">
+                                    <option value="all" selected>Semua Siswa</option>
+                                    <option value="returning" >Siswa Lama</option>
+                                    <option value="new_transfer" >Siswa Baru/Pindahan</option>
+                            </select>
+        </label>
+
+        <label class="fee-type-simple-field fee-type-simple-short" data-registration-level-field hidden>
+            <span>Tingkat</span>
+            <select name="class_level" data-registration-level-select>
+                <option value="">Pilih Tingkat</option>
+                                    <option value="KELOMPOK BERMAIN" data-unit-id="2" >KELOMPOK BERMAIN</option>
+                                    <option value="1" data-unit-id="3" >Kelas 1</option>
+                                    <option value="2" data-unit-id="3" >Kelas 2</option>
+                                    <option value="3" data-unit-id="3" >Kelas 3</option>
+                                    <option value="4" data-unit-id="3" >Kelas 4</option>
+                                    <option value="5" data-unit-id="3" >Kelas 5</option>
+                                    <option value="6" data-unit-id="3" >Kelas 6</option>
+                                    <option value="7" data-unit-id="3" >Kelas 7</option>
+                                    <option value="KELUAR" data-unit-id="3" >KELUAR</option>
+                                    <option value="1" data-unit-id="4" >Kelas 1</option>
+                                    <option value="2" data-unit-id="4" >Kelas 2</option>
+                                    <option value="3" data-unit-id="4" >Kelas 3</option>
+                                    <option value="4" data-unit-id="4" >Kelas 4</option>
+                                    <option value="5" data-unit-id="4" >Kelas 5</option>
+                                    <option value="6" data-unit-id="4" >Kelas 6</option>
+                                    <option value="7" data-unit-id="5" >Kelas 7</option>
+                                    <option value="8" data-unit-id="5" >Kelas 8</option>
+                                    <option value="9" data-unit-id="5" >Kelas 9</option>
+                                    <option value="LULUSAN 2024/2025" data-unit-id="5" >LULUSAN 2024/2025</option>
+                                    <option value="10" data-unit-id="6" >Kelas 10</option>
+                                    <option value="11" data-unit-id="6" >Kelas 11</option>
+                                    <option value="12" data-unit-id="6" >Kelas 12</option>
+                                    <option value="LULUSAN 2024/2025" data-unit-id="6" >LULUSAN 2024/2025</option>
+                                    <option value="12" data-unit-id="7" >Kelas 12</option>
+                                    <option value="10" data-unit-id="8" >Kelas 10</option>
+                                    <option value="11" data-unit-id="8" >Kelas 11</option>
+                                    <option value="12" data-unit-id="8" >Kelas 12</option>
+                                    <option value="7" data-unit-id="8" >Kelas 7</option>
+                                    <option value="8" data-unit-id="8" >Kelas 8</option>
+                                    <option value="9" data-unit-id="8" >Kelas 9</option>
+                                    <option value="BANAT SALAF" data-unit-id="8" >BANAT SALAF</option>
+                                    <option value="BANIN SALAF" data-unit-id="8" >BANIN SALAF</option>
+                            </select>
+            <small>Pilih tingkat, bukan rombel.</small>
+        </label>
+
+        <div class="fee-type-simple-field fee-billing-choice" data-fee-billing-choice hidden>
+            <span>Pencatatan Pembayaran</span>
+            <div class="fee-type-simple-scope">
+                <label><input type="radio" name="creates_bill" value="1" checked><span>Dijadikan Tagihan Wajib</span></label>
+                <label><input type="radio" name="creates_bill" value="0" ><span>Pembayaran Opsional</span></label>
+            </div>
+        </div>
+
+        <label class="fee-type-simple-field fee-type-simple-short" data-fee-period-field hidden>
+            <span>Periode Tagihan</span>
+            <select name="period" required data-fee-period><option>Bulanan</option><option>Tahunan</option><option>Sekali Bayar</option></select>
+        </label>
+
+        <div class="fee-type-simple-note" data-fee-behavior-summary>
+            <strong data-fee-behavior-title>Tagihan Wajib</strong>
+            <span data-fee-behavior-description>SPP akan masuk ke tagihan siswa setiap bulan.</span>
+        </div>
+
+        <label class="switch-field fee-type-simple-status"><input type="checkbox" name="is_active" value="1" checked><span></span> Kategori pembayaran aktif</label>
+    </div>
+            <div class="form-actions span-2"><button type="button" class="button button-secondary" data-modal-close>Batal</button><button class="button button-primary">Simpan Data</button></div>
+        </form>
+    </div>
+</div>
+<script>window.addEventListener("load",()=>{setTimeout(()=>{const btn=document.querySelector("[data-edit-record]"); if(btn){btn.click();}},500);});</script></body>
+</html>
+

@@ -1165,5 +1165,87 @@
     }
 }
 </style>
+<style data-identity-mobile-final-lock>
+    @media (max-width: 960px) {
+        html body,
+        html body .app-shell,
+        html body .app-shell .main-panel,
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page {
+            max-width:100vw !important;
+            overflow-x:hidden !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page {
+            box-sizing:border-box !important;
+            width:100% !important;
+            min-width:0 !important;
+            padding:16px !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page > :is(section, .student-list-filter-card, .identity-cleanup-table-card) {
+            box-sizing:border-box !important;
+            width:100% !important;
+            max-width:100% !important;
+            min-width:0 !important;
+            margin-inline:0 !important;
+            overflow:hidden !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page :is(.student-flat-header, .identity-cleanup-header, .student-management-table-toolbar, .student-management-search-card, .student-management-search-card label, .student-report-pagination) {
+            display:grid !important;
+            grid-template-columns:1fr !important;
+            gap:10px !important;
+            width:100% !important;
+            min-width:0 !important;
+            max-width:100% !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter.student-filter-panel.student-reference-filter.student-fee-card-filter,
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter .student-fee-card-filter-grid {
+            display:grid !important;
+            grid-template-columns:1fr !important;
+            gap:12px !important;
+            width:100% !important;
+            min-width:0 !important;
+            max-width:100% !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter .student-fee-card-filter-grid label,
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter .student-filter-actions {
+            grid-column:auto !important;
+            grid-row:auto !important;
+            width:100% !important;
+            min-width:0 !important;
+            max-width:100% !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter .student-filter-actions {
+            display:grid !important;
+            grid-template-columns:1fr 1fr !important;
+            gap:8px !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter .student-filter-actions .button,
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page form#identity-cleanup-filter select,
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page :is(.master-table-search-input, .master-table-search-input input) {
+            box-sizing:border-box !important;
+            width:100% !important;
+            min-width:0 !important;
+            max-width:100% !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page :is(.identity-cleanup-table-wrap, .table-wrap) {
+            width:100% !important;
+            max-width:100% !important;
+            overflow-x:auto !important;
+        }
+
+        html body .app-shell .main-panel main#identity-standard-page.identity-standard-page .identity-cleanup-row {
+            width:100% !important;
+            min-width:0 !important;
+            max-width:100% !important;
+        }
+    }
+</style>
 </body>
 </html>

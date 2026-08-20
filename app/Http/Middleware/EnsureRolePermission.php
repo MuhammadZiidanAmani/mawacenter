@@ -46,7 +46,7 @@ class EnsureRolePermission
     {
         return match (true) {
             $routeName === 'dashboard' => ['dashboard.view'],
-            in_array($routeName, ['student-management.index', 'student-management.students.index', 'student-management.alumni.index', 'student-management.data-quality.index'], true) => ['students.view'],
+            in_array($routeName, ['student-management.index', 'student-management.students.index', 'student-management.alumni.index'], true) => ['students.view'],
             $routeName === 'student-management.students.create' => ['students.create'],
             $routeName === 'student-management.students.import' => ['students.import'],
             $routeName === 'student-management.students.edit' => ['students.update'],
@@ -59,7 +59,7 @@ class EnsureRolePermission
             $routeName === 'master.students.store' => ['students.create'],
             $routeName === 'master.students.update' => ['students.update'],
             $routeName === 'master.students.export' => ['students.export'],
-            in_array($routeName, ['master.students.template', 'master.students.import.preview', 'master.students.import'], true) => ['students.import'],
+            in_array($routeName, ['master.students.template', 'master.students.import.preview', 'master.students.import.progress', 'master.students.import'], true) => ['students.import'],
             str_starts_with($routeName, 'finance.transfer-verifications.') => ['payments.verify_transfer'],
             in_array($routeName, ['finance.payments.import', 'finance.spp.import.preview', 'finance.spp.import', 'finance.other.import.preview', 'finance.other.import', 'finance.spp.correct', 'finance.spp.update', 'finance.spp.destroy', 'finance.other.update', 'finance.other.destroy'], true) => ['payments.verify_transfer'],
             $routeName === 'finance.payments.store' => ['payments.cash.create'],
@@ -67,7 +67,7 @@ class EnsureRolePermission
             str_starts_with($routeName, 'finance.spp.'),
             str_starts_with($routeName, 'finance.other.'),
             str_starts_with($routeName, 'finance.payments.') => ['payments.cash.create', 'payments.view_unit'],
-            $routeName === 'finance.bills.sync' => ['payments.verify_transfer'],
+            in_array($routeName, ['finance.bills.sync', 'finance.bills.sync.status', 'finance.bills.sync.progress'], true) => ['payments.verify_transfer'],
             $routeName === 'finance.bills.transfer' => ['payments.transfer.submit_guardian'],
             str_starts_with($routeName, 'finance.bills.') => ['bills.view', 'bills.view_unit', 'bills.view_guardian'],
             str_starts_with($routeName, 'guardian.') => ['bills.view_guardian', 'payments.transfer.submit_guardian'],

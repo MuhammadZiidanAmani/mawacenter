@@ -52,7 +52,6 @@
             <div class="nav-submenu">
                 @if($canAccess('students.view'))
                 <a href="{{ route('student-management.students.index') }}" class="{{ $activeStudentMenu === 'data-siswa' ? 'active' : '' }}">{!! $sidebarIcon('users') !!}<span>Data Siswa</span></a>
-                <a href="{{ route('student-management.data-quality.index') }}" class="{{ $activeStudentMenu === 'kualitas-data' ? 'active' : '' }}">{!! $sidebarIcon('chart') !!}<span>Kualitas Data</span></a>
                 @endif
                 @if($canAccess('students.identity_cleanup'))
                 <a href="{{ route('student-management.identity-cleanup.index') }}" class="{{ $activeStudentMenu === 'rapikan-identitas' ? 'active' : '' }}">{!! $sidebarIcon('role') !!}<span>Rapikan Identitas</span></a>

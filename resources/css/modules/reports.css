@@ -669,7 +669,7 @@ html body .app-shell .main-panel main.report-page-monthly-spp .monthly-spp-chart
 }
 
 html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 {
-    min-width: 1180px !important;
+    min-width: 1380px !important;
 }
 
 html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 th:nth-child(1),
@@ -697,10 +697,164 @@ html body .app-shell .main-panel main.report-page-transactions .report-main-tabl
 html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 td:nth-child(8) { width: 112px !important; text-align: center !important; }
 
 html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 th:nth-child(9),
-html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 td:nth-child(9) { width: 120px !important; }
+html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 td:nth-child(9) { width: 116px !important; text-align: center !important; }
 
 html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 th:nth-child(10),
-html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 td:nth-child(10) { width: 138px !important; text-align: right !important; }
+html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 td:nth-child(10) { width: 120px !important; }
+
+html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 th:nth-child(11),
+html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 td:nth-child(11) { width: 138px !important; text-align: right !important; }
+
+html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 th:nth-child(12),
+html body .app-shell .main-panel main.report-page-transactions .report-main-table-v2 td:nth-child(12) { width: 150px !important; text-align: center !important; }
+
+html body .app-shell .main-panel main.report-page-v2 .report-row-actions {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-row-actions button,
+html body .app-shell .main-panel main.report-page-v2 .report-row-actions a {
+    display: inline-grid !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    place-items: center !important;
+    padding: 0 !important;
+    color: #707971 !important;
+    background: #ffffff !important;
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+    transform: none !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-row-actions button:hover,
+html body .app-shell .main-panel main.report-page-v2 .report-row-actions a:hover {
+    color: #004528 !important;
+    background: #f0fbf5 !important;
+    border-color: #d8eadf !important;
+    transform: none !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-row-actions svg {
+    width: 18px !important;
+    height: 18px !important;
+    stroke: currentColor !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-action-muted {
+    display: inline-flex !important;
+    align-items: center !important;
+    min-height: 28px !important;
+    padding: 0 8px !important;
+    color: #707971 !important;
+    background: #f9fafb !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-modal-backdrop {
+    background: rgba(15, 23, 42, .24) !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-modal {
+    width: min(100%, 620px) !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 12px !important;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, .10) !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-form {
+    gap: 12px !important;
+    padding: 16px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-form input,
+html body .app-shell .main-panel main.report-page-v2 .report-payment-form select,
+html body .app-shell .main-panel main.report-page-v2 .report-payment-form textarea {
+    color: #020617 !important;
+    background: #ffffff !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-form textarea {
+    min-height: 92px !important;
+    padding: 10px 12px !important;
+    line-height: 1.4 !important;
+    resize: vertical !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-readonly {
+    padding: 12px !important;
+    background: #fbfdf8 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-readonly strong {
+    color: #020617 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-readonly span,
+html body .app-shell .main-panel main.report-page-v2 .report-payment-note {
+    color: #707971 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-note strong {
+    color: #020617 !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-modal .form-actions {
+    gap: 8px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid #e5e7eb !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-modal .form-actions .button {
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 14px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    transform: none !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+}
+
+html body .app-shell .main-panel main.report-page-v2 .report-payment-modal .icon-button {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
 
 html body .app-shell .main-panel main.report-page-monthly-spp .report-main-table-v2 {
     min-width: 1280px !important;
@@ -1250,5 +1404,273 @@ html body .app-shell .main-panel main.report-page-v2 .report-page-ellipsis {
     html body .app-shell .main-panel main.report-page-v2 .report-export-actions,
     html body .app-shell .main-panel main.report-page-v2 .report-filter-actions-v2 {
         grid-template-columns: minmax(0, 1fr) !important;
+    }
+}
+
+/* Legacy /laporan page kept visually aligned with the new report module. */
+main.report-legacy-page {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 24px 32px 32px;
+    background: #ffffff;
+}
+
+main.report-legacy-page .report-workspace {
+    width: min(100%, 1200px);
+    margin: 0;
+    display: grid;
+    gap: 16px;
+}
+
+main.report-legacy-page .student-flat-header {
+    align-items: flex-start;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+main.report-legacy-page .student-flat-header h1 {
+    margin: 0;
+    color: #020617;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+main.report-legacy-page .student-title-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+main.report-legacy-page .student-title-actions .button,
+main.report-legacy-page .report-filter-actions .button {
+    height: 40px;
+    min-height: 40px;
+    border-radius: 8px;
+    box-shadow: none;
+    transform: none;
+}
+
+main.report-legacy-page .report-filter-panel {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: end;
+    gap: 12px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+main.report-legacy-page .report-filter-panel label,
+main.report-legacy-page .report-filter-label,
+main.report-legacy-page .report-summary-label {
+    display: grid;
+    gap: 8px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+main.report-legacy-page .report-filter-panel :is(input, select) {
+    width: 100%;
+    min-width: 0;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 12px;
+    color: #020617;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: none;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+main.report-legacy-page .report-date-range {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+}
+
+main.report-legacy-page .report-summary-strip {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+}
+
+main.report-legacy-page .report-summary-strip > div {
+    min-width: 0;
+    padding: 10px 12px;
+    background: #fbfdf8;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+main.report-legacy-page .report-summary-strip span {
+    display: block;
+    color: #020617;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+main.report-legacy-page .report-summary-strip small {
+    color: #707971;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+main.report-legacy-page .report-data-card {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+main.report-legacy-page .student-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+main.report-legacy-page .student-table-toolbar form,
+main.report-legacy-page .student-table-toolbar label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: #707971;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+main.report-legacy-page .student-table-toolbar :is(input, select) {
+    height: 40px;
+    min-height: 40px;
+    color: #020617;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: none;
+    font-size: 14px;
+}
+
+main.report-legacy-page .student-table-search input {
+    width: 420px;
+    max-width: 100%;
+    padding: 0 12px;
+}
+
+main.report-legacy-page .table-wrap {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+main.report-legacy-page .report-flat-table {
+    width: 100%;
+    min-width: 1120px;
+    table-layout: fixed;
+}
+
+main.report-legacy-page .report-flat-table th,
+main.report-legacy-page .report-flat-table td {
+    height: 40px;
+    padding: 8px 10px;
+    color: #020617;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+    vertical-align: middle;
+}
+
+main.report-legacy-page .report-flat-table th {
+    color: #334155;
+    background: #fbfdf8;
+    font-weight: 500;
+    text-align: center;
+}
+
+main.report-legacy-page :is(.report-student-name, .report-amount) {
+    color: #020617;
+    font-weight: 700;
+}
+
+main.report-legacy-page .report-row-detail summary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    padding: 0 12px;
+    color: #004528;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+main.report-legacy-page .report-detail-panel {
+    margin-top: 8px;
+    padding: 12px;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+@media (max-width: 1180px) {
+    main.report-legacy-page .report-filter-panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    main.report-legacy-page .report-summary-strip {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    main.report-legacy-page {
+        padding: 16px;
+        overflow-x: hidden;
+    }
+
+    main.report-legacy-page .student-flat-header,
+    main.report-legacy-page .student-title-actions,
+    main.report-legacy-page .student-table-toolbar,
+    main.report-legacy-page .student-table-toolbar form,
+    main.report-legacy-page .student-table-toolbar label {
+        display: grid;
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+    }
+
+    main.report-legacy-page .report-filter-panel,
+    main.report-legacy-page .report-summary-strip {
+        grid-template-columns: 1fr;
+    }
+
+    main.report-legacy-page :is(.student-title-actions .button, .student-table-search input) {
+        width: 100%;
     }
 }

@@ -27,8 +27,10 @@ use App\Support\ClassLevel;
 use App\Support\StudentXlsx;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -876,6 +878,11 @@ class MasterDataController extends Controller
                 'academic_year_id' => $activeYear->id,
                 'preview' => $preview,
             ]);
+            $this->storeStudentImportProgress($token, [
+                'status' => 'pending',
+                'total_items' => (int) ($preview['total'] ?? 0),
+                'message' => 'Menunggu konfirmasi import.',
+            ]);
         } catch (\Throwable $exception) {
             Storage::delete($path);
             throw $exception;
@@ -886,11 +893,31 @@ class MasterDataController extends Controller
         ]);
     }
 
-    public function importStudents(Request $request, StudentImportService $importer): RedirectResponse
+    public function studentImportProgress(string $token): JsonResponse
+    {
+        abort_unless(Str::isUuid($token), 404);
+
+        return response()->json($this->studentImportProgressPayload($token));
+    }
+
+    public function importStudents(Request $request, StudentImportService $importer): RedirectResponse|JsonResponse
     {
         $validated = $request->validate(['token' => ['required', 'uuid']]);
         $stored = $request->session()->pull("student_imports.{$validated['token']}");
         if (! $stored || ! Storage::exists($stored['path'])) {
+            if ($request->expectsJson()) {
+                $this->storeStudentImportProgress($validated['token'], [
+                    'status' => 'failed',
+                    'error_message' => 'File preview sudah tidak tersedia. Silakan unggah ulang.',
+                    'finished_at' => now()->toIso8601String(),
+                ]);
+
+                return response()->json([
+                    'message' => 'File preview sudah tidak tersedia. Silakan unggah ulang.',
+                    'progress' => $this->studentImportProgressPayload($validated['token']),
+                ], 422);
+            }
+
             return redirect()->route('student-management.students.import')
                 ->withErrors(['file' => 'File preview sudah tidak tersedia. Silakan unggah ulang.']);
         }
@@ -898,13 +925,55 @@ class MasterDataController extends Controller
         $activeYear = AcademicYear::find($stored['academic_year_id']);
         if (! $activeYear) {
             Storage::delete($stored['path']);
+            if ($request->expectsJson()) {
+                $this->storeStudentImportProgress($validated['token'], [
+                    'status' => 'failed',
+                    'error_message' => 'Tahun pelajaran untuk file ini sudah tidak tersedia.',
+                    'finished_at' => now()->toIso8601String(),
+                ]);
+
+                return response()->json([
+                    'message' => 'Tahun pelajaran untuk file ini sudah tidak tersedia.',
+                    'progress' => $this->studentImportProgressPayload($validated['token']),
+                ], 422);
+            }
 
             return redirect()->route('student-management.students.import')
                 ->withErrors(['file' => 'Tahun pelajaran untuk file ini sudah tidak tersedia.']);
         }
 
+        $this->storeStudentImportProgress($validated['token'], [
+            'status' => 'processing',
+            'total_items' => (int) ($stored['preview']['total'] ?? 0),
+            'processed_items' => 0,
+            'created_items' => 0,
+            'updated_items' => 0,
+            'failed_items' => 0,
+            'percent' => 0,
+            'started_at' => now()->toIso8601String(),
+            'finished_at' => null,
+            'message' => 'Memulai import data siswa.',
+            'error_message' => null,
+        ]);
+
         try {
-            $result = $importer->import(Storage::path($stored['path']), $activeYear, $request->user()?->accessibleUnitIds());
+            $result = $importer->import(
+                Storage::path($stored['path']),
+                $activeYear,
+                $request->user()?->accessibleUnitIds(),
+                fn (array $progress) => $this->storeStudentImportProgress($validated['token'], $progress + [
+                    'status' => 'processing',
+                    'message' => 'Mengimpor data siswa.',
+                ]),
+            );
+        } catch (\Throwable $exception) {
+            $this->storeStudentImportProgress($validated['token'], [
+                'status' => 'failed',
+                'error_message' => $exception->getMessage(),
+                'finished_at' => now()->toIso8601String(),
+            ]);
+
+            throw $exception;
         } finally {
             Storage::delete($stored['path']);
         }
@@ -914,8 +983,30 @@ class MasterDataController extends Controller
         $failures = $result['failures'];
 
         if ($imported === 0) {
+            $message = 'Tidak ada data yang berhasil diimpor. '.collect($failures)->pluck('message')->take(5)->implode(' ');
+            $this->storeStudentImportProgress($validated['token'], [
+                'status' => 'failed',
+                'processed_items' => (int) ($result['total'] ?? 0),
+                'created_items' => $result['created'],
+                'updated_items' => $result['updated'],
+                'failed_items' => count($failures),
+                'percent' => 100,
+                'finished_at' => now()->toIso8601String(),
+                'error_message' => $message,
+                'message' => 'Import selesai tanpa data tersimpan.',
+            ]);
+            if ($request->expectsJson()) {
+                $request->session()->flash('error', $message);
+
+                return response()->json([
+                    'message' => $message,
+                    'progress' => $this->studentImportProgressPayload($validated['token']),
+                    'redirect' => route('student-management.students.index'),
+                ], 422);
+            }
+
             return redirect()->route('student-management.students.index')
-                ->with('error', 'Tidak ada data yang berhasil diimpor. '.collect($failures)->pluck('message')->take(5)->implode(' '));
+                ->with('error', $message);
         }
 
         $message = "{$imported} data siswa berhasil diimpor.";
@@ -926,6 +1017,11 @@ class MasterDataController extends Controller
             $message .= ' '.count($failures).' baris dilewati: '.collect($failures)->pluck('message')->take(3)->implode(' ');
         }
         if (! empty($result['student_ids'])) {
+            $this->storeStudentImportProgress($validated['token'], [
+                'status' => 'processing',
+                'percent' => 100,
+                'message' => 'Memperbarui tagihan siswa.',
+            ]);
             app(BillService::class)->syncStudentsCurrentBills($activeYear, $result['student_ids']);
             $message .= ' Tagihan siswa baru otomatis diperbarui.';
         }
@@ -943,6 +1039,28 @@ class MasterDataController extends Controller
             [],
             $request,
         );
+        $this->storeStudentImportProgress($validated['token'], [
+            'status' => 'completed',
+            'total_items' => (int) ($result['total'] ?? 0),
+            'processed_items' => (int) ($result['total'] ?? 0),
+            'created_items' => $result['created'],
+            'updated_items' => $result['updated'],
+            'failed_items' => count($failures),
+            'percent' => 100,
+            'finished_at' => now()->toIso8601String(),
+            'message' => $message,
+            'error_message' => null,
+        ]);
+
+        if ($request->expectsJson()) {
+            $request->session()->flash('success', $message);
+
+            return response()->json([
+                'message' => $message,
+                'progress' => $this->studentImportProgressPayload($validated['token']),
+                'redirect' => route('student-management.students.index'),
+            ]);
+        }
 
         return $this->done('students', $message);
     }
@@ -954,10 +1072,10 @@ class MasterDataController extends Controller
             $feeTypes = collect($this->validateFeeType($request))
                 ->map(fn (array $data) => FeeType::create($data));
         });
-        $syncResult = $this->syncFeeTypeBills($feeTypes);
+        $syncResult = $this->deferredFeeTypeSyncResult($feeTypes);
         $message = 'Kategori pembayaran berhasil ditambahkan.';
-        if ($syncResult['created'] > 0 || $syncResult['refreshed'] > 0) {
-            $message .= ' Tagihan otomatis diperbarui.';
+        if ($syncResult['deferred'] > 0) {
+            $message .= ' Jalankan Sinkron Tagihan untuk memperbarui tagihan siswa.';
         }
         $this->recordMasterAudit(
             'master.fee_type.create',
@@ -982,10 +1100,10 @@ class MasterDataController extends Controller
                 $feeTypes->push(FeeType::create($data));
             }
         });
-        $syncResult = $this->syncFeeTypeBills($feeTypes);
+        $syncResult = $this->deferredFeeTypeSyncResult($feeTypes);
         $message = 'Kategori pembayaran berhasil diperbarui.';
-        if ($syncResult['created'] > 0 || $syncResult['refreshed'] > 0) {
-            $message .= ' Tagihan otomatis diperbarui.';
+        if ($syncResult['deferred'] > 0) {
+            $message .= ' Jalankan Sinkron Tagihan untuk memperbarui tagihan siswa.';
         }
         $this->recordMasterAudit(
             'master.fee_type.update',
@@ -1124,12 +1242,12 @@ class MasterDataController extends Controller
         }
 
         if ($model instanceof User && auth()->id() === $model->id) {
-            return redirect()->route('master.index', ['tab' => $type])
+            return redirect()->route('master.index', $this->masterReturnParameters($type))
                 ->with('error', 'Akun yang sedang digunakan tidak dapat dihapus.');
         }
 
         if ($model instanceof Role && User::where('role', $model->key)->exists()) {
-            return redirect()->route('master.index', ['tab' => $type])
+            return redirect()->route('master.index', $this->masterReturnParameters($type))
                 ->with('error', 'Role masih digunakan oleh user dan tidak dapat dihapus.');
         }
 
@@ -1139,7 +1257,7 @@ class MasterDataController extends Controller
         try {
             $model->delete();
         } catch (QueryException) {
-            return redirect()->route('master.index', ['tab' => $type])
+            return redirect()->route('master.index', $this->masterReturnParameters($type))
                 ->with('error', 'Data masih digunakan dan tidak dapat dihapus.');
         }
         app(AuditLogService::class)->recordOperation(
@@ -1634,6 +1752,21 @@ class MasterDataController extends Controller
         ];
     }
 
+    private function deferredFeeTypeSyncResult($feeTypes): array
+    {
+        $deferred = collect($feeTypes)
+            ->filter(fn (FeeType $feeType) => $feeType->is_active && $feeType->creates_bill && $feeType->payment_group !== 'laundry')
+            ->count();
+
+        return [
+            'created' => 0,
+            'existing' => 0,
+            'skipped' => 0,
+            'refreshed' => 0,
+            'deferred' => $deferred,
+        ];
+    }
+
     private function syncFeeTypeBills($feeTypes): array
     {
         $result = ['created' => 0, 'existing' => 0, 'skipped' => 0, 'refreshed' => 0];
@@ -1855,8 +1988,6 @@ class MasterDataController extends Controller
 
     private function done(string $tab, string $message): RedirectResponse
     {
-        $parameters = ['tab' => $tab];
-
         if ($tab === 'students') {
             $parameters = request()->only([
                 'unit_id',
@@ -1873,7 +2004,71 @@ class MasterDataController extends Controller
             return redirect()->route('student-management.students.index', $parameters)->with('success', $message);
         }
 
+        $parameters = $this->masterReturnParameters($tab);
+
         return redirect()->route('master.index', $parameters)->with('success', $message);
+    }
+
+    private function masterReturnParameters(string $tab): array
+    {
+        $parameters = request()->only([
+            'tab',
+            'unit_id',
+            'class_id',
+            'year_id',
+            'status',
+            'search',
+            'per_page',
+            'sort',
+            'direction',
+            'page',
+            'role',
+        ]);
+
+        $parameters = array_filter($parameters, fn ($value) => $value !== null && $value !== '');
+        $parameters['tab'] = $tab;
+
+        return $parameters;
+    }
+
+    private function studentImportProgressKey(string $token): string
+    {
+        return "student_import_progress:{$token}";
+    }
+
+    private function studentImportProgressDefaults(): array
+    {
+        return [
+            'status' => 'pending',
+            'total_items' => 0,
+            'processed_items' => 0,
+            'created_items' => 0,
+            'updated_items' => 0,
+            'failed_items' => 0,
+            'percent' => 0,
+            'started_at' => null,
+            'finished_at' => null,
+            'message' => 'Menunggu konfirmasi import.',
+            'error_message' => null,
+        ];
+    }
+
+    private function studentImportProgressPayload(string $token): array
+    {
+        return array_merge(
+            $this->studentImportProgressDefaults(),
+            Cache::store('file')->get($this->studentImportProgressKey($token), []),
+        );
+    }
+
+    private function storeStudentImportProgress(string $token, array $payload): void
+    {
+        $current = Cache::store('file')->get($this->studentImportProgressKey($token), []);
+        Cache::store('file')->put(
+            $this->studentImportProgressKey($token),
+            array_merge($this->studentImportProgressDefaults(), $current, $payload),
+            now()->addMinutes(30),
+        );
     }
 
     private function studentManagementPlaceholder(string $title, string $description, string $section)

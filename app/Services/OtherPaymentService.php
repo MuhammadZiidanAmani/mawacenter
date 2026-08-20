@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\FeeType;
 use App\Models\OtherPayment;
+use App\Models\OtherPaymentItem;
 use App\Models\Student;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -99,6 +100,85 @@ class OtherPaymentService
         });
     }
 
+    public function correctTransaction(OtherPayment $payment, array $data): OtherPayment
+    {
+        return DB::transaction(function () use ($payment, $data) {
+            $payment = OtherPayment::query()
+                ->with(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType', 'items'])
+                ->lockForUpdate()
+                ->findOrFail($payment->id);
+
+            if ($payment->status === 'Dibatalkan') {
+                throw ValidationException::withMessages([
+                    'reason' => 'Transaksi yang sudah dibatalkan tidak dapat dikoreksi.',
+                ]);
+            }
+
+            $payment->update([
+                'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
+                'payment_method' => $data['payment_method'],
+                'status' => $data['status'],
+            ]);
+
+            if ($payment->items->isNotEmpty()) {
+                $this->reallocateItemPayments($payment->refresh(), (int) $data['new_paid_amount']);
+            } else {
+                $newPaidAmount = (int) $data['new_paid_amount'];
+                if ($newPaidAmount > (int) $payment->total_amount) {
+                    throw ValidationException::withMessages([
+                        'new_paid_amount' => 'Nominal dibayar tidak boleh melebihi total tagihan Rp '.number_format((int) $payment->total_amount, 0, ',', '.').'.',
+                    ]);
+                }
+
+                $payment->update(['paid_amount' => $newPaidAmount]);
+                $this->recalculatePayments($payment->student_id, $payment->fee_type_id);
+            }
+
+            $payment = $payment->refresh();
+            $this->bills->syncOtherPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']));
+
+            return $payment;
+        });
+    }
+
+    public function cancel(OtherPayment $payment, string $reason): OtherPayment
+    {
+        return DB::transaction(function () use ($payment) {
+            $payment = OtherPayment::query()
+                ->with(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType', 'items'])
+                ->lockForUpdate()
+                ->findOrFail($payment->id);
+
+            if ($payment->status === 'Dibatalkan') {
+                throw ValidationException::withMessages([
+                    'reason' => 'Transaksi ini sudah dibatalkan.',
+                ]);
+            }
+
+            $studentId = $payment->student_id;
+            $feeTypeId = $payment->fee_type_id;
+
+            $this->bills->removePayment('other', $payment->id);
+            foreach ($payment->items as $item) {
+                $item->update([
+                    'paid_amount' => 0,
+                    'remaining_amount' => (int) $item->total_amount,
+                    'payment_status' => 'Dibatalkan',
+                ]);
+            }
+
+            $payment->update([
+                'status' => 'Dibatalkan',
+                'paid_amount' => 0,
+                'remaining_amount' => (int) $payment->total_amount,
+                'payment_status' => 'Dibatalkan',
+            ]);
+            $this->recalculatePayments($studentId, $feeTypeId);
+
+            return $payment->refresh();
+        });
+    }
+
     public function delete(OtherPayment $payment): void
     {
         DB::transaction(function () use ($payment) {
@@ -126,12 +206,70 @@ class OtherPaymentService
 
                 $remainingAmount = max(0, (int) $payment->total_amount - $acceptedAmount);
                 $payment->update([
-                    'remaining_amount' => $remainingAmount,
-                    'payment_status' => $payment->status === 'Diterima'
-                        ? ($remainingAmount === 0 ? 'Lunas' : 'Belum Lunas')
-                        : 'Pending',
+                    'remaining_amount' => $payment->status === 'Dibatalkan' ? (int) $payment->total_amount : $remainingAmount,
+                    'payment_status' => match ($payment->status) {
+                        'Diterima' => $remainingAmount === 0 ? 'Lunas' : 'Belum Lunas',
+                        'Dibatalkan' => 'Dibatalkan',
+                        default => 'Pending',
+                    },
                 ]);
             });
+    }
+
+    private function reallocateItemPayments(OtherPayment $payment, int $newPaidAmount): void
+    {
+        $items = $payment->items()->orderBy('year')->orderBy('month')->get();
+        $maxPayable = $items->sum(function (OtherPaymentItem $item) use ($payment) {
+            $paidByOtherTransactions = (int) OtherPaymentItem::where('student_id', $payment->student_id)
+                ->where('fee_type_id', $payment->fee_type_id)
+                ->where('year', $item->year)
+                ->where('month', $item->month)
+                ->where('other_payment_id', '!=', $payment->id)
+                ->sum('paid_amount');
+
+            return max(0, (int) $item->total_amount - $paidByOtherTransactions);
+        });
+
+        if ($newPaidAmount > $maxPayable) {
+            throw ValidationException::withMessages([
+                'new_paid_amount' => 'Nominal dibayar tidak boleh melebihi sisa ruang pembayaran transaksi ini Rp '.number_format($maxPayable, 0, ',', '.').'.',
+            ]);
+        }
+
+        $remainingAllocation = $payment->status === 'Diterima' ? $newPaidAmount : 0;
+        $paymentRemainingAmount = 0;
+        foreach ($items as $item) {
+            $paidByOtherTransactions = (int) OtherPaymentItem::where('student_id', $payment->student_id)
+                ->where('fee_type_id', $payment->fee_type_id)
+                ->where('year', $item->year)
+                ->where('month', $item->month)
+                ->where('other_payment_id', '!=', $payment->id)
+                ->sum('paid_amount');
+            $availableForItem = max(0, (int) $item->total_amount - $paidByOtherTransactions);
+            $allocated = min($remainingAllocation, $availableForItem);
+            $remaining = max(0, (int) $item->total_amount - $paidByOtherTransactions - $allocated);
+            $paymentRemainingAmount += $remaining;
+
+            $item->update([
+                'paid_amount' => $allocated,
+                'remaining_amount' => $remaining,
+                'payment_status' => match (true) {
+                    $payment->status !== 'Diterima' => 'Pending',
+                    $remaining === 0 => 'Lunas',
+                    $allocated > 0 => 'Belum Lunas',
+                    default => 'Belum Dibayar',
+                },
+            ]);
+            $remainingAllocation -= $allocated;
+        }
+
+        $payment->update([
+            'paid_amount' => $newPaidAmount,
+            'remaining_amount' => $payment->status === 'Diterima' ? $paymentRemainingAmount : (int) $payment->total_amount,
+            'payment_status' => $payment->status === 'Diterima'
+                ? ($paymentRemainingAmount === 0 ? 'Lunas' : 'Belum Lunas')
+                : 'Pending',
+        ]);
     }
 
     private function paymentQuery(Student $student, FeeType $feeType, CarbonInterface $date)

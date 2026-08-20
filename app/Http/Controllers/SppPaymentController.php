@@ -421,9 +421,10 @@ class SppPaymentController extends Controller
 
     public function correct(CorrectSppPaymentRequest $request, SppPayment $sppPayment, SppPaymentService $payments): RedirectResponse
     {
+        $this->authorizePaymentCorrectionRole($request);
         $this->authorizePaymentAccess($request, $sppPayment);
         $before = $this->paymentAuditSnapshot($sppPayment->loadMissing('items'));
-        $payment = $payments->correctPaidAmount($sppPayment, $request->validated());
+        $payment = $payments->correctTransaction($sppPayment, $request->validated());
         app(AuditLogService::class)->recordOperation(
             'payments.spp.correct',
             $this->paymentAuditMetadata($payment) + ['reason' => $request->validated('reason')],
@@ -436,7 +437,32 @@ class SppPaymentController extends Controller
         );
 
         return $this->redirectAfterMutation($request, route('finance.spp.index'))
-            ->with('success', 'Koreksi nominal pembayaran berhasil disimpan dan tercatat dalam histori.');
+            ->with('success', 'Koreksi transaksi pembayaran SPP berhasil disimpan dan tercatat dalam audit.');
+    }
+
+    public function cancel(Request $request, SppPayment $sppPayment, SppPaymentService $payments): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:255'],
+            'return_url' => ['nullable', 'string'],
+        ]);
+        $this->authorizePaymentCorrectionRole($request);
+        $this->authorizePaymentAccess($request, $sppPayment);
+        $before = $this->paymentAuditSnapshot($sppPayment->loadMissing('items'));
+        $payment = $payments->cancel($sppPayment, $validated['reason']);
+        app(AuditLogService::class)->recordOperation(
+            'payments.spp.cancel',
+            $this->paymentAuditMetadata($payment) + ['reason' => $validated['reason']],
+            beforeValues: $before,
+            afterValues: $this->paymentAuditSnapshot($payment),
+            request: $request,
+            subjectType: SppPayment::class,
+            subjectId: $payment->id,
+            studentIds: [$payment->student_id],
+        );
+
+        return $this->redirectAfterMutation($request, route('finance.spp.index'))
+            ->with('success', 'Transaksi pembayaran SPP berhasil dibatalkan dan tagihan diperbarui.');
     }
 
     public function destroy(Request $request, SppPayment $sppPayment, SppPaymentService $payments): RedirectResponse
@@ -561,6 +587,12 @@ class SppPaymentController extends Controller
         }
 
         $this->authorizeStudentAccess($request, $payment->student);
+    }
+
+    private function authorizePaymentCorrectionRole(Request $request): void
+    {
+        $user = $request->user();
+        abort_unless($user?->isSuperAdmin() || $user?->isBendaharaUnit(), 403);
     }
 
     private function paymentAuditMetadata(SppPayment $payment): array

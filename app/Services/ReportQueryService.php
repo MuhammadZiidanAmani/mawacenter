@@ -79,7 +79,7 @@ class ReportQueryService
             'type' => in_array($request->string('type')->value(), ['spp', 'daftar-ulang', 'laundry', 'lain-lain'], true) ? $request->string('type')->value() : null,
             'fee_type_id' => $request->integer('fee_type_id') ?: null,
             'payment_method' => in_array($request->string('payment_method')->value(), ['Cash', 'Transfer'], true) ? $request->string('payment_method')->value() : null,
-            'payment_status' => in_array($request->string('payment_status')->value(), ['Diterima', 'Pending'], true) ? $request->string('payment_status')->value() : null,
+            'payment_status' => in_array($request->string('payment_status')->value(), ['Diterima', 'Pending', 'Dibatalkan'], true) ? $request->string('payment_status')->value() : null,
             'operator_name' => $request->string('operator_name')->value() ?: null,
             'student_search' => $report !== 'unit-recap' ? ($request->string('student_search')->value() ?: null) : null,
             'search' => $request->string('search')->value() ?: null,
@@ -288,6 +288,7 @@ class ReportQueryService
 
             return $row;
         })->values();
+
         return [
             'rows' => $rows,
             'months' => $months,

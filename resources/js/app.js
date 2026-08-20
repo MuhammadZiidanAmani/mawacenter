@@ -405,6 +405,7 @@ document.querySelector('[data-spp-import-file]')?.addEventListener('change', (ev
     const label = document.querySelector('[data-spp-import-filename]');
     if (label) label.textContent = file?.name || 'Ketuk untuk pilih berkas';
     event.target.closest('.spp-import-dropzone')?.classList.toggle('has-file', Boolean(file));
+    event.target.closest('[data-student-import-upload]')?.classList.toggle('has-file', Boolean(file));
 });
 
 const paymentImport = document.querySelector('[data-payment-import]');
@@ -989,6 +990,8 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
     const options = Array.from(select.options).filter((option) => option.value);
     const selected = options.find((option) => option.selected);
     const normalizedStudentText = (value) => value.trim().toLocaleLowerCase('id-ID').replace(/\s+/g, ' ');
+    const minimumQueryLength = 2;
+    const maximumVisibleResults = 8;
 
     if (selected) search.value = selected.textContent.trim();
 
@@ -1023,7 +1026,18 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
 
     const renderStudentResults = () => {
         const query = search.value.trim().toLocaleLowerCase('id-ID');
-        const matches = options.filter((option) => option.textContent.toLocaleLowerCase('id-ID').includes(query)).slice(0, 100);
+
+        if (query.length < minimumQueryLength) {
+            const hint = document.createElement('span');
+            hint.textContent = 'Ketik minimal 2 huruf nama atau NIS siswa.';
+            results.replaceChildren(hint);
+            results.hidden = false;
+
+            return;
+        }
+
+        const allMatches = options.filter((option) => option.textContent.toLocaleLowerCase('id-ID').includes(query));
+        const matches = allMatches.slice(0, maximumVisibleResults);
         results.replaceChildren(...matches.map((option) => {
             const button = document.createElement('button');
             button.type = 'button';
@@ -1036,6 +1050,11 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
             const empty = document.createElement('span');
             empty.textContent = 'Siswa tidak ditemukan';
             results.append(empty);
+        }
+        if (allMatches.length > maximumVisibleResults) {
+            const limit = document.createElement('span');
+            limit.textContent = 'Persempit pencarian untuk melihat hasil lainnya.';
+            results.append(limit);
         }
         results.hidden = false;
     };
@@ -1619,6 +1638,59 @@ document.querySelectorAll('[data-spp-correction-url]').forEach((button) => butto
     sppCorrectionModal.classList.add('show');
 }));
 
+const reportCorrectionModal = document.querySelector('[data-report-correction-modal]');
+const reportCancelModal = document.querySelector('[data-report-cancel-modal]');
+const reportPaymentModals = [reportCorrectionModal, reportCancelModal].filter(Boolean);
+const closeReportPaymentModals = () => reportPaymentModals.forEach((modal) => modal.classList.remove('show'));
+
+document.querySelectorAll('[data-report-payment-close]').forEach((button) => button.addEventListener('click', closeReportPaymentModals));
+reportPaymentModals.forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) closeReportPaymentModals(); }));
+
+document.querySelectorAll('[data-report-correction-url]').forEach((button) => button.addEventListener('click', async () => {
+    const form = document.querySelector('[data-report-correction-form]');
+    if (!form) return;
+
+    try {
+        const response = await fetch(button.dataset.reportPaymentDetailUrl, { headers: { Accept: 'application/json' } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message ?? 'Data transaksi gagal dimuat.');
+
+        const paidAmount = Number(data.paid_amount ?? button.dataset.reportPaymentAmount ?? 0);
+        form.reset();
+        form.action = button.dataset.reportCorrectionUrl;
+        form.elements.return_url.value = button.dataset.reportPaymentReturnUrl ?? window.location.href;
+        form.elements.transaction_date.value = data.transaction_date ?? button.dataset.reportPaymentDate ?? '';
+        form.elements.transaction_time.value = String(data.transaction_time ?? button.dataset.reportPaymentTime ?? '').slice(0, 5).replace(':', '.');
+        form.elements.payment_method.value = data.payment_method ?? button.dataset.reportPaymentMethod ?? 'Cash';
+        form.elements.status.value = ['Diterima', 'Pending'].includes(data.status) ? data.status : 'Diterima';
+        form.elements.new_paid_amount.value = paidAmount;
+        formatCurrencyInput(form.elements.new_paid_amount);
+
+        const studentName = data.student?.name ?? data.student_name ?? button.dataset.reportCorrectionSummary ?? 'Data transaksi';
+        const paymentName = data.payment_name ?? button.dataset.reportPaymentName ?? 'Pembayaran';
+        const studentMeta = data.student
+            ? `${data.student.nis ?? '-'} · ${data.student.unit ?? '-'} · ${data.student.class ?? '-'}`
+            : (button.dataset.reportCorrectionMeta ?? '');
+        document.querySelector('[data-report-correction-summary]').textContent = `${studentName} · ${paymentName}`;
+        document.querySelector('[data-report-correction-meta]').textContent = studentMeta;
+        document.querySelector('[data-report-correction-old]').textContent = sppCurrency.format(paidAmount);
+        reportCorrectionModal.classList.add('show');
+    } catch (error) {
+        window.alert(error.message);
+    }
+}));
+
+document.querySelectorAll('[data-report-cancel-url]').forEach((button) => button.addEventListener('click', () => {
+    const form = document.querySelector('[data-report-cancel-form]');
+    if (!form) return;
+
+    form.reset();
+    form.action = button.dataset.reportCancelUrl;
+    form.elements.return_url.value = button.dataset.reportPaymentReturnUrl ?? window.location.href;
+    document.querySelector('[data-report-cancel-summary]').textContent = button.dataset.reportCancelSummary ?? button.dataset.reportPaymentName ?? 'Data transaksi';
+    reportCancelModal.classList.add('show');
+}));
+
 const otherEditModal = document.querySelector('[data-other-edit-modal]');
 const otherDeleteModal = document.querySelector('[data-other-delete-modal]');
 const otherCrudModals = [otherEditModal, otherDeleteModal].filter(Boolean);
@@ -1871,6 +1943,129 @@ if (studentImportToolbar) {
     renderStudentImportRows();
 }
 
+const studentImportConfirmForm = document.querySelector('[data-student-import-confirm]');
+if (studentImportConfirmForm) {
+    const progressUrl = studentImportConfirmForm.dataset.progressUrl;
+    const progressCard = document.querySelector('[data-student-import-progress]');
+    const confirmButton = studentImportConfirmForm.querySelector('button[type="submit"], button:not([type])');
+    const confirmLabel = studentImportConfirmForm.querySelector('[data-student-import-confirm-label]');
+    const progressStatus = progressCard?.querySelector('[data-student-import-progress-status]');
+    const progressMessage = progressCard?.querySelector('[data-student-import-progress-message]');
+    const progressPercent = progressCard?.querySelector('[data-student-import-progress-percent]');
+    const progressBar = progressCard?.querySelector('[data-student-import-progress-bar]');
+    const progressProcessed = progressCard?.querySelector('[data-student-import-progress-processed]');
+    const progressTotal = progressCard?.querySelector('[data-student-import-progress-total]');
+    const progressCreated = progressCard?.querySelector('[data-student-import-progress-created]');
+    const progressUpdated = progressCard?.querySelector('[data-student-import-progress-updated]');
+    const progressFailed = progressCard?.querySelector('[data-student-import-progress-failed]');
+    const numberFormat = new Intl.NumberFormat('id-ID');
+    let progressTimer = null;
+
+    const renderStudentImportProgress = (progress = {}) => {
+        const percent = Math.max(0, Math.min(100, Number(progress.percent ?? 0)));
+        const status = progress.status || 'processing';
+        const statusLabel = {
+            pending: 'Menunggu proses',
+            processing: 'Sedang mengimpor',
+            completed: 'Import selesai',
+            failed: 'Import gagal',
+        }[status] || status;
+
+        if (progressCard) {
+            progressCard.hidden = false;
+            progressCard.dataset.status = status;
+        }
+        if (progressStatus) progressStatus.textContent = statusLabel;
+        if (progressMessage) progressMessage.textContent = progress.error_message || progress.message || 'Memproses data siswa.';
+        if (progressPercent) progressPercent.textContent = `${percent}%`;
+        if (progressBar) progressBar.style.width = `${percent}%`;
+        if (progressProcessed) progressProcessed.textContent = numberFormat.format(Number(progress.processed_items ?? 0));
+        if (progressTotal) progressTotal.textContent = numberFormat.format(Number(progress.total_items ?? 0));
+        if (progressCreated) progressCreated.textContent = numberFormat.format(Number(progress.created_items ?? 0));
+        if (progressUpdated) progressUpdated.textContent = numberFormat.format(Number(progress.updated_items ?? 0));
+        if (progressFailed) progressFailed.textContent = numberFormat.format(Number(progress.failed_items ?? 0));
+    };
+
+    const stopStudentImportPolling = () => {
+        if (progressTimer) window.clearInterval(progressTimer);
+        progressTimer = null;
+    };
+
+    const pollStudentImportProgress = async () => {
+        if (!progressUrl) return;
+
+        try {
+            const response = await fetch(progressUrl, {
+                headers: { Accept: 'application/json' },
+                cache: 'no-store',
+            });
+            if (!response.ok) return;
+
+            const progress = await response.json();
+            renderStudentImportProgress(progress);
+            if (['completed', 'failed'].includes(progress.status)) stopStudentImportPolling();
+        } catch {
+            // The submit response will still show the final state if polling is interrupted.
+        }
+    };
+
+    studentImportConfirmForm.addEventListener('submit', async (event) => {
+        if (!window.fetch || studentImportConfirmForm.dataset.importSubmitting === 'true') {
+            if (studentImportConfirmForm.dataset.importSubmitting === 'true') event.preventDefault();
+            return;
+        }
+
+        event.preventDefault();
+        studentImportConfirmForm.dataset.importSubmitting = 'true';
+        confirmButton?.setAttribute('disabled', 'disabled');
+        if (confirmLabel) confirmLabel.textContent = 'Mengimpor...';
+        renderStudentImportProgress({ status: 'processing', message: 'Memulai import data siswa.', percent: 0 });
+        stopStudentImportPolling();
+        progressTimer = window.setInterval(pollStudentImportProgress, 2000);
+        pollStudentImportProgress();
+
+        try {
+            const response = await fetch(studentImportConfirmForm.action, {
+                method: 'POST',
+                body: new FormData(studentImportConfirmForm),
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+            const data = await response.json().catch(() => ({}));
+            if (data.progress) renderStudentImportProgress(data.progress);
+
+            if (response.ok && data.redirect) {
+                stopStudentImportPolling();
+                window.setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 700);
+                return;
+            }
+
+            stopStudentImportPolling();
+            renderStudentImportProgress(data.progress || {
+                status: 'failed',
+                percent: 100,
+                error_message: data.message || 'Import data siswa gagal diproses.',
+            });
+            studentImportConfirmForm.dataset.importSubmitting = 'false';
+            confirmButton?.removeAttribute('disabled');
+            if (confirmLabel) confirmLabel.textContent = 'Konfirmasi';
+        } catch {
+            stopStudentImportPolling();
+            renderStudentImportProgress({
+                status: 'failed',
+                error_message: 'Koneksi terputus saat import data siswa. Periksa kembali data setelah halaman dimuat ulang.',
+            });
+            studentImportConfirmForm.dataset.importSubmitting = 'false';
+            confirmButton?.removeAttribute('disabled');
+            if (confirmLabel) confirmLabel.textContent = 'Konfirmasi';
+        }
+    });
+}
+
 const classMovementForm = document.querySelector('[data-class-movement-form]');
 if (classMovementForm) {
     const studentCheckboxes = Array.from(classMovementForm.querySelectorAll('[data-class-movement-student]'));
@@ -1959,3 +2154,66 @@ document.querySelectorAll('[data-bill-tab]').forEach((button) => button.addEvent
     document.querySelectorAll('[data-bill-tab]').forEach((tab) => tab.classList.toggle('active', tab === button));
     document.querySelectorAll('[data-bill-panel]').forEach((panel) => { panel.hidden = panel.dataset.billPanel !== button.dataset.billTab; });
 }));
+
+const billSyncProgress = document.querySelector('[data-bill-sync-progress]');
+if (billSyncProgress) {
+    const formatter = new Intl.NumberFormat('id-ID');
+    const percent = billSyncProgress.querySelector('[data-bill-sync-percent]');
+    const bar = billSyncProgress.querySelector('[data-bill-sync-bar]');
+    const message = billSyncProgress.querySelector('[data-bill-sync-message]');
+    const processed = billSyncProgress.querySelector('[data-bill-sync-processed]');
+    const total = billSyncProgress.querySelector('[data-bill-sync-total]');
+    const created = billSyncProgress.querySelector('[data-bill-sync-created]');
+    const skipped = billSyncProgress.querySelector('[data-bill-sync-skipped]');
+    const failed = billSyncProgress.querySelector('[data-bill-sync-failed]');
+    const syncButton = document.querySelector('.bill-sync-button');
+    let reloadedAfterComplete = false;
+
+    const renderBillSyncProgress = (data) => {
+        const value = Number(data.percent || 0);
+        if (percent) percent.textContent = `${value}%`;
+        if (bar) bar.style.width = `${Math.min(100, Math.max(0, value))}%`;
+        if (message) message.textContent = data.error_message || data.message || 'Memproses sinkron tagihan.';
+        if (processed) processed.textContent = formatter.format(Number(data.processed_items || 0));
+        if (total) total.textContent = formatter.format(Number(data.total_items || 0));
+        if (created) created.textContent = formatter.format(Number(data.created_items || 0));
+        if (skipped) skipped.textContent = formatter.format(Number(data.skipped_items || 0) + Number(data.existing_items || 0));
+        if (failed) failed.textContent = formatter.format(Number(data.failed_items || 0));
+        if (syncButton) {
+            const active = ['pending', 'processing'].includes(data.status);
+            syncButton.disabled = active;
+            const label = syncButton.querySelector('span');
+            if (label) label.textContent = active ? 'Sinkron Berjalan' : 'Sinkron Tagihan';
+        }
+    };
+
+    const tickBillSyncProgress = async () => {
+        try {
+            const response = await fetch(billSyncProgress.dataset.progressUrl, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': billSyncProgress.dataset.csrf || '',
+                },
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Progress sinkron gagal diperbarui.');
+            renderBillSyncProgress(data);
+
+            if (['completed', 'failed'].includes(data.status)) {
+                window.clearInterval(billSyncProgress.syncTimer);
+                if (data.status === 'completed' && !reloadedAfterComplete && billSyncProgress.dataset.active === 'true') {
+                    reloadedAfterComplete = true;
+                    window.setTimeout(() => window.location.reload(), 900);
+                }
+            }
+        } catch (error) {
+            if (message) message.textContent = error.message;
+        }
+    };
+
+    if (billSyncProgress.dataset.active === 'true') {
+        tickBillSyncProgress();
+        billSyncProgress.syncTimer = window.setInterval(tickBillSyncProgress, 2000);
+    }
+}

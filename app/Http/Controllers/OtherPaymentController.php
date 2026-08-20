@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CorrectOtherPaymentRequest;
 use App\Http\Requests\PreviewOtherPaymentImportRequest;
 use App\Http\Requests\StoreOtherPaymentRequest;
 use App\Http\Requests\UpdateOtherPaymentRequest;
@@ -331,6 +332,52 @@ class OtherPaymentController extends Controller
             ->with('success', 'Transaksi pembayaran berhasil diperbarui.');
     }
 
+    public function correct(CorrectOtherPaymentRequest $request, OtherPayment $otherPayment, OtherPaymentService $payments): RedirectResponse
+    {
+        $this->authorizePaymentCorrectionRole($request);
+        $this->authorizePaymentAccess($request, $otherPayment);
+        $before = $this->paymentAuditSnapshot($otherPayment->loadMissing(['feeType', 'items']));
+        $payment = $payments->correctTransaction($otherPayment, $request->validated());
+        app(AuditLogService::class)->recordOperation(
+            'payments.other.correct',
+            $this->paymentAuditMetadata($payment) + ['reason' => $request->validated('reason')],
+            beforeValues: $before,
+            afterValues: $this->paymentAuditSnapshot($payment),
+            request: $request,
+            subjectType: OtherPayment::class,
+            subjectId: $payment->id,
+            studentIds: [$payment->student_id],
+        );
+
+        return $this->redirectAfterMutation($request, route('finance.other.index', $this->paymentSectionParams($payment)))
+            ->with('success', 'Koreksi transaksi pembayaran berhasil disimpan dan tercatat dalam audit.');
+    }
+
+    public function cancel(Request $request, OtherPayment $otherPayment, OtherPaymentService $payments): RedirectResponse
+    {
+        $validated = $request->validate([
+            'reason' => ['required', 'string', 'max:255'],
+            'return_url' => ['nullable', 'string'],
+        ]);
+        $this->authorizePaymentCorrectionRole($request);
+        $this->authorizePaymentAccess($request, $otherPayment);
+        $before = $this->paymentAuditSnapshot($otherPayment->loadMissing(['feeType', 'items']));
+        $payment = $payments->cancel($otherPayment, $validated['reason']);
+        app(AuditLogService::class)->recordOperation(
+            'payments.other.cancel',
+            $this->paymentAuditMetadata($payment) + ['reason' => $validated['reason']],
+            beforeValues: $before,
+            afterValues: $this->paymentAuditSnapshot($payment),
+            request: $request,
+            subjectType: OtherPayment::class,
+            subjectId: $payment->id,
+            studentIds: [$payment->student_id],
+        );
+
+        return $this->redirectAfterMutation($request, route('finance.other.index', $this->paymentSectionParams($payment)))
+            ->with('success', 'Transaksi pembayaran berhasil dibatalkan dan tagihan diperbarui.');
+    }
+
     public function destroy(Request $request, OtherPayment $otherPayment, OtherPaymentService $payments, LaundryPaymentService $laundryPayments): RedirectResponse
     {
         $this->authorizePaymentAccess($request, $otherPayment);
@@ -651,6 +698,12 @@ class OtherPaymentController extends Controller
         }
 
         $this->authorizeStudentAccess($request, $payment->student);
+    }
+
+    private function authorizePaymentCorrectionRole(Request $request): void
+    {
+        $user = $request->user();
+        abort_unless($user?->isSuperAdmin() || $user?->isBendaharaUnit(), 403);
     }
 
     private function paymentAuditMetadata(OtherPayment $payment): array
