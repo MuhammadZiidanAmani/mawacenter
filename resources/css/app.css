@@ -22313,3 +22313,314 @@ html body .app-shell .main-panel main.payment-flat-page + .app-footer {
     line-height: 1.4;
 }
 
+/* Compact failed-payment review table. */
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-head {
+    align-items: center !important;
+    gap: 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-title {
+    display: grid !important;
+    gap: 3px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-title strong {
+    color: #020617 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-title span {
+    color: #707971 !important;
+    font-size: 13px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search {
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: 18px minmax(0, 1fr) !important;
+    align-items: center !important;
+    flex: 0 1 320px !important;
+    width: 100% !important;
+    min-width: 240px !important;
+    max-width: 360px !important;
+    height: 40px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search:focus-within {
+    border-color: #157144 !important;
+    outline: 2px solid rgba(21, 113, 68, .12) !important;
+    outline-offset: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin-left: 12px !important;
+    color: #64748b !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search-icon .icon {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    min-width: 0 !important;
+    padding: 0 12px 0 8px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font: inherit !important;
+    font-size: 14px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search input:focus {
+    outline: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-wrap {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table {
+    min-width: 860px !important;
+    table-layout: fixed !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table td {
+    height: 52px !important;
+    padding: 10px 12px !important;
+    vertical-align: middle !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(1) { width: 7% !important; }
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(2) { width: 12% !important; }
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(3) { width: 27% !important; }
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(4) { width: 16% !important; }
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(5) { width: 16% !important; }
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(6) { width: 22% !important; }
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table td strong {
+    font-weight: 500 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-amount {
+    text-align: right !important;
+    white-space: nowrap !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-problem-cell {
+    display: grid !important;
+    align-content: center !important;
+    justify-items: start !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-problem-cell > span {
+    overflow: hidden !important;
+    max-width: 100% !important;
+    color: #991b1b !important;
+    font-weight: 600 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-toggle {
+    appearance: none !important;
+    width: auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #004528 !important;
+    font: inherit !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    text-decoration: underline !important;
+    text-underline-offset: 2px !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-toggle:focus-visible {
+    border-radius: 3px !important;
+    outline: 2px solid #004528 !important;
+    outline-offset: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-row[hidden] {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table .payment-import-preview-detail-row td {
+    height: auto !important;
+    padding: 0 !important;
+    background: #fbfdf8 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+    padding: 14px 16px 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content > div {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content strong {
+    color: #334155 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    text-transform: uppercase !important;
+    letter-spacing: .02em !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content p {
+    margin: 0 !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-pagination {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+    margin-top: 12px !important;
+    color: #64748b !important;
+    font-size: 13px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-pagination [data-payment-import-preview-pages] {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    padding: 0 8px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    font: inherit !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button:hover:not(:disabled),
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button.is-current {
+    border-color: #b7d6c6 !important;
+    background: #f0fbf5 !important;
+    color: #004528 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button:disabled {
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    min-height: 72px !important;
+    padding: 16px !important;
+    border: 1px solid #b7d6c6 !important;
+    border-radius: 8px !important;
+    background: #f0fbf5 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    background: #0d5f36 !important;
+    color: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty-icon .icon {
+    width: 15px !important;
+    height: 15px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success > div {
+    display: grid !important;
+    gap: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success strong {
+    color: #0d5f36 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success span:not(.payment-import-preview-empty-icon) {
+    color: #475569 !important;
+    font-size: 13px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-top .button {
+    background: #004528 !important;
+    border-color: #004528 !important;
+    color: #ffffff !important;
+}
+
+@media (max-width: 700px) {
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-head {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-pagination {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+}

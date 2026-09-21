@@ -1070,6 +1070,14 @@ class MasterDataTest extends TestCase
             ->assertDontSee('Pembayaran SPP')
             ->assertSee('Import 2 Transaksi')
             ->assertSee('Data Gagal')
+            ->assertSee('<th>Masalah</th>', false)
+            ->assertDontSee('<th>Keterangan</th>', false)
+            ->assertSee('NIS tidak ditemukan')
+            ->assertSee('Lihat Detail')
+            ->assertSee('data-payment-import-preview-search', false)
+            ->assertSee('data-payment-import-preview-page-size="25"', false)
+            ->assertSee('data-payment-import-preview-detail-row', false)
+            ->assertSee('colspan="6"', false)
             ->assertDontSee('Hasil Validasi')
             ->assertDontSee('Siap diimpor.')
             ->assertSee('NIS 999999 tidak ditemukan.');
@@ -1298,6 +1306,9 @@ class MasterDataTest extends TestCase
             ->assertViewIs('finance.payments')
             ->assertSee('Preview Import Pembayaran')
             ->assertSee('Data Gagal')
+            ->assertSee('<th>Masalah</th>', false)
+            ->assertDontSee('<th>Keterangan</th>', false)
+            ->assertSee('Lihat Detail')
             ->assertSee('NIS 999999 tidak ditemukan.')
             ->assertDontSee('Pemetaan Kategori');
         $this->assertSame($feeType->id, (int) collect($preview->viewData('importMappings'))->first());

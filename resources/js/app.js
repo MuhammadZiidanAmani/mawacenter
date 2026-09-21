@@ -521,6 +521,97 @@ if (paymentImport) {
     });
 }
 
+const paymentImportPreview = document.querySelector('[data-payment-import-preview]');
+if (paymentImportPreview) {
+    const rows = Array.from(paymentImportPreview.querySelectorAll('[data-payment-import-preview-row]'));
+    const searchInput = paymentImportPreview.querySelector('[data-payment-import-preview-search]');
+    const rangeLabel = paymentImportPreview.querySelector('[data-payment-import-preview-range]');
+    const pagesContainer = paymentImportPreview.querySelector('[data-payment-import-preview-pages]');
+    const pageSize = Number(paymentImportPreview.dataset.paymentImportPreviewPageSize || 25);
+    let searchQuery = '';
+    let currentPage = 1;
+
+    const renderPagination = (pageCount) => {
+        if (!pagesContainer) return;
+        pagesContainer.replaceChildren();
+
+        if (pageCount <= 1) return;
+
+        const addPageButton = (label, page, disabled = false, current = false) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'payment-import-preview-page-button';
+            button.textContent = label;
+            button.disabled = disabled;
+            if (current) {
+                button.classList.add('is-current');
+                button.setAttribute('aria-current', 'page');
+            }
+            button.addEventListener('click', () => {
+                currentPage = page;
+                renderPreview();
+            });
+            pagesContainer.append(button);
+        };
+
+        addPageButton('Sebelumnya', Math.max(1, currentPage - 1), currentPage === 1);
+        for (let page = 1; page <= pageCount; page += 1) {
+            addPageButton(String(page), page, false, page === currentPage);
+        }
+        addPageButton('Berikutnya', Math.min(pageCount, currentPage + 1), currentPage === pageCount);
+    };
+
+    const renderPreview = () => {
+        const filteredRows = rows.filter((row) => !searchQuery || (row.dataset.search || '').toLowerCase().includes(searchQuery));
+        const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+        currentPage = Math.min(currentPage, pageCount);
+        const pageStart = (currentPage - 1) * pageSize;
+        const visibleRows = new Set(filteredRows.slice(pageStart, pageStart + pageSize));
+
+        rows.forEach((row) => {
+            const isVisible = visibleRows.has(row);
+            const detailRow = row.nextElementSibling;
+            const detailToggle = row.querySelector('[data-payment-import-preview-detail-toggle]');
+
+            row.hidden = !isVisible;
+            if (!isVisible && detailRow?.matches('[data-payment-import-preview-detail-row]')) {
+                detailRow.hidden = true;
+                detailToggle?.setAttribute('aria-expanded', 'false');
+                row.classList.remove('is-expanded');
+            }
+        });
+
+        if (rangeLabel) {
+            rangeLabel.textContent = filteredRows.length === 0
+                ? 'Tidak ada data gagal yang cocok'
+                : `Menampilkan ${pageStart + 1}-${Math.min(pageStart + pageSize, filteredRows.length)} dari ${filteredRows.length} data gagal`;
+        }
+        renderPagination(pageCount);
+    };
+
+    rows.forEach((row) => {
+        const detailToggle = row.querySelector('[data-payment-import-preview-detail-toggle]');
+        const detailRow = row.nextElementSibling;
+
+        if (!detailToggle || !detailRow?.matches('[data-payment-import-preview-detail-row]')) return;
+
+        detailToggle.addEventListener('click', () => {
+            const isExpanded = detailToggle.getAttribute('aria-expanded') === 'true';
+            detailToggle.setAttribute('aria-expanded', String(!isExpanded));
+            detailRow.hidden = isExpanded;
+            row.classList.toggle('is-expanded', !isExpanded);
+        });
+    });
+
+    searchInput?.addEventListener('input', () => {
+        searchQuery = searchInput.value.trim().toLowerCase();
+        currentPage = 1;
+        renderPreview();
+    });
+
+    renderPreview();
+}
+
 const sppImportToggle = document.querySelector('[data-spp-import-toggle]');
 const sppImportPanel = document.querySelector('[data-spp-import-panel]');
 const setSppImportPanel = (open) => {

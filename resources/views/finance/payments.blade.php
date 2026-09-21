@@ -687,6 +687,31 @@
                     $unresolvedSources = collect($importUnresolvedSources ?? []);
                     $previewImportAction = $importAction ?? route('finance.spp.import');
                     $canImport = $importPreview['valid'] > 0;
+                    $failureReasonLabel = static function (array $row): string {
+                        $message = trim((string) ($row['message'] ?? ''));
+                        $normalizedMessage = strtolower($message);
+
+                        return match (true) {
+                            str_contains($normalizedMessage, 'berurutan') => 'Urutan SPP belum lengkap',
+                            str_contains($normalizedMessage, 'sudah lunas') => 'SPP sudah lunas',
+                            str_contains($normalizedMessage, 'nis') && str_contains($normalizedMessage, 'tidak ditemukan') => 'NIS tidak ditemukan',
+                            str_contains($normalizedMessage, 'nominal') => 'Nominal tidak valid',
+                            str_contains($normalizedMessage, 'nama') && str_contains($normalizedMessage, 'tidak cocok') => 'Nama siswa tidak cocok',
+                            str_contains($normalizedMessage, 'kategori') => 'Kategori pembayaran tidak cocok',
+                            default => 'Validasi gagal',
+                        };
+                    };
+                    $failureReasonSuggestion = static function (string $label): string {
+                        return match ($label) {
+                            'Urutan SPP belum lengkap' => 'Periksa periode pembayaran sebelumnya pada siswa ini.',
+                            'SPP sudah lunas' => 'Periksa periode SPP dan riwayat pembayaran siswa.',
+                            'NIS tidak ditemukan' => 'Periksa NIS dan unit siswa pada file Excel.',
+                            'Nominal tidak valid' => 'Periksa nominal pembayaran pada file Excel.',
+                            'Nama siswa tidak cocok' => 'Periksa ejaan nama dan NIS pada file Excel.',
+                            'Kategori pembayaran tidak cocok' => 'Periksa kategori, unit, dan kelas pembayaran.',
+                            default => 'Periksa data pada baris Excel dan detail validasinya.',
+                        };
+                    };
                 @endphp
                 <section class="payment-import-preview-panel">
                     @if($unresolvedSources->isNotEmpty())
@@ -742,37 +767,84 @@
                         </form>
                     </div>
 
-                    @if(count($importPreview['failures']) > 0)
-                        <div class="payment-import-preview-table-head">
-                            <strong>Data Gagal</strong>
-                            <span>{{ number_format(count($importPreview['failures']), 0, ',', '.') }} baris</span>
-                        </div>
-                        <div class="table-wrap payment-import-preview-table-wrap">
-                            <table class="data-table payment-import-preview-table">
-                                <thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>{{ $previewType === 'spp' ? 'Periode' : 'Kategori' }}</th><th>Nominal</th><th>Keterangan</th></tr></thead>
-                                <tbody>
-                                    @foreach($importPreview['failures'] as $row)
-                                        <tr>
-                                            <td>{{ $row['line'] }}</td>
-                                            <td>{{ $row['nis'] }}</td>
-                                            <td>{{ $row['name'] }}</td>
-                                            <td>
-                                                @if($previewType === 'spp')
-                                                    {{ ucfirst($row['month_name']) }} {{ $row['year'] }}
-                                                @else
-                                                    {{ $row['category'] ?: '-' }}
-                                                @endif
-                                            </td>
-                                            <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
-                                            <td>{{ $row['message'] }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="payment-import-preview-empty">Tidak ada data gagal.</div>
-                    @endif
+                    <div data-payment-import-preview data-payment-import-preview-page-size="25">
+                        @if(count($importPreview['failures']) > 0)
+                            <div class="payment-import-preview-table-head">
+                                <div class="payment-import-preview-table-title">
+                                    <strong>Data Gagal</strong>
+                                    <span>{{ number_format(count($importPreview['failures']), 0, ',', '.') }} baris</span>
+                                </div>
+                                <label class="payment-import-preview-search">
+                                    <span class="sr-only">Cari NIS atau nama siswa</span>
+                                    <span class="payment-import-preview-search-icon" aria-hidden="true">{!! $icon('search') !!}</span>
+                                    <input type="search" placeholder="Cari NIS atau nama siswa" data-payment-import-preview-search>
+                                </label>
+                            </div>
+                            <div class="table-wrap payment-import-preview-table-wrap">
+                                <table class="data-table payment-import-preview-table">
+                                    <thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>{{ $previewType === 'spp' ? 'Periode' : 'Kategori' }}</th><th>Nominal</th><th>Masalah</th></tr></thead>
+                                    <tbody data-payment-import-preview-rows>
+                                        @foreach($importPreview['failures'] as $index => $row)
+                                            @php
+                                                $rowReason = $failureReasonLabel($row);
+                                                $rowPeriod = $previewType === 'spp'
+                                                    ? ucfirst((string) ($row['month_name'] ?? '-')).' '.($row['year'] ?? '')
+                                                    : ($row['category'] ?? '-');
+                                                $detailId = 'payment-import-preview-detail-'.$index;
+                                                $rowSearchText = implode(' ', array_filter([
+                                                    $row['line'] ?? null,
+                                                    $row['nis'] ?? null,
+                                                    $row['name'] ?? null,
+                                                    $rowPeriod,
+                                                    $rowReason,
+                                                    $row['message'] ?? null,
+                                                ]));
+                                            @endphp
+                                            <tr data-payment-import-preview-row data-search="{{ $rowSearchText }}">
+                                                <td>{{ $row['line'] ?? '-' }}</td>
+                                                <td>{{ $row['nis'] ?? '-' }}</td>
+                                                <td><strong>{{ $row['name'] ?? '-' }}</strong></td>
+                                                <td>{{ $rowPeriod }}</td>
+                                                <td class="payment-import-preview-amount">Rp {{ number_format((int) ($row['nominal'] ?? 0), 0, ',', '.') }}</td>
+                                                <td>
+                                                    <div class="payment-import-preview-problem-cell">
+                                                        <span>{{ $rowReason }}</span>
+                                                        <button type="button" class="payment-import-preview-detail-toggle" data-payment-import-preview-detail-toggle aria-expanded="false" aria-controls="{{ $detailId }}">Lihat Detail</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr id="{{ $detailId }}" class="payment-import-preview-detail-row" data-payment-import-preview-detail-row hidden>
+                                                <td colspan="6">
+                                                    <div class="payment-import-preview-detail-content">
+                                                        <div>
+                                                            <strong>Detail masalah</strong>
+                                                            <p>{{ $row['message'] ?? 'Validasi gagal.' }}</p>
+                                                        </div>
+                                                        <div>
+                                                            <strong>Yang perlu diperiksa</strong>
+                                                            <p>{{ $failureReasonSuggestion($rowReason) }}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="payment-import-preview-pagination" data-payment-import-preview-pagination>
+                                <span data-payment-import-preview-range></span>
+                                <div data-payment-import-preview-pages></div>
+                            </div>
+                        @else
+                            <div class="payment-import-preview-empty is-success">
+                                <span class="payment-import-preview-empty-icon" aria-hidden="true">{!! $icon('check') !!}</span>
+                                <div>
+                                    <strong>Tidak ada data yang perlu diperiksa.</strong>
+                                    <span>Seluruh data lolos validasi.</span>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </section>
             @endif
         </main>
