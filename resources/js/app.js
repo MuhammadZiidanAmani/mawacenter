@@ -25,9 +25,8 @@ const setWaliMode = (active) => {
         loginUsernameInput.placeholder = active ? 'Masukkan NIS santri' : 'Masukkan username';
         loginUsernameInput.focus();
     }
-    // Toggle required pada password agar validasi HTML5 benar
     if (loginPasswordField) {
-        loginPasswordField.required = !active;
+        loginPasswordField.required = true;
     }
 };
 
@@ -38,43 +37,6 @@ if (loginForm) {
 }
 // ============================================================
 
-const themeStorageKey = 'mawacenter-theme';
-const themeIcons = {
-    light: '<svg class="icon theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
-    dark: '<svg class="icon theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z"/></svg>',
-};
-const storedTheme = () => {
-    try {
-        return localStorage.getItem(themeStorageKey);
-    } catch {
-        return null;
-    }
-};
-const storeTheme = (theme) => {
-    try {
-        localStorage.setItem(themeStorageKey, theme);
-    } catch {
-        // Theme still changes for the current page if storage is unavailable.
-    }
-};
-const preferredTheme = () => {
-    const saved = storedTheme();
-    if (saved === 'dark' || saved === 'light') return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
-const applyTheme = (theme) => {
-    const nextTheme = theme === 'dark' ? 'dark' : 'light';
-    document.documentElement.dataset.theme = nextTheme;
-    document.documentElement.style.colorScheme = nextTheme;
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', nextTheme === 'dark' ? '#07140f' : '#157144');
-    document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
-        const dark = nextTheme === 'dark';
-        button.setAttribute('aria-label', dark ? 'Gunakan mode terang' : 'Gunakan mode gelap');
-        button.setAttribute('title', dark ? 'Mode terang' : 'Mode gelap');
-        button.innerHTML = dark ? themeIcons.dark : themeIcons.light;
-    });
-};
-applyTheme(preferredTheme());
 const digitsOnly = (value) => String(value ?? '').replace(/\D/g, '');
 const formatThousands = (value) => {
     const digits = digitsOnly(value).replace(/^0+(?=\d)/, '');
@@ -117,44 +79,6 @@ passwordToggle?.addEventListener('click', () => {
     passwordToggle.setAttribute('aria-label', revealing ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
     passwordToggle.setAttribute('title', revealing ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
 });
-
-
-
-document.querySelectorAll('.logout-button').forEach((button) => {
-    button.addEventListener('click', () => { window.location.href = '/logout'; });
-});
-
-document.querySelectorAll('.topbar').forEach((topbar) => {
-    if (topbar.querySelector('[data-theme-toggle]')) return;
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'icon-button theme-toggle-button';
-    button.dataset.themeToggle = 'true';
-    button.addEventListener('click', () => {
-        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        storeTheme(nextTheme);
-        applyTheme(nextTheme);
-    });
-
-    const notificationButton = topbar.querySelector('.notification-button');
-    topbar.insertBefore(button, notificationButton ?? topbar.querySelector('.logout-button'));
-    applyTheme(document.documentElement.dataset.theme);
-});
-
-if (document.querySelector('.login-page') && !document.querySelector('[data-theme-toggle]')) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'icon-button theme-toggle-button login-theme-toggle';
-    button.dataset.themeToggle = 'true';
-    button.addEventListener('click', () => {
-        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        storeTheme(nextTheme);
-        applyTheme(nextTheme);
-    });
-    document.body.appendChild(button);
-    applyTheme(document.documentElement.dataset.theme);
-}
 
 document.querySelectorAll('[data-indonesian-date]').forEach((input) => {
     input.value = formatDateInput(input.value);
@@ -207,9 +131,18 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     const transferUpload = form.querySelector('[data-payment-transfer-upload]');
     const transferFile = form.querySelector('[data-payment-transfer-file]');
     const uploadName = form.querySelector('[data-payment-upload-name]');
+    const paidTotalOutput = form.querySelector('[data-payment-paid-total]');
+    const paidError = form.querySelector('[data-payment-paid-error]');
+    const transferError = form.querySelector('[data-payment-transfer-error]');
+    const paymentTypeOptions = Array.from(form.querySelectorAll('[data-payment-type-option]'));
+    const methodOptions = Array.from(form.querySelectorAll('[data-payment-method-option]'));
+    const submitLabel = submitButton?.querySelector('[data-payment-submit-label]');
+    const defaultSubmitLabel = submitLabel?.textContent || 'Bayar & Cetak Struk';
     const isEditPayment = Boolean(form.dataset.paymentEditMode);
     const hasTransferProof = form.dataset.paymentHasTransferProof === 'true';
     let paidTouched = false;
+    let validationAttempted = Boolean(paidError?.textContent.trim() || transferError?.textContent.trim());
+    let isSubmitting = false;
 
     const selectedTotal = () => bills
         .filter((bill) => bill.checked)
@@ -249,11 +182,62 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
 
     const formatTotal = (total) => (total > 0 ? formatter.format(total) : '');
 
+    const showFieldError = (target, message, shouldShow) => {
+        if (!target) return;
+        target.textContent = message;
+        target.hidden = !message || !shouldShow;
+    };
+
+    const transferFileError = () => {
+        if (method?.value !== 'Transfer') return '';
+
+        const file = transferFile?.files?.[0];
+        if (!file) {
+            return isEditPayment && hasTransferProof
+                ? ''
+                : 'Bukti transfer wajib diunggah untuk metode pembayaran Transfer.';
+        }
+        if (!/\.(jpe?g|png|pdf)$/i.test(file.name)) {
+            return 'Bukti transfer harus berupa JPG, JPEG, PNG, atau PDF.';
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            return 'Ukuran bukti transfer maksimal 2 MB.';
+        }
+
+        return '';
+    };
+
+    const renderPaymentState = (showErrors = validationAttempted) => {
+        const total = selectedTotal();
+        const paidAmount = Number(digitsOnly(paidInput?.value || '0'));
+        const isFullPayment = paymentType?.value !== 'partial';
+        let paidMessage = '';
+
+        if (!isFullPayment && paidAmount < 1) {
+            paidMessage = 'Nominal dibayar harus lebih dari 0.';
+        } else if (paidAmount > total && total > 0) {
+            paidMessage = 'Nominal tidak boleh melebihi total pembayaran.';
+        }
+
+        const proofMessage = transferFileError();
+        if (transferFile) transferFile.setCustomValidity(proofMessage);
+        showFieldError(paidError, paidMessage, showErrors);
+        showFieldError(transferError, proofMessage, showErrors);
+        if (paidTotalOutput) paidTotalOutput.textContent = `${formatter.format(paidAmount)},-`;
+
+        const isValid = total > 0
+            && paidAmount > 0
+            && paidAmount <= total
+            && proofMessage === '';
+        if (submitButton) submitButton.disabled = isSubmitting || !isValid;
+
+        return isValid;
+    };
+
     const renderTotal = (syncPaid = false) => {
         syncAllBillIds();
         const total = selectedTotal();
         if (totalOutput) totalOutput.textContent = `${formatter.format(total)},-`;
-        if (submitButton) submitButton.disabled = total < 1;
         if (paidInput) {
             const isFullPayment = paymentType?.value !== 'partial';
             paidInput.readOnly = isFullPayment;
@@ -265,6 +249,7 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
                 paidTouched = false;
             }
         }
+        renderPaymentState();
     };
 
     const renderMandatoryDisplayTotal = () => {
@@ -313,6 +298,26 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
 
     paymentType?.addEventListener('change', () => renderTotal(true));
 
+    paymentTypeOptions.forEach((option) => {
+        option.addEventListener('change', () => {
+            if (!option.checked || !paymentType) return;
+            paymentType.value = option.value;
+            paidTouched = false;
+            validationAttempted = method?.value === 'Transfer';
+            renderTotal(true);
+        });
+    });
+
+    methodOptions.forEach((option) => {
+        option.addEventListener('change', () => {
+            if (!option.checked || !method) return;
+            method.value = option.value;
+            validationAttempted = option.value === 'Transfer';
+            renderTransferFields();
+            renderPaymentState();
+        });
+    });
+
     form.querySelectorAll('[data-payment-period-select]').forEach((select) => {
         select.addEventListener('change', () => {
             const row = select.closest('[data-payment-bill-row]');
@@ -344,23 +349,43 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         });
     });
 
-    form.addEventListener('submit', syncAllBillIds);
+    form.addEventListener('submit', (event) => {
+        syncAllBillIds();
+        validationAttempted = true;
+        if (isSubmitting || !renderPaymentState(true)) {
+            event.preventDefault();
+            if (paidInput) formatCurrencyInput(paidInput);
+            return;
+        }
+
+        isSubmitting = true;
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.setAttribute('aria-busy', 'true');
+        }
+        if (submitLabel) submitLabel.textContent = isEditPayment ? 'Menyimpan Perubahan...' : 'Memproses Pembayaran...';
+    });
 
     paidInput?.addEventListener('input', () => {
         paidTouched = true;
+        validationAttempted = true;
+        renderPaymentState(true);
     });
 
-    method?.addEventListener('change', renderTransferFields);
+    method?.addEventListener('change', () => {
+        renderTransferFields();
+        renderPaymentState();
+    });
 
     transferFile?.addEventListener('change', () => {
-        transferFile.setCustomValidity('');
+        validationAttempted = true;
         if (uploadName) uploadName.textContent = transferFile.files?.[0]?.name || 'Pilih file bukti transfer';
+        renderPaymentState(true);
     });
 
     transferFile?.addEventListener('invalid', () => {
-        if (method?.value === 'Transfer' && !transferFile.files?.length) {
-            transferFile.setCustomValidity('Bukti transfer wajib diunggah untuk metode pembayaran Transfer.');
-        }
+        validationAttempted = true;
+        renderPaymentState(true);
     });
 
     form.querySelector('[data-payment-copy-account]')?.addEventListener('click', async (event) => {
@@ -384,6 +409,7 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     if (billChoice) syncBillChoice();
     renderMandatoryDisplayTotal();
     renderTotal(false);
+    if (submitLabel) submitLabel.textContent = defaultSubmitLabel;
 });
 
 document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
@@ -406,12 +432,14 @@ document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
         if (!fallbackModal) return;
         fallbackModal.hidden = false;
         fallbackModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
         fallbackModal.querySelector('[data-open-receipts]')?.focus();
     };
     const hideFallback = () => {
         if (!fallbackModal) return;
         fallbackModal.classList.remove('show');
         fallbackModal.hidden = true;
+        document.body.style.overflow = '';
     };
     const openReceipts = () => {
         let blocked = false;
@@ -419,7 +447,9 @@ document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
             const opened = window.open(url, '_blank', 'noopener');
             if (!opened) blocked = true;
         });
-        if (blocked) showFallback();
+        if (blocked) {
+            showFallback();
+        }
     };
     const downloadReceipts = () => {
         downloadUrls.forEach((url) => {
@@ -429,11 +459,32 @@ document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
 
     launcher.querySelector('[data-open-receipts]')?.addEventListener('click', openReceipts);
     launcher.querySelector('[data-download-receipts]')?.addEventListener('click', downloadReceipts);
-    launcher.querySelectorAll('[data-alert-close]').forEach((button) => button.addEventListener('click', hideFallback));
+    launcher.querySelectorAll('[data-payment-success-close]').forEach((button) => button.addEventListener('click', hideFallback));
     fallbackModal?.addEventListener('click', (event) => {
         if (event.target === fallbackModal) hideFallback();
     });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && fallbackModal?.classList.contains('show')) hideFallback();
+    });
     if (urls.length) openReceipts();
+});
+
+document.querySelectorAll('[data-payment-context-switch]').forEach((input) => {
+    input.addEventListener('change', () => {
+        const form = input.form;
+
+        if (!input.checked || !form || form.dataset.paymentLoading === 'true') return;
+
+        form.dataset.paymentLoading = 'true';
+        form.classList.add('is-loading');
+        form.setAttribute('aria-busy', 'true');
+        form.querySelectorAll('[data-payment-context-switch]').forEach((option) => {
+            option.closest('.payment-context-option')?.classList.toggle('is-active', option === input);
+
+            if (option !== input) option.disabled = true;
+        });
+        form.submit();
+    });
 });
 
 document.querySelectorAll('[data-payment-history-delete-modal]').forEach((modal) => {
@@ -447,6 +498,12 @@ document.querySelectorAll('[data-payment-history-delete-modal]').forEach((modal)
         modal.classList.remove('show');
         modal.hidden = true;
         pendingForm = null;
+        document.body.style.overflow = '';
+        if (confirm) {
+            confirm.disabled = false;
+            confirm.removeAttribute('aria-busy');
+            confirm.textContent = 'Ya, Hapus';
+        }
     };
 
     document.querySelectorAll('[data-payment-history-delete-form]').forEach((form) => {
@@ -460,6 +517,7 @@ document.querySelectorAll('[data-payment-history-delete-modal]').forEach((modal)
             if (meta) meta.textContent = [detail, amount].filter(Boolean).join(' · ');
             modal.hidden = false;
             modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
             confirm?.focus();
         });
     });
@@ -469,8 +527,11 @@ document.querySelectorAll('[data-payment-history-delete-modal]').forEach((modal)
         if (event.target === modal) close();
     });
     confirm?.addEventListener('click', () => {
-        if (!pendingForm) return;
+        if (!pendingForm || pendingForm.dataset.paymentDeleteConfirmed === 'true') return;
         pendingForm.dataset.paymentDeleteConfirmed = 'true';
+        confirm.disabled = true;
+        confirm.setAttribute('aria-busy', 'true');
+        confirm.textContent = 'Menghapus...';
         pendingForm.submit();
     });
 });
@@ -480,19 +541,48 @@ document.querySelector('[data-spp-import-file]')?.addEventListener('change', (ev
     const label = document.querySelector('[data-spp-import-filename]');
     if (label) label.textContent = file?.name || 'Ketuk untuk pilih berkas';
     event.target.closest('.spp-import-dropzone')?.classList.toggle('has-file', Boolean(file));
+    event.target.closest('[data-student-import-upload]')?.classList.toggle('has-file', Boolean(file));
 });
 
 const paymentImport = document.querySelector('[data-payment-import]');
 if (paymentImport) {
     const category = paymentImport.querySelector('[data-payment-import-category]');
     const fileInput = paymentImport.querySelector('[data-payment-import-file]');
+    const dropzone = paymentImport.querySelector('[data-payment-import-dropzone]');
+    const fileEmpty = paymentImport.querySelector('[data-payment-import-file-empty]');
+    const fileSelected = paymentImport.querySelector('[data-payment-import-file-selected]');
+    const fileName = paymentImport.querySelector('[data-payment-import-filename]');
+    const fileSize = paymentImport.querySelector('[data-payment-import-filesize]');
+    const changeFileButton = paymentImport.querySelector('[data-payment-import-file-change]');
+    const removeFileButton = paymentImport.querySelector('[data-payment-import-file-remove]');
     const submitButton = paymentImport.querySelector('[data-payment-import-submit]');
     const submitLabel = paymentImport.querySelector('[data-payment-import-submit-label]');
     const sppContext = paymentImport.querySelector('[data-payment-import-spp-context]');
     const sppFields = Array.from(paymentImport.querySelectorAll('[data-payment-import-spp-field]'));
 
+    const formatFileSize = (bytes) => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
+    const renderFileState = () => {
+        const file = fileInput?.files?.[0];
+        const hasFile = Boolean(file);
+
+        if (fileEmpty) fileEmpty.hidden = hasFile;
+        if (fileSelected) fileSelected.hidden = !hasFile;
+        if (fileName) fileName.textContent = file?.name || '';
+        if (fileSize) fileSize.textContent = file ? `${formatFileSize(file.size)} · Format XLSX` : '';
+        if (changeFileButton) changeFileButton.hidden = !hasFile;
+        if (removeFileButton) removeFileButton.hidden = !hasFile;
+        dropzone?.classList.toggle('has-file', hasFile);
+        dropzone?.setAttribute('aria-busy', 'false');
+    };
+
     const syncPaymentImport = () => {
-        const action = category.selectedOptions?.[0]?.dataset.action;
+        const action = category?.selectedOptions?.[0]?.dataset.action;
         if (action) paymentImport.action = action;
 
         const isSpp = category?.value === 'spp';
@@ -505,11 +595,44 @@ if (paymentImport) {
         const hasFile = Boolean(fileInput?.files?.length);
         const hasSppContext = !isSpp || sppFields.every((field) => field.value);
         if (submitButton) submitButton.disabled = !hasFile || !hasSppContext;
+        renderFileState();
     };
 
     category?.addEventListener('change', syncPaymentImport);
     fileInput?.addEventListener('change', syncPaymentImport);
     sppFields.forEach((field) => field.addEventListener('change', syncPaymentImport));
+    changeFileButton?.addEventListener('click', () => fileInput?.click());
+    removeFileButton?.addEventListener('click', () => {
+        if (fileInput) fileInput.value = '';
+        syncPaymentImport();
+        fileInput?.focus();
+    });
+    dropzone?.addEventListener('click', (event) => {
+        if (event.target.closest('button, label, input')) return;
+        fileInput?.click();
+    });
+    dropzone?.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropzone.classList.add('is-dragging');
+    });
+    dropzone?.addEventListener('dragleave', () => dropzone.classList.remove('is-dragging'));
+    dropzone?.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('is-dragging');
+
+        const droppedFile = event.dataTransfer?.files?.[0];
+        if (!droppedFile || !fileInput) return;
+
+        try {
+            const transfer = new DataTransfer();
+            transfer.items.add(droppedFile);
+            fileInput.files = transfer.files;
+        } catch {
+            return;
+        }
+
+        syncPaymentImport();
+    });
     syncPaymentImport();
 
     paymentImport.addEventListener('submit', () => {
@@ -521,32 +644,35 @@ if (paymentImport) {
     });
 }
 
-const paymentImportPreview = document.querySelector('[data-payment-import-preview]');
+const paymentImportPreview = document.querySelector('[data-import-preview]');
 if (paymentImportPreview) {
-    const rows = Array.from(paymentImportPreview.querySelectorAll('[data-payment-import-preview-row]'));
-    const searchInput = paymentImportPreview.querySelector('[data-payment-import-preview-search]');
-    const rangeLabel = paymentImportPreview.querySelector('[data-payment-import-preview-range]');
-    const pagesContainer = paymentImportPreview.querySelector('[data-payment-import-preview-pages]');
-    const pageSize = Number(paymentImportPreview.dataset.paymentImportPreviewPageSize || 25);
+    const rows = Array.from(paymentImportPreview.querySelectorAll('[data-import-preview-row]'));
+    const errorGroups = Array.from(paymentImportPreview.querySelectorAll('[data-import-preview-group]'));
+    const searchInput = paymentImportPreview.querySelector('[data-import-preview-search]');
+    const rangeLabel = paymentImportPreview.querySelector('[data-import-preview-range]');
+    const pagesContainer = paymentImportPreview.querySelector('[data-import-preview-pages]');
+    const submitForm = paymentImportPreview.querySelector('[data-import-preview-submit-form]');
+    const submitButton = paymentImportPreview.querySelector('[data-import-preview-submit]');
+    const submitLabel = paymentImportPreview.querySelector('[data-import-preview-submit-label]');
+    const pageSize = Number(paymentImportPreview.dataset.importPreviewPageSize || 25);
+    let activeReason = '';
     let searchQuery = '';
     let currentPage = 1;
 
-    const renderPagination = (pageCount) => {
+    const renderPagination = (total, pageCount) => {
         if (!pagesContainer) return;
         pagesContainer.replaceChildren();
 
         if (pageCount <= 1) return;
 
-        const addPageButton = (label, page, disabled = false, current = false) => {
+        const appendPageButton = (label, page, disabled = false, current = false) => {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'payment-import-preview-page-button';
             button.textContent = label;
             button.disabled = disabled;
-            if (current) {
-                button.classList.add('is-current');
-                button.setAttribute('aria-current', 'page');
-            }
+            if (current) button.classList.add('is-current');
+            if (current) button.setAttribute('aria-current', 'page');
             button.addEventListener('click', () => {
                 currentPage = page;
                 renderPreview();
@@ -554,15 +680,20 @@ if (paymentImportPreview) {
             pagesContainer.append(button);
         };
 
-        addPageButton('Sebelumnya', Math.max(1, currentPage - 1), currentPage === 1);
+        appendPageButton('<', Math.max(1, currentPage - 1), currentPage === 1);
         for (let page = 1; page <= pageCount; page += 1) {
-            addPageButton(String(page), page, false, page === currentPage);
+            appendPageButton(String(page), page, false, page === currentPage);
         }
-        addPageButton('Berikutnya', Math.min(pageCount, currentPage + 1), currentPage === pageCount);
+        appendPageButton('>', Math.min(pageCount, currentPage + 1), currentPage === pageCount);
     };
 
     const renderPreview = () => {
-        const filteredRows = rows.filter((row) => !searchQuery || (row.dataset.search || '').toLowerCase().includes(searchQuery));
+        const filteredRows = rows.filter((row) => {
+            const matchesReason = !activeReason || row.dataset.reason === activeReason;
+            const matchesSearch = !searchQuery || (row.dataset.search || '').toLowerCase().includes(searchQuery);
+
+            return matchesReason && matchesSearch;
+        });
         const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
         currentPage = Math.min(currentPage, pageCount);
         const pageStart = (currentPage - 1) * pageSize;
@@ -571,10 +702,10 @@ if (paymentImportPreview) {
         rows.forEach((row) => {
             const isVisible = visibleRows.has(row);
             const detailRow = row.nextElementSibling;
-            const detailToggle = row.querySelector('[data-payment-import-preview-detail-toggle]');
+            const detailToggle = row.querySelector('[data-import-preview-detail-toggle]');
 
             row.hidden = !isVisible;
-            if (!isVisible && detailRow?.matches('[data-payment-import-preview-detail-row]')) {
+            if (!isVisible && detailRow?.matches('[data-import-preview-detail-row]')) {
                 detailRow.hidden = true;
                 detailToggle?.setAttribute('aria-expanded', 'false');
                 row.classList.remove('is-expanded');
@@ -586,14 +717,26 @@ if (paymentImportPreview) {
                 ? 'Tidak ada data gagal yang cocok'
                 : `Menampilkan ${pageStart + 1}-${Math.min(pageStart + pageSize, filteredRows.length)} dari ${filteredRows.length} data gagal`;
         }
-        renderPagination(pageCount);
+        renderPagination(filteredRows.length, pageCount);
     };
 
+    errorGroups.forEach((group) => group.addEventListener('click', () => {
+        const nextReason = group.dataset.importPreviewGroup || '';
+        activeReason = activeReason === nextReason ? '' : nextReason;
+        currentPage = 1;
+        errorGroups.forEach((item) => {
+            const isActive = item === group && activeReason !== '';
+            item.classList.toggle('is-active', isActive);
+            item.setAttribute('aria-pressed', String(isActive));
+        });
+        renderPreview();
+    }));
+
     rows.forEach((row) => {
-        const detailToggle = row.querySelector('[data-payment-import-preview-detail-toggle]');
+        const detailToggle = row.querySelector('[data-import-preview-detail-toggle]');
         const detailRow = row.nextElementSibling;
 
-        if (!detailToggle || !detailRow?.matches('[data-payment-import-preview-detail-row]')) return;
+        if (!detailToggle || !detailRow?.matches('[data-import-preview-detail-row]')) return;
 
         detailToggle.addEventListener('click', () => {
             const isExpanded = detailToggle.getAttribute('aria-expanded') === 'true';
@@ -608,7 +751,13 @@ if (paymentImportPreview) {
         currentPage = 1;
         renderPreview();
     });
+    submitForm?.addEventListener('submit', () => {
+        if (!submitButton) return;
 
+        submitButton.disabled = true;
+        submitButton.classList.add('is-loading');
+        if (submitLabel) submitLabel.textContent = `Mengimpor ${submitButton.dataset.importCount || ''} Transaksi...`;
+    });
     renderPreview();
 }
 
@@ -1155,6 +1304,8 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
     const options = Array.from(select.options).filter((option) => option.value);
     const selected = options.find((option) => option.selected);
     const normalizedStudentText = (value) => value.trim().toLocaleLowerCase('id-ID').replace(/\s+/g, ' ');
+    const minimumQueryLength = 2;
+    const maximumVisibleResults = 8;
 
     if (selected) search.value = selected.textContent.trim();
 
@@ -1189,7 +1340,18 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
 
     const renderStudentResults = () => {
         const query = search.value.trim().toLocaleLowerCase('id-ID');
-        const matches = options.filter((option) => option.textContent.toLocaleLowerCase('id-ID').includes(query)).slice(0, 100);
+
+        if (query.length < minimumQueryLength) {
+            const hint = document.createElement('span');
+            hint.textContent = 'Ketik minimal 2 huruf nama atau NIS siswa.';
+            results.replaceChildren(hint);
+            results.hidden = false;
+
+            return;
+        }
+
+        const allMatches = options.filter((option) => option.textContent.toLocaleLowerCase('id-ID').includes(query));
+        const matches = allMatches.slice(0, maximumVisibleResults);
         results.replaceChildren(...matches.map((option) => {
             const button = document.createElement('button');
             button.type = 'button';
@@ -1202,6 +1364,11 @@ document.querySelectorAll('[data-student-picker]').forEach((picker) => {
             const empty = document.createElement('span');
             empty.textContent = 'Siswa tidak ditemukan';
             results.append(empty);
+        }
+        if (allMatches.length > maximumVisibleResults) {
+            const limit = document.createElement('span');
+            limit.textContent = 'Persempit pencarian untuk melihat hasil lainnya.';
+            results.append(limit);
         }
         results.hidden = false;
     };
@@ -1785,6 +1952,59 @@ document.querySelectorAll('[data-spp-correction-url]').forEach((button) => butto
     sppCorrectionModal.classList.add('show');
 }));
 
+const reportCorrectionModal = document.querySelector('[data-report-correction-modal]');
+const reportCancelModal = document.querySelector('[data-report-cancel-modal]');
+const reportPaymentModals = [reportCorrectionModal, reportCancelModal].filter(Boolean);
+const closeReportPaymentModals = () => reportPaymentModals.forEach((modal) => modal.classList.remove('show'));
+
+document.querySelectorAll('[data-report-payment-close]').forEach((button) => button.addEventListener('click', closeReportPaymentModals));
+reportPaymentModals.forEach((modal) => modal.addEventListener('click', (event) => { if (event.target === modal) closeReportPaymentModals(); }));
+
+document.querySelectorAll('[data-report-correction-url]').forEach((button) => button.addEventListener('click', async () => {
+    const form = document.querySelector('[data-report-correction-form]');
+    if (!form) return;
+
+    try {
+        const response = await fetch(button.dataset.reportPaymentDetailUrl, { headers: { Accept: 'application/json' } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message ?? 'Data transaksi gagal dimuat.');
+
+        const paidAmount = Number(data.paid_amount ?? button.dataset.reportPaymentAmount ?? 0);
+        form.reset();
+        form.action = button.dataset.reportCorrectionUrl;
+        form.elements.return_url.value = button.dataset.reportPaymentReturnUrl ?? window.location.href;
+        form.elements.transaction_date.value = data.transaction_date ?? button.dataset.reportPaymentDate ?? '';
+        form.elements.transaction_time.value = String(data.transaction_time ?? button.dataset.reportPaymentTime ?? '').slice(0, 5).replace(':', '.');
+        form.elements.payment_method.value = data.payment_method ?? button.dataset.reportPaymentMethod ?? 'Cash';
+        form.elements.status.value = ['Diterima', 'Pending'].includes(data.status) ? data.status : 'Diterima';
+        form.elements.new_paid_amount.value = paidAmount;
+        formatCurrencyInput(form.elements.new_paid_amount);
+
+        const studentName = data.student?.name ?? data.student_name ?? button.dataset.reportCorrectionSummary ?? 'Data transaksi';
+        const paymentName = data.payment_name ?? button.dataset.reportPaymentName ?? 'Pembayaran';
+        const studentMeta = data.student
+            ? `${data.student.nis ?? '-'} · ${data.student.unit ?? '-'} · ${data.student.class ?? '-'}`
+            : (button.dataset.reportCorrectionMeta ?? '');
+        document.querySelector('[data-report-correction-summary]').textContent = `${studentName} · ${paymentName}`;
+        document.querySelector('[data-report-correction-meta]').textContent = studentMeta;
+        document.querySelector('[data-report-correction-old]').textContent = sppCurrency.format(paidAmount);
+        reportCorrectionModal.classList.add('show');
+    } catch (error) {
+        window.alert(error.message);
+    }
+}));
+
+document.querySelectorAll('[data-report-cancel-url]').forEach((button) => button.addEventListener('click', () => {
+    const form = document.querySelector('[data-report-cancel-form]');
+    if (!form) return;
+
+    form.reset();
+    form.action = button.dataset.reportCancelUrl;
+    form.elements.return_url.value = button.dataset.reportPaymentReturnUrl ?? window.location.href;
+    document.querySelector('[data-report-cancel-summary]').textContent = button.dataset.reportCancelSummary ?? button.dataset.reportPaymentName ?? 'Data transaksi';
+    reportCancelModal.classList.add('show');
+}));
+
 const otherEditModal = document.querySelector('[data-other-edit-modal]');
 const otherDeleteModal = document.querySelector('[data-other-delete-modal]');
 const otherCrudModals = [otherEditModal, otherDeleteModal].filter(Boolean);
@@ -2037,6 +2257,129 @@ if (studentImportToolbar) {
     renderStudentImportRows();
 }
 
+const studentImportConfirmForm = document.querySelector('[data-student-import-confirm]');
+if (studentImportConfirmForm) {
+    const progressUrl = studentImportConfirmForm.dataset.progressUrl;
+    const progressCard = document.querySelector('[data-student-import-progress]');
+    const confirmButton = studentImportConfirmForm.querySelector('button[type="submit"], button:not([type])');
+    const confirmLabel = studentImportConfirmForm.querySelector('[data-student-import-confirm-label]');
+    const progressStatus = progressCard?.querySelector('[data-student-import-progress-status]');
+    const progressMessage = progressCard?.querySelector('[data-student-import-progress-message]');
+    const progressPercent = progressCard?.querySelector('[data-student-import-progress-percent]');
+    const progressBar = progressCard?.querySelector('[data-student-import-progress-bar]');
+    const progressProcessed = progressCard?.querySelector('[data-student-import-progress-processed]');
+    const progressTotal = progressCard?.querySelector('[data-student-import-progress-total]');
+    const progressCreated = progressCard?.querySelector('[data-student-import-progress-created]');
+    const progressUpdated = progressCard?.querySelector('[data-student-import-progress-updated]');
+    const progressFailed = progressCard?.querySelector('[data-student-import-progress-failed]');
+    const numberFormat = new Intl.NumberFormat('id-ID');
+    let progressTimer = null;
+
+    const renderStudentImportProgress = (progress = {}) => {
+        const percent = Math.max(0, Math.min(100, Number(progress.percent ?? 0)));
+        const status = progress.status || 'processing';
+        const statusLabel = {
+            pending: 'Menunggu proses',
+            processing: 'Sedang mengimpor',
+            completed: 'Import selesai',
+            failed: 'Import gagal',
+        }[status] || status;
+
+        if (progressCard) {
+            progressCard.hidden = false;
+            progressCard.dataset.status = status;
+        }
+        if (progressStatus) progressStatus.textContent = statusLabel;
+        if (progressMessage) progressMessage.textContent = progress.error_message || progress.message || 'Memproses data siswa.';
+        if (progressPercent) progressPercent.textContent = `${percent}%`;
+        if (progressBar) progressBar.style.width = `${percent}%`;
+        if (progressProcessed) progressProcessed.textContent = numberFormat.format(Number(progress.processed_items ?? 0));
+        if (progressTotal) progressTotal.textContent = numberFormat.format(Number(progress.total_items ?? 0));
+        if (progressCreated) progressCreated.textContent = numberFormat.format(Number(progress.created_items ?? 0));
+        if (progressUpdated) progressUpdated.textContent = numberFormat.format(Number(progress.updated_items ?? 0));
+        if (progressFailed) progressFailed.textContent = numberFormat.format(Number(progress.failed_items ?? 0));
+    };
+
+    const stopStudentImportPolling = () => {
+        if (progressTimer) window.clearInterval(progressTimer);
+        progressTimer = null;
+    };
+
+    const pollStudentImportProgress = async () => {
+        if (!progressUrl) return;
+
+        try {
+            const response = await fetch(progressUrl, {
+                headers: { Accept: 'application/json' },
+                cache: 'no-store',
+            });
+            if (!response.ok) return;
+
+            const progress = await response.json();
+            renderStudentImportProgress(progress);
+            if (['completed', 'failed'].includes(progress.status)) stopStudentImportPolling();
+        } catch {
+            // The submit response will still show the final state if polling is interrupted.
+        }
+    };
+
+    studentImportConfirmForm.addEventListener('submit', async (event) => {
+        if (!window.fetch || studentImportConfirmForm.dataset.importSubmitting === 'true') {
+            if (studentImportConfirmForm.dataset.importSubmitting === 'true') event.preventDefault();
+            return;
+        }
+
+        event.preventDefault();
+        studentImportConfirmForm.dataset.importSubmitting = 'true';
+        confirmButton?.setAttribute('disabled', 'disabled');
+        if (confirmLabel) confirmLabel.textContent = 'Mengimpor...';
+        renderStudentImportProgress({ status: 'processing', message: 'Memulai import data siswa.', percent: 0 });
+        stopStudentImportPolling();
+        progressTimer = window.setInterval(pollStudentImportProgress, 2000);
+        pollStudentImportProgress();
+
+        try {
+            const response = await fetch(studentImportConfirmForm.action, {
+                method: 'POST',
+                body: new FormData(studentImportConfirmForm),
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            });
+            const data = await response.json().catch(() => ({}));
+            if (data.progress) renderStudentImportProgress(data.progress);
+
+            if (response.ok && data.redirect) {
+                stopStudentImportPolling();
+                window.setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 700);
+                return;
+            }
+
+            stopStudentImportPolling();
+            renderStudentImportProgress(data.progress || {
+                status: 'failed',
+                percent: 100,
+                error_message: data.message || 'Import data siswa gagal diproses.',
+            });
+            studentImportConfirmForm.dataset.importSubmitting = 'false';
+            confirmButton?.removeAttribute('disabled');
+            if (confirmLabel) confirmLabel.textContent = 'Konfirmasi';
+        } catch {
+            stopStudentImportPolling();
+            renderStudentImportProgress({
+                status: 'failed',
+                error_message: 'Koneksi terputus saat import data siswa. Periksa kembali data setelah halaman dimuat ulang.',
+            });
+            studentImportConfirmForm.dataset.importSubmitting = 'false';
+            confirmButton?.removeAttribute('disabled');
+            if (confirmLabel) confirmLabel.textContent = 'Konfirmasi';
+        }
+    });
+}
+
 const classMovementForm = document.querySelector('[data-class-movement-form]');
 if (classMovementForm) {
     const studentCheckboxes = Array.from(classMovementForm.querySelectorAll('[data-class-movement-student]'));
@@ -2125,3 +2468,66 @@ document.querySelectorAll('[data-bill-tab]').forEach((button) => button.addEvent
     document.querySelectorAll('[data-bill-tab]').forEach((tab) => tab.classList.toggle('active', tab === button));
     document.querySelectorAll('[data-bill-panel]').forEach((panel) => { panel.hidden = panel.dataset.billPanel !== button.dataset.billTab; });
 }));
+
+const billSyncProgress = document.querySelector('[data-bill-sync-progress]');
+if (billSyncProgress) {
+    const formatter = new Intl.NumberFormat('id-ID');
+    const percent = billSyncProgress.querySelector('[data-bill-sync-percent]');
+    const bar = billSyncProgress.querySelector('[data-bill-sync-bar]');
+    const message = billSyncProgress.querySelector('[data-bill-sync-message]');
+    const processed = billSyncProgress.querySelector('[data-bill-sync-processed]');
+    const total = billSyncProgress.querySelector('[data-bill-sync-total]');
+    const created = billSyncProgress.querySelector('[data-bill-sync-created]');
+    const skipped = billSyncProgress.querySelector('[data-bill-sync-skipped]');
+    const failed = billSyncProgress.querySelector('[data-bill-sync-failed]');
+    const syncButton = document.querySelector('.bill-sync-button');
+    let reloadedAfterComplete = false;
+
+    const renderBillSyncProgress = (data) => {
+        const value = Number(data.percent || 0);
+        if (percent) percent.textContent = `${value}%`;
+        if (bar) bar.style.width = `${Math.min(100, Math.max(0, value))}%`;
+        if (message) message.textContent = data.error_message || data.message || 'Memproses sinkron tagihan.';
+        if (processed) processed.textContent = formatter.format(Number(data.processed_items || 0));
+        if (total) total.textContent = formatter.format(Number(data.total_items || 0));
+        if (created) created.textContent = formatter.format(Number(data.created_items || 0));
+        if (skipped) skipped.textContent = formatter.format(Number(data.skipped_items || 0) + Number(data.existing_items || 0));
+        if (failed) failed.textContent = formatter.format(Number(data.failed_items || 0));
+        if (syncButton) {
+            const active = ['pending', 'processing'].includes(data.status);
+            syncButton.disabled = active;
+            const label = syncButton.querySelector('span');
+            if (label) label.textContent = active ? 'Sinkron Berjalan' : 'Sinkron Tagihan';
+        }
+    };
+
+    const tickBillSyncProgress = async () => {
+        try {
+            const response = await fetch(billSyncProgress.dataset.progressUrl, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-CSRF-TOKEN': billSyncProgress.dataset.csrf || '',
+                },
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Progress sinkron gagal diperbarui.');
+            renderBillSyncProgress(data);
+
+            if (['completed', 'failed'].includes(data.status)) {
+                window.clearInterval(billSyncProgress.syncTimer);
+                if (data.status === 'completed' && !reloadedAfterComplete && billSyncProgress.dataset.active === 'true') {
+                    reloadedAfterComplete = true;
+                    window.setTimeout(() => window.location.reload(), 900);
+                }
+            }
+        } catch (error) {
+            if (message) message.textContent = error.message;
+        }
+    };
+
+    if (billSyncProgress.dataset.active === 'true') {
+        tickBillSyncProgress();
+        billSyncProgress.syncTimer = window.setInterval(tickBillSyncProgress, 2000);
+    }
+}

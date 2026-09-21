@@ -52,17 +52,21 @@
     $showingTo = $studentsWithBills->total() > 0 ? $studentsWithBills->lastItem() : 0;
     $isGuardianView = $isGuardianView ?? false;
     $guardianTotal = $isGuardianView ? (int) $guardianBills->sum('remaining_amount') : 0;
+    $canSyncBills = auth()->user()?->isSuperAdmin() || (auth()->user()?->hasPermission('payments.verify_transfer') ?? false);
+    $canCreateCashPayment = auth()->user()?->hasPermission('payments.cash.create') ?? false;
+    $billSyncRun = $billSyncRun ?? null;
+    $billSyncActive = $billSyncRun?->isActive() ?? false;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'bills'])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar">
-            <button class="icon-button menu-toggle always-visible" data-sidebar-toggle>{!! $icon('menu') !!}</button>
+            <button type="button" class="icon-button menu-toggle always-visible" data-sidebar-toggle aria-label="Buka menu" title="Buka menu">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
-            <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <button class="icon-button logout-button">{!! $icon('logout') !!}</button>
+            <button type="button" class="icon-button notification-button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}</button>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main @class(['student-page', 'bill-page', 'bill-flat-page', 'payment-transaction-page', 'payment-flat-page', 'guardian-bill-page' => $isGuardianView])>
@@ -79,7 +83,46 @@
                         <h1>{{ $isGuardianView ? 'Tagihan' : 'Tagihan Siswa' }}</h1>
                         <p>{{ $isGuardianView ? 'Lihat tagihan siswa yang terhubung dan kirim bukti pembayaran transfer.' : 'Pantau kewajiban siswa yang belum selesai dan lanjutkan ke pembayaran.' }}</p>
                     </div>
+                    @if(! $isGuardianView && $canSyncBills)
+                        <form method="POST" action="{{ route('finance.bills.sync') }}" class="bill-sync-form">
+                            @csrf
+                            @foreach($billQuery() as $key => $value)
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                            @endforeach
+                            <input type="hidden" name="year" value="{{ $year }}">
+                            <input type="hidden" name="until_month" value="{{ $untilMonth }}">
+                            <button type="submit" class="button bill-sync-button" title="Sinkron tagihan sesuai filter aktif" aria-label="Sinkron tagihan sesuai filter aktif" @disabled($billSyncActive)>{!! $icon('refresh') !!}<span>{{ $billSyncActive ? 'Sinkron Berjalan' : 'Sinkron Tagihan' }}</span></button>
+                        </form>
+                    @endif
                 </div>
+
+                @if(! $isGuardianView && $billSyncRun)
+                    <section
+                        class="bill-sync-progress-card"
+                        data-bill-sync-progress
+                        data-status-url="{{ route('finance.bills.sync.status', $billSyncRun) }}"
+                        data-progress-url="{{ route('finance.bills.sync.progress', $billSyncRun) }}"
+                        data-csrf="{{ csrf_token() }}"
+                        data-active="{{ $billSyncActive ? 'true' : 'false' }}"
+                    >
+                        <div class="bill-sync-progress-head">
+                            <div>
+                                <strong>Progress Sinkron Tagihan</strong>
+                                <span data-bill-sync-message>{{ $billSyncRun->message ?: 'Menyiapkan sinkron tagihan.' }}</span>
+                            </div>
+                            <b data-bill-sync-percent>{{ (int) $billSyncRun->percent }}%</b>
+                        </div>
+                        <div class="bill-sync-progress-track" aria-hidden="true">
+                            <span data-bill-sync-bar style="width: {{ (int) $billSyncRun->percent }}%"></span>
+                        </div>
+                        <div class="bill-sync-progress-meta">
+                            <span><strong data-bill-sync-processed>{{ number_format((int) $billSyncRun->processed_items, 0, ',', '.') }}</strong> / <strong data-bill-sync-total>{{ number_format((int) $billSyncRun->total_items, 0, ',', '.') }}</strong> diproses</span>
+                            <span>Baru <strong data-bill-sync-created>{{ number_format((int) $billSyncRun->created_items, 0, ',', '.') }}</strong></span>
+                            <span>Dilewati <strong data-bill-sync-skipped>{{ number_format((int) $billSyncRun->skipped_items + (int) $billSyncRun->existing_items, 0, ',', '.') }}</strong></span>
+                            <span>Gagal <strong data-bill-sync-failed>{{ number_format((int) $billSyncRun->failed_items, 0, ',', '.') }}</strong></span>
+                        </div>
+                    </section>
+                @endif
 
                 @if($isGuardianView)
                     @php
@@ -461,7 +504,9 @@
                                         <td>
                                             <div class="bill-table-actions">
                                                 <a href="{{ $student ? route('finance.bills.show', array_merge(request()->only(['unit_id', 'class_id', 'student_id', 'student_search', 'per_page', 'sort', 'direction']), ['student' => $student->id, 'year' => $year, 'until_month' => $untilMonth])) : '#' }}" class="button bill-detail-trigger" aria-label="Detail tagihan" title="Detail" target="_blank" rel="noopener">{!! $icon('eye') !!}</a>
+                                                @if($canCreateCashPayment)
                                                 <a href="{{ route('finance.payments.index', ['student_id' => $student?->id, 'search' => $student?->nis]) }}" class="bill-pay-short" aria-label="Bayar tagihan" title="Bayar">{!! $icon('wallet') !!}</a>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>

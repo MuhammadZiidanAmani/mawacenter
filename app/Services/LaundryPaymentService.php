@@ -79,8 +79,12 @@ class LaundryPaymentService
                 ]);
             }
 
-            $remainingPayment = (int) $data['paid_amount'];
-            $remainingAfter = $quote['remaining_amount'] - $remainingPayment;
+            $isAccepted = $data['status'] === 'Diterima';
+            $remainingPlan = (int) $data['paid_amount'];
+            $remainingPayment = $isAccepted ? $remainingPlan : 0;
+            $remainingAfter = $isAccepted
+                ? $quote['remaining_amount'] - $remainingPayment
+                : $quote['remaining_amount'];
             $payment = OtherPayment::create([
                 'student_id' => $student->id,
                 'fee_type_id' => $feeType->id,
@@ -97,15 +101,18 @@ class LaundryPaymentService
                 'total_amount' => $quote['total_amount'],
                 'paid_amount' => $data['paid_amount'],
                 'remaining_amount' => $remainingAfter,
-                'payment_status' => $remainingAfter === 0 ? 'Lunas' : 'Belum Lunas',
+                'payment_status' => $isAccepted
+                    ? ($remainingAfter === 0 ? 'Lunas' : 'Belum Lunas')
+                    : 'Pending',
             ]);
 
             foreach ($quote['items'] as $item) {
-                if ($remainingPayment < 1 || $item['remaining_amount'] < 1) {
+                if ($remainingPlan < 1 || $item['remaining_amount'] < 1) {
                     continue;
                 }
 
-                $allocated = min($remainingPayment, $item['remaining_amount']);
+                $planned = min($remainingPlan, $item['remaining_amount']);
+                $allocated = $isAccepted ? $planned : 0;
                 $itemRemaining = $item['remaining_amount'] - $allocated;
                 $payment->items()->create([
                     'student_id' => $student->id,
@@ -117,9 +124,11 @@ class LaundryPaymentService
                     'total_amount' => $item['total_amount'],
                     'paid_amount' => $allocated,
                     'remaining_amount' => $itemRemaining,
-                    'payment_status' => $itemRemaining === 0 ? 'Lunas' : 'Belum Lunas',
+                    'payment_status' => $isAccepted
+                        ? ($itemRemaining === 0 ? 'Lunas' : 'Belum Lunas')
+                        : 'Pending',
                 ]);
-                $remainingPayment -= $allocated;
+                $remainingPlan -= $planned;
             }
 
             return $payment;
@@ -154,6 +163,7 @@ class LaundryPaymentService
                 ->where('fee_type_id', $feeType->id)
                 ->where('year', $year)
                 ->where('month', $month)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
                 ->sum('paid_amount');
             $remainingAmount = max(0, $charge['final_amount'] - $paidAmount);
             $items[] = [
@@ -202,6 +212,7 @@ class LaundryPaymentService
                 ->where('fee_type_id', $feeType->id)
                 ->where('year', $year)
                 ->where('month', $month)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
                 ->sum('paid_amount');
             $remainingAmount = max(0, $charge['final_amount'] - $paidAmount);
             if ($remainingAmount < 1) {

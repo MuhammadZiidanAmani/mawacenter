@@ -51,7 +51,7 @@
     $statusClass = fn ($status) => match ($status) {
         'Diterima', 'Sudah Bayar', 'Lunas' => 'success',
         'Sebagian', 'Pending' => 'warning',
-        'Belum Bayar', 'Jatuh Tempo' => 'danger',
+        'Belum Bayar', 'Jatuh Tempo', 'Dibatalkan' => 'danger',
         default => 'neutral',
     };
     $yearlySppBadgeClass = fn ($value) => match ($value) {
@@ -59,6 +59,8 @@
         'Tidak Ditagih' => 'neutral',
         default => null,
     };
+    $user = auth()->user();
+    $canManagePaymentCorrections = ($user?->isSuperAdmin() || $user?->isBendaharaUnit()) ?? false;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'reports', 'activeReportMenu' => $activeReportMenu])
@@ -69,7 +71,7 @@
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
             <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <a class="icon-button logout-button" href="{{ route('logout') }}">{!! $icon('logout') !!}</a>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main class="report-page-v2 report-page-{{ $reportKey }}">
@@ -497,23 +499,54 @@
                                     @php
                                         $isSppPayment = ($row['source'] ?? '') === 'spp';
                                         $sourceId = $row['source_id'] ?? null;
-                                        $paymentCategory = $row['group'] ?? null;
+                                        $isCancelledPayment = ($row['status'] ?? '') === 'Dibatalkan';
                                         $transactionAt = $row['date_sort'] ?? null;
                                         $dateText = is_object($transactionAt) && method_exists($transactionAt, 'format') ? $transactionAt->format('d/m/Y') : '-';
                                         $timeText = is_object($transactionAt) && method_exists($transactionAt, 'format') ? $transactionAt->format('H:i') : '-';
                                         $rowDetailId = 'report-detail-'.$reportKey.'-'.md5((string) ($row['id'] ?? $loop->index));
-                                        $receiptUrl = $sourceId ? ($isSppPayment
+                                        $detailUrl = $sourceId ? ($isSppPayment
+                                            ? route('finance.spp.show', ['sppPayment' => $sourceId])
+                                            : route('finance.other.show', ['otherPayment' => $sourceId])) : null;
+                                        $receiptUrl = $sourceId && ! $isCancelledPayment ? ($isSppPayment
                                             ? route('finance.spp.receipt', ['sppPayment' => $sourceId])
                                             : route('finance.other.receipt', ['otherPayment' => $sourceId])) : null;
-                                        $deleteUrl = $sourceId ? ($isSppPayment
-                                            ? route('finance.spp.destroy', ['sppPayment' => $sourceId])
-                                            : route('finance.other.destroy', ['otherPayment' => $sourceId])) : null;
-                                        $editUrl = $sourceId ? ($isSppPayment
-                                            ? route('finance.payments.index', ['search' => $row['nis'] ?? $row['name'] ?? '', 'student_id' => $row['student_id'] ?? null, 'edit_payment' => $sourceId, 'return_url' => url()->full()])
-                                            : route('finance.other.show', ['otherPayment' => $sourceId])) : null;
-                                        $updateUrl = $sourceId && ! $isSppPayment
-                                            ? route('finance.other.update', ['otherPayment' => $sourceId])
-                                            : null;
+                                        $correctionUrl = $sourceId && $canManagePaymentCorrections && ! $isCancelledPayment ? ($isSppPayment
+                                            ? route('finance.spp.correct', ['sppPayment' => $sourceId])
+                                            : route('finance.other.correct', ['otherPayment' => $sourceId])) : null;
+                                        $cancelUrl = $sourceId && $canManagePaymentCorrections && ! $isCancelledPayment ? ($isSppPayment
+                                            ? route('finance.spp.cancel', ['sppPayment' => $sourceId])
+                                            : route('finance.other.cancel', ['otherPayment' => $sourceId])) : null;
+                                        $allowPaymentMutation = $correctionUrl && $cancelUrl && $detailUrl;
+                                        $allowReceiptPrint = (bool) $receiptUrl;
+                                        $actionAriaName = trim(($row['student'] ?? 'transaksi').' '.($row['type'] ?? ''));
+                                        $actionData = [
+                                            'data-report-payment-name' => trim(($row['student'] ?? '-').' · '.($row['type'] ?? '-')),
+                                            'data-report-payment-amount' => (int) ($row['amount'] ?? 0),
+                                            'data-report-payment-source' => $isSppPayment ? 'spp' : 'other',
+                                            'data-report-payment-detail-url' => $detailUrl,
+                                            'data-report-payment-date' => is_object($transactionAt) && method_exists($transactionAt, 'format') ? $transactionAt->format('Y-m-d') : '',
+                                            'data-report-payment-time' => is_object($transactionAt) && method_exists($transactionAt, 'format') ? $transactionAt->format('H:i') : '',
+                                            'data-report-payment-method' => $row['method'] ?? '',
+                                            'data-report-payment-status' => $row['status'] ?? '',
+                                            'data-report-payment-return-url' => url()->full(),
+                                            'data-report-cancel-summary' => trim(($row['student'] ?? '-').' · '.$dateText.' '.$timeText.' · '.$rupiah((int) ($row['amount'] ?? 0))),
+                                            'data-report-correction-summary' => trim(($row['student'] ?? '-').' · '.($row['description'] ?? $row['type'] ?? '-')),
+                                            'data-report-correction-meta' => trim(($row['nis'] ?? '-').' · '.($row['unit'] ?? '-').' · '.($row['class'] ?? '-')),
+                                        ];
+                                        $actionAttributes = collect($actionData)
+                                            ->filter(fn ($value) => $value !== null)
+                                            ->map(fn ($value, $key) => $key.'="'.e((string) $value).'"')
+                                            ->implode(' ');
+                                        $correctionActionAttributes = $actionAttributes.' data-report-correction-url="'.e((string) $correctionUrl).'"';
+                                        $cancelActionAttributes = $actionAttributes.' data-report-cancel-url="'.e((string) $cancelUrl).'"';
+                                        $rowActionClass = $isCancelledPayment ? ' is-cancelled' : '';
+                                        $mutedActionMarkup = $isCancelledPayment ? '<span class="report-action-muted">Dibatalkan</span>' : '';
+                                        $showMutedActionText = ! $allowPaymentMutation && ! $allowReceiptPrint && ! $mutedActionMarkup;
+                                        $mutedActionText = 'Aksi tidak tersedia';
+                                        $receiptHref = $receiptUrl;
+                                        $correctionTitleText = 'Koreksi transaksi';
+                                        $cancelTitleText = 'Batalkan transaksi';
+                                        $receiptTitleText = 'Cetak transaksi';
                                     @endphp
                                     <tr>
                                         @foreach($columns as $column)
@@ -527,25 +560,19 @@
                                                 @elseif(($column['type'] ?? '') === 'status')
                                                     <span class="report-status {{ $statusClass($row[$column['key']] ?? '') }}">{{ $row[$column['key']] ?? '-' }}</span>
                                                 @elseif(($column['type'] ?? '') === 'actions')
-                                                    <div class="report-row-actions">
+                                                    <div class="report-row-actions{{ $rowActionClass }}">
                                                         <button type="button" data-report-row-toggle="{{ $rowDetailId }}" aria-expanded="false" aria-controls="{{ $rowDetailId }}" aria-label="Detail transaksi" title="Detail transaksi">{!! $icon('eye') !!}</button>
-                                                        @if($editUrl)
-                                                            @if($isSppPayment)
-                                                                <a href="{{ $editUrl }}" aria-label="Edit transaksi" title="Edit transaksi">{!! $icon('edit') !!}</a>
-                                                            @elseif($updateUrl)
-                                                                <button type="button" data-other-edit-url="{{ $editUrl }}" data-other-update-url="{{ $updateUrl }}" aria-label="Edit transaksi" title="Edit transaksi">{!! $icon('edit') !!}</button>
-                                                            @endif
+                                                        @if($allowPaymentMutation)
+                                                            <button type="button" {!! $correctionActionAttributes !!} aria-label="{{ $correctionTitleText }} {{ $actionAriaName }}" title="{{ $correctionTitleText }}">{!! $icon('edit') !!}</button>
+                                                            <button type="button" {!! $cancelActionAttributes !!} aria-label="{{ $cancelTitleText }} {{ $actionAriaName }}" title="{{ $cancelTitleText }}">{!! $icon('trash') !!}</button>
                                                         @endif
-                                                        @if($deleteUrl)
-                                                            <form method="POST" action="{{ $deleteUrl }}" onsubmit="return confirm('Hapus transaksi ini?');">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <input type="hidden" name="return_url" value="{{ url()->full() }}">
-                                                                <button type="submit" aria-label="Hapus transaksi" title="Hapus transaksi">{!! $icon('trash') !!}</button>
-                                                            </form>
+                                                        @if($allowReceiptPrint)
+                                                            <a href="{{ $receiptHref }}" target="_blank" rel="noopener" aria-label="{{ $receiptTitleText }} {{ $actionAriaName }}" title="{{ $receiptTitleText }}">{!! $icon('printer') !!}</a>
                                                         @endif
-                                                        @if($receiptUrl)
-                                                            <a href="{{ $receiptUrl }}" target="_blank" rel="noopener" aria-label="Cetak transaksi" title="Cetak transaksi">{!! $icon('printer') !!}</a>
+                                                        @if($mutedActionMarkup)
+                                                            {!! $mutedActionMarkup !!}
+                                                        @elseif($showMutedActionText)
+                                                            <span class="report-action-muted">{{ $mutedActionText }}</span>
                                                         @endif
                                                     </div>
                                                 @else
@@ -698,27 +725,56 @@
             </section>
 
             @if($reportKey === 'transactions')
-                <div class="modal-backdrop" data-other-edit-modal>
-                    <div class="form-modal spp-edit-modal">
+                <div class="modal-backdrop report-payment-modal-backdrop" data-report-correction-modal>
+                    <div class="form-modal report-payment-modal">
                         <div class="form-modal-header">
                             <div>
-                                <p class="eyebrow">Pembayaran</p>
-                                <h2>Edit Transaksi</h2>
+                                <p class="eyebrow">Laporan Transaksi</p>
+                                <h2>Koreksi Transaksi</h2>
                             </div>
-                            <button type="button" class="icon-button" data-other-crud-close>&times;</button>
+                            <button type="button" class="icon-button" data-report-payment-close>&times;</button>
                         </div>
-                        <form method="POST" data-other-edit-form class="master-form spp-edit-form">
+                        <form method="POST" data-report-correction-form class="master-form report-payment-form">
                             @csrf
-                            @method('PUT')
                             <input type="hidden" name="return_url" value="{{ url()->full() }}">
-                            <div class="spp-edit-readonly"><span data-other-edit-summary>Data siswa dan kategori pembayaran tidak dapat diubah.</span></div>
+                            <div class="spp-edit-readonly report-payment-readonly">
+                                <strong data-report-correction-summary>Data transaksi</strong>
+                                <span data-report-correction-meta>Detail siswa dan pembayaran</span>
+                            </div>
                             <label>Tanggal Transaksi<input type="date" name="transaction_date" required></label>
                             <label>Jam Transaksi (WIB)<input type="text" name="transaction_time" inputmode="numeric" placeholder="Contoh: 18.00" pattern="(?:[01]\d|2[0-3])[.:][0-5]\d" required></label>
                             <label>Cara Bayar<select name="payment_method" required><option>Cash</option><option>Transfer</option></select></label>
                             <label>Status Penerimaan<select name="status" required><option>Diterima</option><option>Pending</option></select></label>
+                            <label>Nominal Benar<input type="text" name="new_paid_amount" inputmode="numeric" data-currency-input required></label>
+                            <label class="span-2">Alasan Koreksi<textarea name="reason" rows="3" maxlength="255" placeholder="Tuliskan alasan koreksi..." required></textarea></label>
+                            <div class="report-payment-note span-2">Nominal sebelumnya: <strong data-report-correction-old>Rp 0</strong></div>
                             <div class="form-actions span-2">
-                                <button type="button" class="button button-secondary" data-other-crud-close>Batal</button>
-                                <button class="button button-primary">Simpan Perubahan</button>
+                                <button type="button" class="button button-secondary" data-report-payment-close>Batal</button>
+                                <button class="button button-primary">Simpan Koreksi</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-backdrop report-payment-modal-backdrop" data-report-cancel-modal>
+                    <div class="form-modal report-payment-modal report-payment-cancel-modal">
+                        <div class="form-modal-header">
+                            <div>
+                                <p class="eyebrow">Laporan Transaksi</p>
+                                <h2>Batalkan Transaksi</h2>
+                            </div>
+                            <button type="button" class="icon-button" data-report-payment-close>&times;</button>
+                        </div>
+                        <form method="POST" data-report-cancel-form class="master-form report-payment-form">
+                            @csrf
+                            <input type="hidden" name="return_url" value="{{ url()->full() }}">
+                            <div class="spp-edit-readonly report-payment-readonly span-2">
+                                <strong data-report-cancel-summary>Data transaksi</strong>
+                                <span>Transaksi akan ditandai Dibatalkan dan tagihan siswa dihitung ulang.</span>
+                            </div>
+                            <label class="span-2">Alasan Pembatalan<textarea name="reason" rows="3" maxlength="255" placeholder="Tuliskan alasan pembatalan..." required></textarea></label>
+                            <div class="form-actions span-2">
+                                <button type="button" class="button button-secondary" data-report-payment-close>Batal</button>
+                                <button class="button button-primary">Batalkan Transaksi</button>
                             </div>
                         </form>
                     </div>

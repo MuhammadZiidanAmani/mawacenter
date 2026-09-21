@@ -57,6 +57,7 @@
     };
     $filterDateFrom = $nativeDateValue(request('date_from'), now()->toDateString());
     $filterDateTo = $nativeDateValue(request('date_to'), now()->toDateString());
+    $canManagePaymentCorrections = auth()->user()?->hasPermission('payments.verify_transfer') ?? false;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'payment', 'activePaymentMenu' => $showCreate ? 'transaction' : 'history'])
@@ -67,7 +68,7 @@
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
             <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <button class="icon-button logout-button">{!! $icon('logout') !!}</button>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
         <main @class(['finance-page' => $showCreate, 'student-page payment-flat-page' => ! $showCreate])>
             @php
@@ -131,7 +132,7 @@
                                     <div class="registration-detail-item time"><span>Waktu</span><strong>{{ $payment->transaction_at->format('Y-m-d H:i:s') }}</strong></div>
                                     <div class="registration-detail-item"><span>Petugas</span><strong>{{ $payment->operator_name ?: '-' }}</strong></div>
                                     <div class="registration-detail-item"><span>Pembayaran</span><strong>{{ $payment->payment_status }}</strong></div>
-                                    <div class="registration-detail-item action"><span>Aksi</span><div class="registration-actions spp-compact-actions"><a href="{{ route('finance.spp.receipt', $payment) }}" target="_blank" class="registration-action print" title="Cetak Struk" aria-label="Cetak Struk"><svg class="icon" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/></svg></a><button type="button" class="registration-action edit" title="Edit Transaksi" aria-label="Edit Transaksi" data-spp-edit-url="{{ route('finance.spp.show', $payment) }}" data-spp-update-url="{{ route('finance.spp.update', $payment) }}"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button><button type="button" class="registration-action delete" title="Hapus Transaksi" aria-label="Hapus Transaksi" data-spp-delete-url="{{ route('finance.spp.destroy', $payment) }}" data-spp-delete-name="{{ $payment->student?->name }}"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button></div></div>
+                                    <div class="registration-detail-item action"><span>Aksi</span><div class="registration-actions spp-compact-actions"><a href="{{ route('finance.spp.receipt', $payment) }}" target="_blank" class="registration-action print" title="Cetak Struk" aria-label="Cetak Struk"><svg class="icon" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/></svg></a>@if($canManagePaymentCorrections)<button type="button" class="registration-action edit" title="Edit Transaksi" aria-label="Edit Transaksi" data-spp-edit-url="{{ route('finance.spp.show', $payment) }}" data-spp-update-url="{{ route('finance.spp.update', $payment) }}"><svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></button><button type="button" class="registration-action delete" title="Hapus Transaksi" aria-label="Hapus Transaksi" data-spp-delete-url="{{ route('finance.spp.destroy', $payment) }}" data-spp-delete-name="{{ $payment->student?->name }}"><svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m-9 0 1 15h8l1-15M10 11v5m4-5v5"/></svg></button>@endif</div></div>
                                 </div>
                             </td></tr>
                         @empty <tr><td colspan="7" class="empty-state">Belum ada pembayaran SPP.</td></tr> @endforelse

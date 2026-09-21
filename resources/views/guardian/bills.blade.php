@@ -20,14 +20,15 @@
     $total = (int) $bills->sum('remaining_amount');
 @endphp
 <div class="app-shell">
-    @include('partials.sidebar', ['activeMenu' => 'guardian-bills'])
+    @include('partials.sidebar', ['activeMenu' => 'bills'])
     <div class="sidebar-overlay" data-sidebar-overlay></div>
     <div class="main-panel">
         <header class="topbar">
             <button class="icon-button menu-toggle always-visible" data-sidebar-toggle>{!! $icon('menu') !!}</button>
+            <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ ($activeAcademicYear ?? null)?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
             <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <a class="icon-button logout-button" href="{{ route('logout') }}">{!! $icon('logout') !!}</a>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main class="student-page guardian-page">

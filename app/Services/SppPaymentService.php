@@ -59,6 +59,7 @@ class SppPaymentService
             $paid = (int) SppPaymentItem::where('student_id', $student->id)
                 ->where('year', $period->year)
                 ->where('month', $period->month)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
                 ->sum('paid_amount');
             if ($charge['final_amount'] <= $paid) {
                 continue;
@@ -256,6 +257,7 @@ class SppPaymentService
             $paid = (int) SppPaymentItem::where('student_id', $student->id)
                 ->where('year', $period->year)
                 ->where('month', $period->month)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
                 ->sum('paid_amount');
             if ($paid < $charge['final_amount']) {
                 return [
@@ -290,8 +292,12 @@ class SppPaymentService
                 ]);
             }
 
-            $remainingPayment = (int) $data['paid_amount'];
-            $remainingAfter = $quote['remaining_amount'] - $remainingPayment;
+            $isAccepted = $data['status'] === 'Diterima';
+            $remainingPlan = (int) $data['paid_amount'];
+            $remainingPayment = $isAccepted ? $remainingPlan : 0;
+            $remainingAfter = $isAccepted
+                ? $quote['remaining_amount'] - $remainingPayment
+                : $quote['remaining_amount'];
             $payment = SppPayment::create([
                 'student_id' => $student->id,
                 'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
@@ -307,15 +313,18 @@ class SppPaymentService
                 'total_amount' => $quote['total_amount'],
                 'paid_amount' => $data['paid_amount'],
                 'remaining_amount' => $remainingAfter,
-                'payment_status' => $remainingAfter === 0 ? 'Lunas' : 'Belum Lunas',
+                'payment_status' => $isAccepted
+                    ? ($remainingAfter === 0 ? 'Lunas' : 'Belum Lunas')
+                    : 'Pending',
             ]);
 
             foreach ($quote['items'] as $item) {
-                if ($remainingPayment < 1 || $item['remaining_amount'] < 1) {
+                if ($remainingPlan < 1 || $item['remaining_amount'] < 1) {
                     continue;
                 }
 
-                $allocated = min($remainingPayment, $item['remaining_amount']);
+                $planned = min($remainingPlan, $item['remaining_amount']);
+                $allocated = $isAccepted ? $planned : 0;
                 $itemRemaining = $item['remaining_amount'] - $allocated;
                 $payment->items()->create([
                     'student_id' => $student->id,
@@ -326,9 +335,11 @@ class SppPaymentService
                     'total_amount' => $item['total_amount'],
                     'paid_amount' => $allocated,
                     'remaining_amount' => $itemRemaining,
-                    'payment_status' => $itemRemaining === 0 ? 'Lunas' : 'Belum Lunas',
+                    'payment_status' => $isAccepted
+                        ? ($itemRemaining === 0 ? 'Lunas' : 'Belum Lunas')
+                        : 'Pending',
                 ]);
-                $remainingPayment -= $allocated;
+                $remainingPlan -= $planned;
             }
 
             $this->bills->syncSppPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'items']));
@@ -354,7 +365,9 @@ class SppPaymentService
                 ]);
             }
 
-            $remainingAfter = $quote['remaining_amount'] - (int) $data['paid_amount'];
+            $isAccepted = $data['status'] === 'Diterima';
+            $allocated = $isAccepted ? (int) $data['paid_amount'] : 0;
+            $remainingAfter = $quote['remaining_amount'] - $allocated;
             $payment = SppPayment::create([
                 'student_id' => $student->id,
                 'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
@@ -370,7 +383,9 @@ class SppPaymentService
                 'total_amount' => $quote['total_amount'],
                 'paid_amount' => $data['paid_amount'],
                 'remaining_amount' => $remainingAfter,
-                'payment_status' => $remainingAfter === 0 ? 'Lunas' : 'Belum Lunas',
+                'payment_status' => $isAccepted
+                    ? ($remainingAfter === 0 ? 'Lunas' : 'Belum Lunas')
+                    : 'Pending',
             ]);
 
             $payment->items()->create([
@@ -380,9 +395,11 @@ class SppPaymentService
                 'original_amount' => $quote['original_amount'],
                 'discount_amount' => $quote['discount_amount'],
                 'total_amount' => $quote['total_amount'],
-                'paid_amount' => $data['paid_amount'],
+                'paid_amount' => $allocated,
                 'remaining_amount' => $remainingAfter,
-                'payment_status' => $remainingAfter === 0 ? 'Lunas' : 'Belum Lunas',
+                'payment_status' => $isAccepted
+                    ? ($remainingAfter === 0 ? 'Lunas' : 'Belum Lunas')
+                    : 'Pending',
             ]);
 
             if ($syncBills) {
@@ -410,6 +427,7 @@ class SppPaymentService
         $paidAmount = (int) SppPaymentItem::where('student_id', $student->id)
             ->where('year', $year)
             ->where('month', $month)
+            ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
             ->sum('paid_amount');
         $remainingAmount = max(0, $charge['final_amount'] - $paidAmount);
         if ($remainingAmount < 1) {
@@ -430,6 +448,10 @@ class SppPaymentService
     public function updateMetadata(SppPayment $payment, array $data): SppPayment
     {
         return DB::transaction(function () use ($payment, $data) {
+            $payment = SppPayment::query()
+                ->with(['student.academicYear', 'student.schoolClass.educationUnit', 'items'])
+                ->lockForUpdate()
+                ->findOrFail($payment->id);
             $payment->update([
                 'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
                 'payment_method' => $data['payment_method'],
@@ -439,9 +461,10 @@ class SppPaymentService
                 'status' => $data['status'],
             ]);
 
-            if (array_key_exists('paid_amount', $data)) {
-                $this->reallocatePaidAmount($payment->refresh(), (int) $data['paid_amount']);
-            }
+            $this->reallocatePaidAmount(
+                $payment->refresh(),
+                (int) ($data['paid_amount'] ?? $payment->paid_amount),
+            );
 
             $payment = $payment->refresh();
             $this->bills->syncSppPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'items']));
@@ -469,8 +492,12 @@ class SppPaymentService
             $this->bills->removePayment('spp', $payment->id);
             $payment->items()->delete();
 
-            $remainingPayment = (int) $data['paid_amount'];
-            $remainingAfter = $quote['remaining_amount'] - $remainingPayment;
+            $isAccepted = $data['status'] === 'Diterima';
+            $remainingPlan = (int) $data['paid_amount'];
+            $remainingPayment = $isAccepted ? $remainingPlan : 0;
+            $remainingAfter = $isAccepted
+                ? $quote['remaining_amount'] - $remainingPayment
+                : $quote['remaining_amount'];
             $payment->update([
                 'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
                 'payment_method' => $data['payment_method'],
@@ -483,15 +510,18 @@ class SppPaymentService
                 'total_amount' => $quote['total_amount'],
                 'paid_amount' => $data['paid_amount'],
                 'remaining_amount' => $remainingAfter,
-                'payment_status' => $remainingAfter === 0 ? 'Lunas' : 'Belum Lunas',
+                'payment_status' => $isAccepted
+                    ? ($remainingAfter === 0 ? 'Lunas' : 'Belum Lunas')
+                    : 'Pending',
             ]);
 
             foreach ($quote['items'] as $item) {
-                if ($remainingPayment < 1 || $item['remaining_amount'] < 1) {
+                if ($remainingPlan < 1 || $item['remaining_amount'] < 1) {
                     continue;
                 }
 
-                $allocated = min($remainingPayment, $item['remaining_amount']);
+                $planned = min($remainingPlan, $item['remaining_amount']);
+                $allocated = $isAccepted ? $planned : 0;
                 $itemRemaining = $item['remaining_amount'] - $allocated;
                 $payment->items()->create([
                     'student_id' => $student->id,
@@ -502,9 +532,11 @@ class SppPaymentService
                     'total_amount' => $item['total_amount'],
                     'paid_amount' => $allocated,
                     'remaining_amount' => $itemRemaining,
-                    'payment_status' => $itemRemaining === 0 ? 'Lunas' : 'Belum Lunas',
+                    'payment_status' => $isAccepted
+                        ? ($itemRemaining === 0 ? 'Lunas' : 'Belum Lunas')
+                        : 'Pending',
                 ]);
-                $remainingPayment -= $allocated;
+                $remainingPlan -= $planned;
             }
 
             $payment = $payment->refresh();
@@ -542,6 +574,82 @@ class SppPaymentService
         return $payment;
     }
 
+    public function correctTransaction(SppPayment $payment, array $data): SppPayment
+    {
+        $newPaidAmount = (int) $data['new_paid_amount'];
+
+        $payment = DB::transaction(function () use ($payment, $data, $newPaidAmount) {
+            $payment = SppPayment::query()
+                ->with(['student.academicYear', 'student.schoolClass.educationUnit', 'items'])
+                ->lockForUpdate()
+                ->findOrFail($payment->id);
+            $oldPaidAmount = (int) $payment->paid_amount;
+
+            if ($newPaidAmount >= $oldPaidAmount) {
+                throw ValidationException::withMessages([
+                    'new_paid_amount' => 'Nominal koreksi harus lebih kecil dari nominal sebelumnya. Untuk menambah pembayaran, buat transaksi pembayaran baru.',
+                ]);
+            }
+
+            $payment->update([
+                'transaction_at' => ($data['transaction_date'] ?? $payment->transaction_at->format('Y-m-d')).' '.($data['transaction_time'] ?? $payment->transaction_at->format('H:i:s')),
+                'payment_method' => $data['payment_method'] ?? $payment->payment_method,
+                'status' => $data['status'] ?? $payment->status,
+            ]);
+
+            $this->reallocatePaidAmount($payment->refresh(), $newPaidAmount);
+
+            if ($newPaidAmount < $oldPaidAmount) {
+                $payment->corrections()->create([
+                    'old_paid_amount' => $oldPaidAmount,
+                    'new_paid_amount' => $newPaidAmount,
+                    'refund_amount' => $oldPaidAmount - $newPaidAmount,
+                    'reason' => $data['reason'],
+                ]);
+            }
+
+            return $payment->refresh();
+        });
+
+        $this->bills->syncSppPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'items']));
+
+        return $payment;
+    }
+
+    public function cancel(SppPayment $payment, string $reason): SppPayment
+    {
+        return DB::transaction(function () use ($payment) {
+            $payment = SppPayment::query()
+                ->with(['student.academicYear', 'student.schoolClass.educationUnit', 'items'])
+                ->lockForUpdate()
+                ->findOrFail($payment->id);
+
+            if ($payment->status === 'Dibatalkan') {
+                throw ValidationException::withMessages([
+                    'reason' => 'Transaksi ini sudah dibatalkan.',
+                ]);
+            }
+
+            $this->bills->removePayment('spp', $payment->id);
+            foreach ($payment->items as $item) {
+                $item->update([
+                    'paid_amount' => 0,
+                    'remaining_amount' => (int) $item->total_amount,
+                    'payment_status' => 'Dibatalkan',
+                ]);
+            }
+
+            $payment->update([
+                'status' => 'Dibatalkan',
+                'paid_amount' => 0,
+                'remaining_amount' => (int) $payment->total_amount,
+                'payment_status' => 'Dibatalkan',
+            ]);
+
+            return $payment->refresh();
+        });
+    }
+
     private function reallocatePaidAmount(SppPayment $payment, int $newPaidAmount): void
     {
         $items = $payment->items()->orderBy('year')->orderBy('month')->get();
@@ -550,6 +658,7 @@ class SppPaymentService
                 ->where('year', $item->year)
                 ->where('month', $item->month)
                 ->where('spp_payment_id', '!=', $payment->id)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
                 ->sum('paid_amount');
 
             return max(0, (int) $item->total_amount - $paidByOtherTransactions);
@@ -561,13 +670,14 @@ class SppPaymentService
             ]);
         }
 
-        $remainingAllocation = $newPaidAmount;
+        $remainingAllocation = $payment->status === 'Diterima' ? $newPaidAmount : 0;
         $paymentRemainingAmount = 0;
         foreach ($items as $item) {
             $paidByOtherTransactions = (int) SppPaymentItem::where('student_id', $payment->student_id)
                 ->where('year', $item->year)
                 ->where('month', $item->month)
                 ->where('spp_payment_id', '!=', $payment->id)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
                 ->sum('paid_amount');
             $availableForItem = max(0, (int) $item->total_amount - $paidByOtherTransactions);
             $allocated = min($remainingAllocation, $availableForItem);
@@ -577,15 +687,22 @@ class SppPaymentService
             $item->update([
                 'paid_amount' => $allocated,
                 'remaining_amount' => $remaining,
-                'payment_status' => $remaining === 0 ? 'Lunas' : ($allocated > 0 ? 'Belum Lunas' : 'Belum Dibayar'),
+                'payment_status' => match (true) {
+                    $payment->status !== 'Diterima' => 'Pending',
+                    $remaining === 0 => 'Lunas',
+                    $allocated > 0 => 'Belum Lunas',
+                    default => 'Belum Dibayar',
+                },
             ]);
             $remainingAllocation -= $allocated;
         }
 
         $payment->update([
             'paid_amount' => $newPaidAmount,
-            'remaining_amount' => $paymentRemainingAmount,
-            'payment_status' => $paymentRemainingAmount === 0 ? 'Lunas' : 'Belum Lunas',
+            'remaining_amount' => $payment->status === 'Diterima' ? $paymentRemainingAmount : (int) $payment->total_amount,
+            'payment_status' => $payment->status === 'Diterima'
+                ? ($paymentRemainingAmount === 0 ? 'Lunas' : 'Belum Lunas')
+                : 'Pending',
         ]);
     }
 
@@ -618,6 +735,7 @@ class SppPaymentService
             $paidAmount = (int) SppPaymentItem::where('student_id', $student->id)
                 ->where('year', $year)
                 ->where('month', $month)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
                 ->sum('paid_amount');
             $remainingAmount = max(0, $charge['final_amount'] - $paidAmount);
             $items[] = [
@@ -734,6 +852,7 @@ class SppPaymentService
             ->where('year', $year)
             ->where('month', $month)
             ->when($ignoredPayment, fn ($query) => $query->where('spp_payment_id', '!=', $ignoredPayment->id))
+            ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
             ->sum('paid_amount');
     }
 
@@ -796,11 +915,16 @@ class SppPaymentService
     private function billingStart(Student $student): CarbonImmutable
     {
         $defaultStart = CarbonImmutable::parse(self::DEFAULT_BILLING_START_DATE)->startOfMonth();
-        $studentStart = $student->billing_start_date
-            ? CarbonImmutable::parse($student->billing_start_date)->startOfMonth()
+
+        if ($student->billing_start_date) {
+            return CarbonImmutable::parse($student->billing_start_date)->startOfMonth();
+        }
+
+        $entryStart = $student->entry_date
+            ? CarbonImmutable::parse($student->entry_date)->startOfMonth()
             : null;
 
-        return $studentStart && $studentStart->gt($defaultStart) ? $studentStart : $defaultStart;
+        return $entryStart && $entryStart->gt($defaultStart) ? $entryStart : $defaultStart;
     }
 
     private function periodIsApplicable(Student $student, int $year, int $month): bool

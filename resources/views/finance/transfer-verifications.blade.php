@@ -19,6 +19,10 @@
     ];
     $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
     $rupiah = fn ($amount) => 'Rp '.number_format($amount, 0, ',', '.');
+    $activeAcademicYear = \App\Models\AcademicYear::where('is_active', true)->first();
+    $transferSummary = $requests->total() > 0
+        ? 'Menampilkan '.$requests->firstItem().'-'.$requests->lastItem().' dari '.$requests->total().' transfer'
+        : 'Menampilkan 0 dari 0 transfer';
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'transfer-verification'])
@@ -26,9 +30,10 @@
     <div class="main-panel">
         <header class="topbar">
             <button class="icon-button menu-toggle always-visible" data-sidebar-toggle>{!! $icon('menu') !!}</button>
+            <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
             <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
-            <a class="icon-button logout-button" href="{{ route('logout') }}">{!! $icon('logout') !!}</a>
+            @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
 
         <main class="student-page transfer-verification-page">
@@ -62,7 +67,7 @@
                                     <td><strong>{{ $transfer->user?->name }}</strong><small>{{ $transfer->user?->username }}</small></td>
                                     <td><strong>{{ $transfer->student?->name }}</strong><small>{{ $transfer->student?->schoolClass?->educationUnit?->code ?? '-' }} - {{ $transfer->student?->nis }}</small></td>
                                     <td><strong class="bill-money remaining">{{ $rupiah($transfer->amount) }}</strong></td>
-                                    <td><a href="{{ asset('storage/'.$transfer->proof_path) }}" target="_blank" class="button transfer-proof-link">{!! $icon('file') !!}</a></td>
+                                    <td><a href="{{ route('finance.transfer-verifications.proof', $transfer) }}" target="_blank" class="button transfer-proof-link" title="Lihat Bukti" aria-label="Lihat Bukti">{!! $icon('file') !!}</a></td>
                                     <td><span class="status {{ $transfer->status === 'Diterima' ? 'success' : ($transfer->status === 'Ditolak' ? 'danger' : 'neutral') }}">{{ $transfer->status }}</span></td>
                                     <td>
                                         @if($transfer->status === 'Pending')
@@ -81,7 +86,12 @@
                         </tbody>
                     </table>
                 </div>
-                {{ $requests->links() }}
+                <nav class="transfer-pagination-footer" aria-label="Navigasi halaman transfer">
+                    <p>{{ $transferSummary }}</p>
+                    <div class="transfer-pagination-links">
+                        {{ $requests->links() }}
+                    </div>
+                </nav>
             </section>
         </main>
         @include('partials.app-footer')

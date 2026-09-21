@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\AppSetting;
+use App\Services\AuditLogService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,10 @@ class SettingController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $user = $request->user();
+        $before = [
+            'user' => $this->userAuditSnapshot($user),
+            'transfer_settings' => $this->transferSettingsSnapshot(),
+        ];
         $request->merge([
             'username' => $this->normalizeUsername((string) $request->input('username')),
         ]);
@@ -60,6 +65,7 @@ class SettingController extends Controller
 
         if (filled($validated['password'] ?? null)) {
             $user->password = $validated['password'];
+            $user->must_reset_password = false;
         }
 
         $user->save();
@@ -70,8 +76,39 @@ class SettingController extends Controller
                 ['value' => trim((string) ($validated[$key] ?? ''))],
             );
         }
+        app(AuditLogService::class)->recordOperation(
+            'settings.update',
+            ['password_changed' => filled($validated['password'] ?? null)],
+            beforeValues: $before,
+            afterValues: [
+                'user' => $this->userAuditSnapshot($user->refresh()),
+                'transfer_settings' => $this->transferSettingsSnapshot(),
+            ],
+            request: $request,
+            subjectType: $user::class,
+            subjectId: $user->id,
+        );
 
         return redirect()->route('settings.index')->with('success', 'Pengaturan akun berhasil disimpan.');
+    }
+
+    private function userAuditSnapshot($user): array
+    {
+        return collect($user->getAttributes())
+            ->except(['password', 'remember_token'])
+            ->all();
+    }
+
+    private function transferSettingsSnapshot(): array
+    {
+        return array_merge([
+            'transfer_bank_name' => '',
+            'transfer_account_number' => '',
+            'transfer_account_name' => '',
+        ], AppSetting::query()
+            ->whereIn('key', ['transfer_bank_name', 'transfer_account_number', 'transfer_account_name'])
+            ->pluck('value', 'key')
+            ->all());
     }
 
     private function normalizeUsername(string $username): string

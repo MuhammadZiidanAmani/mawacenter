@@ -6,8 +6,8 @@
     <title>Kwitansi {{ $receiptNumber }}</title>
     <style>
         * { box-sizing: border-box; }
-        body { margin: 0; color: #111; background: #eef1f5; font-family: Arial, sans-serif; font-size: 12.5px; line-height: 1.25; }
-        .receipt-actions { width: min(210mm, calc(100% - 24px)); margin: 18px auto 10px; display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; }
+        body { margin: 0; color: #111; background: #eef1f5; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.25; }
+        .receipt-actions { width: min(215.9mm, calc(100% - 24px)); margin: 18px auto 10px; display: flex; justify-content: flex-end; align-items: center; gap: 8px; flex-wrap: wrap; }
         .receipt-actions button, .receipt-actions a, .receipt-actions summary { min-height: 40px; padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; color: #0d5f36; background: #f3fbf6; border: 1px solid #b9dcc7; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 700; text-decoration: none; list-style: none; }
         .receipt-actions summary::-webkit-details-marker { display: none; }
         .receipt-actions .primary, .receipt-actions .print { color: #fff; background: #157144; border-color: #157144; }
@@ -15,48 +15,115 @@
         .next-unit { position: relative; }
         .next-unit div { position: absolute; top: 46px; right: 0; z-index: 5; min-width: 220px; padding: 8px; display: grid; gap: 6px; background: #fff; border: 1px solid #d1d5db; border-radius: 8px; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
         .next-unit div a { justify-content: flex-start; min-height: 36px; padding: 0 12px; border: 0; font-weight: 600; }
-        .page { width: 210mm; min-height: 297mm; margin: 0 auto 12mm; padding: 5mm 10mm 10mm; background: white; border: 1px solid #d5d9df; box-shadow: 0 8px 30px #17203314; }
+        .receipt-a4-viewport { width: min(210mm, calc(100% - 24px)); height: 297mm; margin: 0 auto 12mm; overflow: hidden; }
+        .receipt-a4-paper { position: relative; left: 50%; width: 210mm; height: 297mm; margin-left: -105mm; padding: 5mm; background: white; box-shadow: 0 8px 30px #17203314; transform: scale(var(--a4-screen-scale, 1)); transform-origin: top center; }
+        .receipt-print-wrapper { width: 200mm; height: 101.9mm; margin: 0 auto; }
+        .page { width: 215.9mm; height: 110mm; min-height: 0; margin: 0; padding: 2mm 3mm 4mm; background: white; border: 0; box-shadow: none; transform: scale(.9263557); transform-origin: top left; }
         .receipt-header { padding: 0 1mm 1.3mm; display: grid; grid-template-columns: 14mm 1fr 36mm; align-items: center; gap: 2.5mm; border-bottom: .6mm solid #999; }
         .receipt-logo { width: 12mm; height: 12mm; display: block; object-fit: contain; }
-        .institution h1 { margin: 0 0 .5mm; font-size: 18px; line-height: 1.05; }
-        .institution p { margin: 0; font-size: 11.5px; line-height: 1.18; }
-        .keep-note { padding: .9mm 3mm; border: 1px solid #333; font-size: 11.5px; line-height: 1.1; text-align: center; white-space: nowrap; }
+        .institution h1 { margin: 0 0 .5mm; font-size: 18.5px; line-height: 1.05; }
+        .institution p { margin: 0; font-size: 12px; line-height: 1.18; }
+        .keep-note { padding: .9mm 3mm; border: 1px solid #333; font-size: 12px; line-height: 1.1; text-align: center; white-space: nowrap; }
         .receipt-title { margin: 1mm 0 1.5mm; text-align: center; }
-        .receipt-title h2 { width: max-content; margin: 0 auto; border-bottom: 1px solid #333; font-size: 14px; line-height: 1.1; }
-        .receipt-title p { margin: .4mm 0 0; font-size: 11.5px; line-height: 1.15; }
+        .receipt-title h2 { width: max-content; margin: 0 auto; border-bottom: 1px solid #333; font-size: 14.5px; line-height: 1.1; }
+        .receipt-title p { margin: .4mm 0 0; font-size: 12px; line-height: 1.15; }
         .student-info { margin: 0 0 2mm; display: grid; grid-template-columns: .88fr 1.12fr; gap: .7mm 7mm; }
-        .info-line { display: grid; grid-template-columns: 30mm 3mm 1fr; align-items: start; font-size: 12.5px; line-height: 1.25; }
+        .info-line { display: grid; grid-template-columns: 30mm 3mm 1fr; align-items: start; font-size: 13px; line-height: 1.25; }
         .student-info .info-line:nth-child(odd) { grid-template-columns: 15mm 3mm 1fr; }
         .info-line strong { white-space: nowrap; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { height: 6.2mm; padding: .9mm 1.4mm; border: 1px solid #555; text-align: left; font-size: 12.5px; line-height: 1.22; vertical-align: middle; }
-        th { height: 5.2mm; font-size: 12.5px; font-weight: 700; text-align: center; }
+        th, td { height: 6.2mm; padding: .9mm 1.4mm; border: 1px solid #555; text-align: left; font-size: 13px; line-height: 1.22; vertical-align: middle; }
+        th { height: 5.2mm; font-size: 13px; font-weight: 700; text-align: center; }
         th.number { text-align: center; }
-        .transaction-time { width: 20%; white-space: nowrap; text-align: center; }
-        .month { width: 48%; }
+        .transaction-time { width: 18%; white-space: nowrap; text-align: center; }
+        .month { width: 27%; }
         .year { width: 8%; text-align: center; }
-        .payment-method { width: 9%; text-align: center; }
-        .amount { width: 15%; }
+        .month-count { width: 10%; text-align: center; }
+        .monthly-rate { width: 11%; text-align: right; }
+        .payment-method { width: 10%; text-align: center; }
+        .amount { width: 16%; }
         .number { text-align: right; white-space: nowrap; }
+        th.monthly-rate { text-align: center; vertical-align: middle; }
+        td.monthly-rate { text-align: right; }
         .totals td { height: 4.8mm; border-top: 0; }
         .totals-label { text-align: right; }
         .grand-total { font-weight: 700; }
-        .receipt-notes { margin: 2mm 2mm 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; font-size: 12.5px; line-height: 1.22; }
+        .receipt-notes { margin: 2mm 2mm 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; font-size: 13px; line-height: 1.22; }
         .receipt-notes div:last-child { text-align: right; }
-        .signatures { margin: 2.2mm 2mm 0; display: grid; grid-template-columns: 1fr 1fr; gap: 18mm; text-align: center; font-size: 12.5px; line-height: 1.22; }
+        .signatures { margin: 2.2mm 2mm 0; display: grid; grid-template-columns: 1fr 1fr; gap: 18mm; text-align: center; font-size: 13px; line-height: 1.22; }
         .signatures p { margin: 0; }
         .signature-space { height: 9mm; }
         .signature-name { font-weight: 700; }
         .receipt-footer { margin: 3mm 2mm 0; border-bottom: 1px dashed #333; }
+        @media (max-width: 820px) {
+            .receipt-actions { justify-content: flex-start; }
+            .receipt-a4-viewport { width: calc(100% - 16px); }
+        }
         @media print {
-            @page { size: A4 portrait; margin: 0; }
+            @page { size: A4 portrait; margin: 5mm; }
             body { background: white; }
             .receipt-actions { display: none; }
-            .page { width: 210mm; min-height: 297mm; margin: 0; padding: 5mm 10mm 10mm; border: 0; box-shadow: none; }
+            .receipt-a4-viewport { width: 200mm; height: 101.9mm !important; margin: 0 auto; overflow: visible; }
+            .receipt-a4-paper { left: auto; width: 200mm; height: 101.9mm; margin-left: 0; padding: 0; box-shadow: none; transform: none; }
+            .receipt-print-wrapper { width: 200mm; height: 101.9mm; margin: 0 auto; }
+            .page { width: 215.9mm; height: 110mm; min-height: 0; margin: 0; padding: 2mm 3mm 4mm; border: 0; box-shadow: none; transform: scale(.9263557); transform-origin: top left; }
         }
     </style>
 </head>
 <body>
+@php
+    $paymentMethodLabel = match ($payment->payment_method) {
+        'Cash' => 'Tunai',
+        'Transfer' => 'Transfer Bank',
+        default => $payment->payment_method,
+    };
+    $sppRows = $payment->items
+        ->sortBy(fn ($item) => ((int) $item->year * 100) + (int) $item->month)
+        ->values()
+        ->reduce(function ($groups, $item) {
+            $year = (int) $item->year;
+            $month = (int) $item->month;
+            $monthlyRate = (int) ($item->original_amount ?? $item->total_amount ?? 0);
+            $last = $groups->last();
+            $lastItem = $last ? $last['items']->last() : null;
+            $isNextMonth = $lastItem
+                && $year === (int) $lastItem->year
+                && $month === ((int) $lastItem->month + 1);
+
+            if ($last && $isNextMonth && $last['monthly_rate'] === $monthlyRate) {
+                $last['items']->push($item);
+                $last['subtotal'] += (int) $item->paid_amount;
+                $groups->put($groups->count() - 1, $last);
+            } else {
+                $groups->push([
+                    'items' => collect([$item]),
+                    'monthly_rate' => $monthlyRate,
+                    'subtotal' => (int) $item->paid_amount,
+                ]);
+            }
+
+            return $groups;
+        }, collect())
+        ->map(function (array $group) use ($months) {
+            $first = $group['items']->first();
+            $last = $group['items']->last();
+            $firstMonth = (int) $first->month;
+            $lastMonth = (int) $last->month;
+            $year = (int) $first->year;
+            $firstMonthName = $months[$firstMonth] ?? 'Bulan';
+            $lastMonthName = $months[$lastMonth] ?? 'Bulan';
+
+            return [
+                'period' => $firstMonth === $lastMonth
+                    ? $firstMonthName
+                    : $firstMonthName.' - '.$lastMonthName,
+                'year' => $year,
+                'month_count' => $group['items']->count(),
+                'monthly_rate' => $group['monthly_rate'],
+                'subtotal' => $group['subtotal'],
+            ];
+        });
+@endphp
 <div class="receipt-actions">
     <button type="button" class="print" onclick="window.print()">Cetak</button>
     <a href="{{ route('finance.spp.receipt.download', $payment) }}">Unduh PDF</a>
@@ -76,6 +143,9 @@
         </details>
     @endif
 </div>
+<div class="receipt-a4-viewport" data-a4-preview-viewport>
+<div class="receipt-a4-paper" data-a4-paper>
+<div class="receipt-print-wrapper">
 <main class="page" data-receipt-page>
     <header class="receipt-header">
         <img class="receipt-logo" src="{{ asset('images/logo-yayasan-mambaul-hikmah.png') }}" alt="Logo Yayasan Mambaul Hikmah">
@@ -100,18 +170,22 @@
     </section>
 
     <table>
-        <thead><tr><th class="transaction-time">Waktu Transaksi</th><th class="month">Bulan</th><th class="year">Tahun</th><th class="payment-method">Bayar</th><th class="amount number">Nominal</th></tr></thead>
+        <thead><tr><th class="transaction-time">Waktu Transaksi</th><th class="month">Bulan</th><th class="year">Tahun</th><th class="month-count">Jumlah Bulan</th><th class="monthly-rate number">Rp.</th><th class="payment-method">Bayar</th><th class="amount number">Jumlah</th></tr></thead>
         <tbody>
-            <tr>
-                <td class="transaction-time">{{ $payment->transaction_at->format('d-m-Y H:i:s') }}</td>
-                <td>{{ $payment->items->map(fn ($item) => $months[$item->month])->join(', ') }}</td>
-                <td class="year">{{ $payment->items->pluck('year')->unique()->join(', ') }}</td>
-                <td class="payment-method">{{ $payment->payment_method }}</td>
-                <td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td>
-            </tr>
-            <tr class="totals"><td colspan="4" class="totals-label">Keringanan (Rp)</td><td class="number">{{ number_format($payment->discount_amount, 0, ',', '.') }}</td></tr>
-            <tr class="totals grand-total"><td colspan="4" class="totals-label">Total Bayar (Rp)</td><td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td></tr>
-            <tr class="totals"><td colspan="4" class="totals-label">Sisa Tagihan s/d {{ $outstandingSummary['label'] }} (Rp)</td><td class="number">{{ number_format($outstandingSummary['remaining_amount'], 0, ',', '.') }}</td></tr>
+            @foreach($sppRows as $row)
+                <tr>
+                    <td class="transaction-time">{{ $payment->transaction_at->format('d-m-Y H:i:s') }}</td>
+                    <td>{{ $row['period'] }}</td>
+                    <td class="year">{{ $row['year'] }}</td>
+                    <td class="month-count">{{ $row['month_count'] }}</td>
+                    <td class="monthly-rate number">{{ number_format($row['monthly_rate'], 0, ',', '.') }}</td>
+                    <td class="payment-method">{{ $paymentMethodLabel }}</td>
+                    <td class="number">{{ number_format($row['subtotal'], 0, ',', '.') }}</td>
+                </tr>
+            @endforeach
+            <tr class="totals"><td colspan="6" class="totals-label">Keringanan (Rp)</td><td class="number">{{ number_format($payment->discount_amount, 0, ',', '.') }}</td></tr>
+            <tr class="totals grand-total"><td colspan="6" class="totals-label">Total Bayar (Rp)</td><td class="number">{{ number_format($payment->paid_amount, 0, ',', '.') }}</td></tr>
+            <tr class="totals"><td colspan="6" class="totals-label">Sisa Tagihan s/d {{ $outstandingSummary['label'] }} (Rp)</td><td class="number">{{ number_format($outstandingSummary['remaining_amount'], 0, ',', '.') }}</td></tr>
         </tbody>
     </table>
 
@@ -126,7 +200,20 @@
     </section>
     <div class="receipt-footer"></div>
 </main>
+</div>
+</div>
+</div>
 <script>
+const resizeA4Preview = () => {
+    const viewport = document.querySelector('[data-a4-preview-viewport]');
+    const paper = viewport?.querySelector('[data-a4-paper]');
+    if (!viewport || !paper || window.matchMedia('print').matches) return;
+    const scale = Math.min(1, viewport.clientWidth / paper.offsetWidth);
+    paper.style.setProperty('--a4-screen-scale', String(scale));
+    viewport.style.height = `${paper.offsetHeight * scale}px`;
+};
+window.addEventListener('resize', resizeA4Preview);
+resizeA4Preview();
 document.querySelector('[data-receipt-jpg]')?.addEventListener('click', async () => {
     const page = document.querySelector('[data-receipt-page]');
     if (!page) return;

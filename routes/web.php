@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'create'])->name('login');
-    Route::post('/login', [AuthController::class, 'store'])->name('login.store');
+    Route::post('/login', [AuthController::class, 'store'])->middleware('throttle:login')->name('login.store');
 });
 
 Route::middleware(['auth', 'role.access'])->group(function () {
     Route::get('/', DashboardController::class)->name('dashboard');
-    Route::get('/logout', [AuthController::class, 'destroy'])->name('logout');
+    Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
     Route::get('/laporan', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/laporan/export', [ReportController::class, 'legacyExport'])->name('reports.export');
     Route::prefix('laporan')->name('reports.')->controller(ReportController::class)->group(function () {

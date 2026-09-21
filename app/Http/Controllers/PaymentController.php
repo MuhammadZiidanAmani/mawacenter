@@ -10,6 +10,7 @@ use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\SppPayment;
 use App\Models\Student;
+use App\Services\AuditLogService;
 use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentService;
 use App\Services\SppPaymentService;
@@ -17,8 +18,11 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class PaymentController extends Controller
 {
@@ -26,6 +30,8 @@ class PaymentController extends Controller
     {
         $search = trim($request->string('search')->value());
         $selectedStudentId = (int) $request->integer('student_id');
+        $selectedRegistrationId = (int) $request->integer('registration_id');
+        $activeRegistration = null;
         $editSppPayment = null;
         $editPaymentId = (int) $request->integer('edit_payment');
         if ($editPaymentId > 0) {
@@ -36,6 +42,7 @@ class PaymentController extends Controller
                 abort(403, 'Anda tidak memiliki akses ke transaksi ini.');
             }
             $selectedStudentId = (int) $editSppPayment->student_id;
+            $selectedRegistrationId = (int) $editSppPayment->student_id;
             if ($search === '') {
                 $search = $editSppPayment->student?->nis ?: $editSppPayment->student?->name ?: '';
             }
@@ -72,9 +79,8 @@ class PaymentController extends Controller
                 ->values();
 
             if ($identityIds->isNotEmpty()) {
-                $registrations = Student::with(['academicYear', 'schoolClass.educationUnit'])
-                    ->where('is_active', true)
-                    ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
+                $registrations = $this->paymentStudentBaseQuery($unitIds)
+                    ->with(['academicYear', 'schoolClass.educationUnit'])
                     ->where(fn ($query) => $query
                         ->whereIn('id', $identityIds)
                         ->orWhereIn('identity_student_id', $identityIds))
@@ -87,41 +93,49 @@ class PaymentController extends Controller
 
         if ($selectedStudentId < 1 && $people->count() === 1) {
             $registrations = $people->first();
-            $identity = $registrations->firstWhere('identity_student_id', null) ?? $registrations->first();
-            $selectedStudentId = (int) $identity->id;
+            $identity = $registrations->firstWhere('identity_student_id', null);
+            $selectedStudentId = (int) ($identity?->id ?? $registrations->first()->identity_student_id ?? $registrations->first()->id);
+            $selectedRegistrationId = $selectedRegistrationId ?: (int) ($identity?->id ?? $registrations->first()->id);
         }
 
         if ($selectedStudentId > 0) {
-            $selectedStudent = Student::where('is_active', true)
-                ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
-                ->find($selectedStudentId);
+            $selectedStudent = $this->paymentStudentBaseQuery($unitIds)
+                ->with(['academicYear', 'schoolClass.educationUnit'])
+                ->where(fn ($query) => $query
+                    ->where('id', $selectedStudentId)
+                    ->orWhere('identity_student_id', $selectedStudentId))
+                ->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$selectedStudentId])
+                ->first();
             if ($selectedStudent) {
                 $identityId = $selectedStudent->identity_student_id ?: $selectedStudent->id;
-                $studentIds = Student::where('is_active', true)
-                    ->where(fn ($query) => $query
-                        ->where('id', $identityId)
-                        ->orWhere('identity_student_id', $identityId))
-                    ->pluck('id');
-
-                $selectedRegistrations = $people->get($identityId);
-                if (! $selectedRegistrations) {
-                    $selectedRegistrations = Student::with(['academicYear', 'schoolClass.educationUnit'])
-                        ->where('is_active', true)
-                        ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))
-                        ->where(fn ($query) => $query
-                            ->where('id', $identityId)
-                            ->orWhere('identity_student_id', $identityId))
-                        ->orderBy('name')
-                        ->get();
-
-                    if ($selectedRegistrations->isNotEmpty()) {
-                        $people->put($identityId, $selectedRegistrations);
-                    }
+                $selectedRegistrations = $this->paymentRegistrationsForIdentity($identityId, $unitIds);
+                if ($selectedRegistrations->isNotEmpty()) {
+                    $people->put($identityId, $selectedRegistrations);
                 }
 
                 if ($selectedRegistrations && $selectedRegistrations->isNotEmpty()) {
+                    $activeRegistration = $selectedRegistrationId > 0
+                        ? $selectedRegistrations->firstWhere('id', $selectedRegistrationId)
+                        : ($selectedStudent->identity_student_id
+                            ? $selectedStudent
+                            : ($selectedRegistrations->firstWhere('id', $identityId) ?? $selectedStudent));
+
+                    if (! $activeRegistration) {
+                        abort(403, 'Registrasi siswa tidak sesuai dengan identitas siswa yang dipilih.');
+                    }
+
+                    $selectedStudentId = (int) $identityId;
+                    $selectedRegistrationId = (int) $activeRegistration->id;
+                    $studentIds = $selectedRegistrations->pluck('id');
                     $feeTypes = FeeType::where('is_active', true)->get();
-                    $selectedRegistrations->each(function (Student $student) use ($feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment) {
+                    $selectedRegistrations->each(function (Student $student) use ($activeRegistration, $feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment) {
+                        if ((int) $student->id !== (int) $activeRegistration->id) {
+                            $student->setAttribute('payment_options', []);
+                            $student->setAttribute('optional_payment_options', []);
+
+                            return;
+                        }
+
                         $student->setAttribute('payment_options', $this->paymentOptions($student, $feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment));
                         $student->setAttribute('optional_payment_options', $this->optionalPaymentOptions($student, $feeTypes, $otherPayments, $laundryPayments));
                     });
@@ -130,7 +144,7 @@ class PaymentController extends Controller
                 $sppHistory = SppPayment::with(['student.schoolClass.educationUnit', 'items'])
                     ->whereIn('student_id', $studentIds)
                     ->latest('transaction_at')
-                    ->limit(10)
+                    ->limit(5)
                     ->get()
                     ->map(fn (SppPayment $payment) => [
                         'type' => 'spp',
@@ -152,12 +166,12 @@ class PaymentController extends Controller
                 $otherHistory = OtherPayment::with(['student.schoolClass.educationUnit', 'feeType', 'items'])
                     ->whereIn('student_id', $studentIds)
                     ->latest('transaction_at')
-                    ->limit(10)
+                    ->limit(5)
                     ->get()
                     ->map(fn (OtherPayment $payment) => [
                         'type' => 'other',
                         'id' => $payment->id,
-                        'title' => $payment->feeType?->name ?? 'Pembayaran Lainnya',
+                        'title' => $this->otherHistoryTitle($payment),
                         'detail' => $this->otherHistoryPeriod($payment),
                         'student' => $payment->student?->name,
                         'date' => $payment->transaction_at->format('d/m/Y H.i').' WIB',
@@ -174,7 +188,7 @@ class PaymentController extends Controller
                 $paymentHistory = $sppHistory
                     ->concat($otherHistory)
                     ->sortByDesc('timestamp')
-                    ->take(10)
+                    ->take(5)
                     ->values();
             }
         }
@@ -183,6 +197,8 @@ class PaymentController extends Controller
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'search' => $search,
             'selectedStudentId' => $selectedStudentId,
+            'selectedRegistrationId' => $selectedRegistrationId,
+            'activeRegistration' => $activeRegistration,
             'people' => $people,
             'paymentHistory' => $paymentHistory,
             'transferAccount' => $this->transferAccount(),
@@ -199,6 +215,7 @@ class PaymentController extends Controller
 
         $validated = $request->validate([
             'student_id' => ['required', 'exists:students,id'],
+            'registration_id' => ['nullable', 'integer', 'exists:students,id'],
             'search' => ['nullable', 'string'],
             'bill_keys' => ['nullable', 'array'],
             'bill_keys.*' => ['string'],
@@ -219,22 +236,27 @@ class PaymentController extends Controller
             ]);
         }
 
-        $selectedStudent = Student::with(['academicYear', 'schoolClass.educationUnit'])
+        $identityStudent = Student::with(['academicYear', 'schoolClass.educationUnit'])
             ->where('is_active', true)
             ->findOrFail($validated['student_id']);
+        $identityId = $identityStudent->identity_student_id ?: $identityStudent->id;
+        $registrationId = (int) ($validated['registration_id'] ?? 0);
+        $selectedStudent = $registrationId > 0
+            ? Student::with(['academicYear', 'schoolClass.educationUnit'])->where('is_active', true)->find($registrationId)
+            : $identityStudent;
+
+        if (! $selectedStudent || (int) ($selectedStudent->identity_student_id ?: $selectedStudent->id) !== (int) $identityId) {
+            abort(403, 'Registrasi siswa tidak sesuai dengan identitas siswa yang dipilih.');
+        }
+
         $unitIds = $request->user()?->accessibleUnitIds();
         if (is_array($unitIds) && ! in_array((int) $selectedStudent->schoolClass?->education_unit_id, $unitIds, true)) {
             abort(403, 'Anda tidak memiliki akses ke siswa ini.');
         }
-        $identityId = $selectedStudent->identity_student_id ?: $selectedStudent->id;
-        $registrations = Student::with(['academicYear', 'schoolClass.educationUnit'])
-            ->where('is_active', true)
-            ->where(fn ($query) => $query
-                ->where('id', $identityId)
-                ->orWhere('identity_student_id', $identityId))
-            ->get()
-            ->keyBy('id');
-        $feeTypes = FeeType::where('is_active', true)->get();
+        $registrations = collect([$selectedStudent])->keyBy('id');
+        $feeTypes = FeeType::where('is_active', true)
+            ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
+            ->get();
         $selectedKeys = collect($validated['bill_keys'] ?? [])
             ->concat($validated['optional_keys'] ?? [])
             ->unique()
@@ -268,62 +290,110 @@ class PaymentController extends Controller
             'operator_name' => auth()->user()?->name,
             'operator_user_id' => auth()->id(),
         ];
+        $proofPath = null;
         if ($validated['payment_method'] === 'Transfer' && $request->hasFile('transfer_proof')) {
-            $baseData['transfer_proof_path'] = $request->file('transfer_proof')->store('payment-proofs', 'public');
+            $proofPath = $request->file('transfer_proof')->store('payment-proofs', 'local');
+            $baseData['transfer_proof_path'] = $proofPath;
         }
         $createdPayments = collect();
 
-        foreach ($selectedKeys as $billKey) {
-            if ($remainingPayment < 1) {
-                break;
-            }
+        DB::beginTransaction();
 
-            [$studentId, $group, $feeTypeId] = array_pad(explode(':', (string) $billKey, 3), 3, null);
-            $selectedMonthCount = (int) $paymentMonthCounts->get($this->paymentModeKey((string) $billKey), 0);
-            $student = $registrations->get((int) $studentId);
-            if (! $student || ! $group) {
-                continue;
-            }
+        try {
+            foreach ($selectedKeys as $billKey) {
+                if ($remainingPayment < 1) {
+                    break;
+                }
 
-            if ($group === 'optional') {
-                $feeType = $feeTypes->firstWhere('id', (int) $feeTypeId);
-                if (! $feeType || $remainingPayment < 1) {
+                [$studentId, $group, $feeTypeId] = array_pad(explode(':', (string) $billKey, 3), 3, null);
+                $selectedMonthCount = (int) $paymentMonthCounts->get($this->paymentModeKey((string) $billKey), 0);
+                $student = $registrations->get((int) $studentId);
+                if (! $student || ! $group) {
                     continue;
                 }
 
-                $payment = $this->recordOptionalPayment($student, $feeType, $baseData, $remainingPayment, $selectedMonthCount, $otherPayments, $laundryPayments);
-                if (! $payment) {
+                if ($group === 'optional') {
+                    $feeType = $feeTypes->firstWhere('id', (int) $feeTypeId);
+                    if (! $feeType || $remainingPayment < 1) {
+                        continue;
+                    }
+
+                    $payment = $this->recordOptionalPayment($student, $feeType, $baseData, $remainingPayment, $selectedMonthCount, $otherPayments, $laundryPayments);
+                    if (! $payment) {
+                        continue;
+                    }
+
+                    $createdPayments->push([
+                        'type' => 'other',
+                        'id' => $payment->id,
+                        'student_id' => $student->id,
+                        'label' => $feeType->name,
+                        'payment_method' => $payment->payment_method,
+                        'status' => $payment->status,
+                        'paid_amount' => (int) $payment->paid_amount,
+                        'receipt_number' => $this->receiptNumber($payment),
+                        'receipt_url' => route('finance.other.receipt', $payment),
+                        'download_url' => route('finance.other.receipt.download', $payment),
+                    ]);
+                    $remainingPayment -= (int) $payment->paid_amount;
+
                     continue;
                 }
 
-                $createdPayments->push([
-                    'type' => 'other',
-                    'id' => $payment->id,
-                    'label' => $feeType->name,
-                    'receipt_url' => route('finance.other.receipt', $payment),
-                    'download_url' => route('finance.other.receipt.download', $payment),
-                ]);
-                $remainingPayment -= (int) $payment->paid_amount;
+                if ($group === 'spp') {
+                    if ($selectedMonthCount > 0) {
+                        $quote = $sppPayments->quoteNextMonths($student, $selectedMonthCount);
+                        $paidAmount = min($remainingPayment, (int) $quote['remaining_amount']);
+                        if ($paidAmount < 1) {
+                            continue;
+                        }
 
-                continue;
-            }
+                        $payment = $sppPayments->record($student, $baseData + [
+                            'advance_month_count' => $selectedMonthCount,
+                            'paid_amount' => $paidAmount,
+                        ]);
+                        $createdPayments->push([
+                            'type' => 'spp',
+                            'id' => $payment->id,
+                            'student_id' => $student->id,
+                            'label' => 'SPP '.$student->schoolClass?->educationUnit?->code,
+                            'payment_method' => $payment->payment_method,
+                            'status' => $payment->status,
+                            'paid_amount' => (int) $payment->paid_amount,
+                            'receipt_number' => $this->receiptNumber($payment),
+                            'receipt_url' => route('finance.spp.receipt', $payment),
+                            'download_url' => route('finance.spp.receipt.download', $payment),
+                        ]);
+                        $remainingPayment -= $paidAmount;
 
-            if ($group === 'spp') {
-                if ($selectedMonthCount > 0) {
-                    $quote = $sppPayments->quoteNextMonths($student, $selectedMonthCount);
+                        continue;
+                    }
+
+                    $plan = $sppPayments->paymentPlan($student);
+                    $monthCount = max(0, (int) ($plan['default_month_count'] ?: $plan['max_month_count']));
+                    if ($monthCount < 1) {
+                        continue;
+                    }
+
+                    $quote = $sppPayments->quoteByMonthCount($student, $monthCount);
                     $paidAmount = min($remainingPayment, (int) $quote['remaining_amount']);
                     if ($paidAmount < 1) {
                         continue;
                     }
 
                     $payment = $sppPayments->record($student, $baseData + [
-                        'advance_month_count' => $selectedMonthCount,
+                        'month_count' => $monthCount,
                         'paid_amount' => $paidAmount,
                     ]);
                     $createdPayments->push([
                         'type' => 'spp',
                         'id' => $payment->id,
+                        'student_id' => $student->id,
                         'label' => 'SPP '.$student->schoolClass?->educationUnit?->code,
+                        'payment_method' => $payment->payment_method,
+                        'status' => $payment->status,
+                        'paid_amount' => (int) $payment->paid_amount,
+                        'receipt_number' => $this->receiptNumber($payment),
                         'receipt_url' => route('finance.spp.receipt', $payment),
                         'download_url' => route('finance.spp.receipt.download', $payment),
                     ]);
@@ -332,92 +402,131 @@ class PaymentController extends Controller
                     continue;
                 }
 
-                $plan = $sppPayments->paymentPlan($student);
-                $monthCount = max(0, (int) ($plan['default_month_count'] ?: $plan['max_month_count']));
-                if ($monthCount < 1) {
-                    continue;
-                }
+                $matchedFeeTypes = $this->matchedFeeTypes($student, $feeTypes)
+                    ->filter(fn (FeeType $feeType) => $this->paymentGroup($feeType) === $group)
+                    ->values();
 
-                $quote = $sppPayments->quoteByMonthCount($student, $monthCount);
-                $paidAmount = min($remainingPayment, (int) $quote['remaining_amount']);
-                if ($paidAmount < 1) {
-                    continue;
-                }
-
-                $payment = $sppPayments->record($student, $baseData + [
-                    'month_count' => $monthCount,
-                    'paid_amount' => $paidAmount,
-                ]);
-                $createdPayments->push([
-                    'type' => 'spp',
-                    'id' => $payment->id,
-                    'label' => 'SPP '.$student->schoolClass?->educationUnit?->code,
-                    'receipt_url' => route('finance.spp.receipt', $payment),
-                    'download_url' => route('finance.spp.receipt.download', $payment),
-                ]);
-                $remainingPayment -= $paidAmount;
-
-                continue;
-            }
-
-            $matchedFeeTypes = $this->matchedFeeTypes($student, $feeTypes)
-                ->filter(fn (FeeType $feeType) => $this->paymentGroup($feeType) === $group)
-                ->values();
-
-            foreach ($matchedFeeTypes as $feeType) {
-                if ($remainingPayment < 1) {
-                    break;
-                }
-
-                if ($group === 'laundry') {
-                    $currentLaundry = $this->currentLaundryItem($student, $feeType, $laundryPayments);
-                    if (! $currentLaundry) {
-                        continue;
+                foreach ($matchedFeeTypes as $feeType) {
+                    if ($remainingPayment < 1) {
+                        break;
                     }
 
-                    $paidAmount = min($remainingPayment, (int) $currentLaundry['remaining_amount']);
-                    $payment = $laundryPayments->record($student, $feeType, $baseData + [
-                        'year' => (int) $currentLaundry['year'],
-                        'months' => [(int) $currentLaundry['month']],
-                        'paid_amount' => $paidAmount,
-                    ]);
-                } else {
-                    $quote = $otherPayments->quote($student, $feeType, $now);
-                    $paidAmount = min($remainingPayment, (int) $quote['remaining_amount']);
-                    if ($paidAmount < 1) {
-                        continue;
+                    if ($group === 'laundry') {
+                        $currentLaundry = $this->currentLaundryItem($student, $feeType, $laundryPayments);
+                        if (! $currentLaundry) {
+                            continue;
+                        }
+
+                        $paidAmount = min($remainingPayment, (int) $currentLaundry['remaining_amount']);
+                        $payment = $laundryPayments->record($student, $feeType, $baseData + [
+                            'year' => (int) $currentLaundry['year'],
+                            'months' => [(int) $currentLaundry['month']],
+                            'paid_amount' => $paidAmount,
+                        ]);
+                    } else {
+                        $quote = $otherPayments->quote($student, $feeType, $now);
+                        $paidAmount = min($remainingPayment, (int) $quote['remaining_amount']);
+                        if ($paidAmount < 1) {
+                            continue;
+                        }
+
+                        $payment = $otherPayments->record($student, $feeType, $baseData + [
+                            'paid_amount' => $paidAmount,
+                        ]);
                     }
 
-                    $payment = $otherPayments->record($student, $feeType, $baseData + [
-                        'paid_amount' => $paidAmount,
+                    $createdPayments->push([
+                        'type' => 'other',
+                        'id' => $payment->id,
+                        'student_id' => $student->id,
+                        'label' => $feeType->name,
+                        'payment_method' => $payment->payment_method,
+                        'status' => $payment->status,
+                        'paid_amount' => (int) $payment->paid_amount,
+                        'receipt_number' => $this->receiptNumber($payment),
+                        'receipt_url' => route('finance.other.receipt', $payment),
+                        'download_url' => route('finance.other.receipt.download', $payment),
                     ]);
+                    $remainingPayment -= $paidAmount;
                 }
-
-                $createdPayments->push([
-                    'type' => 'other',
-                    'id' => $payment->id,
-                    'label' => $feeType->name,
-                    'receipt_url' => route('finance.other.receipt', $payment),
-                    'download_url' => route('finance.other.receipt.download', $payment),
-                ]);
-                $remainingPayment -= $paidAmount;
             }
+
+            if ($createdPayments->isEmpty()) {
+                throw ValidationException::withMessages([
+                    'bill_keys' => 'Tidak ada tagihan terpilih yang dapat dibayar.',
+                ]);
+            }
+            app(AuditLogService::class)->recordOperation(
+                'payments.bulk_create',
+                [
+                    'payment_method' => $validated['payment_method'],
+                    'paid_amount' => (int) $validated['paid_amount'],
+                    'selected_student_id' => $selectedStudent->id,
+                    'payments' => $createdPayments->map(fn (array $payment) => [
+                        'type' => $payment['type'],
+                        'id' => $payment['id'],
+                        'label' => $payment['label'],
+                        'student_id' => $payment['student_id'],
+                    ])->values()->all(),
+                ],
+                afterValues: ['payments' => $createdPayments->values()->all()],
+                request: $request,
+                subjectType: Student::class,
+                subjectId: $selectedStudent->id,
+                studentIds: $createdPayments->pluck('student_id')->all(),
+            );
+
+            DB::commit();
+        } catch (Throwable $exception) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            if ($proofPath) {
+                Storage::disk('local')->delete($proofPath);
+            }
+
+            throw $exception;
         }
 
-        if ($createdPayments->isEmpty()) {
-            return back()
-                ->withInput()
-                ->withErrors(['bill_keys' => 'Tidak ada tagihan terpilih yang dapat dibayar.']);
-        }
+        $paymentContext = collect([
+            $selectedStudent->schoolClass?->educationUnit?->code ?? $selectedStudent->schoolClass?->educationUnit?->name,
+            $selectedStudent->schoolClass?->name,
+        ])->filter()->join(' • ');
+        $paymentStatus = $createdPayments->contains(fn (array $payment) => ($payment['status'] ?? null) !== 'Diterima')
+            ? 'Pending'
+            : 'Diterima';
+        $paymentConfirmation = [
+            'student' => [
+                'name' => $selectedStudent->name,
+                'nis' => $selectedStudent->nis,
+            ],
+            'context' => $paymentContext ?: 'Unit belum tersedia',
+            'payment_method' => $this->paymentMethodLabel((string) ($createdPayments->first()['payment_method'] ?? $validated['payment_method'])),
+            'payment_method_value' => $createdPayments->first()['payment_method'] ?? $validated['payment_method'],
+            'status' => $paymentStatus,
+            'paid_amount' => (int) $createdPayments->sum('paid_amount'),
+            'payments' => $createdPayments->map(fn (array $payment) => [
+                'type' => $payment['type'],
+                'id' => $payment['id'],
+                'label' => $payment['label'],
+                'status' => $payment['status'],
+                'paid_amount' => $payment['paid_amount'],
+                'receipt_number' => $payment['receipt_number'],
+                'receipt_url' => $payment['receipt_url'],
+                'download_url' => $payment['download_url'],
+            ])->values()->all(),
+        ];
 
         return redirect()
             ->route('finance.payments.index', [
                 'search' => $validated['search'] ?: $selectedStudent->name,
-                'student_id' => $selectedStudent->id,
+                'student_id' => $identityId,
+                'registration_id' => $selectedStudent->id,
             ])
             ->with('success', $createdPayments->count() > 1
                 ? $createdPayments->count().' transaksi berhasil disimpan. Struk dibuka sesuai jenis pembayaran.'
                 : 'Transaksi berhasil disimpan. Struk dibuka sesuai jenis pembayaran.')
+            ->with('payment_confirmation', $paymentConfirmation)
             ->with('payment_receipts', $createdPayments
                 ->map(fn (array $payment) => [
                     'label' => $payment['label'],
@@ -491,12 +600,15 @@ class PaymentController extends Controller
 
     public function import(): View
     {
+        $unitIds = request()->user()?->accessibleUnitIds();
+
         return view('finance.payments', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'educationUnits' => EducationUnit::orderByRaw("CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
                 ->orderBy('name')
                 ->get(),
-            'mode' => 'import',
+            'mode' => session()->has('import_result') ? 'import-result' : 'import',
         ]);
     }
 
@@ -617,11 +729,39 @@ class PaymentController extends Controller
             ->join(', ');
     }
 
+    private function otherHistoryTitle(OtherPayment $payment): string
+    {
+        $title = $payment->feeType?->name ?? 'Pembayaran Lain-lain';
+        $unitCode = trim((string) $payment->student?->schoolClass?->educationUnit?->code);
+
+        if ($unitCode === '' || stripos($title, $unitCode) !== false) {
+            return $title;
+        }
+
+        return trim($title.' '.$unitCode);
+    }
+
     private function paymentStudentBaseQuery(?array $unitIds)
     {
         return Student::query()
             ->where('is_active', true)
-            ->when(is_array($unitIds), fn ($query) => $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)));
+            ->whereHas('schoolClass', function ($class) use ($unitIds) {
+                $class
+                    ->where('is_active', true)
+                    ->whereHas('educationUnit', fn ($unit) => $unit->where('is_active', true))
+                    ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds));
+            });
+    }
+
+    private function paymentRegistrationsForIdentity(int $identityId, ?array $unitIds): Collection
+    {
+        return $this->paymentStudentBaseQuery($unitIds)
+            ->with(['academicYear', 'schoolClass.educationUnit'])
+            ->where(fn ($query) => $query
+                ->where('id', $identityId)
+                ->orWhere('identity_student_id', $identityId))
+            ->orderBy('name')
+            ->get();
     }
 
     private function escapeLike(string $value): string
@@ -649,7 +789,7 @@ class PaymentController extends Controller
         $definitions = [
             'spp' => ['label' => 'SPP', 'url' => route('finance.spp.create', ['student_id' => $student->id])],
             'daftar-ulang' => ['label' => 'Daftar Ulang', 'url' => route('finance.other.create', ['category' => 'daftar-ulang', 'student_id' => $student->id])],
-            'lain-lain' => ['label' => 'Lainnya', 'url' => route('finance.other.create', ['student_id' => $student->id])],
+            'lain-lain' => ['label' => 'Lain-lain', 'url' => route('finance.other.create', ['student_id' => $student->id])],
         ];
 
         return collect($definitions)
@@ -676,6 +816,9 @@ class PaymentController extends Controller
                     'detail_label' => $summary['detail_label'],
                     'period_options' => $summary['period_options'] ?? [],
                     'default_period_count' => (int) ($summary['default_period_count'] ?? 1),
+                    'display_amount' => (int) ($summary['display_amount'] ?? $summary['remaining_amount']),
+                    'paid_through_current' => (bool) ($summary['paid_through_current'] ?? false),
+                    'paid_through_label' => $summary['paid_through_label'] ?? null,
                 ];
             })
             ->filter(fn (array $option) => (int) $option['remaining_amount'] > 0 || $option['period_options'] !== [])
@@ -708,6 +851,7 @@ class PaymentController extends Controller
             }
 
             $periodOptions = [];
+            $window = null;
             $defaultPeriodCount = 1;
             if ($ignoredPayment) {
                 $runningAmount = 0;
@@ -722,17 +866,17 @@ class PaymentController extends Controller
                 $defaultPeriodCount = $monthCount;
             } else {
                 try {
-                $window = $sppPayments->paymentWindow($student);
-                $defaultPeriodCount = (int) $window['default_month_count'];
-                $runningAmount = 0;
-                foreach ($window['items'] as $index => $item) {
-                    $runningAmount += (int) $item['remaining_amount'];
-                    $periodOptions[] = $this->periodOption($index + 1, [
-                        'remaining_amount' => $runningAmount,
-                        'period_start' => $window['period_start'],
-                        'period_end' => ['year' => $item['year'], 'month' => $item['month']],
-                    ], true);
-                }
+                    $window = $sppPayments->paymentWindow($student);
+                    $defaultPeriodCount = (int) $window['default_month_count'];
+                    $runningAmount = 0;
+                    foreach ($window['items'] as $index => $item) {
+                        $runningAmount += (int) $item['remaining_amount'];
+                        $periodOptions[] = $this->periodOption($index + 1, [
+                            'remaining_amount' => $runningAmount,
+                            'period_start' => $window['period_start'],
+                            'period_end' => ['year' => $item['year'], 'month' => $item['month']],
+                        ], true);
+                    }
                 } catch (ValidationException) {
                     // Tidak ada periode SPP yang dapat ditagihkan.
                 }
@@ -743,12 +887,21 @@ class PaymentController extends Controller
                 $periods = array_slice($ignoredPayment ? ($plan['periods'] ?? []) : ($window['items'] ?? []), 0, $defaultPeriodCount);
             }
 
+            $paidThroughCurrent = ! $ignoredPayment
+                && (int) $plan['default_month_count'] < 1
+                && $periodOptions !== [];
+
             return [
                 'amount_label' => $this->rupiah($remainingAmount),
                 'remaining_amount' => $remainingAmount,
                 'detail_label' => $periods !== [] ? $this->sppPeriodLabel($periods) : 'Tidak ada tagihan',
                 'period_options' => count($periodOptions) > 1 ? $periodOptions : [],
                 'default_period_count' => $defaultPeriodCount,
+                'display_amount' => $paidThroughCurrent ? 0 : $remainingAmount,
+                'paid_through_current' => $paidThroughCurrent,
+                'paid_through_label' => $paidThroughCurrent
+                    ? $this->monthName((int) now()->month).' '.now()->year
+                    : null,
             ];
         }
 

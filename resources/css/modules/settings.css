@@ -1,0 +1,265 @@
+/* Menu Pengaturan. Keep this module scoped to the account settings page. */
+.settings-page {
+    display: grid;
+    gap: 16px;
+    width: 100%;
+    max-width: var(--app-content-width);
+    margin-inline: auto;
+    padding: var(--app-page-padding-y) var(--app-page-padding-x);
+    background: var(--app-canvas);
+}
+
+.settings-page * {
+    min-width: 0;
+}
+
+.settings-heading {
+    display: grid;
+    gap: 4px;
+}
+
+.settings-heading h1 {
+    margin: 0;
+    color: var(--app-text);
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.settings-heading p {
+    margin: 0;
+    color: var(--app-muted-strong);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.settings-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 16px;
+    align-items: start;
+}
+
+.settings-card {
+    min-width: 0;
+    overflow: hidden;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    box-shadow: none;
+}
+
+.settings-form {
+    display: grid;
+}
+
+.settings-form-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 56px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--app-border-soft);
+}
+
+.settings-transfer-head {
+    border-top: 1px solid var(--app-border-soft);
+}
+
+.settings-form-head > span {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    place-items: center;
+    color: var(--app-primary);
+    background: var(--app-success-soft);
+    border-radius: var(--app-radius);
+}
+
+.settings-form-head .icon {
+    width: 18px;
+    height: 18px;
+}
+
+.settings-form-head div {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.settings-form-head strong {
+    display: block;
+    color: var(--app-text);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.settings-form-head small {
+    display: block;
+    color: var(--app-muted);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+
+.settings-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    padding: 20px;
+}
+
+.settings-fields label {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    color: var(--app-label);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.25;
+}
+
+.settings-fields label.wide {
+    grid-column: 1 / -1;
+}
+
+.settings-fields input,
+.settings-fields select,
+.settings-fields textarea {
+    color: var(--app-text);
+    background: var(--app-surface);
+    border-color: var(--app-border);
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.settings-fields input:focus,
+.settings-fields select:focus,
+.settings-fields textarea:focus {
+    border-color: var(--app-primary);
+    outline: 2px solid rgba(0, 69, 40, .12);
+    outline-offset: 0;
+}
+
+.settings-fields textarea {
+    resize: vertical;
+}
+
+.settings-save {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px 20px;
+    background: var(--app-surface);
+    border-top: 1px solid var(--app-border-soft);
+}
+
+.settings-save span {
+    color: var(--app-muted);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.settings-side {
+    display: grid;
+    gap: 16px;
+    min-width: 0;
+}
+
+.account-summary {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+}
+
+.account-summary span {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    padding: 12px;
+    background: var(--app-panel-soft);
+    border: 1px solid var(--app-border-soft);
+    border-radius: var(--app-radius);
+}
+
+.account-summary small {
+    color: var(--app-muted);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.25;
+}
+
+.account-summary strong {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--app-text);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-note {
+    display: grid;
+    gap: 4px;
+    padding: 16px;
+    color: var(--app-warning);
+    background: var(--app-warning-soft);
+    border: 1px solid #fed7aa;
+    border-radius: var(--app-radius);
+}
+
+.settings-note strong {
+    color: var(--app-warning);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.settings-note p {
+    margin: 0;
+    color: var(--app-warning);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+    .settings-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .settings-page {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        padding: 16px;
+    }
+
+    .settings-fields {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .settings-save {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .settings-save .button {
+        width: 100%;
+    }
+}

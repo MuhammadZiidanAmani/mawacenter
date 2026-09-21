@@ -6,13 +6,13 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'username', 'email', 'role', 'password'])]
+#[Fillable(['name', 'username', 'email', 'role', 'password', 'must_reset_password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -108,28 +108,22 @@ class User extends Authenticatable
             return null;
         }
 
-        if ($this->isBendaharaUnit() || $this->isPetugas()) {
-            $ids = $this->educationUnits()->pluck('education_units.id')->map(fn ($id) => (int) $id)->all();
-
-            return $this->isPetugas() && $ids === [] ? null : $ids;
+        if (! $this->isGuardian()) {
+            return $this->educationUnits()->pluck('education_units.id')->map(fn ($id) => (int) $id)->all();
         }
 
-        if ($this->isGuardian()) {
-            $studentIds = $this->accessibleStudentIds();
-            if ($studentIds === []) {
-                return [];
-            }
-
-            return Student::whereIn('students.id', $studentIds)
-                ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
-                ->pluck('school_classes.education_unit_id')
-                ->unique()
-                ->map(fn ($id) => (int) $id)
-                ->values()
-                ->all();
+        $studentIds = $this->accessibleStudentIds();
+        if ($studentIds === []) {
+            return [];
         }
 
-        return [];
+        return Student::whereIn('students.id', $studentIds)
+            ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
+            ->pluck('school_classes.education_unit_id')
+            ->unique()
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
     }
 
     public function accessibleStudentIds(): ?array
@@ -172,6 +166,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'must_reset_password' => 'boolean',
         ];
     }
 }

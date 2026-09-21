@@ -1023,6 +1023,9 @@
         }
     </style>
 </head>
+@php
+    $canCreateCashPayment = auth()->user()?->hasPermission('payments.cash.create') ?? false;
+@endphp
 <body class="{{ ($isPdf ?? false) ? 'notice-pdf-mode' : 'notice-web-mode' }}">
     @unless($isPdf ?? false)
         <div class="notice-actions">
@@ -1030,7 +1033,9 @@
             <div class="notice-toolbar-spacer"></div>
             <div class="notice-toolbar-controls">
                 <a href="{{ $backUrl }}">Kembali</a>
+                @if($canCreateCashPayment)
                 <a href="{{ route('finance.payments.index', ['student_id' => $student->id, 'search' => $student->nis]) }}">Bayar</a>
+                @endif
                 <a href="{{ $downloadUrl }}">Unduh</a>
                 <button type="button" class="primary" onclick="window.print()">Cetak</button>
             </div>

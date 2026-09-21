@@ -22,6 +22,20 @@
     ];
     $sidebarIcon = fn ($name, $class = '') => $sidebarSvg($sidebarIcons[$name], $class);
     $canAccess = fn (string $permission) => auth()->user()?->hasPermission($permission) ?? false;
+    $studentPermissions = ['students.view', 'students.create', 'students.update', 'students.import', 'students.export', 'students.movement', 'students.alumni', 'students.identity_cleanup'];
+    $canAccessStudentsMenu = collect($studentPermissions)->contains(fn ($permission) => $canAccess($permission));
+    $canAccessPaymentMenu = $canAccess('payments.cash.create') || $canAccess('payments.view_unit');
+    $paymentMenuUrl = $canAccess('payments.cash.create') ? route('finance.payments.index') : route('finance.payments.history');
+    $masterMenuItems = [
+        'academic-years' => ['Tahun Pelajaran', 'calendar', 'master.manage'],
+        'education-units' => ['Unit Pendidikan', 'grid', 'master.manage'],
+        'classes' => ['Kelas', 'database', 'master.manage'],
+        'fee-types' => ['Kategori Pembayaran', 'receipt', 'master.manage'],
+        'fee-discounts' => ['Keringanan Biaya', 'wallet', 'master.manage'],
+        'data-roles' => ['Data Role', 'role', 'users.manage'],
+        'data-users' => ['Data User', 'users', 'users.manage'],
+    ];
+    $visibleMasterMenuItems = collect($masterMenuItems)->filter(fn ($item) => $canAccess($item[2]));
     $studentOpen = $activeMenu === 'students';
     $masterOpen = $activeMenu === 'master';
     $reportOpen = $activeMenu === 'reports';
@@ -32,20 +46,28 @@
         @if($canAccess('dashboard.view'))
         <a href="{{ route('dashboard') }}" class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}">{!! $sidebarIcon('grid') !!}<span>Dashboard</span></a>
         @endif
-        @if($canAccess('students.view'))
+        @if($canAccessStudentsMenu)
         <div class="nav-group nested-nav {{ $studentOpen ? 'open' : '' }}">
             <button type="button" class="nav-item nav-parent {{ $studentOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $studentOpen ? 'true' : 'false' }}">{!! $sidebarIcon('users') !!}<span>Manajemen Siswa</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
+                @if($canAccess('students.view'))
                 <a href="{{ route('student-management.students.index') }}" class="{{ $activeStudentMenu === 'data-siswa' ? 'active' : '' }}">{!! $sidebarIcon('users') !!}<span>Data Siswa</span></a>
+                @endif
+                @if($canAccess('students.identity_cleanup'))
                 <a href="{{ route('student-management.identity-cleanup.index') }}" class="{{ $activeStudentMenu === 'rapikan-identitas' ? 'active' : '' }}">{!! $sidebarIcon('role') !!}<span>Rapikan Identitas</span></a>
+                @endif
+                @if($canAccess('students.movement'))
                 <a href="{{ route('student-management.class-transfer.index') }}" class="{{ $activeStudentMenu === 'pindah-kelas' ? 'active' : '' }}">{!! $sidebarIcon('switch') !!}<span>Pindah Kelas</span></a>
                 <a href="{{ route('student-management.class-promotion.index') }}" class="{{ $activeStudentMenu === 'naik-kelas' ? 'active' : '' }}">{!! $sidebarIcon('arrow-up') !!}<span>Naik Kelas</span></a>
+                @endif
+                @if($canAccess('students.view'))
                 <a href="{{ route('student-management.alumni.index') }}" class="{{ $activeStudentMenu === 'alumni' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>Data Alumni</span></a>
+                @endif
             </div>
         </div>
         @endif
-        @if($canAccess('payments.cash.create'))
-        <a href="{{ route('finance.payments.index') }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
+        @if($canAccessPaymentMenu)
+        <a href="{{ $paymentMenuUrl }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
         @endif
         @if($canAccess('payments.verify_transfer'))
         <a href="{{ route('finance.transfer-verifications.index') }}" class="nav-item {{ $activeMenu === 'transfer-verification' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>Verifikasi Transfer</span></a>
@@ -64,19 +86,11 @@
             </div>
         </div>
         @endif
-        @if($canAccess('master.manage') || $canAccess('users.manage'))
+        @if($visibleMasterMenuItems->isNotEmpty())
         <div class="nav-group master-nav {{ $masterOpen ? 'open' : '' }}">
             <button type="button" class="nav-item nav-parent {{ $masterOpen ? 'active' : '' }}" data-master-nav-toggle aria-expanded="{{ $masterOpen ? 'true' : 'false' }}">{!! $sidebarIcon('database') !!}<span>Data Master</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
             <div class="nav-submenu">
-                @foreach ([
-                    'academic-years' => ['Tahun Pelajaran', 'calendar'],
-                    'education-units' => ['Unit Pendidikan', 'grid'],
-                    'classes' => ['Kelas', 'database'],
-                    'fee-types' => ['Kategori Pembayaran', 'receipt'],
-                    'fee-discounts' => ['Keringanan Biaya', 'wallet'],
-                    'data-roles' => ['Data Role', 'role'],
-                    'data-users' => ['Data User', 'users'],
-                ] as $key => $item)
+                @foreach ($visibleMasterMenuItems as $key => $item)
                     <a href="{{ route('master.index', ['tab' => $key]) }}" class="{{ $activeMasterMenu === $key ? 'active' : '' }}">{!! $sidebarIcon($item[1]) !!}<span>{{ $item[0] }}</span></a>
                 @endforeach
             </div>

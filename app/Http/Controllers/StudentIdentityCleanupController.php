@@ -6,6 +6,7 @@ use App\Models\AcademicYear;
 use App\Models\EducationUnit;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -20,14 +21,19 @@ class StudentIdentityCleanupController extends Controller
     {
         $filters = $this->filtersFromRequest($request);
 
-        $students = $this->studentsForCleanup();
+        $students = $this->studentsForCleanup($request);
         $candidates = $this->duplicateCandidates($students, $filters);
         $linkedGroups = $this->linkedIdentityGroups($students, $filters);
+
+        $rows = $this->sortIdentityRows(
+            $this->identityRows($candidates, $linkedGroups),
+            $filters
+        );
 
         return view('student-management.identity-cleanup', [
             ...$this->sharedViewData(),
             'candidates' => $this->paginateCandidates(
-                $this->identityRows($candidates, $linkedGroups),
+                $rows,
                 $request,
                 $filters['per_page']
             ),
@@ -38,7 +44,7 @@ class StudentIdentityCleanupController extends Controller
     public function show(Request $request, string $candidateKey): View
     {
         $filters = $this->filtersFromRequest($request);
-        $students = $this->studentsForCleanup();
+        $students = $this->studentsForCleanup($request);
         $candidate = $this->duplicateCandidates($students, $filters)
             ->firstWhere('key', $candidateKey);
 
@@ -59,8 +65,12 @@ class StudentIdentityCleanupController extends Controller
         ]);
 
         $selected = Student::whereIn('id', $validated['student_ids'])->get();
+        $this->authorizeStudentsAccess($request, $selected);
+        $before = [];
+        $after = [];
+        $affectedIds = [];
 
-        DB::transaction(function () use ($selected) {
+        DB::transaction(function () use ($selected, &$before, &$after, &$affectedIds) {
             $rootIds = $selected
                 ->map(fn (Student $student) => $student->identity_student_id ?: $student->id)
                 ->push(...$selected->pluck('id'))
@@ -76,13 +86,31 @@ class StudentIdentityCleanupController extends Controller
                 ->whereNull('identity_student_id')
                 ->sortBy('id')
                 ->first() ?? $selected->sortBy('id')->first();
+            $affectedIds = $groupStudents->pluck('id')->values()->all();
+            $before = $groupStudents
+                ->map(fn (Student $student) => $this->identityAuditSnapshot($student))
+                ->values()
+                ->all();
 
             foreach ($groupStudents as $student) {
                 $student->forceFill([
                     'identity_student_id' => $student->is($primary) ? null : $primary->id,
                 ])->save();
             }
+            $after = Student::whereIn('id', $affectedIds)
+                ->get()
+                ->map(fn (Student $student) => $this->identityAuditSnapshot($student))
+                ->values()
+                ->all();
         });
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.identity_merge',
+            $affectedIds,
+            ['selected_student_ids' => collect($validated['student_ids'])->map(fn ($id) => (int) $id)->values()->all()],
+            ['students' => $before],
+            ['students' => $after],
+            $request,
+        );
 
         return redirect()
             ->route('student-management.identity-cleanup.index')
@@ -95,11 +123,40 @@ class StudentIdentityCleanupController extends Controller
             'identity_root_id' => ['required', 'integer', 'exists:students,id'],
         ]);
 
-        DB::transaction(function () use ($validated) {
-            Student::where('id', $validated['identity_root_id'])
+        $linkedStudents = Student::where('id', $validated['identity_root_id'])
+            ->orWhere('identity_student_id', $validated['identity_root_id'])
+            ->get();
+        $this->authorizeStudentsAccess($request, $linkedStudents);
+        $before = [];
+        $after = [];
+        $affectedIds = [];
+        DB::transaction(function () use ($validated, &$before, &$after, &$affectedIds) {
+            $students = Student::where('id', $validated['identity_root_id'])
                 ->orWhere('identity_student_id', $validated['identity_root_id'])
-                ->update(['identity_student_id' => null]);
+                ->get();
+            $affectedIds = $students->pluck('id')->values()->all();
+            $before = $students
+                ->map(fn (Student $student) => $this->identityAuditSnapshot($student))
+                ->values()
+                ->all();
+
+            Student::whereIn('id', $affectedIds)->update(['identity_student_id' => null]);
+            $after = Student::whereIn('id', $affectedIds)
+                ->get()
+                ->map(fn (Student $student) => $this->identityAuditSnapshot($student))
+                ->values()
+                ->all();
         });
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.identity_split',
+            $affectedIds,
+            ['identity_root_id' => (int) $validated['identity_root_id']],
+            ['students' => $before],
+            ['students' => $after],
+            $request,
+            Student::class,
+            (int) $validated['identity_root_id'],
+        );
 
         return back()->with('success', 'Identitas siswa berhasil dipisahkan kembali.');
     }
@@ -165,14 +222,25 @@ class StudentIdentityCleanupController extends Controller
             'year_id' => $request->query('year_id'),
             'search' => trim((string) $request->query('search', '')),
             'per_page' => (string) $request->query('per_page', '10'),
+            'sort' => in_array($request->query('sort'), ['name', 'reason', 'confidence', 'count'], true)
+                ? $request->query('sort')
+                : null,
+            'direction' => $request->query('direction') === 'desc' ? 'desc' : 'asc',
         ];
     }
 
-    private function studentsForCleanup(): Collection
+    private function studentsForCleanup(Request $request): Collection
     {
+        $unitIds = $request->user()?->accessibleUnitIds();
+
         return Student::query()
             ->with(['schoolClass.educationUnit', 'academicYear'])
             ->where('is_active', true)
+            ->when(is_array($unitIds), function ($query) use ($unitIds) {
+                $unitIds === []
+                    ? $query->whereRaw('1 = 0')
+                    : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds));
+            })
             ->orderBy('name')
             ->orderBy('nis')
             ->get();
@@ -180,11 +248,20 @@ class StudentIdentityCleanupController extends Controller
 
     private function sharedViewData(): array
     {
+        $unitIds = request()->user()?->accessibleUnitIds();
+
         return [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'academicYears' => AcademicYear::orderByDesc('is_active')->orderByDesc('start_date')->orderByDesc('id')->get(),
-            'educationUnits' => EducationUnit::where('is_active', true)->orderBy('name')->get(),
-            'schoolClasses' => SchoolClass::with('educationUnit')->where('is_active', true)->orderBy('name')->get(),
+            'educationUnits' => EducationUnit::where('is_active', true)
+                ->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereIn('id', $unitIds))
+                ->orderBy('name')
+                ->get(),
+            'schoolClasses' => SchoolClass::with('educationUnit')
+                ->where('is_active', true)
+                ->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereIn('education_unit_id', $unitIds))
+                ->orderBy('name')
+                ->get(),
         ];
     }
 
@@ -261,6 +338,42 @@ class StudentIdentityCleanupController extends Controller
             ->values();
     }
 
+    private function sortIdentityRows(Collection $rows, array $filters): Collection
+    {
+        if (! $filters['sort']) {
+            return $rows;
+        }
+
+        return $rows
+            ->sortBy(
+                fn (array $row) => $this->identityRowSortValue($row, $filters['sort']),
+                SORT_REGULAR,
+                $filters['direction'] === 'desc'
+            )
+            ->values();
+    }
+
+    private function identityRowSortValue(array $row, string $sort): mixed
+    {
+        return match ($sort) {
+            'name' => Str::lower($row['name'] ?? ''),
+            'reason' => Str::lower($row['reason'] ?? ''),
+            'confidence' => $this->confidenceRank($row['confidence'] ?? ''),
+            'count' => $row['students']->count(),
+            default => Str::lower($row['name'] ?? ''),
+        };
+    }
+
+    private function confidenceRank(string $confidence): int
+    {
+        return match ($confidence) {
+            'Kuat', 'Gabungan' => 1,
+            'Sedang' => 2,
+            'Perlu cek' => 3,
+            default => 4,
+        };
+    }
+
     private function candidateMatchesSearch(array $candidate, string $needle): bool
     {
         $haystack = collect([
@@ -326,5 +439,32 @@ class StudentIdentityCleanupController extends Controller
             ->replaceMatches('/[^a-z0-9]+/', ' ')
             ->squish()
             ->value();
+    }
+
+    private function identityAuditSnapshot(Student $student): array
+    {
+        $student->loadMissing(['schoolClass.educationUnit', 'academicYear']);
+
+        return [
+            'id' => $student->id,
+            'identity_student_id' => $student->identity_student_id,
+            'nis' => $student->nis,
+            'nisn' => $student->nisn,
+            'name' => $student->name,
+            'unit' => $student->schoolClass?->educationUnit?->code,
+            'class' => $student->schoolClass?->name,
+            'academic_year' => $student->academicYear?->name,
+        ];
+    }
+
+    private function authorizeStudentsAccess(Request $request, Collection $students): void
+    {
+        $unitIds = $request->user()?->accessibleUnitIds();
+        if (! is_array($unitIds)) {
+            return;
+        }
+
+        $students->loadMissing('schoolClass');
+        abort_if($students->contains(fn (Student $student) => ! in_array((int) $student->schoolClass?->education_unit_id, $unitIds, true)), 403);
     }
 }

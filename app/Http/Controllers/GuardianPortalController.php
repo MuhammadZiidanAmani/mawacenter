@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bill;
 use App\Models\GuardianTransferRequest;
+use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -39,9 +40,9 @@ class GuardianPortalController extends Controller
             ]);
         }
 
-        $path = $request->file('proof')->store('guardian-transfer-proofs', 'public');
+        $path = $request->file('proof')->store('guardian-transfer-proofs', 'local');
 
-        GuardianTransferRequest::create([
+        $transfer = GuardianTransferRequest::create([
             'user_id' => $request->user()->id,
             'student_id' => $validated['student_id'],
             'bill_ids' => $bills->pluck('id')->values()->all(),
@@ -49,6 +50,25 @@ class GuardianPortalController extends Controller
             'proof_path' => $path,
             'status' => 'Pending',
         ]);
+        app(AuditLogService::class)->recordOperation(
+            'payments.transfer.create',
+            [
+                'student_id' => (int) $validated['student_id'],
+                'bill_ids' => $bills->pluck('id')->values()->all(),
+                'amount' => (int) $bills->sum('remaining_amount'),
+            ],
+            afterValues: [
+                'id' => $transfer->id,
+                'student_id' => $transfer->student_id,
+                'bill_ids' => $transfer->bill_ids,
+                'amount' => (int) $transfer->amount,
+                'status' => $transfer->status,
+            ],
+            request: $request,
+            subjectType: GuardianTransferRequest::class,
+            subjectId: $transfer->id,
+            studentIds: [$transfer->student_id],
+        );
 
         return redirect()
             ->route('finance.bills.index', ['student_id' => $validated['student_id']])

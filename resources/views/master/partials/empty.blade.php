@@ -1,6 +1,6 @@
 @php
     $emptyColspan = $emptyColspan ?? match ($tab ?? null) {
-        'students', 'data-roles' => 7,
+        'students', 'fee-types', 'data-roles', 'data-users' => 7,
         default => 6,
     };
 @endphp

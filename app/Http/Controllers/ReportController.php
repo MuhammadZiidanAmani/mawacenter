@@ -262,8 +262,10 @@ class ReportController extends Controller
                 ['key' => 'class', 'label' => 'Kelas'],
                 ['key' => 'type', 'label' => 'Jenis Pembayaran'],
                 ['key' => 'method', 'label' => 'Cara Bayar'],
+                ['key' => 'status', 'label' => 'Status', 'type' => 'status'],
                 ['key' => 'operator', 'label' => 'Petugas'],
                 ['key' => 'amount', 'label' => 'Nominal', 'type' => 'money'],
+                ['key' => 'actions', 'label' => 'Aksi', 'type' => 'actions'],
             ],
         };
     }
@@ -293,6 +295,7 @@ class ReportController extends Controller
             default => array_merge($dateFields, [
                 ['name' => 'unit_id', 'label' => 'Unit Pendidikan', 'type' => 'select', 'value' => $filters['unit_id'], 'options' => $this->unitOptions($options)],
                 ['name' => 'class_id', 'label' => 'Kelas', 'type' => 'select', 'value' => $filters['class_id'], 'options' => $this->classOptions($options), 'classFilter' => true],
+                ['name' => 'payment_status', 'label' => 'Status', 'type' => 'select', 'value' => $filters['payment_status'], 'options' => ['' => 'Semua', 'Diterima' => 'Diterima', 'Pending' => 'Pending', 'Dibatalkan' => 'Dibatalkan']],
                 ['name' => 'operator_name', 'label' => 'Petugas', 'type' => 'select', 'value' => $filters['operator_name'], 'options' => $this->operatorOptions($options)],
             ]),
         };
@@ -347,7 +350,7 @@ class ReportController extends Controller
             ->all();
 
         return match ($report) {
-            'transactions' => array_values(array_intersect($safeColumns, ['date', 'nis', 'student', 'unit', 'class', 'type', 'method', 'operator', 'amount'])),
+            'transactions' => array_values(array_intersect($safeColumns, ['date', 'nis', 'student', 'unit', 'class', 'type', 'method', 'status', 'operator', 'amount'])),
             'monthly-spp' => array_values(array_intersect($safeColumns, ['date', 'nis', 'student', 'unit', 'class', 'month', 'year', 'nominal', 'method', 'operator'])),
             'yearly-spp' => $safeColumns,
             'unit-recap' => array_values(array_intersect($safeColumns, ['unit', 'spp', 'daftar_ulang', 'laundry', 'lain_lain', 'total'])),

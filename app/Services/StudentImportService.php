@@ -12,62 +12,71 @@ use Throwable;
 
 class StudentImportService
 {
-    public function preview(string $path, AcademicYear $activeYear): array
+    public function preview(string $path, AcademicYear $activeYear, ?array $unitIds = null): array
     {
-        return $this->process($path, $activeYear, false);
+        return $this->process($path, $activeYear, false, $unitIds);
     }
 
-    public function import(string $path, AcademicYear $activeYear): array
+    public function import(string $path, AcademicYear $activeYear, ?array $unitIds = null, ?callable $progress = null): array
     {
-        return $this->process($path, $activeYear, true);
+        return $this->process($path, $activeYear, true, $unitIds, $progress);
     }
 
-    private function process(string $path, AcademicYear $activeYear, bool $persist): array
+    private function process(string $path, AcademicYear $activeYear, bool $persist, ?array $unitIds, ?callable $progress = null): array
     {
         [$headers, $rows] = $this->readRows($path);
         $result = [
             'total' => count($rows),
             'valid' => 0,
             'imported' => 0,
+            'created' => 0,
+            'updated' => 0,
             'duplicates' => 0,
             'created_classes' => 0,
             'failures' => [],
             'student_ids' => [],
             'rows' => [],
         ];
+        $total = count($rows);
+        $processed = 0;
+        $reportProgress = function () use (&$result, $progress, $total, &$processed): void {
+            $processed++;
+            $this->reportProgress($progress, $result, $total, $processed);
+        };
 
         DB::beginTransaction();
 
         try {
-            $units = EducationUnit::with('schoolClasses')->get();
+            $units = EducationUnit::with('schoolClasses')
+                ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
+                ->get();
 
             foreach ($rows as $sourceRow) {
                 $row = $this->prepareRow($sourceRow['line'], $sourceRow['values'], $headers);
                 if (isset($row['error'])) {
                     $this->fail($result, $row, $row['message']);
+                    $reportProgress();
+
                     continue;
                 }
 
                 $unit = $units->first(fn (EducationUnit $item) => $this->matchesUnit($item, $row['unit']));
                 if (! $unit) {
                     $this->fail($result, $row, "Unit Pendidikan \"{$row['unit']}\" tidak ditemukan.");
+                    $reportProgress();
+
                     continue;
                 }
 
                 $row['unit'] = $unit->code;
-                $existing = Student::where('nis', $row['nis'])
+                $existing = Student::with(['schoolClass.educationUnit'])
+                    ->where('nis', $row['nis'])
                     ->whereHas('schoolClass', fn ($query) => $query->where('education_unit_id', $unit->id))
-                    ->exists();
-                if ($existing) {
-                    $row['status'] = 'Duplikat';
-                    $row['message'] = "NIS {$row['nis']} sudah digunakan pada unit {$unit->code}.";
-                    $result['duplicates']++;
-                    $result['rows'][] = $row;
-                    continue;
-                }
+                    ->first();
+                if ($existing && $this->normalizeLookup($existing->name) !== $this->normalizeLookup($row['name'])) {
+                    $this->fail($result, $row, "NIS {$row['nis']} pada unit {$unit->code} sudah digunakan oleh {$existing->name}.");
+                    $reportProgress();
 
-                if ($row['nisn'] !== null && Student::where('nisn', $row['nisn'])->exists()) {
-                    $this->fail($result, $row, "NISN {$row['nisn']} sudah digunakan.");
                     continue;
                 }
 
@@ -84,43 +93,32 @@ class StudentImportService
                 }
 
                 try {
-                    $student = Student::create([
-                        'nis' => $row['nis'],
-                        'nisn' => $row['nisn'],
-                        'name' => $row['name'],
-                        'birth_place' => $row['birth_place'],
-                        'birth_date' => $row['birth_date'],
-                        'gender' => $row['gender'],
-                        'father_name' => $row['father_name'],
-                        'mother_name' => $row['mother_name'],
-                        'father_whatsapp' => $row['father_whatsapp'],
-                        'mother_whatsapp' => $row['mother_whatsapp'],
-                        'province' => $row['province'],
-                        'city' => $row['city'],
-                        'district' => $row['district'],
-                        'village' => $row['village'],
-                        'address' => $row['address'],
-                        'school_class_id' => $class->id,
-                        'academic_year_id' => $activeYear->id,
-                        'entry_date' => $row['entry_date'] ?? now()->toDateString(),
-                        'billing_start_date' => $row['billing_start_date'],
-                        'intake_status' => $row['intake_status'],
-                        'exit_date' => $row['is_active'] ? null : $row['exit_date'],
-                        'inactive_reason' => $row['is_active'] ? null : $row['inactive_reason'],
-                        'is_active' => $row['is_active'],
-                    ]);
+                    $payload = $this->studentPayload($row, $class->id, $activeYear, $existing);
+                    $student = $existing;
+                    if ($persist) {
+                        if ($existing) {
+                            $existing->update($payload);
+                            $student = $existing->refresh();
+                        } else {
+                            $student = Student::create($payload);
+                        }
+                    }
                     if ($persist) {
                         $result['student_ids'][] = $student->id;
                     }
 
-                    $row['status'] = 'Valid';
-                    $row['message'] = $persist ? 'Berhasil diimpor.' : 'Siap diimpor.';
+                    $row['status'] = $existing ? 'Update' : 'Baru';
+                    $row['message'] = $existing
+                        ? ($persist ? 'Berhasil diperbarui.' : 'Data cocok, akan memperbarui siswa yang sudah ada.')
+                        : ($persist ? 'Berhasil diimpor.' : 'Data baru siap diimpor.');
                     $result['valid']++;
                     $result['imported'] += $persist ? 1 : 0;
+                    $result[$existing ? 'updated' : 'created']++;
                     $result['rows'][] = $row;
                 } catch (Throwable $exception) {
                     $this->fail($result, $row, 'Data siswa tidak dapat diproses: '.$exception->getMessage());
                 }
+                $reportProgress();
             }
 
             if ($persist) {
@@ -128,11 +126,33 @@ class StudentImportService
             }
 
             return $result;
+        } catch (Throwable $exception) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+
+            throw $exception;
         } finally {
             if (! $persist && DB::transactionLevel() > 0) {
                 DB::rollBack();
             }
         }
+    }
+
+    private function reportProgress(?callable $progress, array $result, int $total, int $processed): void
+    {
+        if (! $progress) {
+            return;
+        }
+
+        $progress([
+            'total_items' => $total,
+            'processed_items' => $processed,
+            'created_items' => $result['created'],
+            'updated_items' => $result['updated'],
+            'failed_items' => count($result['failures']),
+            'percent' => $total > 0 ? min(100, (int) floor(($processed / $total) * 100)) : 100,
+        ]);
     }
 
     private function readRows(string $path): array
@@ -211,6 +231,7 @@ class StudentImportService
             'exit_date' => $exitDate,
             'inactive_reason' => $inactiveReason,
             'is_active' => $isActive,
+            'present' => array_fill_keys($headers, true),
         ];
 
         $error = match (true) {
@@ -232,6 +253,60 @@ class StudentImportService
         $row['message'] = $message;
         $result['failures'][] = $row;
         $result['rows'][] = $row;
+    }
+
+    private function studentPayload(array $row, int $classId, AcademicYear $activeYear, ?Student $existing): array
+    {
+        $payload = [
+            'nis' => $row['nis'],
+            'name' => $row['name'],
+            'gender' => $row['gender'],
+            'school_class_id' => $classId,
+            'academic_year_id' => $activeYear->id,
+        ];
+
+        foreach ([
+            'nisn' => 'nisn',
+            'tempat_lahir' => 'birth_place',
+            'tanggal_lahir' => 'birth_date',
+            'nama_ayah' => 'father_name',
+            'nama_ibu' => 'mother_name',
+            'no_wa_ayah' => 'father_whatsapp',
+            'no_wa_ibu' => 'mother_whatsapp',
+            'provinsi' => 'province',
+            'kabupaten_kota' => 'city',
+            'kecamatan' => 'district',
+            'desa' => 'village',
+            'alamat' => 'address',
+            'mulai_tagihan_khusus' => 'billing_start_date',
+            'tanggal_mulai_tagihan' => 'billing_start_date',
+            'mulai_tagihan' => 'billing_start_date',
+        ] as $header => $field) {
+            if (! $existing || $this->hasHeader($row, $header)) {
+                $payload[$field] = $row[$field];
+            }
+        }
+
+        if (! $existing || ($this->hasHeader($row, 'tanggal_masuk') && $row['entry_date'] !== null)) {
+            $payload['entry_date'] = $row['entry_date'] ?? now()->toDateString();
+        }
+
+        if (! $existing || $this->hasHeader($row, 'status_masuk')) {
+            $payload['intake_status'] = $row['intake_status'];
+        }
+
+        if (! $existing || $this->hasHeader($row, 'status')) {
+            $payload['is_active'] = $row['is_active'];
+            $payload['exit_date'] = $row['is_active'] ? null : $row['exit_date'];
+            $payload['inactive_reason'] = $row['is_active'] ? null : $row['inactive_reason'];
+        }
+
+        return $payload;
+    }
+
+    private function hasHeader(array $row, string $header): bool
+    {
+        return isset($row['present'][$header]);
     }
 
     private function matchesUnit(EducationUnit $unit, string $value): bool
