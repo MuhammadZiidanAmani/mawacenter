@@ -608,7 +608,7 @@ class PaymentController extends Controller
                 ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
                 ->orderBy('name')
                 ->get(),
-            'mode' => 'import',
+            'mode' => session()->has('import_result') ? 'import-result' : 'import',
         ]);
     }
 

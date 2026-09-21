@@ -548,13 +548,41 @@ const paymentImport = document.querySelector('[data-payment-import]');
 if (paymentImport) {
     const category = paymentImport.querySelector('[data-payment-import-category]');
     const fileInput = paymentImport.querySelector('[data-payment-import-file]');
+    const dropzone = paymentImport.querySelector('[data-payment-import-dropzone]');
+    const fileEmpty = paymentImport.querySelector('[data-payment-import-file-empty]');
+    const fileSelected = paymentImport.querySelector('[data-payment-import-file-selected]');
+    const fileName = paymentImport.querySelector('[data-payment-import-filename]');
+    const fileSize = paymentImport.querySelector('[data-payment-import-filesize]');
+    const changeFileButton = paymentImport.querySelector('[data-payment-import-file-change]');
+    const removeFileButton = paymentImport.querySelector('[data-payment-import-file-remove]');
     const submitButton = paymentImport.querySelector('[data-payment-import-submit]');
     const submitLabel = paymentImport.querySelector('[data-payment-import-submit-label]');
     const sppContext = paymentImport.querySelector('[data-payment-import-spp-context]');
     const sppFields = Array.from(paymentImport.querySelectorAll('[data-payment-import-spp-field]'));
 
+    const formatFileSize = (bytes) => {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
+    const renderFileState = () => {
+        const file = fileInput?.files?.[0];
+        const hasFile = Boolean(file);
+
+        if (fileEmpty) fileEmpty.hidden = hasFile;
+        if (fileSelected) fileSelected.hidden = !hasFile;
+        if (fileName) fileName.textContent = file?.name || '';
+        if (fileSize) fileSize.textContent = file ? `${formatFileSize(file.size)} · Format XLSX` : '';
+        if (changeFileButton) changeFileButton.hidden = !hasFile;
+        if (removeFileButton) removeFileButton.hidden = !hasFile;
+        dropzone?.classList.toggle('has-file', hasFile);
+        dropzone?.setAttribute('aria-busy', 'false');
+    };
+
     const syncPaymentImport = () => {
-        const action = category.selectedOptions?.[0]?.dataset.action;
+        const action = category?.selectedOptions?.[0]?.dataset.action;
         if (action) paymentImport.action = action;
 
         const isSpp = category?.value === 'spp';
@@ -567,11 +595,44 @@ if (paymentImport) {
         const hasFile = Boolean(fileInput?.files?.length);
         const hasSppContext = !isSpp || sppFields.every((field) => field.value);
         if (submitButton) submitButton.disabled = !hasFile || !hasSppContext;
+        renderFileState();
     };
 
     category?.addEventListener('change', syncPaymentImport);
     fileInput?.addEventListener('change', syncPaymentImport);
     sppFields.forEach((field) => field.addEventListener('change', syncPaymentImport));
+    changeFileButton?.addEventListener('click', () => fileInput?.click());
+    removeFileButton?.addEventListener('click', () => {
+        if (fileInput) fileInput.value = '';
+        syncPaymentImport();
+        fileInput?.focus();
+    });
+    dropzone?.addEventListener('click', (event) => {
+        if (event.target.closest('button, label, input')) return;
+        fileInput?.click();
+    });
+    dropzone?.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        dropzone.classList.add('is-dragging');
+    });
+    dropzone?.addEventListener('dragleave', () => dropzone.classList.remove('is-dragging'));
+    dropzone?.addEventListener('drop', (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('is-dragging');
+
+        const droppedFile = event.dataTransfer?.files?.[0];
+        if (!droppedFile || !fileInput) return;
+
+        try {
+            const transfer = new DataTransfer();
+            transfer.items.add(droppedFile);
+            fileInput.files = transfer.files;
+        } catch {
+            return;
+        }
+
+        syncPaymentImport();
+    });
     syncPaymentImport();
 
     paymentImport.addEventListener('submit', () => {
@@ -581,6 +642,123 @@ if (paymentImport) {
         }
         if (submitLabel) submitLabel.textContent = 'Memproses...';
     });
+}
+
+const paymentImportPreview = document.querySelector('[data-import-preview]');
+if (paymentImportPreview) {
+    const rows = Array.from(paymentImportPreview.querySelectorAll('[data-import-preview-row]'));
+    const errorGroups = Array.from(paymentImportPreview.querySelectorAll('[data-import-preview-group]'));
+    const searchInput = paymentImportPreview.querySelector('[data-import-preview-search]');
+    const rangeLabel = paymentImportPreview.querySelector('[data-import-preview-range]');
+    const pagesContainer = paymentImportPreview.querySelector('[data-import-preview-pages]');
+    const submitForm = paymentImportPreview.querySelector('[data-import-preview-submit-form]');
+    const submitButton = paymentImportPreview.querySelector('[data-import-preview-submit]');
+    const submitLabel = paymentImportPreview.querySelector('[data-import-preview-submit-label]');
+    const pageSize = Number(paymentImportPreview.dataset.importPreviewPageSize || 25);
+    let activeReason = '';
+    let searchQuery = '';
+    let currentPage = 1;
+
+    const renderPagination = (total, pageCount) => {
+        if (!pagesContainer) return;
+        pagesContainer.replaceChildren();
+
+        if (pageCount <= 1) return;
+
+        const appendPageButton = (label, page, disabled = false, current = false) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'payment-import-preview-page-button';
+            button.textContent = label;
+            button.disabled = disabled;
+            if (current) button.classList.add('is-current');
+            if (current) button.setAttribute('aria-current', 'page');
+            button.addEventListener('click', () => {
+                currentPage = page;
+                renderPreview();
+            });
+            pagesContainer.append(button);
+        };
+
+        appendPageButton('<', Math.max(1, currentPage - 1), currentPage === 1);
+        for (let page = 1; page <= pageCount; page += 1) {
+            appendPageButton(String(page), page, false, page === currentPage);
+        }
+        appendPageButton('>', Math.min(pageCount, currentPage + 1), currentPage === pageCount);
+    };
+
+    const renderPreview = () => {
+        const filteredRows = rows.filter((row) => {
+            const matchesReason = !activeReason || row.dataset.reason === activeReason;
+            const matchesSearch = !searchQuery || (row.dataset.search || '').toLowerCase().includes(searchQuery);
+
+            return matchesReason && matchesSearch;
+        });
+        const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+        currentPage = Math.min(currentPage, pageCount);
+        const pageStart = (currentPage - 1) * pageSize;
+        const visibleRows = new Set(filteredRows.slice(pageStart, pageStart + pageSize));
+
+        rows.forEach((row) => {
+            const isVisible = visibleRows.has(row);
+            const detailRow = row.nextElementSibling;
+            const detailToggle = row.querySelector('[data-import-preview-detail-toggle]');
+
+            row.hidden = !isVisible;
+            if (!isVisible && detailRow?.matches('[data-import-preview-detail-row]')) {
+                detailRow.hidden = true;
+                detailToggle?.setAttribute('aria-expanded', 'false');
+                row.classList.remove('is-expanded');
+            }
+        });
+
+        if (rangeLabel) {
+            rangeLabel.textContent = filteredRows.length === 0
+                ? 'Tidak ada data gagal yang cocok'
+                : `Menampilkan ${pageStart + 1}-${Math.min(pageStart + pageSize, filteredRows.length)} dari ${filteredRows.length} data gagal`;
+        }
+        renderPagination(filteredRows.length, pageCount);
+    };
+
+    errorGroups.forEach((group) => group.addEventListener('click', () => {
+        const nextReason = group.dataset.importPreviewGroup || '';
+        activeReason = activeReason === nextReason ? '' : nextReason;
+        currentPage = 1;
+        errorGroups.forEach((item) => {
+            const isActive = item === group && activeReason !== '';
+            item.classList.toggle('is-active', isActive);
+            item.setAttribute('aria-pressed', String(isActive));
+        });
+        renderPreview();
+    }));
+
+    rows.forEach((row) => {
+        const detailToggle = row.querySelector('[data-import-preview-detail-toggle]');
+        const detailRow = row.nextElementSibling;
+
+        if (!detailToggle || !detailRow?.matches('[data-import-preview-detail-row]')) return;
+
+        detailToggle.addEventListener('click', () => {
+            const isExpanded = detailToggle.getAttribute('aria-expanded') === 'true';
+            detailToggle.setAttribute('aria-expanded', String(!isExpanded));
+            detailRow.hidden = isExpanded;
+            row.classList.toggle('is-expanded', !isExpanded);
+        });
+    });
+
+    searchInput?.addEventListener('input', () => {
+        searchQuery = searchInput.value.trim().toLowerCase();
+        currentPage = 1;
+        renderPreview();
+    });
+    submitForm?.addEventListener('submit', () => {
+        if (!submitButton) return;
+
+        submitButton.disabled = true;
+        submitButton.classList.add('is-loading');
+        if (submitLabel) submitLabel.textContent = `Mengimpor ${submitButton.dataset.importCount || ''} Transaksi...`;
+    });
+    renderPreview();
 }
 
 const sppImportToggle = document.querySelector('[data-spp-import-toggle]');

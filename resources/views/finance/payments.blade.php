@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $mode === 'import-preview' ? 'Preview Import Pembayaran' : ($mode === 'import' ? 'Import Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Pembayaran')) }} - MA'WA CENTER</title>
+    <title>{{ $mode === 'import-preview' ? 'Preview Import Pembayaran' : ($mode === 'import-result' ? 'Import Pembayaran Selesai' : ($mode === 'import' ? 'Import Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Pembayaran'))) }} - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
@@ -26,8 +26,8 @@
             @include('partials.logout-button', ['icon' => $topbarIcon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path>')])
         </header>
 
-        <main @class(['payment-hub-page', 'payment-import-page' => in_array($mode, ['import', 'import-preview'], true), 'payment-import-preview-page' => $mode === 'import-preview', 'payment-transaction-page' => $mode === 'payment', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
-            <section @class(['payment-hub-heading payment-import-page-heading' => in_array($mode, ['import', 'import-preview'], true), 'student-workspace payment-transaction-workspace' => $mode === 'payment', 'student-workspace payment-history-workspace' => $mode === 'history'])>
+        <main @class(['payment-hub-page', 'payment-import-page' => in_array($mode, ['import', 'import-preview', 'import-result'], true), 'payment-import-preview-page' => $mode === 'import-preview', 'payment-import-result-page' => $mode === 'import-result', 'payment-transaction-page' => $mode === 'payment', 'student-page payment-flat-page' => in_array($mode, ['payment', 'history'], true)])>
+            <section @class(['payment-hub-heading payment-import-page-heading' => in_array($mode, ['import', 'import-preview', 'import-result'], true), 'student-workspace payment-transaction-workspace' => $mode === 'payment', 'student-workspace payment-history-workspace' => $mode === 'history'])>
                 @php
                     $icon = function (string $name) {
                         return match ($name) {
@@ -36,6 +36,7 @@
                             'check' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5"></path></svg>',
                             'check-circle' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 2.5 2.5L16 9"></path></svg>',
                             'upload' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 8 5-5 5 5"></path><path d="M5 19h14"></path></svg>',
+                            'file' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6z"></path><path d="M14 2v5h5"></path><path d="M9 13h6"></path><path d="M9 17h6"></path></svg>',
                             'arrow-left' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path><path d="M9 12h10"></path></svg>',
                             'copy' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
                             'receipt' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2v20l3-2 3 2 3-2 3 2 4-2V2z"></path><path d="M8 7h8"></path><path d="M8 11h8"></path><path d="M8 15h5"></path></svg>',
@@ -699,13 +700,24 @@
                             </a>
                         @endforeach
                     </div>
+                @elseif($mode === 'import-result')
+                    @php
+                        $headerImportResult = collect(session('import_result', []));
+                        $headerHasIssues = (int) $headerImportResult->get('failed', 0) > 0
+                            || (int) $headerImportResult->get('skipped', 0) > 0;
+                        $headerImported = (int) $headerImportResult->get('imported', 0);
+                    @endphp
+                    <div class="payment-import-heading-copy">
+                        <h1>Import Pembayaran Selesai</h1>
+                        <p>{{ $headerImported === 0 ? 'Belum ada transaksi yang berhasil diimpor.' : ($headerHasIssues ? 'Proses import telah selesai. Periksa ringkasan hasil di bawah.' : 'Proses import telah selesai dan hasil transaksi sudah diperbarui.') }}</p>
+                    </div>
                 @else
                     <div class="payment-import-heading-copy">
-                        <h1>{{ $mode === 'import-preview' ? 'Preview Import Pembayaran' : 'Import Pembayaran' }}</h1>
-                        <p>{{ $mode === 'import-preview' ? 'Periksa data gagal sebelum mengimpor transaksi valid.' : 'Unggah data pembayaran dari file Excel untuk diperiksa sebelum disimpan.' }}</p>
+                        <h1>{{ $mode === 'import-preview' ? 'Preview & Validasi Import' : 'Import Pembayaran' }}</h1>
+                        <p>{{ $mode === 'import-preview' ? 'Periksa data valid, gagal, dan duplikat sebelum transaksi diimpor.' : 'Unggah file Excel, tentukan konteks pembayaran, lalu validasi data sebelum diimpor.' }}</p>
                     </div>
                     <div class="payment-hub-heading-actions">
-                        <a class="button button-secondary" href="{{ $mode === 'import-preview' ? route('finance.payments.import') : route('finance.payments.index') }}" title="{{ $mode === 'import-preview' ? 'Kembali' : 'Pembayaran' }}" aria-label="{{ $mode === 'import-preview' ? 'Kembali' : 'Pembayaran' }}">{!! $icon('arrow-left') !!}<span>{{ $mode === 'import-preview' ? 'Kembali' : 'Pembayaran' }}</span></a>
+                        <a @class(['button', 'button-secondary', 'payment-import-preview-back-button' => $mode === 'import-preview']) href="{{ $mode === 'import-preview' ? route('finance.payments.import') : route('finance.payments.index') }}" title="{{ $mode === 'import-preview' ? 'Kembali' : 'Kembali ke Pembayaran' }}" aria-label="{{ $mode === 'import-preview' ? 'Kembali' : 'Kembali ke Pembayaran' }}">{!! $icon('arrow-left') !!}<span>{{ $mode === 'import-preview' ? 'Kembali' : 'Kembali ke Pembayaran' }}</span></a>
                     </div>
                 @endif
             </section>
@@ -750,70 +762,151 @@
                     data-payment-import
                 >
                     @csrf
-                    <label class="payment-import-simple-field">
-                        <span>Jenis Pembayaran</span>
-                        <select data-payment-import-category>
-                            @foreach($importTypes as [$key, $code, $title, $description, $action])
-                                <option value="{{ $key }}" data-action="{{ $action }}">{{ $title }}</option>
-                            @endforeach
-                        </select>
-                    </label>
+                    <section class="payment-import-card payment-import-context-card">
+                        <div class="payment-import-context-grid">
+                            <label class="payment-import-simple-field">
+                                <span>Jenis Pembayaran</span>
+                                <select data-payment-import-category>
+                                    @foreach($importTypes as [$key, $code, $title, $description, $action])
+                                        <option value="{{ $key }}" data-action="{{ $action }}">{{ $title }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
 
-                    <div class="payment-import-spp-context" data-payment-import-spp-context>
-                        <label class="payment-import-simple-field">
-                            <span>Unit Pendidikan</span>
-                            <select name="unit_id" required data-payment-import-spp-field>
-                                <option value="">Pilih unit</option>
-                                @foreach($educationUnits ?? [] as $unit)
-                                    <option value="{{ $unit->id }}" @selected((int) old('unit_id') === $unit->id)>{{ $unit->name }}</option>
-                                @endforeach
-                            </select>
-                        </label>
+                            <div class="payment-import-spp-context" data-payment-import-spp-context>
+                                <label class="payment-import-simple-field">
+                                    <span>Unit Pendidikan</span>
+                                    <select name="unit_id" required data-payment-import-spp-field>
+                                        <option value="">Pilih unit</option>
+                                        @foreach($educationUnits ?? [] as $unit)
+                                            <option value="{{ $unit->id }}" @selected((int) old('unit_id') === $unit->id)>{{ $unit->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
 
-                        <label class="payment-import-simple-field">
-                            <span>Bulan</span>
-                            <select name="month" required data-payment-import-spp-field>
-                                @foreach($importMonths as $monthNumber => $monthName)
-                                    <option value="{{ $monthNumber }}" @selected($defaultImportMonth === $monthNumber)>{{ $monthName }}</option>
-                                @endforeach
-                            </select>
-                        </label>
+                                <label class="payment-import-simple-field">
+                                    <span>Bulan</span>
+                                    <select name="month" required data-payment-import-spp-field>
+                                        @foreach($importMonths as $monthNumber => $monthName)
+                                            <option value="{{ $monthNumber }}" @selected($defaultImportMonth === $monthNumber)>{{ $monthName }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
 
-                        <label class="payment-import-simple-field">
-                            <span>Tahun</span>
-                            <select name="year" required data-payment-import-spp-field>
-                                @foreach($importYears as $year)
-                                    <option value="{{ $year }}" @selected($defaultImportYear === $year)>{{ $year }}</option>
-                                @endforeach
-                            </select>
-                        </label>
+                                <label class="payment-import-simple-field">
+                                    <span>Tahun</span>
+                                    <select name="year" required data-payment-import-spp-field>
+                                        @foreach($importYears as $year)
+                                            <option value="{{ $year }}" @selected($defaultImportYear === $year)>{{ $year }}</option>
+                                        @endforeach
+                                    </select>
+                                </label>
 
-                        <div class="payment-import-sequence-warning">
-                            <strong>Import SPP wajib berurutan.</strong>
-                            <span>Mulai dari Juli 2025 dan tidak boleh loncat bulan. MTs dan MA mulai Agustus 2025 karena Juli termasuk Daftar Ulang.</span>
+                            </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <label class="payment-import-simple-field">
-                        <span>File Excel</span>
-                        <input
-                            type="file"
-                            name="file"
-                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                            required
-                            data-payment-import-file
-                        >
-                        <small>Format XLSX, maksimal 10 MB.</small>
-                    </label>
+                    <section class="payment-import-card payment-import-file-card" aria-labelledby="payment-import-file-title">
+                        <div class="payment-import-card-heading">
+                            <div>
+                                <h2 id="payment-import-file-title">File Excel</h2>
+                                <p>Unggah file XLSX untuk melihat preview dan memvalidasi data sebelum diimpor.</p>
+                            </div>
+                        </div>
+
+                        <div class="payment-import-dropzone" data-payment-import-dropzone>
+                            <span class="payment-import-dropzone-icon" aria-hidden="true">{!! $icon('file') !!}</span>
+                            <label class="payment-import-dropzone-copy" for="payment-import-file-input" data-payment-import-file-empty>
+                                <strong>Pilih file Excel</strong>
+                                <small>Tarik file ke sini atau klik untuk memilih. Format XLSX, maksimal 10 MB.</small>
+                            </label>
+                            <span class="payment-import-dropzone-copy" data-payment-import-file-selected hidden>
+                                <strong data-payment-import-filename></strong>
+                                <small data-payment-import-filesize></small>
+                            </span>
+                            <span class="payment-import-dropzone-actions">
+                                <button type="button" class="button button-secondary" data-payment-import-file-change hidden>Ganti</button>
+                                <button type="button" class="button button-secondary" data-payment-import-file-remove hidden>Hapus</button>
+                            </span>
+                            <input
+                                id="payment-import-file-input"
+                                type="file"
+                                name="file"
+                                accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                required
+                                data-payment-import-file
+                            >
+                        </div>
+                    </section>
 
                     <div class="payment-import-simple-actions">
                         <button type="submit" class="button button-primary" disabled data-payment-import-submit>
                             <span class="payment-import-spinner" aria-hidden="true"></span>
                             {!! $icon('upload') !!}
-                            <span data-payment-import-submit-label>Preview Data</span>
+                            <span data-payment-import-submit-label>Preview &amp; Validasi</span>
                         </button>
                     </div>
                 </form>
+            @elseif($mode === 'import-result')
+                @php
+                    $importResult = collect(session('import_result', []));
+                    $resultImported = (int) $importResult->get('imported', 0);
+                    $resultFailed = (int) $importResult->get('failed', 0);
+                    $resultSkipped = (int) $importResult->get('skipped', 0);
+                    $resultHasIssues = $resultFailed > 0 || $resultSkipped > 0;
+                    $resultHeadline = $resultImported > 0 ? 'Import Pembayaran Selesai' : 'Import Selesai Diproses';
+                    $resultSubtitle = $resultImported > 0
+                        ? ($resultHasIssues
+                            ? 'Proses import telah selesai. Periksa ringkasan hasil di bawah.'
+                            : 'Proses import telah selesai dan hasil transaksi sudah diperbarui.')
+                        : 'Belum ada transaksi yang berhasil diimpor.';
+                @endphp
+                <section class="payment-import-result-panel" aria-labelledby="payment-import-result-title">
+                    <div class="payment-import-result-summary">
+                        <div class="payment-import-result-icon{{ $resultImported > 0 ? ' is-success' : ' is-empty' }}" aria-hidden="true">
+                            @if($resultImported > 0)
+                                {!! $icon('check') !!}
+                            @else
+                                <span>!</span>
+                            @endif
+                        </div>
+                        <h2 id="payment-import-result-title">{{ $resultHeadline }}</h2>
+                        <p>{{ $resultSubtitle }}</p>
+                        @if($resultImported > 0)
+                            <strong>{{ number_format($resultImported, 0, ',', '.') }} transaksi berhasil diimpor.</strong>
+                            @if($resultHasIssues)
+                                <span>{{ number_format($resultFailed + $resultSkipped, 0, ',', '.') }} transaksi tidak diproses.</span>
+                            @endif
+                        @endif
+                    </div>
+
+                    <div class="payment-import-result-context">
+                        <strong>{{ $importResult->get('context_label', 'Import Pembayaran') }}</strong>
+                        @if($importResult->get('file_name'))
+                            <small>{{ $importResult->get('file_name') }}</small>
+                        @endif
+                    </div>
+
+                    <div class="payment-import-result-cards">
+                        <article class="payment-import-result-card is-success">
+                            <span>Berhasil Diimpor</span>
+                            <strong>{{ number_format($resultImported, 0, ',', '.') }}</strong>
+                        </article>
+                        <article class="payment-import-result-card is-failed">
+                            <span>Data Gagal</span>
+                            <strong>{{ number_format($resultFailed, 0, ',', '.') }}</strong>
+                        </article>
+                        <article class="payment-import-result-card is-skipped">
+                            <span>Duplikat / Dilewati</span>
+                            <strong>{{ number_format($resultSkipped, 0, ',', '.') }}</strong>
+                        </article>
+                    </div>
+
+                    <div class="payment-import-result-actions">
+                        <a href="{{ route('finance.payments.index') }}" class="button button-primary">Kembali ke Pembayaran</a>
+                        <a href="{{ route('finance.payments.import') }}" class="button button-secondary">Import Lagi</a>
+                    </div>
+                </section>
             @elseif($mode === 'import-preview')
                 @php
                     $previewType = $importPreviewType ?? 'spp';
@@ -821,8 +914,59 @@
                     $unresolvedSources = collect($importUnresolvedSources ?? []);
                     $previewImportAction = $importAction ?? route('finance.spp.import');
                     $canImport = $importPreview['valid'] > 0;
+                    $previewFailureRows = collect($importPreview['failures'] ?? []);
+                    $previewReadyCount = (int) ($importPreview['valid'] ?? 0);
+                    $previewFailureCount = $previewFailureRows->count();
+                    $previewDuplicateCount = (int) ($importPreview['duplicates'] ?? 0);
+                    $previewContextLabel = collect([
+                        $sectionTitle,
+                        $importContext['unit'] ?? null,
+                        ! empty($importContext) ? (($importContext['month'] ?? '').' '.($importContext['year'] ?? '')) : null,
+                    ])->filter()->implode(' · ');
+                    $failureReasonLabel = static function (array $row): string {
+                        $message = trim((string) ($row['message'] ?? ''));
+                        $normalizedMessage = strtolower($message);
+
+                        return match (true) {
+                            str_contains($normalizedMessage, 'berurutan') => 'Urutan SPP belum lengkap',
+                            str_contains($normalizedMessage, 'nis') && str_contains($normalizedMessage, 'tidak ditemukan') => 'NIS tidak ditemukan',
+                            str_contains($normalizedMessage, 'nominal') => 'Nominal tidak valid',
+                            str_contains($normalizedMessage, 'nama') && str_contains($normalizedMessage, 'tidak cocok') => 'Nama siswa tidak cocok',
+                            str_contains($normalizedMessage, 'kategori') => 'Kategori pembayaran tidak cocok',
+                            str_contains($normalizedMessage, 'transaksi tidak dapat') => 'Transaksi tidak dapat diproses',
+                            $message !== '' => 'Validasi gagal',
+                            default => 'Validasi gagal',
+                        };
+                    };
+                    $failureReasonSummary = static function (string $label): string {
+                        return match ($label) {
+                            'Urutan SPP belum lengkap' => 'Periksa periode pembayaran sebelumnya pada siswa ini.',
+                            'NIS tidak ditemukan' => 'Periksa NIS dan unit siswa pada file Excel.',
+                            'Nama siswa tidak cocok' => 'Periksa ejaan nama dan NIS pada file Excel.',
+                            'Nominal tidak valid' => 'Periksa nominal pembayaran pada file Excel.',
+                            'Kategori pembayaran tidak cocok' => 'Periksa kategori, unit, dan kelas pembayaran.',
+                            default => 'Periksa data pada baris Excel dan detail validasinya.',
+                        };
+                    };
+                    $failureGroups = $previewFailureRows
+                        ->groupBy(fn (array $row) => $failureReasonLabel($row))
+                        ->map(fn ($rows, $label) => [
+                            'label' => $label,
+                            'count' => $rows->count(),
+                            'details' => $rows->pluck('message')->filter()->unique()->values(),
+                        ])
+                        ->values();
                 @endphp
                 <section class="payment-import-preview-panel">
+                    <div class="payment-import-preview-context">
+                        <div>
+                            <strong>{{ $previewContextLabel }}</strong>
+                            @if(! empty($importFileName))
+                                <small>{{ $importFileName }}</small>
+                            @endif
+                        </div>
+                    </div>
+
                     @if($unresolvedSources->isNotEmpty())
                         <form method="POST" action="{{ $importMappingAction }}" class="payment-import-mapping">
                             @csrf
@@ -855,58 +999,159 @@
                         </form>
                     @endif
 
-                    <div class="payment-import-preview-top">
-                        <div>
-                            <strong>{{ number_format($importPreview['valid'], 0, ',', '.') }} transaksi siap diimpor</strong>
-                            <span>
-                                {{ $sectionTitle }}
-                                @if(! empty($importContext))
-                                    · {{ $importContext['unit'] }} · {{ $importContext['month'] }} {{ $importContext['year'] }}
-                                @endif
-                                · {{ number_format(count($importPreview['failures']), 0, ',', '.') }} gagal · {{ number_format($importPreview['duplicates'], 0, ',', '.') }} duplikat
-                            </span>
+                    <div class="payment-import-preview-dashboard" data-import-preview data-import-preview-page-size="25">
+                        <div class="payment-import-preview-summary-grid">
+                            <article class="payment-import-preview-summary-card is-ready">
+                                <span>Siap Diimpor</span>
+                                <strong>{{ number_format($previewReadyCount, 0, ',', '.') }}</strong>
+                                <small>data valid</small>
+                            </article>
+                            <article class="payment-import-preview-summary-card is-failed">
+                                <span>Data Gagal</span>
+                                <strong>{{ number_format($previewFailureCount, 0, ',', '.') }}</strong>
+                                <small>perlu diperiksa</small>
+                            </article>
+                            <article class="payment-import-preview-summary-card is-duplicate">
+                                <span>Duplikat</span>
+                                <strong>{{ number_format($previewDuplicateCount, 0, ',', '.') }}</strong>
+                                <small>akan dilewati</small>
+                            </article>
                         </div>
-                        <form method="POST" action="{{ $previewImportAction }}">
+
+                        @if($failureGroups->isNotEmpty())
+                            @php
+                                $primaryFailure = $failureGroups->first();
+                            @endphp
+                            <section class="payment-import-preview-issues" aria-labelledby="payment-import-preview-issues-title">
+                                <div class="payment-import-preview-section-heading">
+                                    <div>
+                                        <h2 id="payment-import-preview-issues-title">Masalah Utama</h2>
+                                        <p>{{ number_format($previewFailureCount, 0, ',', '.') }} baris perlu diperiksa.</p>
+                                    </div>
+                                </div>
+                                <div class="payment-import-preview-primary-issue">
+                                    <span class="payment-import-preview-issue-icon" aria-hidden="true">!</span>
+                                    <div>
+                                        <strong>{{ $primaryFailure['label'] }}</strong>
+                                        <span>{{ number_format($primaryFailure['count'], 0, ',', '.') }} siswa terdampak</span>
+                                        @if($primaryFailure['details']->isNotEmpty())
+                                            <small>{{ $failureReasonSummary($primaryFailure['label']) }}</small>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="payment-import-preview-error-groups">
+                                    @foreach($failureGroups as $failureGroup)
+                                        <button type="button" class="payment-import-preview-error-group" data-import-preview-group="{{ $failureGroup['label'] }}" aria-pressed="false" title="Tampilkan {{ $failureGroup['label'] }}">
+                                            <span>{{ $failureGroup['label'] }}</span>
+                                            <strong>{{ number_format($failureGroup['count'], 0, ',', '.') }}</strong>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </section>
+                        @endif
+
+                        <section class="payment-import-preview-data-section" aria-labelledby="payment-import-preview-data-title">
+                            <div class="payment-import-preview-section-heading">
+                                <div>
+                                    <h2 id="payment-import-preview-data-title">Data Perlu Diperiksa</h2>
+                                    <p>Periksa data yang gagal sebelum melanjutkan proses import.</p>
+                                </div>
+                                <span class="payment-import-preview-failure-count">{{ number_format($previewFailureCount, 0, ',', '.') }} data gagal</span>
+                            </div>
+
+                            @if($previewFailureRows->isNotEmpty())
+                                <div class="payment-import-preview-controls">
+                                    <label class="payment-import-preview-search">
+                                        <span class="sr-only">Cari NIS atau nama siswa</span>
+                                        <span class="payment-import-preview-search-icon" aria-hidden="true">{!! $icon('search') !!}</span>
+                                        <input type="search" placeholder="Cari NIS atau nama siswa" data-import-preview-search>
+                                    </label>
+                                </div>
+                            @endif
+
+                            @if($previewFailureRows->isNotEmpty())
+                                <div class="table-wrap payment-import-preview-table-wrap">
+                                    <table class="data-table payment-import-preview-table">
+                                        <thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>{{ $previewType === 'spp' ? 'Periode' : 'Kategori' }}</th><th>Nominal</th><th>Masalah</th></tr></thead>
+                                        <tbody data-import-preview-rows>
+                                            @foreach($previewFailureRows as $row)
+                                                @php
+                                                    $rowReason = $failureReasonLabel($row);
+                                                    $rowPeriod = $previewType === 'spp'
+                                                        ? ucfirst((string) ($row['month_name'] ?? '-')).' '.($row['year'] ?? '')
+                                                        : ($row['category'] ?? '-');
+                                                    $rowSearchText = implode(' ', array_filter([
+                                                        $row['line'] ?? null,
+                                                        $row['nis'] ?? null,
+                                                        $row['name'] ?? null,
+                                                        $rowPeriod,
+                                                        $rowReason,
+                                                        $row['message'] ?? null,
+                                                    ]));
+                                                @endphp
+                                                <tr data-import-preview-row data-reason="{{ $rowReason }}" data-search="{{ $rowSearchText }}">
+                                                    <td>{{ $row['line'] ?? '-' }}</td>
+                                                    <td>{{ $row['nis'] ?? '-' }}</td>
+                                                    <td><strong>{{ $row['name'] ?? '-' }}</strong></td>
+                                                    <td>{{ $rowPeriod }}</td>
+                                                    <td class="payment-import-preview-amount">Rp {{ number_format((int) ($row['nominal'] ?? 0), 0, ',', '.') }}</td>
+                                                    <td>
+                                                        <div class="payment-import-preview-problem-cell">
+                                                            <span>{{ $rowReason }}</span>
+                                                            <button type="button" class="payment-import-preview-detail-toggle" data-import-preview-detail-toggle aria-expanded="false">Lihat detail</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr class="payment-import-preview-detail-row" data-import-preview-detail-row hidden>
+                                                    <td colspan="6">
+                                                        <div class="payment-import-preview-detail-content">
+                                                            <div>
+                                                                <strong>Alasan</strong>
+                                                                <p>{{ $row['message'] ?? 'Validasi gagal.' }}</p>
+                                                            </div>
+                                                            <div>
+                                                                <strong>Yang perlu diperiksa</strong>
+                                                                <p>{{ $failureReasonSummary($rowReason) }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="payment-import-preview-pagination" data-import-preview-pagination>
+                                    <span data-import-preview-range></span>
+                                    <div data-import-preview-pages></div>
+                                </div>
+                            @else
+                                <div class="payment-import-preview-empty is-success">
+                                    <span class="payment-import-preview-empty-icon" aria-hidden="true">{!! $icon('check') !!}</span>
+                                    <div>
+                                        <strong>Tidak ada data yang perlu diperiksa.</strong>
+                                        <span>Seluruh data lolos validasi.</span>
+                                    </div>
+                                </div>
+                            @endif
+                        </section>
+                    </div>
+
+                    <div class="payment-import-preview-submit">
+                        @if($canImport)
+                            <small>{{ number_format($previewReadyCount, 0, ',', '.') }} transaksi siap diimpor.</small>
+                        @else
+                            <small>Tidak ada transaksi valid yang dapat diimpor.</small>
+                        @endif
+                        <form method="POST" action="{{ $previewImportAction }}" data-import-preview-submit-form>
                             @csrf
                             <input type="hidden" name="token" value="{{ $importToken }}">
-                            <button class="button button-primary" @disabled(! $canImport)>
+                            <button class="button button-primary" data-import-preview-submit data-import-count="{{ $previewReadyCount }}" @disabled(! $canImport)>
+                                <span class="payment-import-spinner" aria-hidden="true"></span>
                                 {!! $icon('check') !!}
-                                Import {{ number_format($importPreview['valid'], 0, ',', '.') }} Transaksi
+                                <span data-import-preview-submit-label>Import {{ number_format($previewReadyCount, 0, ',', '.') }} Transaksi</span>
                             </button>
                         </form>
                     </div>
-
-                    @if(count($importPreview['failures']) > 0)
-                        <div class="payment-import-preview-table-head">
-                            <strong>Data Gagal</strong>
-                            <span>{{ number_format(count($importPreview['failures']), 0, ',', '.') }} baris</span>
-                        </div>
-                        <div class="table-wrap payment-import-preview-table-wrap">
-                            <table class="data-table payment-import-preview-table">
-                                <thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>{{ $previewType === 'spp' ? 'Periode' : 'Kategori' }}</th><th>Nominal</th><th>Keterangan</th></tr></thead>
-                                <tbody>
-                                    @foreach($importPreview['failures'] as $row)
-                                        <tr>
-                                            <td>{{ $row['line'] }}</td>
-                                            <td>{{ $row['nis'] }}</td>
-                                            <td>{{ $row['name'] }}</td>
-                                            <td>
-                                                @if($previewType === 'spp')
-                                                    {{ ucfirst($row['month_name']) }} {{ $row['year'] }}
-                                                @else
-                                                    {{ $row['category'] ?: '-' }}
-                                                @endif
-                                            </td>
-                                            <td>Rp {{ number_format($row['nominal'], 0, ',', '.') }}</td>
-                                            <td>{{ $row['message'] }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="payment-import-preview-empty">Tidak ada data gagal.</div>
-                    @endif
                 </section>
             @endif
         </main>

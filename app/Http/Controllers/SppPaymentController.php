@@ -221,6 +221,7 @@ class SppPaymentController extends Controller
                     'month' => $this->monthName($context['month']),
                     'year' => $context['year'],
                 ],
+                'importFileName' => $file->getClientOriginalName(),
             ]);
         } catch (\Throwable $exception) {
             $request->session()->forget("spp_imports.{$token}");
@@ -257,6 +258,18 @@ class SppPaymentController extends Controller
         if ($result['failures']) {
             $message .= ' '.count($result['failures']).' transaksi gagal: '.collect($result['failures'])->pluck('message')->take(3)->implode(' ');
         }
+        $unit = EducationUnit::find((int) $stored['unit_id']);
+        $importResult = [
+            'context_label' => collect([
+                'SPP',
+                $unit?->name ?? $unit?->code,
+                $this->monthName((int) $stored['month']).' '.(int) $stored['year'],
+            ])->filter()->implode(' • '),
+            'file_name' => $stored['name'] ?? null,
+            'imported' => (int) $result['imported'],
+            'failed' => count($result['failures']),
+            'skipped' => (int) $result['duplicates'],
+        ];
         app(AuditLogService::class)->recordOperation(
             'payments.spp.import',
             [
@@ -272,7 +285,9 @@ class SppPaymentController extends Controller
             request: $request,
         );
 
-        return redirect()->route('finance.payments.import')->with('success', $message);
+        return redirect()->route('finance.payments.import')
+            ->with('success', $message)
+            ->with('import_result', $importResult);
     }
 
     public function show(Request $request, SppPayment $sppPayment): JsonResponse

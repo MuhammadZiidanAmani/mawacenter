@@ -3232,8 +3232,8 @@ body .finance-page .payment-create-page .payment-spp-rebuild-form .button-second
 
 /* Pembayaran adopts Menu Tagihan's Terapkan button as the scoped button standard. */
 html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .button,
-html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button,
-html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button,
+html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button:not(.payment-import-preview-back-button),
+html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button:not(.payment-import-preview-back-button),
 html body .payment-receipt-fallback-modal .button,
 html body .payment-history-delete-modal .button {
     box-sizing: border-box !important;
@@ -3260,8 +3260,8 @@ html body .payment-history-delete-modal .button {
 }
 
 html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .button:hover:not(:disabled),
-html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button:hover:not(:disabled),
-html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button:hover:not(:disabled),
+html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button:not(.payment-import-preview-back-button):hover:not(:disabled),
+html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button:not(.payment-import-preview-back-button):hover:not(:disabled),
 html body .payment-receipt-fallback-modal .button:hover:not(:disabled),
 html body .payment-history-delete-modal .button:hover:not(:disabled) {
     transform: translateY(-2px) !important;
@@ -3322,8 +3322,8 @@ html body .payment-history-delete-modal .button-danger:hover:not(:disabled) {
 }
 
 html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .button:focus-visible,
-html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button:focus-visible,
-html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button:focus-visible,
+html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button:not(.payment-import-preview-back-button):focus-visible,
+html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button:not(.payment-import-preview-back-button):focus-visible,
 html body .payment-receipt-fallback-modal .button:focus-visible,
 html body .payment-history-delete-modal .button:focus-visible,
 html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-action:focus-visible {
@@ -3332,12 +3332,12 @@ html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.
 }
 
 html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .button:disabled,
-html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button:disabled,
-html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button:disabled,
+html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button:not(.payment-import-preview-back-button):disabled,
+html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button:not(.payment-import-preview-back-button):disabled,
 html body .payment-receipt-fallback-modal .button:disabled,
 html body .payment-history-delete-modal .button:disabled,
-html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button.is-loading,
-html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button.is-loading {
+html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button:not(.payment-import-preview-back-button).is-loading,
+html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button:not(.payment-import-preview-back-button).is-loading {
     cursor: not-allowed !important;
     opacity: .55 !important;
     transform: translateY(0) !important;
@@ -3345,8 +3345,8 @@ html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-pa
 }
 
 html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .button .icon,
-html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button .icon,
-html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button .icon,
+html body .app-shell .main-panel main.payment-hub-page.payment-import-page .button:not(.payment-import-preview-back-button) .icon,
+html body .app-shell .main-panel main.payment-hub-page.payment-import-preview-page .button:not(.payment-import-preview-back-button) .icon,
 html body .payment-receipt-fallback-modal .button .icon,
 html body .payment-history-delete-modal .button .icon {
     width: 18px !important;
@@ -8098,5 +8098,1662 @@ html body .payment-success-modal .payment-success-actions .button-secondary {
 
     html body .payment-success-modal .payment-success-actions {
         grid-template-columns: 1fr !important;
+    }
+}
+
+/* Initial payment import setup: keep context and upload states easy to scan. */
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-page-heading {
+    width: min(100%, 980px) !important;
+    max-width: 980px !important;
+    margin: 0 auto 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-page-heading .payment-hub-heading-actions .button {
+    min-width: 0 !important;
+    width: auto !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-workflow {
+    width: min(100%, 980px) !important;
+    max-width: 980px !important;
+    margin: 0 auto 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-workflow ol {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-workflow li {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    min-height: 40px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background: #f9fafb !important;
+    color: #64748b !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-workflow li.is-active {
+    border-color: #b7d6c6 !important;
+    background: #f0fbf5 !important;
+    color: #004528 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-step-number {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    background: #e5e7eb !important;
+    color: #475569 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-workflow li.is-active .payment-import-step-number {
+    background: #004528 !important;
+    color: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-simple-form {
+    display: grid !important;
+    gap: 16px !important;
+    width: min(100%, 980px) !important;
+    max-width: 980px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-card {
+    display: grid !important;
+    gap: 18px !important;
+    min-width: 0 !important;
+    padding: 20px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .05) !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-card-heading {
+    display: grid !important;
+    gap: 4px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-card-heading h2 {
+    margin: 0 !important;
+    color: #0f172a !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-card-heading p {
+    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-context-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, .75fr) !important;
+    gap: 16px !important;
+    align-items: start !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-spp-context {
+    display: contents !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-spp-context[hidden] {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-simple-field {
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-context-grid > *,
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-context-grid .payment-import-simple-field {
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-simple-field > span {
+    color: #334155 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-simple-field select {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    background: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-file-card {
+    gap: 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone {
+    position: relative !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 14px !important;
+    min-width: 0 !important;
+    min-height: 96px !important;
+    padding: 18px !important;
+    border: 1px dashed #9fb2a5 !important;
+    border-radius: 8px !important;
+    background: #fbfdf8 !important;
+    cursor: pointer !important;
+    transition: border-color .16s ease, background-color .16s ease !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone:hover,
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone.is-dragging,
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone.has-file {
+    border-color: #157144 !important;
+    background: #f4fbf6 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone:focus-within {
+    outline: 2px solid rgba(0, 69, 40, .2) !important;
+    outline-offset: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 40px !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 8px !important;
+    background: #e9f8ef !important;
+    color: #157144 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-icon .icon {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-copy {
+    display: grid !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-copy[hidden] {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-copy strong {
+    overflow: hidden !important;
+    color: #0f172a !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-copy small {
+    color: #64748b !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-actions[hidden],
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-actions .button[hidden] {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-actions .button {
+    min-width: 72px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 12px !important;
+    font-size: 13px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone input[type="file"] {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-simple-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    margin-top: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-simple-actions .button {
+    min-width: 172px !important;
+}
+
+@media (max-width: 960px) {
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-context-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 760px) {
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-page-heading {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-hub-heading-actions {
+        justify-content: flex-start !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-hub-heading-actions .button {
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-context-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone {
+        grid-template-columns: auto minmax(0, 1fr) !important;
+        align-items: start !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-actions {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-dropzone-actions .button {
+        flex: 1 1 0 !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-simple-actions .button {
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-workflow ol {
+        gap: 6px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-workflow li {
+        justify-content: center !important;
+        padding: 8px 6px !important;
+        text-align: center !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-step-number {
+        flex-basis: 22px !important;
+        width: 22px !important;
+        height: 22px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-workflow li {
+        display: grid !important;
+        gap: 4px !important;
+        align-content: center !important;
+        font-size: 11px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-card {
+        padding: 16px !important;
+    }
+}
+
+/* Keep the import back link fixed while its interaction state changes. */
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-page-heading .payment-hub-heading-actions > .button {
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #004528 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: color .16s ease, background-color .16s ease, border-color .16s ease, box-shadow .16s ease !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-page-heading .payment-hub-heading-actions > .button:hover {
+    background: #fbfdf8 !important;
+    border-color: #b7d9c6 !important;
+    color: #004528 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-page-heading .payment-hub-heading-actions > .button:active {
+    background: #f3f8f4 !important;
+    border-color: #b7d9c6 !important;
+    color: #004528 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-page-heading .payment-hub-heading-actions > .button:focus {
+    outline: none !important;
+    transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-page-heading .payment-hub-heading-actions > .button:focus-visible {
+    outline: 2px solid #004528 !important;
+    outline-offset: 2px !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-page:not(.payment-import-preview-page) .payment-import-page-heading .payment-hub-heading-actions > .button .icon {
+    flex: 0 0 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    transform: none !important;
+}
+
+/* Import preview dashboard: compact validation states without changing import rules. */
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-panel {
+    display: grid !important;
+    gap: 18px !important;
+    padding: 24px 30px !important;
+    background: #ffffff !important;
+    border: 1px solid #d9e1dc !important;
+    border-radius: 8px !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .05) !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-workflow {
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-workflow ol {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-workflow li {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    min-height: 40px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background: #f9fafb !important;
+    color: #64748b !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-workflow li.is-complete {
+    border-color: #d8eadf !important;
+    background: #f4fbf6 !important;
+    color: #157144 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-workflow li.is-active {
+    border-color: #82bb98 !important;
+    background: #e9f8ef !important;
+    color: #004528 !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-workflow .payment-import-step-number {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    background: #e5e7eb !important;
+    color: #475569 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-workflow li.is-active .payment-import-step-number {
+    background: #004528 !important;
+    color: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-workflow li.is-complete .payment-import-step-number {
+    background: #d8eadf !important;
+    color: #157144 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-context {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+    padding: 10px 14px !important;
+    border: 1px solid #d9e1dc !important;
+    border-radius: 8px !important;
+    background: #fbfdf8 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-context > div {
+    display: grid !important;
+    gap: 3px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-context strong {
+    overflow: hidden !important;
+    color: #0f172a !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-context small {
+    overflow: hidden !important;
+    color: #64748b !important;
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-card {
+    display: grid !important;
+    align-content: start !important;
+    gap: 3px !important;
+    min-width: 0 !important;
+    min-height: 112px !important;
+    padding: 14px 16px !important;
+    border: 1px solid #d9e1dc !important;
+    border-radius: 8px !important;
+    background: #fbfdf8 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-card span,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-card small {
+    color: #475569 !important;
+    font-size: 13px !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-card strong {
+    color: #0f172a !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-card.is-ready {
+    border-color: #b7d6c6 !important;
+    background: #f0fbf5 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-card.is-ready strong {
+    color: #0d5f36 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-card.is-failed {
+    border-color: #f0c2c2 !important;
+    background: #fff7f7 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-card.is-failed strong {
+    color: #b42318 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-card.is-duplicate {
+    border-color: #f3d7a3 !important;
+    background: #fffaf0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-card.is-duplicate strong {
+    color: #9a650c !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-issues,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-data-section {
+    display: grid !important;
+    gap: 16px !important;
+    min-width: 0 !important;
+    padding: 18px !important;
+    border: 1px solid #d9e1dc !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-section-heading {
+    display: flex !important;
+    align-items: start !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-section-heading h2 {
+    margin: 0 !important;
+    color: #0f172a !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-section-heading p {
+    margin: 3px 0 0 !important;
+    color: #64748b !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-primary-issue {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+    padding: 14px 16px !important;
+    border: 1px solid #f0c2c2 !important;
+    border-radius: 8px !important;
+    background: #fff7f7 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-issue-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 50% !important;
+    background: #b42318 !important;
+    color: #ffffff !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-primary-issue > div {
+    display: grid !important;
+    gap: 2px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-primary-issue strong {
+    color: #991b1b !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-primary-issue span,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-primary-issue small {
+    color: #7f1d1d !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups > div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    min-height: 46px !important;
+    padding: 10px 12px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background: #fbfdf8 !important;
+    color: #334155 !important;
+    font-size: 13px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups span {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups strong {
+    color: #0f172a !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-controls {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-filters {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+    overflow-x: auto !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-filter {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    min-height: 38px !important;
+    padding: 0 12px !important;
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    color: #64748b !important;
+    font: inherit !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-filter:hover,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-filter.is-active {
+    border-color: #b7d6c6 !important;
+    background: #f0fbf5 !important;
+    color: #004528 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-filter strong {
+    font-variant-numeric: tabular-nums !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-filter:focus-visible {
+    outline: 2px solid #004528 !important;
+    outline-offset: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search {
+    box-sizing: border-box !important;
+    display: grid !important;
+    grid-template-columns: 18px minmax(0, 1fr) !important;
+    align-items: center !important;
+    flex: 0 1 320px !important;
+    width: 100% !important;
+    min-width: 240px !important;
+    max-width: 360px !important;
+    height: 40px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search:focus-within {
+    border-color: #157144 !important;
+    outline: 2px solid rgba(21, 113, 68, .12) !important;
+    outline-offset: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin-left: 12px !important;
+    color: #64748b !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search-icon .icon {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    min-width: 0 !important;
+    padding: 0 12px 0 8px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font: inherit !important;
+    font-size: 14px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search input:focus {
+    border-color: transparent !important;
+    outline: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-wrap {
+    max-height: none !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table {
+    width: 100% !important;
+    min-width: 780px !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table td {
+    height: 52px !important;
+    padding: 10px 12px !important;
+    border: 0 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    color: #334155 !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    vertical-align: middle !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th {
+    background: #f9fafb !important;
+    color: #334155 !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(1) { width: 64px !important; }
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(2) { width: 100px !important; }
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(3) { width: 220px !important; }
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(4) { width: 150px !important; }
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(5) { width: 140px !important; }
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(6) { width: 150px !important; }
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table td strong {
+    color: #0f172a !important;
+    font-weight: 600 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-amount {
+    color: #0f172a !important;
+    font-variant-numeric: tabular-nums !important;
+    text-align: right !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-status-cell {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-status {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 26px !important;
+    padding: 0 9px !important;
+    border: 1px solid transparent !important;
+    border-radius: 999px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-status.is-ready {
+    border-color: #b7d6c6 !important;
+    background: #f0fbf5 !important;
+    color: #0d5f36 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-status.is-failed {
+    border-color: #f0c2c2 !important;
+    background: #fff7f7 !important;
+    color: #b42318 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-status.is-duplicate {
+    border-color: #f3d7a3 !important;
+    background: #fffaf0 !important;
+    color: #9a650c !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail {
+    display: inline-block !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail summary {
+    list-style: none !important;
+    color: #004528 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail summary::-webkit-details-marker {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail summary:focus-visible {
+    outline: 2px solid #004528 !important;
+    outline-offset: 2px !important;
+    border-radius: 4px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail p {
+    position: static !important;
+    width: auto !important;
+    max-width: 360px !important;
+    margin: 8px 0 0 !important;
+    padding: 10px 12px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    box-shadow: none !important;
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-pagination {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+    color: #64748b !important;
+    font-size: 13px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-pagination [data-import-preview-pages] {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    padding: 0 8px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    font: inherit !important;
+    font-size: 13px !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button:hover:not(:disabled),
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button.is-current {
+    border-color: #b7d6c6 !important;
+    background: #f0fbf5 !important;
+    color: #004528 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button:disabled {
+    cursor: not-allowed !important;
+    opacity: .5 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button:focus-visible {
+    outline: 2px solid #004528 !important;
+    outline-offset: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-submit {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    min-width: 0 !important;
+    padding-top: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-submit small {
+    color: #64748b !important;
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-submit .button {
+    box-sizing: border-box !important;
+    min-width: 184px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-submit .button:disabled {
+    border-color: #d1d5db !important;
+    background: #e5e7eb !important;
+    color: #64748b !important;
+    cursor: not-allowed !important;
+    opacity: 1 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button {
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #004528 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: color .16s ease, background-color .16s ease, border-color .16s ease !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button:hover,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button:active {
+    border-color: #b7d9c6 !important;
+    background: #f3f8f4 !important;
+    color: #004528 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button:focus {
+    outline: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button:focus-visible {
+    outline: 2px solid #004528 !important;
+    outline-offset: 2px !important;
+    transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button .icon {
+    flex: 0 0 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-sr-only,
+html body .app-shell .main-panel main.payment-import-preview-page .sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+@media (max-width: 900px) {
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
+
+@media (max-width: 700px) {
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-panel {
+        padding: 16px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-workflow ol,
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-workflow li {
+        justify-content: center !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-controls,
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-submit {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-filters {
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search {
+        width: 100% !important;
+        min-width: 0 !important;
+        flex-basis: auto !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-submit form,
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-submit .button {
+        width: 100% !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-pagination {
+        align-items: flex-start !important;
+        flex-direction: column !important;
+    }
+}
+
+/* Import result page: compact post-import confirmation without a modal. */
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-panel {
+    display: grid !important;
+    gap: 18px !important;
+    width: min(100%, 980px) !important;
+    max-width: 980px !important;
+    margin: 0 auto !important;
+    padding: 24px 30px !important;
+    border: 1px solid #d9e1dc !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .05) !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-workflow {
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-workflow ol {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-workflow li {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    min-height: 40px !important;
+    padding: 8px 12px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background: #f9fafb !important;
+    color: #64748b !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-workflow li.is-complete {
+    border-color: #d8eadf !important;
+    background: #f4fbf6 !important;
+    color: #157144 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-workflow li.is-active {
+    border-color: #82bb98 !important;
+    background: #e9f8ef !important;
+    color: #004528 !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-workflow .payment-import-step-number {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    background: #e5e7eb !important;
+    color: #475569 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-workflow li.is-complete .payment-import-step-number {
+    background: #d8eadf !important;
+    color: #157144 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-workflow li.is-active .payment-import-step-number {
+    background: #004528 !important;
+    color: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-summary {
+    display: grid !important;
+    justify-items: center !important;
+    gap: 5px !important;
+    padding: 4px 0 0 !important;
+    text-align: center !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 42px !important;
+    height: 42px !important;
+    margin-bottom: 4px !important;
+    border-radius: 50% !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-icon.is-success {
+    background: #e9f8ef !important;
+    color: #0d5f36 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-icon.is-empty {
+    background: #fff7ed !important;
+    color: #b45309 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-icon .icon {
+    width: 21px !important;
+    height: 21px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-summary h2 {
+    margin: 0 !important;
+    color: #0f172a !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-summary p,
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-summary strong,
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-summary > span {
+    margin: 0 !important;
+    color: #475569 !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-summary strong {
+    color: #0d5f36 !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-context {
+    display: grid !important;
+    gap: 3px !important;
+    min-width: 0 !important;
+    padding: 10px 14px !important;
+    border: 1px solid #d9e1dc !important;
+    border-radius: 8px !important;
+    background: #fbfdf8 !important;
+    text-align: center !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-context strong,
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-context small {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-context strong {
+    color: #0f172a !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-context small {
+    color: #64748b !important;
+    font-size: 13px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-cards {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-card {
+    display: grid !important;
+    align-content: center !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    min-height: 96px !important;
+    padding: 14px 16px !important;
+    border: 1px solid #d9e1dc !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-card span {
+    color: #475569 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-card strong {
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-card.is-success {
+    border-color: #b7d6c6 !important;
+    background: #f0fbf5 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-card.is-success strong {
+    color: #0d5f36 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-card.is-failed {
+    border-color: #f0c2c2 !important;
+    background: #fff7f7 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-card.is-failed strong {
+    color: #b42318 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-card.is-skipped {
+    border-color: #f3d7a3 !important;
+    background: #fffaf0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-card.is-skipped strong {
+    color: #9a650c !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-actions {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 12px !important;
+    padding-top: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-actions .button {
+    box-sizing: border-box !important;
+    min-width: 176px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-actions .button-primary {
+    border-color: #004528 !important;
+    background: #004528 !important;
+    color: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-actions .button-secondary {
+    border-color: #d1d5db !important;
+    background: #ffffff !important;
+    color: #004528 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-submit .button.is-loading .payment-import-spinner {
+    display: inline-block !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-submit .button.is-loading > .icon {
+    display: none !important;
+}
+
+@media (max-width: 700px) {
+    html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-panel {
+        padding: 16px !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-workflow ol,
+    html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-cards {
+        grid-template-columns: 1fr !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-workflow li {
+        justify-content: center !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-actions {
+        flex-direction: column !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-result-page .payment-import-result-actions .button {
+        width: 100% !important;
+    }
+}
+
+/* Final preview polish: one spacing source and a motion-free preview back link. */
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-page-heading {
+    margin-bottom: 24px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-panel {
+    gap: 24px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-dashboard {
+    display: grid !important;
+    gap: 24px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-summary-grid {
+    gap: 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button {
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: auto !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: #004528 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    transition: color .16s ease, background-color .16s ease, border-color .16s ease !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button:hover,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button:active,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button:focus,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button:focus-visible {
+    box-sizing: border-box !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    border-width: 1px !important;
+    border-color: #b7d9c6 !important;
+    background: #f3f8f4 !important;
+    color: #004528 !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button:focus {
+    outline: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button:focus-visible {
+    outline: 2px solid #004528 !important;
+    outline-offset: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-back-button .icon {
+    flex: 0 0 16px !important;
+    width: 16px !important;
+    height: 16px !important;
+    transform: none !important;
+}
+
+@media (max-width: 700px) {
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-panel,
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-dashboard {
+        gap: 16px !important;
+    }
+}
+
+/* Failed-row review: keep the table focused and expand details below each row. */
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-failure-count {
+    flex: 0 0 auto !important;
+    padding-top: 2px !important;
+    color: #b42318 !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-controls {
+    justify-content: flex-end !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups > button {
+    appearance: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 46px !important;
+    padding: 10px 12px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background: #fbfdf8 !important;
+    color: #334155 !important;
+    font: inherit !important;
+    font-size: 13px !important;
+    text-align: left !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups > button:hover,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups > button.is-active,
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups > button[aria-pressed="true"] {
+    border-color: #e7a8a8 !important;
+    background: #fff0f0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-error-groups > button:focus-visible {
+    outline: 2px solid #b42318 !important;
+    outline-offset: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-problem-cell {
+    display: grid !important;
+    align-content: center !important;
+    justify-items: start !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-problem-cell > span {
+    overflow: hidden !important;
+    max-width: 100% !important;
+    color: #991b1b !important;
+    font-weight: 600 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-toggle {
+    appearance: none !important;
+    width: auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #004528 !important;
+    font: inherit !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    text-decoration: underline !important;
+    text-underline-offset: 2px !important;
+    cursor: pointer !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-toggle:hover {
+    color: #0d5f36 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-toggle:focus-visible {
+    border-radius: 3px !important;
+    outline: 2px solid #004528 !important;
+    outline-offset: 2px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-row[hidden] {
+    display: none !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table .payment-import-preview-detail-row td {
+    height: auto !important;
+    padding: 0 !important;
+    border-bottom: 1px solid #d9e1dc !important;
+    background: #fbfdf8 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 16px !important;
+    padding: 14px 16px 16px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content > div {
+    display: grid !important;
+    align-content: start !important;
+    gap: 4px !important;
+    min-width: 0 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content strong {
+    color: #334155 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    text-transform: uppercase !important;
+    letter-spacing: .02em !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content p {
+    margin: 0 !important;
+    color: #475569 !important;
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    min-height: 72px !important;
+    background: #f0fbf5 !important;
+    border-color: #b7d6c6 !important;
+    color: #0d5f36 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    background: #0d5f36 !important;
+    color: #ffffff !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty-icon .icon {
+    width: 15px !important;
+    height: 15px !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success > div {
+    display: grid !important;
+    gap: 2px !important;
+    text-align: left !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success strong {
+    color: #0d5f36 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success span:not(.payment-import-preview-empty-icon) {
+    color: #475569 !important;
+    font-size: 13px !important;
+}
+
+@media (max-width: 700px) {
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-section-heading {
+        align-items: flex-start !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-failure-count {
+        white-space: normal !important;
+        text-align: right !important;
+    }
+
+    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
     }
 }

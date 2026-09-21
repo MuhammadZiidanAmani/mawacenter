@@ -1158,6 +1158,9 @@ class PaymentMenuTest extends TestCase
             ->get('/keuangan/pembayaran/import')
             ->assertOk()
             ->assertSee('Import Pembayaran')
+            ->assertSee('Unggah file Excel, tentukan konteks pembayaran, lalu validasi data sebelum diimpor.')
+            ->assertDontSee('payment-import-workflow', false)
+            ->assertSee('File Excel')
             ->assertSee(route('finance.spp.import.preview'), false)
             ->assertSee(route('finance.other.import.preview', ['category' => 'daftar-ulang']), false)
             ->assertSee(route('finance.other.import.preview', ['category' => 'laundry']), false)
@@ -1165,8 +1168,70 @@ class PaymentMenuTest extends TestCase
             ->assertSee('Unit Pendidikan')
             ->assertSee('Bulan')
             ->assertSee('Tahun')
-            ->assertSee('Preview Data')
-            ->assertSee('data-payment-import', false);
+            ->assertSee('data-payment-import', false)
+            ->assertSee('data-payment-import-dropzone', false)
+            ->assertSee('data-payment-import-file-selected', false)
+            ->assertSee('data-payment-import-file-change', false)
+            ->assertSee('data-payment-import-file-remove', false)
+            ->assertSee('Preview &amp; Validasi', false)
+            ->assertDontSee('Tidak ada file yang dipilih');
+    }
+
+    public function test_payment_import_setup_preserves_spp_unit_month_and_year_context_options(): void
+    {
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Ponpes Mambaul Hikmah', 'is_active' => true]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.import'))
+            ->assertOk()
+            ->assertSee('name="unit_id"', false)
+            ->assertSee('value="'.$unit->id.'"', false)
+            ->assertSee('name="month"', false)
+            ->assertSee('value="7"', false)
+            ->assertSee('Juli')
+            ->assertSee('name="year"', false)
+            ->assertSee('data-payment-import-spp-field', false);
+    }
+
+    public function test_spp_import_preview_requires_a_file(): void
+    {
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Ponpes Mambaul Hikmah', 'is_active' => true]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->post(route('finance.spp.import.preview'), [
+                'unit_id' => $unit->id,
+                'month' => 7,
+                'year' => 2025,
+            ])
+            ->assertSessionHasErrors('file');
+    }
+
+    public function test_spp_import_preview_rejects_invalid_file_type(): void
+    {
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Ponpes Mambaul Hikmah', 'is_active' => true]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->post(route('finance.spp.import.preview'), [
+                'unit_id' => $unit->id,
+                'month' => 7,
+                'year' => 2025,
+                'file' => UploadedFile::fake()->create('pembayaran.csv', 10, 'text/csv'),
+            ])
+            ->assertSessionHasErrors('file');
+    }
+
+    public function test_spp_import_preview_rejects_files_over_ten_megabytes(): void
+    {
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Ponpes Mambaul Hikmah', 'is_active' => true]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->post(route('finance.spp.import.preview'), [
+                'unit_id' => $unit->id,
+                'month' => 7,
+                'year' => 2025,
+                'file' => UploadedFile::fake()->create('pembayaran.xlsx', 10241, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+            ])
+            ->assertSessionHasErrors('file');
     }
 
     public function test_registration_and_laundry_payment_sections_are_accessible(): void

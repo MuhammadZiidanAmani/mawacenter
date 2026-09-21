@@ -464,6 +464,7 @@ class OtherPaymentController extends Controller
                 'importMappingAction' => route('finance.other.import.preview', $this->sectionParams($section)),
                 'importAction' => route('finance.other.import', $this->sectionParams($section)),
                 'importPreviewType' => 'other',
+                'importFileName' => $stored['name'] ?? null,
             ]);
         } catch (\Throwable $exception) {
             if (! $request->string('token')->value()) {
@@ -499,6 +500,18 @@ class OtherPaymentController extends Controller
         if ($result['failures']) {
             $message .= ' '.count($result['failures']).' transaksi gagal: '.collect($result['failures'])->pluck('message')->take(3)->implode(' ');
         }
+        $units = collect($result['rows'] ?? [])
+            ->pluck('unit')
+            ->filter()
+            ->unique()
+            ->values();
+        $importResult = [
+            'context_label' => collect([$section['title'], $units->implode(', ')])->filter()->implode(' • '),
+            'file_name' => $stored['name'] ?? null,
+            'imported' => (int) $result['imported'],
+            'failed' => count($result['failures']),
+            'skipped' => (int) $result['duplicates'],
+        ];
         app(AuditLogService::class)->recordOperation(
             'payments.other.import',
             [
@@ -512,7 +525,9 @@ class OtherPaymentController extends Controller
             request: $request,
         );
 
-        return redirect()->route('finance.payments.import')->with('success', $message);
+        return redirect()->route('finance.payments.import')
+            ->with('success', $message)
+            ->with('import_result', $importResult);
     }
 
     private function section(Request $request): array

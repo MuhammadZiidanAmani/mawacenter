@@ -1702,20 +1702,64 @@ class MasterDataTest extends TestCase
         ]);
 
         $preview->assertOk()
-            ->assertSee('Preview Import Pembayaran')
+            ->assertSee('Preview &amp; Validasi Import', false)
             ->assertSee('payment-import-preview-panel', false)
             ->assertDontSee('Pembayaran SPP')
             ->assertSee('Import 2 Transaksi')
             ->assertSee('Data Gagal')
+            ->assertSee('Siap Diimpor')
+            ->assertSee('Duplikat')
+            ->assertSee('Data Perlu Diperiksa')
+            ->assertSee('Periksa data yang gagal sebelum melanjutkan proses import.')
+            ->assertSee('<th>Masalah</th>', false)
+            ->assertDontSee('<th>Status</th>', false)
+            ->assertSee('Lihat detail')
+            ->assertSee('data-import-preview-detail-row', false)
+            ->assertSee('data-import-preview-detail-toggle', false)
+            ->assertSee('colspan="6"', false)
+            ->assertSee('aria-expanded="false"', false)
+            ->assertDontSee('Lihat penjelasan')
+            ->assertDontSee('data-import-preview-filter="all"', false)
+            ->assertDontSee('data-import-preview-filter="failed"', false)
+            ->assertSee('data-import-preview-search', false)
+            ->assertSee('data-import-preview-page-size="25"', false)
             ->assertDontSee('Hasil Validasi')
-            ->assertDontSee('Siap diimpor.')
-            ->assertSee('NIS 999999 tidak ditemukan.');
+            ->assertSee('NIS 999999 tidak ditemukan.')
+            ->assertDontSee('ABDILLAH SAEFI HAMMAM');
         $this->assertDatabaseCount('spp_payments', 0);
         $token = $preview->viewData('importToken');
 
         $this->post('/keuangan/pembayaran/spp/import', ['token' => $token])
             ->assertRedirect('/keuangan/pembayaran/import')
             ->assertSessionHas('success');
+        $this->assertSame([
+            'context_label' => 'SPP • Ponpes Mambaul Hikmah • Januari 2026',
+            'file_name' => 'laporan-spp.xlsx',
+            'imported' => 2,
+            'failed' => 1,
+            'skipped' => 0,
+        ], session('import_result'));
+
+        $resultPage = $this->get('/keuangan/pembayaran/import');
+        $resultPage
+            ->assertOk()
+            ->assertSee('Import Pembayaran Selesai')
+            ->assertSee('payment-import-result-page', false)
+            ->assertSee('Berhasil Diimpor')
+            ->assertSee('Data Gagal')
+            ->assertSee('Duplikat / Dilewati')
+            ->assertSee('Proses import telah selesai. Periksa ringkasan hasil di bawah.')
+            ->assertSee(route('finance.payments.index'), false)
+            ->assertSee(route('finance.payments.import'), false)
+            ->assertDontSee('payment-import-success-modal', false);
+        $this->get('/keuangan/pembayaran/import')
+            ->assertOk()
+            ->assertSee('Import Pembayaran')
+            ->assertDontSee('payment-import-result-page', false);
+
+        $this->post('/keuangan/pembayaran/spp/import', ['token' => $token])
+            ->assertRedirect('/keuangan/pembayaran/import')
+            ->assertSessionHasErrors('file');
 
         $this->assertDatabaseCount('spp_payments', 2);
         $this->assertDatabaseCount('spp_payment_items', 2);
@@ -1759,9 +1803,62 @@ class MasterDataTest extends TestCase
             'year' => 2026,
             'file' => UploadedFile::fake()->createWithContent('laporan-spp.xlsx', $workbook),
         ]);
-        $duplicatePreview->assertOk();
+        $duplicatePreview->assertOk()
+            ->assertSee('Duplikat')
+            ->assertSee('Data Perlu Diperiksa')
+            ->assertSee('<th>Masalah</th>', false)
+            ->assertSee('Lihat detail');
         $this->assertSame(2, $duplicatePreview->viewData('importPreview')['duplicates']);
+        $this->post('/keuangan/pembayaran/spp/import', [
+            'token' => $duplicatePreview->viewData('importToken'),
+        ])->assertRedirect('/keuangan/pembayaran/import');
+        $this->assertSame(0, session('import_result.imported'));
+        $this->assertSame(2, session('import_result.skipped'));
+        $this->get('/keuangan/pembayaran/import')
+            ->assertOk()
+            ->assertSee('Import Selesai Diproses')
+            ->assertSee('Belum ada transaksi yang berhasil diimpor.')
+            ->assertSee('Duplikat / Dilewati');
         $this->assertDatabaseCount('spp_payments', 2);
+    }
+
+    public function test_spp_import_preview_disables_import_when_no_rows_are_valid(): void
+    {
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Ponpes Mambaul Hikmah', 'is_active' => true]);
+        $path = tempnam(sys_get_temp_dir(), 'spp-import-failed-');
+        StudentXlsx::write($path, [
+            ['Data Laporan SPP'],
+            ['No', 'NIS', 'Nama', 'Unit Pendidikan', 'Kelas', 'Petugas', 'Cara bayar', 'Bulan', 'Tahun', 'Waktu', 'Nominal'],
+            [1, '999999', 'SISWA BELUM ADA', 'PONPES MAMBAUL HIKMAH', '10A', 'Petugas', 'cash', 'januari', 2026, '2026-01-06 10:08:00', 600000],
+        ]);
+        $workbook = file_get_contents($path);
+        unlink($path);
+
+        $preview = $this->post('/keuangan/pembayaran/spp/import/preview', [
+            'unit_id' => $unit->id,
+            'month' => 1,
+            'year' => 2026,
+            'file' => UploadedFile::fake()->createWithContent('laporan-gagal.xlsx', $workbook),
+        ]);
+
+        $preview->assertOk()
+            ->assertSee('Import 0 Transaksi')
+            ->assertSee('disabled', false)
+            ->assertSee('Tidak ada transaksi valid yang dapat diimpor.')
+            ->assertSee('Data Gagal')
+            ->assertSee('Data Perlu Diperiksa')
+            ->assertSee('<th>Masalah</th>', false)
+            ->assertSee('Lihat detail');
+        $this->post('/keuangan/pembayaran/spp/import', [
+            'token' => $preview->viewData('importToken'),
+        ])->assertRedirect('/keuangan/pembayaran/import');
+        $this->get('/keuangan/pembayaran/import')
+            ->assertOk()
+            ->assertSee('Import Selesai Diproses')
+            ->assertSee('Belum ada transaksi yang berhasil diimpor.')
+            ->assertSee('Data Gagal')
+            ->assertSee('Duplikat / Dilewati');
+        $this->assertSame(0, $preview->viewData('importPreview')['valid']);
     }
 
     public function test_spp_import_accepts_august_archive_for_late_created_mts_registration(): void
@@ -2087,8 +2184,12 @@ class MasterDataTest extends TestCase
         ]);
         $preview->assertOk()
             ->assertViewIs('finance.payments')
-            ->assertSee('Preview Import Pembayaran')
+            ->assertSee('Preview &amp; Validasi Import', false)
             ->assertSee('Data Gagal')
+            ->assertSee('Data Perlu Diperiksa')
+            ->assertSee('Lihat detail')
+            ->assertSee('<th>Masalah</th>', false)
+            ->assertDontSee('<th>Status</th>', false)
             ->assertSee('NIS 999999 tidak ditemukan.')
             ->assertDontSee('Pemetaan Kategori');
         $this->assertSame($feeType->id, (int) collect($preview->viewData('importMappings'))->first());
@@ -2096,7 +2197,11 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseCount('other_payments', 0);
 
         $this->post('/keuangan/pembayaran/lain-lain/import?category=daftar-ulang', ['token' => $preview->viewData('importToken')])
-            ->assertRedirect('/keuangan/pembayaran/import')->assertSessionHas('success');
+            ->assertRedirect('/keuangan/pembayaran/import')->assertSessionHas('success')->assertSessionHas('import_result');
+        $this->get('/keuangan/pembayaran/import')
+            ->assertOk()
+            ->assertSee('Import Pembayaran Selesai')
+            ->assertSee('Daftar Ulang • PONPES MAMBAUL HIKMAH');
 
         $this->assertDatabaseCount('other_payments', 2);
         $this->assertSame(6500000, OtherPayment::sum('paid_amount'));
@@ -2202,7 +2307,10 @@ class MasterDataTest extends TestCase
         $preview->assertOk()
             ->assertViewIs('finance.payments')
             ->assertDontSee('Pemetaan Kategori')
-            ->assertSee('Import 1 Transaksi');
+            ->assertSee('Import 1 Transaksi')
+            ->assertSee('Tidak ada data yang perlu diperiksa.')
+            ->assertSee('Seluruh data lolos validasi.')
+            ->assertDontSee('<th>Masalah</th>', false);
         $this->assertSame(1, $preview->viewData('importPreview')['valid']);
 
         $this->post('/keuangan/pembayaran/lain-lain/import?category=daftar-ulang', [
