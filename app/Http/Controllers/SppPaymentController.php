@@ -319,37 +319,17 @@ class SppPaymentController extends Controller
         ]);
     }
 
-    public function receipt(Request $request, SppPayment $sppPayment, SppPaymentService $payments): View
+    public function receipt(Request $request, SppPayment $sppPayment, SppPaymentService $payments): Response
     {
-        $sppPayment->load(['student.schoolClass.educationUnit', 'items']);
-        $this->authorizePaymentAccess($request, $sppPayment);
-        $outstandingSummary = $payments->outstandingSummaryUntilCurrent($sppPayment->student);
-        $rootIdentityId = $sppPayment->student?->identity_student_id ?: $sppPayment->student_id;
-        $otherSppStudents = Student::select('students.*')->with('schoolClass.educationUnit')
-            ->where('students.is_active', true)
-            ->where('students.id', '!=', $sppPayment->student_id)
-            ->where(fn ($query) => $query
-                ->where('students.id', $rootIdentityId)
-                ->orWhere('students.identity_student_id', $rootIdentityId))
-            ->join('school_classes', 'school_classes.id', '=', 'students.school_class_id')
-            ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
-            ->orderByRaw($this->educationUnitOrderExpression())
-            ->orderBy('school_classes.name')
-            ->select('students.*')
-            ->get();
-
-        return view('finance.spp-receipt', [
-            'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
-            'payment' => $sppPayment,
-            'otherSppStudents' => $otherSppStudents,
-            'outstandingSummary' => $outstandingSummary,
-            'receiptNumber' => $this->receiptNumber($sppPayment),
-            'months' => [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'],
-            'receiptSettings' => AppSetting::values(),
-        ]);
+        return $this->receiptPdfResponse($request, $sppPayment, $payments, 'inline');
     }
 
     public function downloadReceipt(Request $request, SppPayment $sppPayment, SppPaymentService $payments): Response
+    {
+        return $this->receiptPdfResponse($request, $sppPayment, $payments, 'attachment');
+    }
+
+    private function receiptPdfResponse(Request $request, SppPayment $sppPayment, SppPaymentService $payments, string $disposition): Response
     {
         $sppPayment->load(['student.schoolClass.educationUnit', 'items']);
         $this->authorizePaymentAccess($request, $sppPayment);
@@ -373,7 +353,9 @@ class SppPaymentController extends Controller
 
         return response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
+            'Content-Disposition' => $disposition.'; filename="'.$filename.'"',
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'Pragma' => 'no-cache',
         ]);
     }
 

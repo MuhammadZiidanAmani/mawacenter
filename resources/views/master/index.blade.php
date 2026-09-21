@@ -859,7 +859,7 @@
                                 </div>
                             </div>
                             <div class="data-user-card-footer">
-                                <span>Akun pengguna sistem</span>
+                                <span>{{ $row->must_reset_password ? 'Password perlu direset admin' : 'Akun pengguna sistem' }}</span>
                                 <div class="data-user-card-actions">
                                     @include('master.partials.actions', ['type' => 'data-users', 'row' => $row])
                                 </div>
@@ -1156,7 +1156,7 @@
                             <col class="data-user-col-actions">
                         </colgroup>
                         <thead><tr><th>No</th>@include('partials.master-sort-heading', ['column' => 'name', 'label' => $masterSortColumns['name']])@include('partials.master-sort-heading', ['column' => 'username', 'label' => $masterSortColumns['username']])@include('partials.master-sort-heading', ['column' => 'email', 'label' => $masterSortColumns['email']])@include('partials.master-sort-heading', ['column' => 'role', 'label' => $masterSortColumns['role']])<th>Akses</th><th>Aksi</th></tr></thead>
-                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td>{{ $row->username }}</td><td>{{ $row->email }}</td><td><span class="status success">{{ $row->roleLabel() }}</span></td><td>@if($row->isGuardian()){{ $row->guardianStudents->map(fn($student) => ($student->schoolClass?->educationUnit?->code ?? '-').' - '.$student->nis)->implode(', ') ?: '-' }}@elseif($row->isBendaharaUnit() || $row->isPetugas()){{ $row->educationUnits->pluck('code')->implode(', ') ?: 'Semua unit' }}@else Semua akses @endif</td><td>@include('master.partials.actions', ['type' => 'data-users', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
+                        <tbody>@forelse ($data as $row)<tr><td>{{ $data->firstItem() + $loop->index }}</td><td><strong>{{ $row->name }}</strong></td><td>{{ $row->username }}</td><td>{{ $row->email }}</td><td><span class="status success">{{ $row->roleLabel() }}</span></td><td>@if($row->isGuardian()){{ $row->guardianStudents->map(fn($student) => ($student->schoolClass?->educationUnit?->code ?? '-').' - '.$student->nis)->implode(', ') ?: '-' }}@elseif($row->isSuperAdmin()) Semua akses @else {{ $row->educationUnits->pluck('code')->implode(', ') ?: 'Belum ada unit' }} @endif</td><td>@include('master.partials.actions', ['type' => 'data-users', 'row' => $row])</td></tr>@empty @include('master.partials.empty') @endforelse</tbody>
                     @else
                         <colgroup>
                             <col class="fee-discount-col-no">

@@ -85,13 +85,21 @@ class OtherPaymentService
     public function updateMetadata(OtherPayment $payment, array $data): OtherPayment
     {
         return DB::transaction(function () use ($payment, $data) {
+            $payment = OtherPayment::query()
+                ->with(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType', 'items'])
+                ->lockForUpdate()
+                ->findOrFail($payment->id);
             $payment->update([
                 'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
                 'payment_method' => $data['payment_method'],
                 'status' => $data['status'],
             ]);
 
-            $this->recalculatePayments($payment->student_id, $payment->fee_type_id);
+            if ($payment->items->isNotEmpty()) {
+                $this->reallocateItemPayments($payment->refresh(), (int) $payment->paid_amount);
+            } else {
+                $this->recalculatePayments($payment->student_id, $payment->fee_type_id);
+            }
 
             $payment = $payment->refresh();
             $this->bills->syncOtherPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']));
@@ -225,6 +233,7 @@ class OtherPaymentService
                 ->where('year', $item->year)
                 ->where('month', $item->month)
                 ->where('other_payment_id', '!=', $payment->id)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
                 ->sum('paid_amount');
 
             return max(0, (int) $item->total_amount - $paidByOtherTransactions);
@@ -244,6 +253,7 @@ class OtherPaymentService
                 ->where('year', $item->year)
                 ->where('month', $item->month)
                 ->where('other_payment_id', '!=', $payment->id)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
                 ->sum('paid_amount');
             $availableForItem = max(0, (int) $item->total_amount - $paidByOtherTransactions);
             $allocated = min($remainingAllocation, $availableForItem);

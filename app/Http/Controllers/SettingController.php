@@ -65,6 +65,7 @@ class SettingController extends Controller
 
         if (filled($validated['password'] ?? null)) {
             $user->password = $validated['password'];
+            $user->must_reset_password = false;
         }
 
         $user->save();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bill;
+use App\Models\BillPaymentAllocation;
 use App\Models\GuardianTransferRequest;
 use App\Services\AuditLogService;
 use Illuminate\Http\RedirectResponse;
@@ -58,14 +59,20 @@ class TransferVerificationController extends Controller
         $this->authorizeTransferAccess($request, $transfer);
         $before = $this->transferAuditSnapshot($transfer->loadMissing('student.schoolClass'));
 
-        if ($transfer->status !== 'Pending') {
-            return redirect()->route('finance.transfer-verifications.index')->with('error', 'Transfer ini sudah diproses.');
-        }
+        $processedTransfer = DB::transaction(function () use ($request, $transfer) {
+            $lockedTransfer = GuardianTransferRequest::query()
+                ->lockForUpdate()
+                ->findOrFail($transfer->id);
+            $this->authorizeTransferAccess($request, $lockedTransfer);
 
-        DB::transaction(function () use ($request, $transfer) {
-            $remainingTransfer = (int) $transfer->amount;
-            $bills = Bill::whereIn('id', $transfer->bill_ids ?? [])
-                ->where('student_id', $transfer->student_id)
+            if ($lockedTransfer->status !== 'Pending') {
+                return null;
+            }
+
+            $this->removeTransferAllocations($lockedTransfer);
+            $remainingTransfer = (int) $lockedTransfer->amount;
+            $bills = Bill::whereIn('id', $lockedTransfer->bill_ids ?? [])
+                ->where('student_id', $lockedTransfer->student_id)
                 ->where('status', '!=', 'Dibatalkan')
                 ->orderByRaw("CASE WHEN source_type = 'spp' THEN 0 ELSE 1 END")
                 ->orderBy('year')
@@ -80,21 +87,28 @@ class TransferVerificationController extends Controller
 
                 $allocated = min($remainingTransfer, (int) $bill->remaining_amount);
                 $bill->allocations()->updateOrCreate(
-                    ['payment_type' => 'guardian_transfer', 'payment_id' => $transfer->id],
+                    ['payment_type' => 'guardian_transfer', 'payment_id' => $lockedTransfer->id],
                     ['amount' => $allocated],
                 );
                 $remainingTransfer -= $allocated;
                 $this->refreshBill($bill);
             }
 
-            $transfer->update([
+            $lockedTransfer->update([
                 'status' => 'Diterima',
                 'verified_by' => $request->user()->id,
                 'verified_at' => now(),
                 'rejected_reason' => null,
             ]);
+
+            return $lockedTransfer->refresh();
         });
-        $transfer->refresh();
+
+        if (! $processedTransfer) {
+            return redirect()->route('finance.transfer-verifications.index')->with('error', 'Transfer ini sudah diproses.');
+        }
+
+        $transfer = $processedTransfer;
         app(AuditLogService::class)->recordOperation(
             'payments.transfer.accept',
             $this->transferAuditMetadata($transfer),
@@ -118,17 +132,32 @@ class TransferVerificationController extends Controller
             'rejected_reason' => ['required', 'string', 'max:500'],
         ]);
 
-        if ($transfer->status !== 'Pending') {
+        $processedTransfer = DB::transaction(function () use ($request, $transfer, $validated) {
+            $lockedTransfer = GuardianTransferRequest::query()
+                ->lockForUpdate()
+                ->findOrFail($transfer->id);
+            $this->authorizeTransferAccess($request, $lockedTransfer);
+
+            if ($lockedTransfer->status !== 'Pending') {
+                return null;
+            }
+
+            $this->removeTransferAllocations($lockedTransfer);
+            $lockedTransfer->update([
+                'status' => 'Ditolak',
+                'verified_by' => $request->user()->id,
+                'verified_at' => now(),
+                'rejected_reason' => $validated['rejected_reason'],
+            ]);
+
+            return $lockedTransfer->refresh();
+        });
+
+        if (! $processedTransfer) {
             return redirect()->route('finance.transfer-verifications.index')->with('error', 'Transfer ini sudah diproses.');
         }
 
-        $transfer->update([
-            'status' => 'Ditolak',
-            'verified_by' => $request->user()->id,
-            'verified_at' => now(),
-            'rejected_reason' => $validated['rejected_reason'],
-        ]);
-        $transfer->refresh();
+        $transfer = $processedTransfer;
         app(AuditLogService::class)->recordOperation(
             'payments.transfer.reject',
             $this->transferAuditMetadata($transfer) + ['reason' => $validated['rejected_reason']],
@@ -152,6 +181,26 @@ class TransferVerificationController extends Controller
             'remaining_amount' => $remaining,
             'status' => $remaining === 0 ? 'Lunas' : ($paid > 0 ? 'Sebagian' : 'Belum Dibayar'),
         ]);
+    }
+
+    private function removeTransferAllocations(GuardianTransferRequest $transfer): void
+    {
+        $bills = Bill::query()
+            ->whereHas('allocations', fn ($query) => $query
+                ->where('payment_type', 'guardian_transfer')
+                ->where('payment_id', $transfer->id))
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get();
+
+        BillPaymentAllocation::query()
+            ->where('payment_type', 'guardian_transfer')
+            ->where('payment_id', $transfer->id)
+            ->delete();
+
+        foreach ($bills as $bill) {
+            $this->refreshBill($bill);
+        }
     }
 
     private function authorizeTransferAccess(Request $request, GuardianTransferRequest $transfer): void

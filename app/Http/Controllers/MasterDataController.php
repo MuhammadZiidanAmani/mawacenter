@@ -1171,6 +1171,7 @@ class MasterDataController extends Controller
 
         $validated = $this->validateUser($request);
         unset($validated['education_unit_ids'], $validated['guardian_student_ids']);
+        $validated['must_reset_password'] = false;
         $user = User::create($validated);
         $this->syncUserAccess($user, $request);
         $this->recordMasterAudit('master.user.create', $user, after: $this->userAuditSnapshot($user->refresh()));
@@ -1186,6 +1187,8 @@ class MasterDataController extends Controller
 
         if (blank($validated['password'] ?? null)) {
             unset($validated['password']);
+        } else {
+            $validated['must_reset_password'] = false;
         }
         unset($validated['education_unit_ids'], $validated['guardian_student_ids']);
 
@@ -1404,7 +1407,7 @@ class MasterDataController extends Controller
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user)],
             'role' => ['required', Rule::exists('roles', 'key')->where('is_active', true)],
             'password' => [$user ? 'nullable' : 'required', 'string', 'min:8', 'max:100'],
-            'education_unit_ids' => ['nullable', 'array'],
+            'education_unit_ids' => [Rule::requiredIf(fn () => in_array($request->input('role'), ['kasir', 'bendahara'], true)), 'array', 'min:1'],
             'education_unit_ids.*' => ['integer', 'exists:education_units,id'],
             'guardian_student_ids' => [Rule::requiredIf(fn () => $request->input('role') === 'orang_tua'), 'array'],
             'guardian_student_ids.*' => ['integer', 'exists:students,id'],
@@ -1427,7 +1430,7 @@ class MasterDataController extends Controller
             ->values()
             ->all();
 
-        $user->educationUnits()->sync($user->role === 'bendahara' || $user->role === 'kasir' ? $unitIds : []);
+        $user->educationUnits()->sync(! $user->isSuperAdmin() && ! $user->isGuardian() ? $unitIds : []);
         $user->guardianStudents()->sync(
             $user->role === 'orang_tua'
                 ? collect($studentIds)->mapWithKeys(fn ($id) => [$id => ['relationship' => 'Wali', 'verified_at' => now()]])->all()

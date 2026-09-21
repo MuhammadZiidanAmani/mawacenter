@@ -22,10 +22,12 @@ use App\Services\BillQueryService;
 use App\Services\BillService;
 use App\Services\ChargeCalculator;
 use App\Services\SppPaymentImportService;
+use App\Services\SppPaymentService;
 use App\Support\StudentXlsx;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -38,6 +40,79 @@ class MasterDataTest extends TestCase
         parent::setUp();
 
         $this->actingAs(User::factory()->create());
+    }
+
+    public function test_cashier_and_treasurer_require_at_least_one_unit(): void
+    {
+        Role::updateOrCreate(['key' => 'kasir'], [
+            'name' => Role::DEFAULTS['kasir'],
+            'permissions' => Role::defaultPermissionsFor('kasir'),
+            'is_active' => true,
+        ]);
+
+        $this->post('/master-data/data-users', [
+            'name' => 'Petugas Tanpa Unit',
+            'username' => 'petugastanpaunit',
+            'email' => 'petugas-tanpa-unit@example.test',
+            'role' => 'kasir',
+            'password' => 'password123',
+        ])->assertSessionHasErrors('education_unit_ids');
+
+        $cashier = User::factory()->create(['role' => 'kasir']);
+        $this->assertSame([], $cashier->accessibleUnitIds());
+
+        $customRole = Role::create([
+            'key' => 'auditor',
+            'name' => 'Auditor',
+            'permissions' => ['reports.view_unit'],
+            'is_active' => true,
+        ]);
+        $auditor = User::factory()->create(['role' => $customRole->key]);
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->assertSame([], $auditor->accessibleUnitIds());
+        $this->assertNull($admin->accessibleUnitIds());
+    }
+
+    public function test_administrator_password_update_activates_legacy_guardian_account(): void
+    {
+        Role::updateOrCreate(['key' => 'orang_tua'], [
+            'name' => Role::DEFAULTS['orang_tua'],
+            'permissions' => Role::defaultPermissionsFor('orang_tua'),
+            'is_active' => true,
+        ]);
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '1A', 'level' => 1]);
+        $student = Student::create([
+            'nis' => 'RESET-001',
+            'name' => 'Siswa Reset Password',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        $guardian = User::factory()->create([
+            'name' => 'Wali Lama',
+            'username' => 'wali-lama',
+            'email' => 'wali-lama@wali.mawacenter.local',
+            'role' => 'orang_tua',
+            'must_reset_password' => true,
+        ]);
+        $guardian->guardianStudents()->attach($student->id);
+
+        $this->put('/master-data/data-users/'.$guardian->id, [
+            'name' => $guardian->name,
+            'username' => $guardian->username,
+            'email' => $guardian->email,
+            'role' => 'orang_tua',
+            'password' => 'password-baru',
+            'guardian_student_ids' => [$student->id],
+        ])->assertRedirect();
+
+        $guardian->refresh();
+        $this->assertFalse($guardian->must_reset_password);
+        $this->assertTrue(Hash::check('password-baru', $guardian->password));
     }
 
     public function test_master_data_page_can_be_opened(): void
@@ -78,13 +153,14 @@ class MasterDataTest extends TestCase
             'is_active' => true,
         ]);
         $viewer = User::factory()->create(['role' => 'student_view_only']);
+        $viewer->educationUnits()->attach($unit->id);
 
         $this->actingAs($viewer)
             ->get('/manajemen-siswa/data-siswa?unit_id='.$unit->id.'&class_id='.$class->id.'&year_id='.$year->id)
             ->assertOk()
             ->assertSee('Data Siswa')
             ->assertDontSee('Kualitas Data')
-            ->assertDontSee('Tambah')
+            ->assertDontSee('>Tambah</a>', false)
             ->assertDontSee('Import')
             ->assertDontSee('Export')
             ->assertDontSee('master-data/students/template')
@@ -124,6 +200,7 @@ class MasterDataTest extends TestCase
             'is_active' => true,
         ]);
         $operator = User::factory()->create(['role' => 'student_operator']);
+        $operator->educationUnits()->attach($unit->id);
 
         $this->actingAs($operator)
             ->get('/manajemen-siswa/data-siswa?unit_id='.$unit->id.'&class_id='.$class->id.'&year_id='.$year->id)
@@ -1457,13 +1534,14 @@ class MasterDataTest extends TestCase
             ->assertJsonPath('paid_amount', 400000);
         $receipt = $this->get('/keuangan/pembayaran/spp/'.$payment->id.'/receipt');
         $receipt->assertOk()
-            ->assertHeader('content-type', 'text/html; charset=UTF-8')
-            ->assertSee('Kwitansi Pembayaran')
-            ->assertSee('onclick="window.print()"', false)
-            ->assertSee('data-receipt-page', false);
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertHeader('content-disposition', 'inline; filename="kwitansi-spp-'.$student->nis.'-'.$payment->id.'.pdf"')
+            ->assertHeader('cache-control', 'max-age=0, no-store, private')
+            ->assertDontSee('<!DOCTYPE html>', false);
         $this->get('/keuangan/pembayaran/spp/'.$payment->id.'/receipt/download')
             ->assertOk()
-            ->assertHeader('content-type', 'application/pdf');
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertHeader('content-disposition', 'attachment; filename="kwitansi-spp-'.$student->nis.'-'.$payment->id.'.pdf"');
 
         $this->put('/keuangan/pembayaran/spp/'.$payment->id, [
             'transaction_date' => '13/06/2026',
@@ -1478,11 +1556,11 @@ class MasterDataTest extends TestCase
             'payment_method' => 'Cash',
             'status' => 'Pending',
             'paid_amount' => 300000,
-            'remaining_amount' => 100000,
-            'payment_status' => 'Belum Lunas',
+            'remaining_amount' => 600000,
+            'payment_status' => 'Pending',
         ]);
-        $this->assertDatabaseHas('spp_payment_items', ['spp_payment_id' => $payment->id, 'month' => 1, 'paid_amount' => 100000, 'remaining_amount' => 0]);
-        $this->assertDatabaseHas('spp_payment_items', ['spp_payment_id' => $payment->id, 'month' => 2, 'paid_amount' => 200000, 'remaining_amount' => 100000]);
+        $this->assertDatabaseHas('spp_payment_items', ['spp_payment_id' => $payment->id, 'month' => 1, 'paid_amount' => 0, 'remaining_amount' => 100000, 'payment_status' => 'Pending']);
+        $this->assertDatabaseHas('spp_payment_items', ['spp_payment_id' => $payment->id, 'month' => 2, 'paid_amount' => 0, 'remaining_amount' => 300000, 'payment_status' => 'Pending']);
 
         $this->delete('/keuangan/pembayaran/spp/'.$payment->id)->assertRedirect('/keuangan/pembayaran/spp');
         $this->assertDatabaseMissing('spp_payments', ['id' => $payment->id]);
@@ -1765,7 +1843,7 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseCount('spp_payments', 0);
     }
 
-    public function test_spp_receipt_opens_as_printable_html(): void
+    public function test_spp_receipt_opens_as_inline_pdf(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'PP', 'name' => 'Pondok Pesantren', 'is_active' => true]);
@@ -1805,13 +1883,126 @@ class MasterDataTest extends TestCase
         $receipt = $this->get('/keuangan/pembayaran/spp/'.$payment->id.'/receipt');
 
         $receipt->assertOk()
-            ->assertHeader('content-type', 'text/html; charset=UTF-8')
-            ->assertSee('SPP-20260612-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT))
-            ->assertSee('@page { size: A4 portrait; margin: 0; }', false)
-            ->assertSee('Juni')
-            ->assertSee('Keringanan (Rp)')
-            ->assertSee('onclick="window.print()"', false)
-            ->assertSee('data-receipt-page', false);
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertHeader('content-disposition', 'inline; filename="kwitansi-spp-'.$student->nis.'-'.$payment->id.'.pdf"')
+            ->assertHeader('cache-control', 'max-age=0, no-store, private')
+            ->assertDontSee('<!DOCTYPE html>', false);
+
+        $this->get('/keuangan/pembayaran/spp/'.$payment->id.'/receipt/download')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertHeader('content-disposition', 'attachment; filename="kwitansi-spp-'.$student->nis.'-'.$payment->id.'.pdf"');
+    }
+
+    public function test_spp_receipt_groups_periods_by_year_and_monthly_tariff(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas 7']);
+        $student = Student::create([
+            'nis' => '230200',
+            'name' => 'Siswa Receipt Range',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        $payment = SppPayment::create([
+            'student_id' => $student->id,
+            'transaction_at' => '2026-09-20 21:28:53',
+            'payment_method' => 'Cash',
+            'status' => 'Diterima',
+            'original_amount' => 780000,
+            'discount_amount' => 20000,
+            'total_amount' => 760000,
+            'paid_amount' => 760000,
+            'remaining_amount' => 0,
+            'payment_status' => 'Lunas',
+        ]);
+
+        foreach (range(8, 12) as $month) {
+            $payment->items()->create([
+                'student_id' => $student->id,
+                'year' => 2025,
+                'month' => $month,
+                'original_amount' => 60000,
+                'discount_amount' => 0,
+                'total_amount' => 60000,
+                'paid_amount' => 60000,
+                'remaining_amount' => 0,
+                'payment_status' => 'Lunas',
+            ]);
+        }
+
+        foreach (range(1, 6) as $month) {
+            $discount = $month === 1 ? 20000 : 0;
+            $payment->items()->create([
+                'student_id' => $student->id,
+                'year' => 2026,
+                'month' => $month,
+                'original_amount' => 50000,
+                'discount_amount' => $discount,
+                'total_amount' => 50000 - $discount,
+                'paid_amount' => 50000 - $discount,
+                'remaining_amount' => 0,
+                'payment_status' => 'Lunas',
+            ]);
+        }
+
+        foreach (range(7, 9) as $month) {
+            $payment->items()->create([
+                'student_id' => $student->id,
+                'year' => 2026,
+                'month' => $month,
+                'original_amount' => 60000,
+                'discount_amount' => 0,
+                'total_amount' => 60000,
+                'paid_amount' => 60000,
+                'remaining_amount' => 0,
+                'payment_status' => 'Lunas',
+            ]);
+        }
+
+        $payment->load(['student.schoolClass.educationUnit', 'items']);
+        $html = view('finance.spp-receipt-pdf', [
+            'payment' => $payment,
+            'receiptNumber' => 'SPP-20260920-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT),
+            'outstandingSummary' => app(SppPaymentService::class)->outstandingSummaryUntilCurrent($student),
+            'logo' => 'data:image/png;base64,'.base64_encode(file_get_contents(public_path('images/logo-yayasan-mambaul-hikmah.png'))),
+            'months' => [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'],
+            'receiptSettings' => AppSetting::values(),
+        ])->render();
+
+        $this->assertStringContainsString('Agustus - Desember', $html);
+        $this->assertStringContainsString('Januari - Juni', $html);
+        $this->assertStringContainsString('Juli - September', $html);
+        $this->assertStringNotContainsString('Agustus - Desember Tahun 2025', $html);
+        $this->assertStringContainsString('<td class="month-count-column center">5</td>', $html);
+        $this->assertStringContainsString('<td class="month-count-column center">6</td>', $html);
+        $this->assertStringContainsString('<td class="month-count-column center">3</td>', $html);
+        $this->assertStringContainsString('60.000', $html);
+        $this->assertStringContainsString('50.000', $html);
+        $this->assertStringContainsString('300.000', $html);
+        $this->assertStringContainsString('280.000', $html);
+        $this->assertStringContainsString('180.000', $html);
+        $this->assertStringContainsString('Keringanan (Rp)', $html);
+        $this->assertStringContainsString('20.000', $html);
+        $this->assertStringContainsString('Total Bayar (Rp)', $html);
+        $this->assertStringContainsString('760.000', $html);
+
+        $receipt = $this->get('/keuangan/pembayaran/spp/'.$payment->id.'/receipt');
+        $receipt->assertOk()
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertHeader('content-disposition', 'inline; filename="kwitansi-spp-'.$student->nis.'-'.$payment->id.'.pdf"');
+
+        $this->assertSame(3, substr_count($html, '<td class="month-count-column center">'));
+        $this->assertSame(3, substr_count($html, '<td class="transaction-column">'));
+        $this->assertSame(3, substr_count($html, '<td class="method-column center">'));
+        $this->assertSame(760000, SppPaymentItem::where('spp_payment_id', $payment->id)->sum('paid_amount'));
+        $this->get('/keuangan/pembayaran/spp/'.$payment->id.'/receipt/download')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf')
+            ->assertHeader('content-disposition', 'attachment; filename="kwitansi-spp-'.$student->nis.'-'.$payment->id.'.pdf"');
     }
 
     public function test_other_payment_uses_fee_type_and_automatic_discount(): void

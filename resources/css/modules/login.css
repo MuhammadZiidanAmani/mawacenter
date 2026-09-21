@@ -247,7 +247,6 @@ body.login-body .login-form .password-toggle.active .password-icon-visible {
     display: block !important;
 }
 
-body.login-body .login-form.wali-mode .login-password-field,
 body.login-body .login-form.wali-mode .login-wali-toggle,
 body.login-body .login-form .password-toggle.active .password-icon-hidden {
     display: none !important;

@@ -5,28 +5,28 @@
     <style>
         @page { size: A4 portrait; margin: 0.5cm 1cm 1cm; }
         * { box-sizing: border-box; }
-        body { margin: 0; color: #202020; font-family: Arial, sans-serif; font-size: 12.5px; line-height: 1.25; }
+        body { margin: 0; color: #202020; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.25; }
         .receipt { width: 100%; border-bottom: 1px dashed #333; padding-bottom: 8px; }
         .header { width: 100%; border-collapse: collapse; border-bottom: 1.5px solid #555; }
         .header td { border: 0; padding: 0 0 4px; vertical-align: middle; }
         .logo-cell { width: 55px; }
         .logo { width: 48px; height: 48px; object-fit: contain; }
-        .institution h1 { margin: 0 0 1px; font-size: 18px; line-height: 1.05; }
-        .institution p { margin: 0; font-size: 11.5px; line-height: 1.18; }
+        .institution h1 { margin: 0 0 1px; font-size: 18.5px; line-height: 1.05; }
+        .institution p { margin: 0; font-size: 12px; line-height: 1.18; }
         .keep-cell { width: 135px; text-align: right; }
-        .keep-note { display: inline-block; padding: 4px 14px; border: 1px solid #333; font-size: 11.5px; line-height: 1.1; }
+        .keep-note { display: inline-block; padding: 4px 14px; border: 1px solid #333; font-size: 12px; line-height: 1.1; }
         .title { margin: 2px 0 4px; text-align: center; }
-        .title h2 { display: inline-block; margin: 0; border-bottom: 1px solid #333; font-size: 14px; line-height: 1.1; }
-        .title p { margin: 0; font-size: 11.5px; line-height: 1.15; }
+        .title h2 { display: inline-block; margin: 0; border-bottom: 1px solid #333; font-size: 14.5px; line-height: 1.1; }
+        .title p { margin: 0; font-size: 12px; line-height: 1.15; }
         .student-info { width: 100%; margin-bottom: 4px; border-collapse: collapse; }
-        .student-info td { padding: 1px 2px; border: 0; font-size: 12.5px; line-height: 1.25; vertical-align: top; }
+        .student-info td { padding: 1px 2px; border: 0; font-size: 13px; line-height: 1.25; vertical-align: top; }
         .student-info .label { width: 7%; font-weight: bold; white-space: nowrap; }
         .student-info .separator { width: 1.5%; padding-right: 5px; text-align: center; }
         .student-info .value-left { width: 38.5%; }
         .student-info .label-right { width: 17%; font-weight: bold; white-space: nowrap; }
         .student-info .value-right { width: 35.5%; white-space: nowrap; }
         .payment-table { width: 100%; border-collapse: collapse; }
-        .payment-table th, .payment-table td { padding: 4px 5px; border: 1px solid #555; font-size: 12.5px; line-height: 1.22; vertical-align: middle; }
+        .payment-table th, .payment-table td { padding: 4px 5px; border: 1px solid #555; font-size: 13px; line-height: 1.22; vertical-align: middle; }
         .payment-table th { background: #f5f5f5; font-weight: bold; text-align: center; }
         .payment-table .transaction-column { width: 20%; white-space: nowrap; }
         .payment-table .name-column { width: 48%; }
@@ -38,10 +38,10 @@
         .payment-table .totals-label { text-align: right; }
         .payment-table .grand-total { font-weight: bold; }
         .notes { width: 100%; margin-top: 4px; border-collapse: collapse; }
-        .notes td { width: 50%; padding: 0 4px; border: 0; font-size: 12.5px; line-height: 1.22; vertical-align: top; }
+        .notes td { width: 50%; padding: 0 4px; border: 0; font-size: 13px; line-height: 1.22; vertical-align: top; }
         .notes .right { text-align: right; }
         .signatures { width: 100%; margin-top: 5px; border-collapse: collapse; }
-        .signatures td { width: 50%; padding: 0 8px; border: 0; text-align: center; font-size: 12.5px; line-height: 1.22; vertical-align: top; }
+        .signatures td { width: 50%; padding: 0 8px; border: 0; text-align: center; font-size: 13px; line-height: 1.22; vertical-align: top; }
         .signature-label { font-weight: bold; }
         .signature-space { height: 48px; }
         .signature-name { font-weight: bold; }

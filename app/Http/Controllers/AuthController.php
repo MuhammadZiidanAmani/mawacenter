@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\EducationUnit;
-use App\Models\Role;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -30,7 +30,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'login_type' => ['nullable', 'string', 'in:petugas,bendahara,wali'],
             'username' => ['required', 'string', 'max:100'],
-            'password' => ['required_unless:login_type,wali', 'nullable', 'string'],
+            'password' => ['required', 'string'],
             'guardian_unit_id' => ['required_if:login_type,wali', 'nullable', 'integer', 'exists:education_units,id'],
         ]);
         $validated['login_type'] ??= 'petugas';
@@ -38,7 +38,7 @@ class AuthController extends Controller
         $username = Str::lower(trim($validated['username']));
 
         if ($validated['login_type'] === 'wali') {
-            $this->attemptGuardianLogin($request, $username, (int) $validated['guardian_unit_id']);
+            $this->attemptGuardianLogin($request, $username, (int) $validated['guardian_unit_id'], $validated['password']);
         } else {
             if (! Auth::attempt(['username' => $username, 'password' => $validated['password']], $request->boolean('remember'))) {
                 throw ValidationException::withMessages([
@@ -61,7 +61,7 @@ class AuthController extends Controller
         return redirect()->route('login');
     }
 
-    private function attemptGuardianLogin(Request $request, string $nis, int $unitId): void
+    private function attemptGuardianLogin(Request $request, string $nis, int $unitId, string $password): void
     {
         $student = Student::query()
             ->where('nis', $nis)
@@ -80,52 +80,26 @@ class AuthController extends Controller
             ->orWhere('identity_student_id', $identityId)
             ->pluck('id');
 
-        $user = User::query()
+        $users = User::query()
             ->where('role', 'orang_tua')
             ->whereHas('guardianStudents', fn ($query) => $query->whereIn('students.id', $studentIds))
-            ->first();
+            ->get();
 
-        $user ??= $this->createGuardianUser($student, $studentIds->map(fn ($id) => (int) $id)->all());
+        if ($users->isNotEmpty() && $users->every(fn (User $user) => $user->must_reset_password)) {
+            throw ValidationException::withMessages([
+                'username' => 'Password akun wali perlu diatur ulang oleh administrator.',
+            ]);
+        }
+
+        $user = $users->first(fn (User $user) => ! $user->must_reset_password && Hash::check($password, $user->password));
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'username' => 'NIS, unit pendidikan, atau kata sandi belum sesuai.',
+            ]);
+        }
 
         Auth::login($user, $request->boolean('remember'));
-    }
-
-    /**
-     * @param  array<int>  $studentIds
-     */
-    private function createGuardianUser(Student $student, array $studentIds): User
-    {
-        Role::updateOrCreate(
-            ['key' => 'orang_tua'],
-            [
-                'name' => Role::DEFAULTS['orang_tua'],
-                'description' => 'Role bawaan sistem',
-                'permissions' => Role::defaultPermissionsFor('orang_tua'),
-                'is_active' => true,
-            ],
-        );
-
-        $unitCode = Str::lower((string) $student->schoolClass?->educationUnit?->code);
-        $nis = Str::lower((string) $student->nis);
-        $username = Str::slug("wali {$unitCode} {$nis}");
-
-        $user = User::firstOrCreate(
-            ['username' => $username],
-            [
-                'name' => 'Wali '.$student->name,
-                'email' => $username.'@wali.mawacenter.local',
-                'role' => 'orang_tua',
-                'password' => Str::random(32),
-            ],
-        );
-
-        $user->guardianStudents()->syncWithoutDetaching(
-            collect($studentIds)
-                ->mapWithKeys(fn (int $studentId) => [$studentId => ['relationship' => 'wali', 'is_primary' => $studentId === $student->id]])
-                ->all(),
-        );
-
-        return $user;
     }
 
     private function redirectPath(?User $user): string

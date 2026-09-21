@@ -14,6 +14,7 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -476,6 +477,125 @@ class BillAccessTest extends TestCase
         $this->actingAs($verifier)
             ->post(route('finance.transfer-verifications.accept', $otherTransfer))
             ->assertForbidden();
+    }
+
+    public function test_accepting_guardian_transfer_is_idempotent(): void
+    {
+        $this->seedRole('admin');
+        $this->seedRole('orang_tua');
+
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '2A', 'level' => 2, 'is_active' => true]);
+        $student = $this->student($class, $year, '298001', 'Siswa Transfer Idempoten');
+        $bill = $this->bill($student, $year, 'SPP Juli 2026');
+        $guardian = User::factory()->create(['role' => 'orang_tua']);
+        $guardian->guardianStudents()->attach($student->id);
+        $transfer = GuardianTransferRequest::create([
+            'user_id' => $guardian->id,
+            'student_id' => $student->id,
+            'bill_ids' => [$bill->id],
+            'amount' => 100000,
+            'proof_path' => 'guardian-transfer-proofs/idempotent.pdf',
+            'status' => 'Pending',
+        ]);
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)
+            ->post(route('finance.transfer-verifications.accept', $transfer))
+            ->assertRedirect(route('finance.transfer-verifications.index'));
+        $this->actingAs($admin)
+            ->post(route('finance.transfer-verifications.accept', $transfer))
+            ->assertRedirect(route('finance.transfer-verifications.index'));
+
+        $this->assertDatabaseHas('guardian_transfer_requests', [
+            'id' => $transfer->id,
+            'status' => 'Diterima',
+            'verified_by' => $admin->id,
+        ]);
+        $this->assertDatabaseCount('bill_payment_allocations', 1);
+        $this->assertDatabaseHas('bill_payment_allocations', [
+            'bill_id' => $bill->id,
+            'payment_type' => 'guardian_transfer',
+            'payment_id' => $transfer->id,
+            'amount' => 100000,
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $bill->id,
+            'paid_amount' => 100000,
+            'remaining_amount' => 0,
+            'status' => 'Lunas',
+        ]);
+        $this->assertSame(1, DB::table('audit_logs')
+            ->where('action', 'payments.transfer.accept')
+            ->where('subject_type', GuardianTransferRequest::class)
+            ->where('subject_id', $transfer->id)
+            ->count());
+    }
+
+    public function test_rejecting_guardian_transfer_removes_stale_allocations_and_refreshes_bill(): void
+    {
+        $this->seedRole('admin');
+        $this->seedRole('orang_tua');
+
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'MTs Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7B', 'level' => 7, 'is_active' => true]);
+        $student = $this->student($class, $year, '298002', 'Siswa Transfer Ditolak');
+        $bill = $this->bill($student, $year, 'SPP Juli 2026', overrides: [
+            'paid_amount' => 100000,
+            'remaining_amount' => 0,
+            'status' => 'Lunas',
+        ]);
+        $guardian = User::factory()->create(['role' => 'orang_tua']);
+        $guardian->guardianStudents()->attach($student->id);
+        $transfer = GuardianTransferRequest::create([
+            'user_id' => $guardian->id,
+            'student_id' => $student->id,
+            'bill_ids' => [$bill->id],
+            'amount' => 100000,
+            'proof_path' => 'guardian-transfer-proofs/rejected.pdf',
+            'status' => 'Pending',
+        ]);
+        $bill->allocations()->create([
+            'payment_type' => 'guardian_transfer',
+            'payment_id' => $transfer->id,
+            'amount' => 100000,
+        ]);
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)
+            ->post(route('finance.transfer-verifications.reject', $transfer), [
+                'rejected_reason' => 'Nominal pada bukti tidak sesuai.',
+            ])
+            ->assertRedirect(route('finance.transfer-verifications.index'));
+        $this->actingAs($admin)
+            ->post(route('finance.transfer-verifications.reject', $transfer), [
+                'rejected_reason' => 'Pengulangan verifikasi.',
+            ])
+            ->assertRedirect(route('finance.transfer-verifications.index'));
+
+        $this->assertDatabaseHas('guardian_transfer_requests', [
+            'id' => $transfer->id,
+            'status' => 'Ditolak',
+            'verified_by' => $admin->id,
+            'rejected_reason' => 'Nominal pada bukti tidak sesuai.',
+        ]);
+        $this->assertDatabaseMissing('bill_payment_allocations', [
+            'payment_type' => 'guardian_transfer',
+            'payment_id' => $transfer->id,
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $bill->id,
+            'paid_amount' => 0,
+            'remaining_amount' => 100000,
+            'status' => 'Belum Dibayar',
+        ]);
+        $this->assertSame(1, DB::table('audit_logs')
+            ->where('action', 'payments.transfer.reject')
+            ->where('subject_type', GuardianTransferRequest::class)
+            ->where('subject_id', $transfer->id)
+            ->count());
     }
 
     private function seedRole(string $key): void

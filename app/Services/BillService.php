@@ -512,6 +512,12 @@ class BillService
     {
         $payment->loadMissing(['student.academicYear', 'student.schoolClass.educationUnit', 'items']);
 
+        if ($payment->status !== 'Diterima') {
+            $this->removePayment('spp', $payment->id);
+
+            return;
+        }
+
         DB::transaction(function () use ($payment) {
             foreach ($payment->items as $item) {
                 $period = CarbonImmutable::create((int) $item->year, (int) $item->month, 1)->startOfMonth();
@@ -968,7 +974,11 @@ class BillService
 
     private function syncSppBillPayments(Bill $bill): void
     {
-        $items = SppPaymentItem::where('student_id', $bill->student_id)->where('year', $bill->year)->where('month', $bill->month)->get();
+        $items = SppPaymentItem::where('student_id', $bill->student_id)
+            ->where('year', $bill->year)
+            ->where('month', $bill->month)
+            ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
+            ->get();
         foreach ($items as $item) {
             $bill->allocations()->updateOrCreate(['payment_type' => 'spp', 'payment_id' => $item->spp_payment_id], ['amount' => $item->paid_amount]);
         }

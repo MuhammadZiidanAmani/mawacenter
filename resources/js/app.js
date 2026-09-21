@@ -25,9 +25,8 @@ const setWaliMode = (active) => {
         loginUsernameInput.placeholder = active ? 'Masukkan NIS santri' : 'Masukkan username';
         loginUsernameInput.focus();
     }
-    // Toggle required pada password agar validasi HTML5 benar
     if (loginPasswordField) {
-        loginPasswordField.required = !active;
+        loginPasswordField.required = true;
     }
 };
 
@@ -132,9 +131,18 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     const transferUpload = form.querySelector('[data-payment-transfer-upload]');
     const transferFile = form.querySelector('[data-payment-transfer-file]');
     const uploadName = form.querySelector('[data-payment-upload-name]');
+    const paidTotalOutput = form.querySelector('[data-payment-paid-total]');
+    const paidError = form.querySelector('[data-payment-paid-error]');
+    const transferError = form.querySelector('[data-payment-transfer-error]');
+    const paymentTypeOptions = Array.from(form.querySelectorAll('[data-payment-type-option]'));
+    const methodOptions = Array.from(form.querySelectorAll('[data-payment-method-option]'));
+    const submitLabel = submitButton?.querySelector('[data-payment-submit-label]');
+    const defaultSubmitLabel = submitLabel?.textContent || 'Bayar & Cetak Struk';
     const isEditPayment = Boolean(form.dataset.paymentEditMode);
     const hasTransferProof = form.dataset.paymentHasTransferProof === 'true';
     let paidTouched = false;
+    let validationAttempted = Boolean(paidError?.textContent.trim() || transferError?.textContent.trim());
+    let isSubmitting = false;
 
     const selectedTotal = () => bills
         .filter((bill) => bill.checked)
@@ -174,11 +182,62 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
 
     const formatTotal = (total) => (total > 0 ? formatter.format(total) : '');
 
+    const showFieldError = (target, message, shouldShow) => {
+        if (!target) return;
+        target.textContent = message;
+        target.hidden = !message || !shouldShow;
+    };
+
+    const transferFileError = () => {
+        if (method?.value !== 'Transfer') return '';
+
+        const file = transferFile?.files?.[0];
+        if (!file) {
+            return isEditPayment && hasTransferProof
+                ? ''
+                : 'Bukti transfer wajib diunggah untuk metode pembayaran Transfer.';
+        }
+        if (!/\.(jpe?g|png|pdf)$/i.test(file.name)) {
+            return 'Bukti transfer harus berupa JPG, JPEG, PNG, atau PDF.';
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            return 'Ukuran bukti transfer maksimal 2 MB.';
+        }
+
+        return '';
+    };
+
+    const renderPaymentState = (showErrors = validationAttempted) => {
+        const total = selectedTotal();
+        const paidAmount = Number(digitsOnly(paidInput?.value || '0'));
+        const isFullPayment = paymentType?.value !== 'partial';
+        let paidMessage = '';
+
+        if (!isFullPayment && paidAmount < 1) {
+            paidMessage = 'Nominal dibayar harus lebih dari 0.';
+        } else if (paidAmount > total && total > 0) {
+            paidMessage = 'Nominal tidak boleh melebihi total pembayaran.';
+        }
+
+        const proofMessage = transferFileError();
+        if (transferFile) transferFile.setCustomValidity(proofMessage);
+        showFieldError(paidError, paidMessage, showErrors);
+        showFieldError(transferError, proofMessage, showErrors);
+        if (paidTotalOutput) paidTotalOutput.textContent = `${formatter.format(paidAmount)},-`;
+
+        const isValid = total > 0
+            && paidAmount > 0
+            && paidAmount <= total
+            && proofMessage === '';
+        if (submitButton) submitButton.disabled = isSubmitting || !isValid;
+
+        return isValid;
+    };
+
     const renderTotal = (syncPaid = false) => {
         syncAllBillIds();
         const total = selectedTotal();
         if (totalOutput) totalOutput.textContent = `${formatter.format(total)},-`;
-        if (submitButton) submitButton.disabled = total < 1;
         if (paidInput) {
             const isFullPayment = paymentType?.value !== 'partial';
             paidInput.readOnly = isFullPayment;
@@ -190,6 +249,7 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
                 paidTouched = false;
             }
         }
+        renderPaymentState();
     };
 
     const renderMandatoryDisplayTotal = () => {
@@ -238,6 +298,26 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
 
     paymentType?.addEventListener('change', () => renderTotal(true));
 
+    paymentTypeOptions.forEach((option) => {
+        option.addEventListener('change', () => {
+            if (!option.checked || !paymentType) return;
+            paymentType.value = option.value;
+            paidTouched = false;
+            validationAttempted = method?.value === 'Transfer';
+            renderTotal(true);
+        });
+    });
+
+    methodOptions.forEach((option) => {
+        option.addEventListener('change', () => {
+            if (!option.checked || !method) return;
+            method.value = option.value;
+            validationAttempted = option.value === 'Transfer';
+            renderTransferFields();
+            renderPaymentState();
+        });
+    });
+
     form.querySelectorAll('[data-payment-period-select]').forEach((select) => {
         select.addEventListener('change', () => {
             const row = select.closest('[data-payment-bill-row]');
@@ -269,23 +349,43 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         });
     });
 
-    form.addEventListener('submit', syncAllBillIds);
+    form.addEventListener('submit', (event) => {
+        syncAllBillIds();
+        validationAttempted = true;
+        if (isSubmitting || !renderPaymentState(true)) {
+            event.preventDefault();
+            if (paidInput) formatCurrencyInput(paidInput);
+            return;
+        }
+
+        isSubmitting = true;
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.setAttribute('aria-busy', 'true');
+        }
+        if (submitLabel) submitLabel.textContent = isEditPayment ? 'Menyimpan Perubahan...' : 'Memproses Pembayaran...';
+    });
 
     paidInput?.addEventListener('input', () => {
         paidTouched = true;
+        validationAttempted = true;
+        renderPaymentState(true);
     });
 
-    method?.addEventListener('change', renderTransferFields);
+    method?.addEventListener('change', () => {
+        renderTransferFields();
+        renderPaymentState();
+    });
 
     transferFile?.addEventListener('change', () => {
-        transferFile.setCustomValidity('');
+        validationAttempted = true;
         if (uploadName) uploadName.textContent = transferFile.files?.[0]?.name || 'Pilih file bukti transfer';
+        renderPaymentState(true);
     });
 
     transferFile?.addEventListener('invalid', () => {
-        if (method?.value === 'Transfer' && !transferFile.files?.length) {
-            transferFile.setCustomValidity('Bukti transfer wajib diunggah untuk metode pembayaran Transfer.');
-        }
+        validationAttempted = true;
+        renderPaymentState(true);
     });
 
     form.querySelector('[data-payment-copy-account]')?.addEventListener('click', async (event) => {
@@ -309,6 +409,7 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     if (billChoice) syncBillChoice();
     renderMandatoryDisplayTotal();
     renderTotal(false);
+    if (submitLabel) submitLabel.textContent = defaultSubmitLabel;
 });
 
 document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
@@ -331,12 +432,14 @@ document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
         if (!fallbackModal) return;
         fallbackModal.hidden = false;
         fallbackModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
         fallbackModal.querySelector('[data-open-receipts]')?.focus();
     };
     const hideFallback = () => {
         if (!fallbackModal) return;
         fallbackModal.classList.remove('show');
         fallbackModal.hidden = true;
+        document.body.style.overflow = '';
     };
     const openReceipts = () => {
         let blocked = false;
@@ -344,7 +447,9 @@ document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
             const opened = window.open(url, '_blank', 'noopener');
             if (!opened) blocked = true;
         });
-        if (blocked) showFallback();
+        if (blocked) {
+            showFallback();
+        }
     };
     const downloadReceipts = () => {
         downloadUrls.forEach((url) => {
@@ -354,11 +459,32 @@ document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
 
     launcher.querySelector('[data-open-receipts]')?.addEventListener('click', openReceipts);
     launcher.querySelector('[data-download-receipts]')?.addEventListener('click', downloadReceipts);
-    launcher.querySelectorAll('[data-alert-close]').forEach((button) => button.addEventListener('click', hideFallback));
+    launcher.querySelectorAll('[data-payment-success-close]').forEach((button) => button.addEventListener('click', hideFallback));
     fallbackModal?.addEventListener('click', (event) => {
         if (event.target === fallbackModal) hideFallback();
     });
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && fallbackModal?.classList.contains('show')) hideFallback();
+    });
     if (urls.length) openReceipts();
+});
+
+document.querySelectorAll('[data-payment-context-switch]').forEach((input) => {
+    input.addEventListener('change', () => {
+        const form = input.form;
+
+        if (!input.checked || !form || form.dataset.paymentLoading === 'true') return;
+
+        form.dataset.paymentLoading = 'true';
+        form.classList.add('is-loading');
+        form.setAttribute('aria-busy', 'true');
+        form.querySelectorAll('[data-payment-context-switch]').forEach((option) => {
+            option.closest('.payment-context-option')?.classList.toggle('is-active', option === input);
+
+            if (option !== input) option.disabled = true;
+        });
+        form.submit();
+    });
 });
 
 document.querySelectorAll('[data-payment-history-delete-modal]').forEach((modal) => {
@@ -372,6 +498,12 @@ document.querySelectorAll('[data-payment-history-delete-modal]').forEach((modal)
         modal.classList.remove('show');
         modal.hidden = true;
         pendingForm = null;
+        document.body.style.overflow = '';
+        if (confirm) {
+            confirm.disabled = false;
+            confirm.removeAttribute('aria-busy');
+            confirm.textContent = 'Ya, Hapus';
+        }
     };
 
     document.querySelectorAll('[data-payment-history-delete-form]').forEach((form) => {
@@ -385,6 +517,7 @@ document.querySelectorAll('[data-payment-history-delete-modal]').forEach((modal)
             if (meta) meta.textContent = [detail, amount].filter(Boolean).join(' · ');
             modal.hidden = false;
             modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
             confirm?.focus();
         });
     });
@@ -394,8 +527,11 @@ document.querySelectorAll('[data-payment-history-delete-modal]').forEach((modal)
         if (event.target === modal) close();
     });
     confirm?.addEventListener('click', () => {
-        if (!pendingForm) return;
+        if (!pendingForm || pendingForm.dataset.paymentDeleteConfirmed === 'true') return;
         pendingForm.dataset.paymentDeleteConfirmed = 'true';
+        confirm.disabled = true;
+        confirm.setAttribute('aria-busy', 'true');
+        confirm.textContent = 'Menghapus...';
         pendingForm.submit();
     });
 });

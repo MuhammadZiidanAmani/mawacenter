@@ -18,7 +18,11 @@ use App\Models\SppPaymentCorrection;
 use App\Models\SppPaymentItem;
 use App\Models\Student;
 use App\Support\PerformanceCache;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,6 +39,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('login', function (Request $request) {
+            $username = Str::lower(trim((string) $request->input('username')));
+
+            return Limit::perMinute(5)->by($username.'|'.$request->ip());
+        });
+
         foreach ($this->cacheSensitiveModels() as $model) {
             $model::saved(fn () => PerformanceCache::bust());
             $model::deleted(fn () => PerformanceCache::bust());

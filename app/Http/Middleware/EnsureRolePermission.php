@@ -8,13 +8,20 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureRolePermission
 {
+    private const ALLOWED_WITHOUT_PERMISSION = ['logout'];
+
     public function handle(Request $request, Closure $next): Response
     {
         $routeName = (string) $request->route()?->getName();
+
+        if (in_array($routeName, self::ALLOWED_WITHOUT_PERMISSION, true)) {
+            return $next($request);
+        }
+
         $permissions = $this->permissionsForRoute($request, $routeName);
 
-        if ($permissions === [] || $routeName === 'logout') {
-            return $next($request);
+        if ($permissions === []) {
+            abort(403, 'Rute ini belum memiliki aturan hak akses.');
         }
 
         foreach ($permissions as $permission) {

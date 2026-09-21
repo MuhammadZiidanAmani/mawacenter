@@ -39,7 +39,11 @@ class OutstandingBillService
             if ($charge['original_amount'] < 1) {
                 continue;
             }
-            $paid = (int) SppPaymentItem::where('student_id', $student->id)->where('year', $year)->where('month', $month)->sum('paid_amount');
+            $paid = (int) SppPaymentItem::where('student_id', $student->id)
+                ->where('year', $year)
+                ->where('month', $month)
+                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
+                ->sum('paid_amount');
             $remaining = max(0, $charge['final_amount'] - $paid);
             if ($remaining > 0) {
                 $spp[] = [

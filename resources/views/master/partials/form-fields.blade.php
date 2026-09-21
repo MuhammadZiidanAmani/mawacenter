@@ -194,7 +194,7 @@
             @foreach($roleOptions as $key => $label)<option value="{{ $key }}" @selected(old('role') === $key)>{{ $label }}</option>@endforeach
         </select>
     </label>
-    <label class="span-2">Akses Unit Pendidikan
+    <label class="span-2">Akses Unit Pendidikan (wajib untuk Petugas dan Bendahara)
         <select name="education_unit_ids[]" multiple size="5">
             @foreach($educationUnits as $unit)
                 <option value="{{ $unit->id }}" @selected(in_array($unit->id, old('education_unit_ids', [])))>{{ $unit->code }} - {{ $unit->name }}</option>
