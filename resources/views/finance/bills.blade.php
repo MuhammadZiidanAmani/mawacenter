@@ -65,6 +65,7 @@
             <button type="button" class="icon-button menu-toggle always-visible" data-sidebar-toggle aria-label="Buka menu" title="Buka menu">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
+            @include('partials.theme-toggle')
             <button type="button" class="icon-button notification-button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}</button>
             @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
@@ -113,7 +114,7 @@
                             <b data-bill-sync-percent>{{ (int) $billSyncRun->percent }}%</b>
                         </div>
                         <div class="bill-sync-progress-track" aria-hidden="true">
-                            <span data-bill-sync-bar style="width: {{ (int) $billSyncRun->percent }}%"></span>
+                            <span data-bill-sync-bar @class(['is-empty' => (int) $billSyncRun->percent < 1, 'is-trace' => (int) $billSyncRun->percent > 0 && (int) $billSyncRun->percent < 25, 'is-quarter' => (int) $billSyncRun->percent >= 25 && (int) $billSyncRun->percent < 50, 'is-half' => (int) $billSyncRun->percent >= 50 && (int) $billSyncRun->percent < 75, 'is-most' => (int) $billSyncRun->percent >= 75 && (int) $billSyncRun->percent < 100, 'is-complete' => (int) $billSyncRun->percent >= 100])></span>
                         </div>
                         <div class="bill-sync-progress-meta">
                             <span><strong data-bill-sync-processed>{{ number_format((int) $billSyncRun->processed_items, 0, ',', '.') }}</strong> / <strong data-bill-sync-total>{{ number_format((int) $billSyncRun->total_items, 0, ',', '.') }}</strong> diproses</span>

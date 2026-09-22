@@ -1,231 +1,58 @@
-/* Menu Keuangan shared styles.
-   Pembayaran and Tagihan stay in modules/payments.css and modules/bills.css. */
-
-/* Verifikasi Transfer */
-.transfer-verification-page {
-    box-sizing: border-box;
+/* Transfer verification. Cashier and receipts keep their own migrated modules. */
+main.transfer-verification-page {
+    display: grid;
     width: 100%;
     min-width: 0;
-    padding: 24px 32px 32px;
-    background: #ffffff;
     gap: 16px;
+    padding: var(--app-page-padding-y) var(--app-page-padding-x) 32px;
+    background: var(--app-canvas);
 }
 
-.transfer-verification-page > :is(.student-flat-header, .transfer-filter, .bills-data-card) {
-    width: min(100%, 1200px);
+.transfer-verification-page > :is(.student-flat-header, .transfer-filter, .bills-data-card, .transfer-pagination-footer) {
+    width: min(100%, var(--app-content-width));
     min-width: 0;
-    margin: 0;
+    margin-inline: auto;
 }
 
-.transfer-verification-page .student-flat-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 0;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-}
+.transfer-verification-page .student-flat-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.transfer-verification-page .student-flat-header h1 { margin: 0; color: var(--app-text); font-size: var(--app-text-page-size); font-weight: 700; line-height: var(--app-text-page-leading); }
+.transfer-verification-page .student-flat-header p { margin: 4px 0 0; color: var(--app-muted); }
 
 .transfer-filter {
     display: grid;
-    grid-template-columns: minmax(0, 320px);
+    grid-template-columns: minmax(220px, 320px);
+    gap: 12px;
     align-items: end;
-    gap: 12px;
-    margin: 0;
     padding: 16px;
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    border-radius: 12px;
-    box-shadow: none;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-panel);
+    box-shadow: var(--shadow-admin);
 }
 
-.transfer-filter label {
-    display: grid;
-    gap: 8px;
-    color: #334155;
-    font-size: 14px;
-    font-weight: 400;
-}
-
-.transfer-filter select {
-    min-height: 40px;
-    padding: 8px 12px;
-    color: #020617;
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 14px;
-}
-
-.transfer-verification-page .bills-data-card {
-    padding: 0;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-}
-
-.transfer-verification-page .table-wrap {
-    width: 100%;
-    min-width: 0;
-    overflow-x: auto;
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    box-shadow: none;
-}
-
-.transfer-verification-table {
-    width: 100%;
-    min-width: 980px;
-    table-layout: fixed;
-}
-
-.transfer-verification-table td:nth-child(1),
-.transfer-verification-table th:nth-child(1) {
-    width: 64px;
-    text-align: center;
-}
-
-.transfer-verification-table td,
-.transfer-verification-table th {
-    height: 40px;
-    min-height: 40px;
-    padding: 8px 10px;
-    border-bottom: 1px solid #e5e7eb;
-    background: #ffffff;
-    color: #020617;
-    font-size: 14px;
-    font-weight: 400;
-    vertical-align: middle;
-}
-
-.transfer-verification-table th {
-    color: #334155;
-    background: #fbfdf8;
-    font-weight: 500;
-    text-align: center;
-}
-
-.transfer-verification-table td small {
-    display: block;
-    margin-top: 2px;
-    color: #707971;
-    font-size: 12px;
-    font-weight: 400;
-}
-
-.transfer-actions {
-    display: inline-flex;
-    gap: 8px;
-}
-
-.transfer-actions form {
-    margin: 0;
-}
-
-.transfer-proof-link,
-.transfer-accept-button,
-.transfer-reject-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    min-height: 40px;
-    padding: 0;
-    border-radius: 8px;
-    box-shadow: none;
-    transform: none;
-}
-
-.transfer-proof-link,
-.transfer-accept-button {
-    color: #ffffff;
-    background: #157144;
-    border: 1px solid #157144;
-}
-
-.transfer-reject-button {
-    color: #b42318;
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-}
-
-.transfer-proof-link:hover,
-.transfer-accept-button:hover {
-    color: #ffffff;
-    background: #0d5f36;
-    border-color: #0d5f36;
-    box-shadow: none;
-    transform: none;
-}
-
-.transfer-reject-button:hover {
-    color: #b42318;
-    background: #fbfdf8;
-    border-color: #d1d5db;
-    box-shadow: none;
-    transform: none;
-}
-
-.transfer-pagination-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-}
-
-.transfer-pagination-footer p {
-    margin: 0;
-    color: #707971;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.35;
-}
-
-.transfer-pagination-links {
-    display: flex;
-    justify-content: flex-end;
-}
-
-.transfer-pagination-links nav,
-.transfer-pagination-links > div,
-.transfer-pagination-links .pagination {
-    margin: 0;
-}
+.transfer-filter label { display: grid; gap: 6px; color: var(--app-label); font-weight: 600; }
+.transfer-verification-page .bills-data-card { overflow: hidden; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.transfer-verification-page .table-wrap { border: 0; border-radius: 0; box-shadow: none; }
+.transfer-verification-table { width: 100%; min-width: 960px; border-collapse: collapse; }
+.transfer-verification-table th, .transfer-verification-table td { padding: 10px 12px; border-bottom: 1px solid var(--app-border-soft); vertical-align: middle; }
+.transfer-verification-table th { color: var(--app-label); background: var(--app-panel-soft); font-size: var(--app-text-body-size); font-weight: 600; text-align: center; }
+.transfer-verification-table tbody tr:hover { background: var(--app-hover-surface); }
+.transfer-verification-table td small { display: block; margin-top: 3px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.transfer-actions { display: inline-flex; gap: 6px; }
+.transfer-actions form { margin: 0; }
+.transfer-proof-link, .transfer-accept-button, .transfer-reject-button { display: inline-grid; width: 36px; height: 36px; place-items: center; border-radius: var(--app-radius); }
+.transfer-proof-link { color: var(--app-primary); background: var(--app-success-subtle); border-color: var(--app-primary-border); }
+.transfer-accept-button { color: var(--app-on-primary); background: var(--app-success); border-color: var(--app-success); }
+.transfer-reject-button { color: var(--app-danger); background: var(--app-danger-soft); border-color: var(--app-danger-border); }
+.transfer-proof-link:hover { color: var(--app-on-primary); background: var(--app-primary); border-color: var(--app-primary); }
+.transfer-accept-button:hover { color: var(--app-on-primary); background: var(--app-success-hover); border-color: var(--app-success-hover); }
+.transfer-reject-button:hover { color: var(--app-on-primary); background: var(--app-danger); border-color: var(--app-danger); }
+.transfer-pagination-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--app-muted); }
+.transfer-pagination-footer p { margin: 0; }
+.transfer-pagination-links { display: flex; }
 
 @media (max-width: 760px) {
-    .transfer-verification-page {
-        padding: 16px;
-        overflow-x: hidden;
-    }
-
-    .transfer-verification-page > :is(.student-flat-header, .transfer-filter, .bills-data-card),
-    .transfer-filter {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-    }
-
-    .transfer-filter {
-        grid-template-columns: 1fr;
-    }
-
-    .transfer-filter select {
-        width: 100%;
-    }
-
-    .transfer-pagination-footer {
-        display: grid;
-        grid-template-columns: 1fr;
-        justify-items: stretch;
-    }
-
-    .transfer-pagination-links {
-        justify-content: flex-start;
-    }
+    main.transfer-verification-page { padding: 16px; }
+    .transfer-verification-page .student-flat-header, .transfer-pagination-footer { flex-direction: column; }
+    .transfer-filter { grid-template-columns: 1fr; }
 }

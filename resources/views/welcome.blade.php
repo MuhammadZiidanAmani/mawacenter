@@ -50,6 +50,7 @@
             <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
+            @include('partials.theme-toggle')
             <button class="icon-button notification-button" aria-label="Notifikasi">{!! $icon('bell') !!}@if($stats['overdue_count'])<span></span>@endif</button>
             @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
@@ -95,14 +96,16 @@
                     <div class="chart-summary"><div><small>Total enam bulan</small><strong>{{ $rupiah($monthlyTrend->sum('amount')) }}</strong></div><span class="dashboard-chart-note">{!! $icon('clock') !!} Diperbarui {{ now()->format('d/m/Y H.i') }}</span></div>
                     <div class="bar-chart">
                         @foreach($monthlyTrend as $month)
-                            <div class="bar-column" title="{{ $month['label'] }}: {{ $rupiah($month['amount']) }}"><div class="bar-track"><span style="height: {{ max(4, ($month['amount'] / $maxTrend) * 100) }}%"></span></div><small>{{ $month['label'] }}</small></div>
+                            @php($trendProgress = min(100, max(5, (int) (round((($month['amount'] / $maxTrend) * 100) / 5) * 5))))
+                            <div class="bar-column" title="{{ $month['label'] }}: {{ $rupiah($month['amount']) }}"><div class="bar-track"><span class="dashboard-chart-fill chart-progress-{{ $trendProgress }}"></span></div><small>{{ $month['label'] }}</small></div>
                         @endforeach
                     </div>
                 </article>
 
                 <article class="card target-card">
                     <div class="card-header"><div><h3>Rasio Penagihan</h3><p>Tagihan yang telah berhasil diterima</p></div></div>
-                    <div class="donut" style="--progress: {{ $stats['collection_rate'] }}"><div><strong>{{ $stats['collection_rate'] }}%</strong><small>tertagih</small></div></div>
+                    @php($collectionProgress = min(100, max(0, (int) (round(($stats['collection_rate'] / 5)) * 5))) )
+                    <div class="donut chart-progress-{{ $collectionProgress }}"><div><strong>{{ $stats['collection_rate'] }}%</strong><small>tertagih</small></div></div>
                     <div class="target-value"><strong>{{ $rupiah($stats['total_paid']) }}</strong><span>dari {{ $rupiah($stats['total_billed']) }}</span></div>
                     <div class="target-details"><span><i class="dot blue-dot"></i> Sudah diterima<strong>{{ $rupiah($stats['total_paid']) }}</strong></span><span><i class="dot pale-dot"></i> Belum diterima<strong>{{ $rupiah($stats['outstanding']) }}</strong></span></div>
                 </article>
@@ -129,9 +132,10 @@
                     <div class="card-header"><div><h3>Kondisi per Unit</h3><p>Siswa aktif dan sisa tagihan per unit</p></div><a href="{{ route('finance.bills.index') }}">Tagihan {!! $icon('arrow') !!}</a></div>
                     <div class="class-list">
                         @forelse($unitSummaries as $unit)
+                            @php($outstandingProgress = min(100, max(5, (int) (round((($stats['outstanding'] ? ($unit['outstanding'] / $stats['outstanding']) * 100 : 3) / 5)) * 5))))
                             <div class="dashboard-unit-item">
                                 <div class="class-row"><span class="class-badge blue">{{ strtoupper(substr($unit['code'], 0, 3)) }}</span><div><strong>{{ $unit['name'] }}</strong><small>{{ $unit['students'] }} siswa aktif</small></div><b>{{ $rupiah($unit['outstanding']) }}</b></div>
-                                <div class="progress"><span class="blue" style="width: {{ $stats['outstanding'] ? max(3, ($unit['outstanding'] / $stats['outstanding']) * 100) : 3 }}%"></span></div>
+                                <div class="progress"><span class="blue dashboard-unit-progress chart-progress-{{ $outstandingProgress }}"></span></div>
                             </div>
                         @empty
                             <div class="dashboard-list-empty">{!! $icon('database') !!}<span>Belum ada unit pendidikan aktif.</span></div>

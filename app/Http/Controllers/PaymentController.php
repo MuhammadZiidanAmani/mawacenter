@@ -8,6 +8,7 @@ use App\Models\Bill;
 use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
+use App\Models\SchoolClass;
 use App\Models\SppPayment;
 use App\Models\Student;
 use App\Services\AuditLogService;
@@ -50,10 +51,34 @@ class PaymentController extends Controller
         $people = collect();
         $paymentHistory = collect();
         $unitIds = $request->user()?->accessibleUnitIds();
+        $educationUnits = EducationUnit::query()
+            ->where('is_active', true)
+            ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
+            ->orderByRaw("CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+            ->orderBy('name')
+            ->get();
+        $selectedUnitId = (int) $request->integer('unit_id');
+
+        if ($selectedUnitId > 0) {
+            abort_unless($educationUnits->contains('id', $selectedUnitId), 403, 'Anda tidak memiliki akses ke unit ini.');
+            $unitIds = [$selectedUnitId];
+        }
+        $classes = SchoolClass::query()
+            ->with('educationUnit')
+            ->where('is_active', true)
+            ->whereHas('educationUnit', fn ($query) => $query->where('is_active', true))
+            ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
+            ->orderBy('name')
+            ->get();
+        $selectedClassId = (int) $request->integer('class_id');
+
+        if ($selectedClassId > 0) {
+            abort_unless($classes->contains('id', $selectedClassId), 403, 'Anda tidak memiliki akses ke kelas ini.');
+        }
 
         if ($search !== '') {
             $needle = $this->escapeLike($search);
-            $matches = $this->paymentStudentBaseQuery($unitIds)
+            $matches = $this->paymentStudentBaseQuery($unitIds, $selectedClassId)
                 ->where(fn ($query) => $query
                     ->where('nis', 'like', "{$needle}%")
                     ->orWhere('nisn', 'like', "{$needle}%")
@@ -63,7 +88,7 @@ class PaymentController extends Controller
                 ->get(['id', 'identity_student_id']);
 
             if ($matches->count() < 30 && mb_strlen($search) >= 3) {
-                $fallbackMatches = $this->paymentStudentBaseQuery($unitIds)
+                $fallbackMatches = $this->paymentStudentBaseQuery($unitIds, $selectedClassId)
                     ->whereNotIn('id', $matches->pluck('id'))
                     ->where('name', 'like', "%{$needle}%")
                     ->orderBy('name')
@@ -79,7 +104,7 @@ class PaymentController extends Controller
                 ->values();
 
             if ($identityIds->isNotEmpty()) {
-                $registrations = $this->paymentStudentBaseQuery($unitIds)
+                $registrations = $this->paymentStudentBaseQuery($unitIds, $selectedClassId)
                     ->with(['academicYear', 'schoolClass.educationUnit'])
                     ->where(fn ($query) => $query
                         ->whereIn('id', $identityIds)
@@ -99,7 +124,7 @@ class PaymentController extends Controller
         }
 
         if ($selectedStudentId > 0) {
-            $selectedStudent = $this->paymentStudentBaseQuery($unitIds)
+            $selectedStudent = $this->paymentStudentBaseQuery($unitIds, $selectedClassId)
                 ->with(['academicYear', 'schoolClass.educationUnit'])
                 ->where(fn ($query) => $query
                     ->where('id', $selectedStudentId)
@@ -108,7 +133,7 @@ class PaymentController extends Controller
                 ->first();
             if ($selectedStudent) {
                 $identityId = $selectedStudent->identity_student_id ?: $selectedStudent->id;
-                $selectedRegistrations = $this->paymentRegistrationsForIdentity($identityId, $unitIds);
+                $selectedRegistrations = $this->paymentRegistrationsForIdentity($identityId, $unitIds, $selectedClassId);
                 if ($selectedRegistrations->isNotEmpty()) {
                     $people->put($identityId, $selectedRegistrations);
                 }
@@ -195,11 +220,16 @@ class PaymentController extends Controller
 
         return view('finance.payments', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
+            'educationUnits' => $educationUnits,
+            'selectedUnitId' => $selectedUnitId,
+            'classes' => $classes,
+            'selectedClassId' => $selectedClassId,
             'search' => $search,
             'selectedStudentId' => $selectedStudentId,
             'selectedRegistrationId' => $selectedRegistrationId,
             'activeRegistration' => $activeRegistration,
             'people' => $people,
+            'paymentOverviewRows' => $this->paymentOverviewRows($unitIds, $selectedClassId, $search),
             'paymentHistory' => $paymentHistory,
             'transferAccount' => $this->transferAccount(),
             'cashOnly' => $request->user()?->isPetugas() ?? false,
@@ -741,10 +771,11 @@ class PaymentController extends Controller
         return trim($title.' '.$unitCode);
     }
 
-    private function paymentStudentBaseQuery(?array $unitIds)
+    private function paymentStudentBaseQuery(?array $unitIds, int $classId = 0)
     {
         return Student::query()
             ->where('is_active', true)
+            ->when($classId > 0, fn ($query) => $query->where('school_class_id', $classId))
             ->whereHas('schoolClass', function ($class) use ($unitIds) {
                 $class
                     ->where('is_active', true)
@@ -753,9 +784,82 @@ class PaymentController extends Controller
             });
     }
 
-    private function paymentRegistrationsForIdentity(int $identityId, ?array $unitIds): Collection
+    private function paymentOverviewRows(?array $unitIds, int $classId = 0, string $search = ''): Collection
     {
-        return $this->paymentStudentBaseQuery($unitIds)
+        $needle = $search !== '' ? $this->escapeLike($search) : '';
+        $registrations = $this->paymentStudentBaseQuery($unitIds, $classId)
+            ->with(['academicYear', 'schoolClass.educationUnit'])
+            ->when($needle !== '', fn ($query) => $query->where(fn ($student) => $student
+                ->where('nis', 'like', "{$needle}%")
+                ->orWhere('nisn', 'like', "{$needle}%")
+                ->orWhere('name', 'like', "%{$needle}%")))
+            ->orderBy('name')
+            ->limit(60)
+            ->get();
+
+        $groups = $registrations
+            ->groupBy(fn (Student $student) => $student->identity_student_id ?: $student->id)
+            ->take(30);
+        $registrationIds = $groups->flatten()->pluck('id')->values();
+        $billSums = $registrationIds->isEmpty()
+            ? collect()
+            : Bill::query()
+                ->select('student_id')
+                ->selectRaw('SUM(total_amount) as total_amount')
+                ->selectRaw('SUM(paid_amount) as paid_amount')
+                ->selectRaw('SUM(remaining_amount) as remaining_amount')
+                ->whereIn('student_id', $registrationIds)
+                ->where('status', '!=', 'Dibatalkan')
+                ->groupBy('student_id')
+                ->get()
+                ->keyBy('student_id');
+        $outstandingCounts = $registrationIds->isEmpty()
+            ? collect()
+            : Bill::query()
+                ->select('student_id')
+                ->selectRaw('COUNT(*) as outstanding_count')
+                ->whereIn('student_id', $registrationIds)
+                ->where('status', '!=', 'Dibatalkan')
+                ->where('remaining_amount', '>', 0)
+                ->groupBy('student_id')
+                ->get()
+                ->keyBy('student_id');
+
+        return $groups->map(function (Collection $studentRegistrations, int $identityId) use ($billSums, $outstandingCounts) {
+            $identity = $studentRegistrations->firstWhere('identity_student_id', null) ?? $studentRegistrations->first();
+            $total = $studentRegistrations->sum(fn (Student $student) => (int) ($billSums->get($student->id)?->total_amount ?? 0));
+            $paid = $studentRegistrations->sum(fn (Student $student) => (int) ($billSums->get($student->id)?->paid_amount ?? 0));
+            $remaining = $studentRegistrations->sum(fn (Student $student) => (int) ($billSums->get($student->id)?->remaining_amount ?? 0));
+            $outstanding = $studentRegistrations->sum(fn (Student $student) => (int) ($outstandingCounts->get($student->id)?->outstanding_count ?? 0));
+            $percent = $total > 0 ? min(100, (int) round(($paid / $total) * 100)) : 0;
+            $unitSummary = $studentRegistrations
+                ->map(fn (Student $student) => collect([
+                    $student->schoolClass?->educationUnit?->code,
+                    $student->schoolClass?->name,
+                ])->filter()->join(' - '))
+                ->filter()
+                ->unique()
+                ->join(' / ');
+
+            return [
+                'identity_id' => $identityId,
+                'name' => $identity?->name ?? '-',
+                'nis' => $identity?->nis ?? '-',
+                'academic_year' => $identity?->academicYear?->name ?? '-',
+                'unit_summary' => $unitSummary ?: '-',
+                'total' => $total,
+                'paid' => $paid,
+                'remaining' => $remaining,
+                'outstanding_count' => $outstanding,
+                'percent' => $percent,
+                'status' => $total > 0 && $remaining < 1 ? 'Lunas' : ($paid > 0 ? 'Sedang Mencicil' : 'Belum Lunas'),
+            ];
+        })->values();
+    }
+
+    private function paymentRegistrationsForIdentity(int $identityId, ?array $unitIds, int $classId = 0): Collection
+    {
+        return $this->paymentStudentBaseQuery($unitIds, $classId)
             ->with(['academicYear', 'schoolClass.educationUnit'])
             ->where(fn ($query) => $query
                 ->where('id', $identityId)

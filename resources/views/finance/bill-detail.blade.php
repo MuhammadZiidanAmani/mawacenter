@@ -29,6 +29,7 @@
             <button type="button" class="icon-button menu-toggle always-visible" data-sidebar-toggle aria-label="Buka menu" title="Buka menu">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
+            @include('partials.theme-toggle')
             <button type="button" class="icon-button notification-button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}</button>
             @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
@@ -71,14 +72,22 @@
                 <h2>Rincian Tagihan</h2>
                 <div class="bill-detail-web-table-wrap">
                     <table class="bill-detail-web-table">
+                        <colgroup>
+                            <col class="bill-detail-col-number">
+                            <col>
+                            <col class="bill-detail-col-year">
+                            <col class="bill-detail-col-amount">
+                            <col class="bill-detail-col-months">
+                            <col class="bill-detail-col-total">
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th style="width: 64px">No</th>
+                                <th>No</th>
                                 <th>Uraian</th>
-                                <th style="width: 110px">Tahun</th>
-                                <th style="width: 150px">Nominal</th>
-                                <th style="width: 100px">Jml Bulan</th>
-                                <th style="width: 160px">Jumlah</th>
+                                <th>Tahun</th>
+                                <th>Nominal</th>
+                                <th>Jml Bulan</th>
+                                <th>Jumlah</th>
                             </tr>
                         </thead>
                         <tbody>

@@ -1,0 +1,50 @@
+/*
+ * Reference only: not imported by resources/css/app.css.
+ * Integrate once, after the Tailwind import, when a UI migration is requested.
+ * Existing --app-* tokens remain the source of truth; fallbacks match app.css.
+ */
+@theme inline {
+    --font-app: var(--app-font, Inter, ui-sans-serif, system-ui, sans-serif);
+    --color-app-canvas: var(--app-canvas, #ffffff);
+    --color-app-surface: var(--app-surface, #ffffff);
+    --color-app-panel-soft: var(--app-panel-soft, #fbfdf8);
+    --color-app-neutral-soft: var(--app-neutral-soft, #f9fafb);
+    --color-app-field-soft: var(--app-field-soft, #f6f8f5);
+    --color-app-text: var(--app-text, #020617);
+    --color-app-text-alt: var(--app-text-alt, #111c2c);
+    --color-app-label: var(--app-label, #334155);
+    --color-app-muted: var(--app-muted, #707971);
+    --color-app-muted-strong: var(--app-muted-strong, #404942);
+    --color-app-border: var(--app-border, #d1d5db);
+    --color-app-border-soft: var(--app-border-soft, #e5e7eb);
+    --color-app-border-green-soft: var(--app-border-green-soft, #dfe5dc);
+    --color-app-primary: var(--app-primary, #5d87ff);
+    --color-app-primary-hover: var(--app-primary-hover, #4570e7);
+    --color-app-success: var(--app-success, #13a88e);
+    --color-app-success-soft: var(--app-success-soft, #e9f8ef);
+    --color-app-success-subtle: var(--app-success-subtle, #f3fbf6);
+    --color-app-danger: var(--app-danger, #ef1f2d);
+    --color-app-danger-hover: var(--app-danger-hover, #c91724);
+    --color-app-danger-soft: var(--app-danger-soft, #fff4f4);
+    --color-app-warning: var(--app-warning, #92400e);
+    --color-app-warning-soft: var(--app-warning-soft, #fff7ed);
+    --color-app-info: var(--app-info, #2563eb);
+    --color-app-info-soft: var(--app-info-soft, #eff6ff);
+}
+
+@theme {
+    --text-ui-micro: 12px;
+    --text-ui-micro--line-height: 16px;
+    --text-ui-body: 14px;
+    --text-ui-body--line-height: 20px;
+    --text-ui-section: 16px;
+    --text-ui-section--line-height: 24px;
+    --text-ui-title: 20px;
+    --text-ui-title--line-height: 28px;
+    --radius-ui: 8px;
+    --container-ui-form: 720px;
+    --container-ui-data: 1200px;
+    --container-ui-dashboard: 1440px;
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));

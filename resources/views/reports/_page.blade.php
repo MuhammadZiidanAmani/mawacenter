@@ -70,6 +70,7 @@
             <button class="icon-button menu-toggle always-visible" data-sidebar-toggle>{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
+            @include('partials.theme-toggle')
             <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
             @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
@@ -170,10 +171,12 @@
                                             </div>
                                             <i aria-hidden="true">
                                                 @if(($row['paid_count'] ?? 0) > 0)
-                                                    <b class="paid" style="--segment-width: {{ $row['paid_percent'] }}%;"></b>
+                                                    @php($paidProgress = min(100, max(0, (int) (round((($row['paid_percent'] ?? 0) / 5)) * 5))))
+                                                    <b class="paid chart-progress-{{ $paidProgress }}"></b>
                                                 @endif
                                                 @if(($row['partial_count'] ?? 0) > 0)
-                                                    <b class="partial" style="--segment-width: {{ $row['partial_percent'] }}%;"></b>
+                                                    @php($partialProgress = min(100, max(0, (int) (round((($row['partial_percent'] ?? 0) / 5)) * 5))))
+                                                    <b class="partial chart-progress-{{ $partialProgress }}"></b>
                                                 @endif
                                             </i>
                                             <small>
@@ -198,7 +201,8 @@
                                         @php
                                             $paymentWidth = max(3, min(100, round(((int) ($row['paid'] ?? 0) / $maxMonthlyPayment) * 100)));
                                         @endphp
-                                        <div class="monthly-spp-arrears-row" style="--bar-width: {{ $paymentWidth }}%;">
+                                        @php($paymentProgress = min(100, max(5, (int) (round(($paymentWidth / 5)) * 5))))
+                                        <div class="monthly-spp-arrears-row chart-progress-{{ $paymentProgress }}">
                                             <div>
                                                 <strong title="{{ $row['unit'] ?? '-' }}">{{ $row['unit_code'] ?? '-' }}</strong>
                                                 <span>{{ $rupiah($row['paid'] ?? 0) }}</span>
@@ -267,12 +271,13 @@
                                                     <i></i>
                                                 @endforeach
                                             </div>
-                                            <div class="report-unit-bars-v4" style="--unit-count: {{ max(1, $unitChartRows->count()) }};">
+                                            <div class="report-unit-bars-v4">
                                                 @foreach($unitChartRows as $row)
                                                     @php
                                                         $height = max(2, min(100, round(((int) ($row['amount'] ?? 0) / $unitAxisMax) * 100)));
                                                     @endphp
-                                                    <div style="--bar-height: {{ $height }}%;" title="{{ ($row['unit'] ?? '-').' '.$rupiah($row['amount'] ?? 0) }}">
+                                                    @php($unitProgress = min(100, max(5, (int) (round(($height / 5)) * 5))))
+                                                    <div class="report-unit-bar chart-progress-{{ $unitProgress }}" title="{{ ($row['unit'] ?? '-').' '.$rupiah($row['amount'] ?? 0) }}">
                                                         <i></i>
                                                         <span>{{ $row['unit_code'] ?? $row['unit'] ?? '-' }}</span>
                                                     </div>
@@ -315,7 +320,8 @@
                                         @php
                                             $width = max(4, min(100, round(((int) ($row['amount'] ?? 0) / $maxClassAmount) * 100)));
                                         @endphp
-                                        <div style="--bar-width: {{ $width }}%;">
+                                        @php($classProgress = min(100, max(5, (int) (round(($width / 5)) * 5))))
+                                        <div class="report-class-progress-item chart-progress-{{ $classProgress }}">
                                             <div>
                                                 <span>{{ $row['class'] ?? '-' }}</span>
                                                 <strong>{{ $rupiah($row['amount'] ?? 0) }}</strong>

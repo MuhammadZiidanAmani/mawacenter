@@ -1,0 +1,390 @@
+/* Cashier workflows: SPP and other payments. */
+main.finance-page:has(.spp-form-page),
+main.payment-flat-page:has(.spp-history) {
+    width: 100%;
+    min-width: 0;
+    padding: var(--app-page-padding-y) var(--app-page-padding-x) 32px;
+    background: var(--app-canvas);
+}
+
+.spp-form-page,
+.student-workspace.payment-workspace.payment-single-canvas {
+    display: grid;
+    width: min(100%, var(--app-content-width));
+    gap: 16px;
+    margin-inline: auto;
+}
+
+.spp-form-page .student-flat-header,
+.payment-workspace .student-flat-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.spp-form-page h1,
+.payment-workspace .student-flat-header h1 {
+    margin: 0;
+    color: var(--app-text);
+    font-size: var(--app-text-page-size);
+    font-weight: 700;
+    line-height: var(--app-text-page-leading);
+}
+
+.spp-form-page .student-master-heading p {
+    margin: 4px 0 0;
+    color: var(--app-muted);
+    line-height: var(--app-text-body-leading);
+}
+
+/* Transaction form */
+.payment-spp-v8-form {
+    overflow: hidden;
+}
+
+.payment-form-body {
+    padding: 20px;
+}
+
+.payment-spp-v8-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+    gap: 20px;
+    align-items: start;
+}
+
+.payment-spp-v8-main {
+    display: grid;
+    gap: 16px;
+}
+
+.payment-spp-v8-main label,
+.payment-spp-v8-main .payment-spp-student-field-compact {
+    display: grid;
+    gap: 7px;
+    color: var(--app-label);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+}
+
+.payment-spp-v8-time-grid,
+.payment-spp-v8-payment-grid,
+.payment-registration-v1-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.payment-spp-v8-payment-grid .payment-spp-total-field {
+    grid-column: 1 / -1;
+}
+
+.payment-spp-clock-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.payment-spp-clock-field input { min-width: 0; }
+.payment-spp-clock-field b { color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 500; line-height: var(--app-text-meta-leading); }
+
+.payment-spp-v8-student-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: end;
+}
+
+.payment-spp-student-field-compact,
+.payment-registration-student-picker,
+.student-search-picker {
+    min-width: 0;
+}
+
+.payment-registration-student-picker,
+.student-search-picker {
+    position: relative;
+    display: block;
+}
+
+.payment-spp-student-input-compact { width: 100%; }
+.payment-spp-change-student { white-space: nowrap; }
+
+.student-search-results {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    max-height: 248px;
+    overflow-y: auto;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    box-shadow: var(--shadow-admin);
+}
+
+.student-search-results:not([hidden]) { display: grid; }
+.student-search-results button { padding: 10px 12px; color: var(--app-label); background: transparent; border: 0; border-bottom: 1px solid var(--app-border-soft); text-align: left; cursor: pointer; }
+.student-search-results button:hover { background: var(--app-success-subtle); }
+
+.payment-spp-period-block {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    background: var(--app-panel-soft);
+    border: 1px solid var(--app-border-soft);
+    border-radius: var(--app-radius);
+}
+
+.payment-spp-period-field {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.payment-spp-period-field label { width: min(100%, 180px); }
+.payment-spp-month-input { display: block; }
+.payment-spp-period-result { display: grid; gap: 3px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); text-align: right; }
+.payment-spp-period-result strong { color: var(--app-text); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
+.payment-spp-period-block > small { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+
+.payment-spp-receipt-summary {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+    background: var(--app-panel-soft);
+    border: 1px solid var(--app-border-soft);
+    border-radius: var(--app-radius);
+}
+
+.payment-spp-receipt-title { color: var(--app-primary); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); text-transform: uppercase; }
+.payment-spp-receipt-name { color: var(--app-text); font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.payment-spp-receipt-summary > small { margin-top: -8px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+
+.payment-spp-receipt-period {
+    display: grid;
+    gap: 3px;
+    padding: 12px 0;
+    border-top: 1px solid var(--app-border-soft);
+    border-bottom: 1px solid var(--app-border-soft);
+}
+
+.payment-spp-receipt-period span,
+.payment-spp-receipt-period small { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.payment-spp-receipt-period strong { color: var(--app-text); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
+
+.payment-spp-receipt-summary dl { display: grid; gap: 8px; margin: 0; }
+.payment-spp-receipt-summary dl > div { display: flex; justify-content: space-between; gap: 12px; }
+.payment-spp-receipt-summary dt { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.payment-spp-receipt-summary dd { margin: 0; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); font-variant-numeric: tabular-nums; text-align: right; }
+
+.payment-spp-receipt-total {
+    display: grid;
+    gap: 3px;
+    padding: 14px;
+    color: var(--app-on-primary);
+    background: var(--app-primary);
+    border-radius: var(--app-radius);
+}
+
+.payment-spp-receipt-total span,
+.payment-spp-receipt-total small { color: var(--app-on-primary); opacity: .86; font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.payment-spp-receipt-total strong { font-size: var(--app-text-total-size); font-weight: 700; line-height: var(--app-text-total-leading); font-variant-numeric: tabular-nums; }
+.payment-spp-message { margin: 0; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+
+.payment-spp-v8-form > .form-actions { padding: 16px 20px; margin: 0; border-top: 1px solid var(--app-border-soft); }
+
+/* SPP and other-payment history */
+.payment-workspace .student-filter-panel {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-panel);
+    box-shadow: var(--shadow-admin);
+}
+
+.payment-filter-primary,
+.payment-filter-secondary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(140px, 1fr));
+    gap: 12px;
+    align-items: end;
+}
+
+.payment-filter-primary label,
+.payment-filter-secondary label {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    color: var(--app-label);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
+}
+
+.payment-date-range { display: flex; align-items: center; gap: 6px; }
+.payment-date-range input { min-width: 0; padding-inline: 8px; }
+.payment-date-range b { color: var(--app-muted); }
+.payment-student-field { grid-column: span 2; }
+.payment-filter-actions { display: flex; align-items: end; gap: 8px; }
+.student-search-button { width: 40px; padding: 0; }
+.student-filter-reset { min-width: 76px; }
+
+.payment-advanced-filters { border-top: 1px solid var(--app-border-soft); }
+.payment-advanced-filters summary { padding-top: 12px; color: var(--app-primary); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); cursor: pointer; }
+.payment-filter-secondary { padding-top: 12px; }
+
+.payment-data-card { overflow: hidden; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.spp-history .list-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--app-border-soft); }
+.spp-history .list-toolbar form { min-width: min(100%, 320px); }
+.spp-list-table { min-width: 780px; }
+.spp-list-table td { font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
+.spp-main-row > td { background: var(--app-surface); }
+.payment-student-name { display: block; color: var(--app-text); font-weight: 600; }
+.payment-student-unit { display: block; margin-top: 3px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.payment-method { color: var(--app-primary); font-weight: 600; text-transform: capitalize; }
+.spp-total-cell, .spp-list-table td:nth-child(6) { color: var(--app-text); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.spp-expand-button { min-height: 32px; padding: 0 10px; color: var(--app-primary); background: var(--app-success-subtle); border: 1px solid var(--app-primary-border); border-radius: var(--app-radius); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); cursor: pointer; }
+.spp-expand-button:hover { background: var(--app-hover-surface); }
+.spp-expanded-row > td { padding: 0; background: var(--app-panel-soft); }
+.spp-expanded-row[hidden] { display: none; }
+
+.registration-payment-detail,
+.spp-expanded-content {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    padding: 16px;
+}
+
+.registration-detail-item,
+.spp-expanded-meta > div {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    padding: 10px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border-soft);
+    border-radius: var(--app-radius);
+}
+
+.registration-detail-item > span,
+.spp-expanded-meta span { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.registration-detail-item strong,
+.spp-expanded-meta strong { min-width: 0; color: var(--app-text); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); overflow-wrap: anywhere; }
+.registration-detail-item.payment-type, .registration-detail-item.time, .registration-detail-item.action { grid-column: span 2; }
+.registration-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.registration-action { display: inline-grid; width: 32px; height: 32px; place-items: center; color: var(--app-primary); background: var(--app-success-subtle); border: 1px solid var(--app-primary-border); border-radius: var(--app-radius); cursor: pointer; }
+.registration-action .icon { width: 16px; height: 16px; }
+.registration-action.delete { color: var(--app-danger); background: var(--app-danger-soft); border-color: var(--app-danger-border); }
+.pagination-wrap { padding: 14px 16px; border-top: 1px solid var(--app-border-soft); }
+
+/* Import preview */
+.spp-import-modal-backdrop { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px; background: var(--app-overlay); }
+.spp-import-modal-backdrop:not(.show) { display: none; }
+.spp-import-modal { width: min(100%, 680px); max-height: calc(100vh - 48px); overflow: auto; padding: 22px; background: var(--app-surface); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.spp-import-modal-head { display: flex; justify-content: space-between; gap: 16px; }
+.spp-import-kicker { color: var(--app-primary); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); }
+.spp-import-modal h2 { margin: 4px 0; color: var(--app-text); font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.spp-import-modal-head p { margin: 0; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.spp-import-close { width: 32px; height: 32px; color: var(--app-muted); background: transparent; border: 0; font-size: var(--app-text-total-size); line-height: 1; cursor: pointer; }
+.spp-import-progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 20px 0; }
+.spp-import-progress > div { display: flex; align-items: center; gap: 7px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.spp-import-progress b { display: inline-grid; width: 24px; height: 24px; place-items: center; color: var(--app-muted); background: var(--app-panel-soft); border-radius: 50%; }
+.spp-import-progress .active { color: var(--app-primary); font-weight: 600; }
+.spp-import-progress .active b { color: var(--app-on-primary); background: var(--app-primary); }
+.spp-import-info { display: flex; gap: 10px; padding: 12px; color: var(--app-label); background: var(--app-info-soft); border: 1px solid var(--app-info-border); border-radius: var(--app-radius); }
+.spp-import-info .icon { width: 20px; height: 20px; color: var(--app-secondary); }
+.spp-import-info strong { display: block; font-weight: 600; }
+.spp-import-info p { margin: 3px 0 0; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.spp-import-modal-form { display: grid; gap: 14px; margin-top: 16px; }
+.spp-import-dropzone { display: grid; min-height: 178px; place-content: center; gap: 7px; padding: 20px; color: var(--app-muted); border: 1px dashed var(--app-border-strong); border-radius: var(--app-radius); text-align: center; cursor: pointer; }
+.spp-import-dropzone:hover { background: var(--app-success-subtle); border-color: var(--app-primary); }
+.spp-import-dropzone input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.spp-import-drop-icon { justify-self: center; color: var(--app-primary); }
+.spp-import-drop-icon .icon { width: 28px; height: 28px; }
+.spp-import-dropzone strong { color: var(--app-text); }
+.spp-import-dropzone small { font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.spp-import-browse { justify-self: center; margin-top: 4px; color: var(--app-primary); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
+.spp-import-modal-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+
+.other-import-mapping, .spp-import-preview { display: grid; gap: 14px; padding: 18px; }
+.spp-preview-table-head, .spp-preview-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.spp-preview-table-head strong, .spp-preview-title strong { display: block; color: var(--app-text); font-weight: 600; }
+.spp-preview-table-head span, .spp-preview-title > div > span { display: block; margin-top: 3px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.spp-preview-count { white-space: nowrap; color: var(--app-primary); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); }
+.other-mapping-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.other-mapping-form label { display: grid; gap: 7px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
+.other-mapping-form small { display: block; margin-top: 3px; color: var(--app-muted); }
+.other-mapping-form .button { grid-column: 1 / -1; justify-self: start; }
+.spp-preview-title { display: flex; gap: 10px; }
+.spp-preview-icon { display: inline-grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; color: var(--app-success); background: var(--app-success-soft); border-radius: 50%; font-weight: 600; }
+.spp-confirm-button { display: grid; min-height: 46px; text-align: right; }
+.spp-confirm-button b { font-size: var(--app-text-meta-size); font-weight: 500; line-height: var(--app-text-meta-leading); opacity: .85; }
+.spp-import-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.spp-import-stats > div { display: flex; gap: 8px; padding: 10px; background: var(--app-panel-soft); border-radius: var(--app-radius); }
+.spp-stat-icon { display: inline-grid; width: 28px; height: 28px; flex: 0 0 auto; place-items: center; color: var(--app-primary); background: var(--app-success-subtle); border-radius: 50%; font-weight: 600; }
+.spp-import-stats p { display: grid; margin: 0; }
+.spp-import-stats p span, .spp-import-stats small { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.spp-import-stats strong { color: var(--app-text); font-size: var(--app-text-total-size); font-weight: 700; line-height: var(--app-text-total-leading); font-variant-numeric: tabular-nums; }
+.spp-validation-progress { width: 100%; height: 8px; accent-color: var(--app-success); }
+.spp-import-table-wrap { border: 1px solid var(--app-border); border-radius: var(--app-radius); }
+.spp-import-table { min-width: 860px; }
+.spp-import-table small { display: block; margin-top: 3px; color: var(--app-muted); }
+.spp-line-number { color: var(--app-muted); font-variant-numeric: tabular-nums; }
+.spp-import-amount { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.spp-import-message { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+
+/* Payment edit and delete dialogs */
+.spp-crud-modal, .spp-edit-modal { padding-bottom: 20px; }
+.spp-detail-content { padding: 20px; }
+.spp-edit-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 20px 20px 0; }
+.spp-edit-form label { display: grid; gap: 6px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
+.spp-edit-form .span-2 { grid-column: 1 / -1; }
+.spp-edit-readonly { grid-column: 1 / -1; padding: 10px 12px; color: var(--app-muted); background: var(--app-panel-soft); border-radius: var(--app-radius); font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
+.spp-edit-modal .form-actions, .spp-crud-modal .form-actions { padding-inline: 20px; }
+.spp-delete-modal { padding: 24px; text-align: center; }
+.spp-delete-modal h2 { margin: 12px 0 6px; color: var(--app-text); font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.spp-delete-modal p { margin: 0; color: var(--app-muted); font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
+.spp-delete-modal .form-actions { justify-content: center; }
+.spp-delete-icon { display: inline-grid; width: 42px; height: 42px; place-items: center; color: var(--app-danger); background: var(--app-danger-soft); border-radius: 50%; font-size: var(--app-text-total-size); font-weight: 600; line-height: var(--app-text-total-leading); }
+
+@media (max-width: 1050px) {
+    .payment-filter-primary { grid-template-columns: repeat(3, minmax(140px, 1fr)); }
+    .payment-student-field { grid-column: auto; }
+    .payment-spp-v8-layout { grid-template-columns: 1fr; }
+    .payment-spp-receipt-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .payment-spp-receipt-title, .payment-spp-receipt-name, .payment-spp-receipt-summary > small, .payment-spp-receipt-period, .payment-spp-receipt-total, .payment-spp-message { grid-column: 1 / -1; }
+}
+
+@media (max-width: 760px) {
+    main.finance-page:has(.spp-form-page), main.payment-flat-page:has(.spp-history) { padding: 16px; }
+    .spp-form-page .student-flat-header, .payment-workspace .student-flat-header { flex-direction: column; }
+    .payment-spp-v8-form .payment-form-body { padding: 16px; }
+    .payment-spp-v8-time-grid, .payment-spp-v8-payment-grid, .payment-registration-v1-category-grid, .payment-filter-primary, .payment-filter-secondary, .other-mapping-form, .spp-import-stats { grid-template-columns: 1fr; }
+    .payment-spp-v8-student-control { grid-template-columns: 1fr; }
+    .payment-spp-change-student { width: 100%; }
+    .payment-spp-period-field { align-items: stretch; flex-direction: column; }
+    .payment-spp-period-field label { width: 100%; }
+    .payment-spp-period-result { text-align: left; }
+    .payment-spp-receipt-summary { grid-template-columns: 1fr; }
+    .payment-date-filter, .payment-student-field { grid-column: auto; }
+    .payment-filter-actions, .payment-filter-actions .button { width: 100%; }
+    .payment-filter-actions { display: grid; grid-template-columns: 40px 1fr; }
+    .spp-history .list-toolbar { align-items: stretch; flex-direction: column; }
+    .spp-history .list-toolbar form { min-width: 0; }
+    .registration-payment-detail, .spp-expanded-content { grid-template-columns: 1fr; }
+    .registration-detail-item.payment-type, .registration-detail-item.time, .registration-detail-item.action { grid-column: auto; }
+    .spp-import-modal-backdrop { align-items: start; overflow-y: auto; padding: 16px; }
+    .spp-import-modal { max-height: none; }
+    .spp-import-progress { grid-template-columns: 1fr; }
+    .spp-preview-table-head, .spp-preview-header { flex-direction: column; }
+    .spp-confirm-button, .other-mapping-form .button { width: 100%; justify-self: stretch; }
+    .spp-edit-form { grid-template-columns: 1fr; padding: 16px 16px 0; }
+    .spp-edit-modal .form-actions, .spp-crud-modal .form-actions { padding-inline: 16px; }
+}

@@ -381,6 +381,62 @@ class PaymentMenuTest extends TestCase
             ->assertDontSee('payment-selected-student-card', false);
     }
 
+    public function test_payment_overview_filters_by_an_accessible_education_unit(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $assignedUnit = EducationUnit::create(['code' => 'RA', 'name' => 'RA Mambaul Hikmah', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $assignedClass = SchoolClass::create(['education_unit_id' => $assignedUnit->id, 'name' => 'A1', 'level' => 'A1', 'is_active' => true]);
+        $otherAssignedClass = SchoolClass::create(['education_unit_id' => $assignedUnit->id, 'name' => 'B1', 'level' => 'B1', 'is_active' => true]);
+        $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'I A', 'level' => 'Kelas I', 'is_active' => true]);
+        Student::create([
+            'nis' => 'UNIT-RA-01',
+            'name' => 'Siswa Unit RA',
+            'gender' => 'P',
+            'school_class_id' => $assignedClass->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        Student::create([
+            'nis' => 'UNIT-RA-02',
+            'name' => 'Siswa Kelas Lain',
+            'gender' => 'P',
+            'school_class_id' => $otherAssignedClass->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        Student::create([
+            'nis' => 'UNIT-MI-01',
+            'name' => 'Siswa Unit MI',
+            'gender' => 'L',
+            'school_class_id' => $otherClass->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+
+        $cashier = $this->scopedCashier($assignedUnit);
+
+        $this->actingAs($cashier)
+            ->get(route('finance.payments.index', ['unit_id' => $assignedUnit->id]))
+            ->assertOk()
+            ->assertSeeText('Siswa Unit RA')
+            ->assertDontSeeText('Siswa Unit MI')
+            ->assertSee('<option value="'.$assignedUnit->id.'" selected>', false)
+            ->assertDontSee('Filter Unit:', false)
+            ->assertDontSee('<option value="'.$otherUnit->id.'">', false);
+
+        $this->actingAs($cashier)
+            ->get(route('finance.payments.index', ['unit_id' => $assignedUnit->id, 'class_id' => $assignedClass->id]))
+            ->assertOk()
+            ->assertSeeText('Siswa Unit RA')
+            ->assertDontSeeText('Siswa Kelas Lain')
+            ->assertSee('<option value="'.$assignedClass->id.'" selected>', false);
+
+        $this->actingAs($cashier)
+            ->get(route('finance.payments.index', ['unit_id' => $otherUnit->id]))
+            ->assertForbidden();
+    }
+
     public function test_bill_list_preserves_hierarchy_default_selection_and_single_visible_total(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-07-05 10:00:00'));

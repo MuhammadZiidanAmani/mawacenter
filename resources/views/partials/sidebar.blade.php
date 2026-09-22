@@ -36,35 +36,35 @@
         'data-users' => ['Data User', 'users', 'users.manage'],
     ];
     $visibleMasterMenuItems = collect($masterMenuItems)->filter(fn ($item) => $canAccess($item[2]));
-    $studentOpen = $activeMenu === 'students';
-    $masterOpen = $activeMenu === 'master';
     $reportOpen = $activeMenu === 'reports';
 @endphp
 <aside class="sidebar" data-sidebar>
     <div class="brand"><div class="brand-mark"><img src="{{ asset('images/mawa-center-mark.png') }}" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
     <nav class="sidebar-nav">
         @if($canAccess('dashboard.view'))
+        <p class="nav-section-label">UTAMA</p>
+        @endif
+        @if($canAccess('dashboard.view'))
         <a href="{{ route('dashboard') }}" class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}">{!! $sidebarIcon('grid') !!}<span>Dashboard</span></a>
         @endif
         @if($canAccessStudentsMenu)
-        <div class="nav-group nested-nav {{ $studentOpen ? 'open' : '' }}">
-            <button type="button" class="nav-item nav-parent {{ $studentOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $studentOpen ? 'true' : 'false' }}">{!! $sidebarIcon('users') !!}<span>Manajemen Siswa</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
-            <div class="nav-submenu">
-                @if($canAccess('students.view'))
-                <a href="{{ route('student-management.students.index') }}" class="{{ $activeStudentMenu === 'data-siswa' ? 'active' : '' }}">{!! $sidebarIcon('users') !!}<span>Data Siswa</span></a>
-                @endif
-                @if($canAccess('students.identity_cleanup'))
-                <a href="{{ route('student-management.identity-cleanup.index') }}" class="{{ $activeStudentMenu === 'rapikan-identitas' ? 'active' : '' }}">{!! $sidebarIcon('role') !!}<span>Rapikan Identitas</span></a>
-                @endif
-                @if($canAccess('students.movement'))
-                <a href="{{ route('student-management.class-transfer.index') }}" class="{{ $activeStudentMenu === 'pindah-kelas' ? 'active' : '' }}">{!! $sidebarIcon('switch') !!}<span>Pindah Kelas</span></a>
-                <a href="{{ route('student-management.class-promotion.index') }}" class="{{ $activeStudentMenu === 'naik-kelas' ? 'active' : '' }}">{!! $sidebarIcon('arrow-up') !!}<span>Naik Kelas</span></a>
-                @endif
-                @if($canAccess('students.view'))
-                <a href="{{ route('student-management.alumni.index') }}" class="{{ $activeStudentMenu === 'alumni' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>Data Alumni</span></a>
-                @endif
-            </div>
-        </div>
+        <p class="nav-section-label">MANAJEMEN SISWA</p>
+        @if($canAccess('students.view'))
+        <a href="{{ route('student-management.students.index') }}" class="nav-item {{ $activeStudentMenu === 'data-siswa' ? 'active' : '' }}">{!! $sidebarIcon('users') !!}<span>Data Siswa</span></a>
+        @endif
+        @if($canAccess('students.identity_cleanup'))
+        <a href="{{ route('student-management.identity-cleanup.index') }}" class="nav-item {{ $activeStudentMenu === 'rapikan-identitas' ? 'active' : '' }}">{!! $sidebarIcon('role') !!}<span>Rapikan Identitas</span></a>
+        @endif
+        @if($canAccess('students.movement'))
+        <a href="{{ route('student-management.class-transfer.index') }}" class="nav-item {{ $activeStudentMenu === 'pindah-kelas' ? 'active' : '' }}">{!! $sidebarIcon('switch') !!}<span>Pindah Kelas</span></a>
+        <a href="{{ route('student-management.class-promotion.index') }}" class="nav-item {{ $activeStudentMenu === 'naik-kelas' ? 'active' : '' }}">{!! $sidebarIcon('arrow-up') !!}<span>Naik Kelas</span></a>
+        @endif
+        @if($canAccess('students.view'))
+        <a href="{{ route('student-management.alumni.index') }}" class="nav-item {{ $activeStudentMenu === 'alumni' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>Data Alumni</span></a>
+        @endif
+        @endif
+        @if($canAccessPaymentMenu || $canAccess('payments.verify_transfer') || $canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian') || $canAccess('reports.view') || $canAccess('reports.view_unit'))
+        <p class="nav-section-label">KEUANGAN</p>
         @endif
         @if($canAccessPaymentMenu)
         <a href="{{ $paymentMenuUrl }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
@@ -86,15 +86,13 @@
             </div>
         </div>
         @endif
+        @if($visibleMasterMenuItems->isNotEmpty() || $canAccess('settings.view'))
+        <p class="nav-section-label">MASTER DATA</p>
+        @endif
         @if($visibleMasterMenuItems->isNotEmpty())
-        <div class="nav-group master-nav {{ $masterOpen ? 'open' : '' }}">
-            <button type="button" class="nav-item nav-parent {{ $masterOpen ? 'active' : '' }}" data-master-nav-toggle aria-expanded="{{ $masterOpen ? 'true' : 'false' }}">{!! $sidebarIcon('database') !!}<span>Data Master</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
-            <div class="nav-submenu">
-                @foreach ($visibleMasterMenuItems as $key => $item)
-                    <a href="{{ route('master.index', ['tab' => $key]) }}" class="{{ $activeMasterMenu === $key ? 'active' : '' }}">{!! $sidebarIcon($item[1]) !!}<span>{{ $item[0] }}</span></a>
-                @endforeach
-            </div>
-        </div>
+        @foreach ($visibleMasterMenuItems as $key => $item)
+            <a href="{{ route('master.index', ['tab' => $key]) }}" class="nav-item {{ $activeMasterMenu === $key ? 'active' : '' }}">{!! $sidebarIcon($item[1]) !!}<span>{{ $item[0] }}</span></a>
+        @endforeach
         @endif
         @if($canAccess('settings.view'))
         <a href="{{ route('settings.index') }}" class="nav-item {{ $activeMenu === 'settings' ? 'active' : '' }}">{!! $sidebarIcon('settings') !!}<span>Pengaturan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</a>

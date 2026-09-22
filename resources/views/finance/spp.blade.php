@@ -67,6 +67,7 @@
             <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle>{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
+            @include('partials.theme-toggle')
             <button class="icon-button notification-button">{!! $icon('bell') !!}</button>
             @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>

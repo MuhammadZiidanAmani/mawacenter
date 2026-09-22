@@ -1,62 +1,138 @@
 @import "tailwindcss";
-@import "./modules/login.css";
-@import "./modules/reports.css";
-@import "./modules/bills.css";
+@source not "./legacy";
 @import "./modules/payments.css";
+@import "./modules/bills.css";
 @import "./modules/finance.css";
+@import "./modules/cashier.css";
 @import "./modules/master.css";
-@import "./modules/user-role.css";
+@import "./modules/reports.css";
 @import "./modules/student-management.css";
-@import "./modules/settings.css";
 @import "./modules/dashboard.css";
+@import "./modules/login.css";
+@import "./modules/settings.css";
 
-/* Global UI foundation
-   Keep this file limited to tokens, app shell, shared controls, tables, footer,
-   and modal primitives. Menu-specific rules belong in resources/css/modules.
-*/
+/* Tailwind Admin foundation for MA'WA Center.
+   Page modules are added back only after their Blade is migrated. */
+@theme {
+    --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+    --color-primary: #5d87ff;
+    --color-secondary: #49beff;
+    --color-success: #13deb9;
+    --color-warning: #f6b51e;
+    --color-error: #ef4444;
+    --color-dark: #1c2536;
+    --radius-admin: 7px;
+    --shadow-admin: 0 1px 4px rgba(133, 146, 173, .2);
+}
+
 :root {
     --app-canvas: #ffffff;
     --app-surface: #ffffff;
-    --app-panel-soft: #fbfdf8;
-    --app-neutral-soft: #f9fafb;
-    --app-field-soft: #f6f8f5;
-    --app-text: #020617;
-    --app-text-alt: #111c2c;
-    --app-label: #334155;
-    --app-muted: #707971;
-    --app-muted-strong: #404942;
-    --app-border: #d1d5db;
-    --app-border-soft: #e5e7eb;
-    --app-border-green-soft: #dfe5dc;
-    --app-primary: #004528;
-    --app-primary-hover: #0d5f36;
-    --app-success: #157144;
-    --app-success-soft: #e9f8ef;
-    --app-success-subtle: #f3fbf6;
-    --app-danger: #ef1f2d;
-    --app-danger-hover: #c91724;
-    --app-danger-soft: #fff4f4;
-    --app-warning: #92400e;
-    --app-warning-soft: #fff7ed;
-    --app-info: #2563eb;
-    --app-info-soft: #eff6ff;
-    --app-radius: 8px;
-    --app-radius-panel: 12px;
-    --app-font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --app-panel-soft: #f8f9fc;
+    --app-neutral-soft: #f5f5f5;
+    --app-field-soft: #ffffff;
+    --app-text: #1c2536;
+    --app-text-alt: #1c2536;
+    --app-label: #2a3547;
+    --app-muted: #5a6a85;
+    --app-muted-strong: #3b4a61;
+    --app-border: #dfe5ef;
+    --app-border-soft: #edf0f5;
+    --app-border-green-soft: #d9e2f7;
+    --app-primary: #5d87ff;
+    --app-primary-hover: #4570e7;
+    --app-success: #13a88e;
+    --app-success-soft: #e8fbf7;
+    --app-success-subtle: #edf3ff;
+    --app-danger: #ef4444;
+    --app-danger-hover: #dc2626;
+    --app-danger-soft: #fef2f2;
+    --app-warning: #a16207;
+    --app-warning-soft: #fff8e6;
+    --app-info: #49beff;
+    --app-info-soft: #eff9ff;
+    --app-on-primary: #ffffff;
+    --app-primary-border: #c7d4ff;
+    --app-hover-surface: #f7f9ff;
+    --app-border-strong: #aebee5;
+    --app-info-border: #c7eaff;
+    --app-danger-border: #fecaca;
+    --app-danger-border-soft: #f2cfd2;
+    --app-warning-border: #fde68a;
+    --app-success-hover: #0f9079;
+    --app-scrollbar: #cbd5e1;
+    --app-scrollbar-hover: #94a3b8;
+    --app-overlay: rgba(28, 37, 54, .38);
+    --app-shadow-input: 0 1px 1px rgba(42, 53, 71, .02);
+    --app-shadow-button: 0 1px 2px rgba(42, 53, 71, .04);
+    --app-shadow-primary: 0 6px 14px rgba(93, 135, 255, .22);
+    --app-radius: 7px;
+    --app-radius-panel: 7px;
+    --app-font: "DM Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --app-text-body-size: 14px;
+    --app-text-body-leading: 20px;
+    --app-text-meta-size: 12px;
+    --app-text-meta-leading: 16px;
+    --app-text-section-size: 18px;
+    --app-text-section-leading: 26px;
+    --app-text-page-size: 24px;
+    --app-text-page-leading: 32px;
+    --app-text-total-size: 20px;
+    --app-text-total-leading: 28px;
     --app-page-padding-x: 32px;
     --app-page-padding-y: 24px;
     --app-content-width: 1200px;
     --app-dashboard-width: 1440px;
 }
 
-* {
-    box-sizing: border-box;
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --app-canvas: #1c2536;
+    --app-surface: #2a3547;
+    --app-panel-soft: #263448;
+    --app-neutral-soft: #334155;
+    --app-field-soft: #2a3547;
+    --app-text: #f5f7fb;
+    --app-text-alt: #f5f7fb;
+    --app-label: #e8edf5;
+    --app-muted: #b8c4d5;
+    --app-muted-strong: #d4ddea;
+    --app-border: #43536b;
+    --app-border-soft: #37475e;
+    --app-border-green-soft: #43536b;
+    --app-primary: #7195ff;
+    --app-primary-hover: #91aeff;
+    --app-success: #2dc9ab;
+    --app-success-soft: #183f3b;
+    --app-success-subtle: #28385d;
+    --app-danger: #ff7d87;
+    --app-danger-hover: #ff9aa2;
+    --app-danger-soft: #4a2b36;
+    --app-warning: #f6c453;
+    --app-warning-soft: #4a3b1f;
+    --app-info: #70ccff;
+    --app-info-soft: #243d56;
+    --app-on-primary: #ffffff;
+    --app-primary-border: #596f9f;
+    --app-hover-surface: #334158;
+    --app-border-strong: #63728b;
+    --app-info-border: #426585;
+    --app-danger-border: #87505d;
+    --app-danger-border-soft: #70424f;
+    --app-warning-border: #7a6536;
+    --app-success-hover: #48ddc0;
+    --app-scrollbar: #61718a;
+    --app-scrollbar-hover: #8192ad;
+    --app-overlay: rgba(3, 7, 18, .68);
+    --app-shadow-input: 0 1px 1px rgba(3, 7, 18, .2);
+    --app-shadow-button: 0 1px 2px rgba(3, 7, 18, .24);
+    --app-shadow-primary: 0 6px 14px rgba(3, 7, 18, .32);
+    --shadow-admin: 0 1px 4px rgba(3, 7, 18, .32);
 }
 
-html {
-    min-height: 100%;
-    background: var(--app-canvas);
-}
+* { box-sizing: border-box; }
+
+html { min-height: 100%; background: var(--app-canvas); }
 
 body {
     min-height: 100%;
@@ -64,27 +140,16 @@ body {
     color: var(--app-text);
     background: var(--app-canvas);
     font-family: var(--app-font);
-    font-size: 14px;
+    font-size: var(--app-text-body-size);
     font-weight: 400;
-    line-height: 1.45;
+    line-height: var(--app-text-body-leading);
     letter-spacing: 0;
 }
 
-a {
-    color: inherit;
-    text-decoration: none;
-}
-
-input,
-select,
-textarea {
-    font: inherit;
-}
-
-img,
-svg {
-    max-width: 100%;
-}
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; }
+img, svg { display: block; max-width: 100%; }
+small { font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 
 :where(button, a, input, select, textarea):focus-visible {
     outline: 2px solid var(--app-primary);
@@ -100,25 +165,17 @@ svg {
     background: var(--app-surface);
     border: 1px solid var(--app-border);
     border-radius: var(--app-radius);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.25;
+    box-shadow: var(--app-shadow-input);
 }
 
-:where(textarea) {
-    min-height: 96px;
-    padding-block: 10px;
-    resize: vertical;
-}
-
-:where(input::placeholder, textarea::placeholder) {
-    color: var(--app-muted);
-}
+textarea { min-height: 96px; padding-block: 10px; resize: vertical; }
+input::placeholder, textarea::placeholder { color: var(--app-muted); }
 
 :where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea):focus {
     border-color: var(--app-primary);
-    outline: 2px solid rgba(0, 69, 40, .12);
+    outline: 3px solid color-mix(in srgb, var(--app-primary) 18%, transparent);
     outline-offset: 0;
+    box-shadow: none;
 }
 
 .icon {
@@ -132,2458 +189,228 @@ svg {
     stroke-width: 2;
 }
 
-.app-shell {
-    display: flex;
-    width: 100%;
-    min-height: 100vh;
-    background: var(--app-canvas);
-}
-
-.main-panel {
-    display: flex;
-    flex: 1 1 auto;
-    min-width: 0;
-    min-height: 100vh;
-    flex-direction: column;
-    background: var(--app-canvas);
-}
-
-main {
-    flex: 1 1 auto;
-    min-width: 0;
-}
+/* Application shell */
+.app-shell { display: flex; min-height: 100vh; background: var(--app-canvas); }
+.main-panel { display: flex; min-width: 0; min-height: 100vh; flex: 1 1 auto; flex-direction: column; }
+main { min-width: 0; flex: 1 1 auto; }
 
 .sidebar {
     position: sticky;
     top: 0;
     z-index: 30;
     display: flex;
-    width: 280px;
-    height: 100vh;
-    flex: 0 0 280px;
+    width: 270px;
+    height: 100dvh;
+    flex: 0 0 270px;
     flex-direction: column;
-    overflow-y: auto;
+    overflow: hidden;
     background: var(--app-surface);
     border-right: 1px solid var(--app-border);
 }
 
 .brand {
     display: flex;
-    min-height: 76px;
+    min-height: 80px;
+    flex: 0 0 auto;
     align-items: center;
     gap: 12px;
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--app-border);
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--app-border-soft);
 }
 
-.brand-mark {
-    display: grid;
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-    place-items: center;
-}
-
-.brand-mark img {
-    display: block;
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.brand strong,
-.brand small {
-    display: block;
-}
-
-.brand strong {
-    color: var(--app-primary);
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.brand strong span {
-    color: var(--app-success);
-    font-weight: 700;
-}
-
-.brand small {
-    margin-top: 2px;
-    color: var(--app-muted);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.3;
-}
+.brand-mark { display: grid; width: 42px; height: 42px; flex: 0 0 42px; place-items: center; }
+.brand-mark img { max-height: 42px; object-fit: contain; }
+.brand strong, .brand small { display: block; }
+.brand strong { color: var(--app-text); font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.brand strong span { color: var(--app-primary); }
+.brand small { margin-top: 2px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 
 .sidebar-nav {
     display: grid;
-    gap: 6px;
-    padding: 16px;
+    min-height: 0;
+    flex: 1 1 auto;
+    gap: 4px;
+    padding: 18px 14px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: var(--app-scrollbar) transparent;
+    scrollbar-width: thin;
 }
 
-.nav-item,
-.master-nav .nav-submenu a,
-.nested-nav .nav-submenu a {
+.sidebar-nav::-webkit-scrollbar { width: 6px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: var(--app-scrollbar); border-radius: 999px; }
+.sidebar-nav::-webkit-scrollbar-thumb:hover { background: var(--app-scrollbar-hover); }
+.nav-section-label {
+    margin: 14px 10px 4px;
+    color: var(--app-muted);
+    font-size: var(--app-text-meta-size);
+    font-weight: 600;
+    line-height: var(--app-text-meta-leading);
+}
+.nav-section-label:first-child { margin-top: 2px; }
+.nav-item, .nested-nav .nav-submenu a {
     display: flex;
     width: 100%;
-    min-height: 40px;
+    min-height: 44px;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
+    gap: 12px;
+    padding: 10px 14px;
     color: var(--app-label);
-    background: transparent;
-    border: 1px solid transparent;
     border-radius: var(--app-radius);
-    font-size: 14px;
     font-weight: 500;
-    line-height: 1.35;
     text-align: left;
 }
 
-.nav-item:hover,
-.master-nav .nav-submenu a:hover,
-.nested-nav .nav-submenu a:hover {
-    color: var(--app-primary-hover);
+.nav-item:hover, .nested-nav .nav-submenu a:hover {
+    color: var(--app-primary);
     background: var(--app-success-subtle);
 }
 
-.nav-item.active,
-.nav-parent.active,
-.master-nav .nav-submenu a.active,
-.nested-nav .nav-submenu a.active {
+.nav-item.active, .nav-parent.active, .nested-nav .nav-submenu a.active {
     color: var(--app-primary);
-    background: var(--app-success-soft);
+    background: var(--app-success-subtle);
 }
 
-.nav-parent {
-    cursor: pointer;
-}
-
-.nav-chevron {
-    width: 16px;
-    height: 16px;
-    margin-left: auto;
-    transition: transform .18s ease;
-}
-
-.nav-group.open > .nav-parent .nav-chevron {
-    transform: rotate(90deg);
-}
-
-.nav-submenu {
-    display: none;
-    gap: 4px;
-    padding: 4px 0 4px 12px;
-}
-
-.nav-group.open > .nav-submenu {
-    display: grid;
-}
+.nav-parent { border: 0; cursor: pointer; }
+.nav-chevron { width: 16px; height: 16px; margin-left: auto; transition: transform .16s ease; }
+.nav-group.open > .nav-parent .nav-chevron { transform: rotate(90deg); }
+.nav-submenu { display: none; gap: 2px; padding: 2px 0 2px 14px; }
+.nav-group.open > .nav-submenu { display: grid; }
 
 .topbar {
     display: flex;
-    min-height: 64px;
+    min-height: 68px;
     align-items: center;
     gap: 12px;
-    padding: 12px 24px;
+    padding: 14px 32px;
     background: var(--app-surface);
-    border-bottom: 1px solid var(--app-border);
+    border-bottom: 1px solid var(--app-border-soft);
 }
 
-.topbar-spacer {
-    flex: 1 1 auto;
-}
-
+.topbar-spacer { flex: 1 1 auto; }
 .active-year-pill {
     display: inline-flex;
-    min-height: 36px;
+    min-height: 40px;
     align-items: center;
     gap: 8px;
     padding: 0 12px;
     color: var(--app-muted);
-    background: var(--app-panel-soft);
-    border: 1px solid var(--app-border-soft);
-    border-radius: 999px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.25;
-}
-
-.active-year-pill > span {
-    width: 8px;
-    height: 8px;
-    flex: 0 0 8px;
-    border-radius: 999px;
-    background: var(--app-primary);
-}
-
-.active-year-pill strong {
-    color: var(--app-text);
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.icon-button {
-    display: inline-grid;
-    width: 40px;
-    height: 40px;
-    flex: 0 0 auto;
-    place-items: center;
-    color: var(--app-label);
     background: var(--app-surface);
     border: 1px solid var(--app-border);
     border-radius: var(--app-radius);
-    font: inherit;
-    letter-spacing: 0;
-    cursor: pointer;
 }
+.active-year-pill > span { width: 8px; height: 8px; border-radius: 50%; background: var(--app-success); }
+.active-year-pill strong { color: var(--app-text); }
 
-.icon-button:hover {
-    color: var(--app-primary-hover);
-    background: var(--app-success-subtle);
-}
-
-.sidebar-close {
-    display: none;
-    margin-left: auto;
-}
-
-.button {
+/* Shared controls */
+.icon-button, .button {
     display: inline-flex;
     min-height: 40px;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 0 14px;
     color: var(--app-label);
     background: var(--app-surface);
     border: 1px solid var(--app-border);
     border-radius: var(--app-radius);
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0;
-    line-height: 1;
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
     cursor: pointer;
+    transition: color .16s ease, background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
 
-.button:hover {
-    color: var(--app-primary-hover);
-    background: var(--app-success-subtle);
-}
+.icon-button { width: 40px; padding: 0; }
+.theme-icon-sun { display: none; }
+html[data-theme="dark"] .theme-icon-moon { display: none; }
+html[data-theme="dark"] .theme-icon-sun { display: block; }
+.button { padding: 0 16px; box-shadow: var(--app-shadow-button); }
+.icon-button:hover, .button:not(.button-primary):not(.button-danger):hover { color: var(--app-primary); background: var(--app-success-subtle); border-color: var(--app-primary-border); }
+.button-primary { color: var(--app-on-primary); background: var(--app-primary); border-color: var(--app-primary); box-shadow: var(--app-shadow-primary); }
+.button-primary:hover { color: var(--app-on-primary); background: var(--app-primary-hover); border-color: var(--app-primary-hover); }
+.button-danger { color: var(--app-on-primary); background: var(--app-danger); border-color: var(--app-danger); }
+.button-danger:hover { color: var(--app-on-primary); background: var(--app-danger-hover); border-color: var(--app-danger-hover); }
+.sidebar-close { display: none; margin-left: auto; }
 
-.button-primary {
-    color: #ffffff;
-    background: var(--app-primary);
-    border-color: var(--app-primary);
-}
-
-.button-primary:hover {
-    color: #ffffff;
-    background: var(--app-primary-hover);
-    border-color: var(--app-primary-hover);
-}
-
-.button-secondary {
-    color: var(--app-label);
+/* Shared data surfaces */
+.card, .table-wrap, .data-table-wrap, .form-modal, .result-modal {
     background: var(--app-surface);
-    border-color: var(--app-border);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-panel);
+    box-shadow: var(--shadow-admin);
 }
 
-.button-danger {
-    color: #ffffff;
-    background: var(--app-danger);
-    border-color: var(--app-danger);
-}
+.table-wrap, .data-table-wrap { width: 100%; max-width: 100%; overflow-x: auto; }
+.data-table, .student-flat-table, .student-master-table, .report-table { width: 100%; border-collapse: collapse; color: var(--app-text); }
+.data-table th, .data-table td, .student-flat-table th, .student-flat-table td, .student-master-table th, .student-master-table td, .report-table th, .report-table td { padding: 10px 12px; border-bottom: 1px solid var(--app-border-soft); font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); vertical-align: middle; }
+.data-table th, .student-flat-table th, .student-master-table th, .report-table th { color: var(--app-label); background: var(--app-panel-soft); font-size: var(--app-text-body-size); font-weight: 600; text-align: center; }
+.data-table tbody tr:hover, .student-flat-table tbody tr:hover, .student-master-table tbody tr:hover, .report-table tbody tr:hover { background: var(--app-hover-surface); }
 
-.button-danger:hover {
-    color: #ffffff;
-    background: var(--app-danger-hover);
-    border-color: var(--app-danger-hover);
-}
+/* Shared sortable headings used by data and class-movement tables. */
+.list-sort-heading-v6, .cm-v6-sort-heading { position: relative; display: block; width: 100%; min-height: 20px; padding-inline: 12px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); text-align: center; }
+.cm-v6-sort-heading { padding-inline: 10px; }
+.list-sort-label, .cm-v6-sort-label { display: block; width: 100%; white-space: normal; }
+.list-sort-arrows, .cm-v6-sort-arrows { position: absolute; top: 50%; right: 0; display: inline-flex; align-items: center; justify-content: center; gap: 2px; transform: translateY(-50%); }
+.list-sort-arrows a, .cm-v6-sort-link { display: inline-flex; width: 10px; height: 20px; align-items: center; justify-content: center; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: 1; }
+.list-sort-arrows a:hover, .list-sort-arrows a.is-active, .cm-v6-sort-link:hover, .cm-v6-sort-link.is-active { color: var(--app-primary); }
 
-.table-wrap {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-}
+/* Data-driven chart bars use bucketed classes instead of inline styles. */
+.chart-progress-0 { --app-chart-progress: 0; }.chart-progress-5 { --app-chart-progress: 5; }.chart-progress-10 { --app-chart-progress: 10; }.chart-progress-15 { --app-chart-progress: 15; }.chart-progress-20 { --app-chart-progress: 20; }.chart-progress-25 { --app-chart-progress: 25; }.chart-progress-30 { --app-chart-progress: 30; }.chart-progress-35 { --app-chart-progress: 35; }.chart-progress-40 { --app-chart-progress: 40; }.chart-progress-45 { --app-chart-progress: 45; }.chart-progress-50 { --app-chart-progress: 50; }.chart-progress-55 { --app-chart-progress: 55; }.chart-progress-60 { --app-chart-progress: 60; }.chart-progress-65 { --app-chart-progress: 65; }.chart-progress-70 { --app-chart-progress: 70; }.chart-progress-75 { --app-chart-progress: 75; }.chart-progress-80 { --app-chart-progress: 80; }.chart-progress-85 { --app-chart-progress: 85; }.chart-progress-90 { --app-chart-progress: 90; }.chart-progress-95 { --app-chart-progress: 95; }.chart-progress-100 { --app-chart-progress: 100; }
 
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    color: var(--app-text);
-}
-
-.data-table th,
-.data-table td {
-    min-height: 40px;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--app-border-soft);
-    font-size: 14px;
-    line-height: 1.35;
-    vertical-align: middle;
-}
-
-.data-table th {
-    color: var(--app-label);
-    background: var(--app-panel-soft);
-    font-weight: 500;
-    text-align: center;
-}
-
-.data-table td {
-    font-weight: 400;
-    text-align: left;
-}
-
-.data-table tbody tr:hover {
-    background: var(--app-panel-soft);
-}
-
-.status,
-.compact-badge,
-.code-badge {
+.status, .compact-badge, .code-badge, .badge, .chip {
     display: inline-flex;
     min-height: 28px;
     align-items: center;
     justify-content: center;
     gap: 6px;
     padding: 4px 10px;
-    border: 1px solid var(--app-border);
-    border-radius: 999px;
-    background: var(--app-neutral-soft);
-    color: var(--app-muted);
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.25;
-}
-
-.status.success,
-.compact-badge.success {
-    color: var(--app-success);
-    background: var(--app-success-soft);
-    border-color: var(--app-success-soft);
-}
-
-.status.danger,
-.compact-badge.danger {
-    color: var(--app-danger);
-    background: var(--app-danger-soft);
-    border-color: #f2cfd2;
-}
-
-.status.warning,
-.compact-badge.warning {
-    color: var(--app-warning);
-    background: var(--app-warning-soft);
-    border-color: #fed7aa;
-}
-
-.status.neutral,
-.compact-badge.neutral {
     color: var(--app-muted);
     background: var(--app-neutral-soft);
-    border-color: var(--app-border);
-}
-
-.app-footer {
-    margin: 0;
-    padding: 8px 16px 12px;
-    color: var(--app-muted);
-    background: transparent;
-    border: 0;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.4;
-    text-align: center;
-}
-
-.modal-backdrop,
-.result-modal-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    display: none;
-    place-items: center;
-    padding: 24px;
-    background: rgba(2, 6, 23, .38);
-}
-
-.modal-backdrop.show,
-.result-modal-backdrop.show {
-    display: grid;
-}
-
-.modal-backdrop[hidden],
-.result-modal-backdrop[hidden] {
-    display: none;
-}
-
-.form-modal,
-.result-modal {
-    width: min(100%, 560px);
-    max-height: calc(100vh - 48px);
-    overflow: auto;
-    color: var(--app-text);
-    background: var(--app-surface);
-    border: 1px solid var(--app-border);
-    border-radius: var(--app-radius);
-    box-shadow: 0 18px 45px rgba(2, 6, 23, .16);
-}
-
-.result-modal {
-    display: grid;
-    justify-items: center;
-    gap: 12px;
-    width: min(100%, 420px);
-    padding: 24px;
-    text-align: center;
-}
-
-.result-modal strong {
-    color: var(--app-text);
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 1.25;
-}
-
-.result-modal p {
-    margin: 0;
-    color: var(--app-muted);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.45;
-}
-
-.result-icon {
-    display: inline-grid;
-    width: 44px;
-    height: 44px;
-    place-items: center;
+    border: 1px solid var(--app-border-soft);
     border-radius: 999px;
-    background: var(--app-success-soft);
-    color: var(--app-success);
-    font-size: 20px;
-    font-weight: 700;
+    font-size: var(--app-text-meta-size);
+    font-weight: 600;
+    line-height: var(--app-text-meta-leading);
 }
+.status.success, .compact-badge.success { color: var(--app-success); background: var(--app-success-soft); }
+.status.danger, .compact-badge.danger { color: var(--app-danger); background: var(--app-danger-soft); }
+.status.warning, .compact-badge.warning { color: var(--app-warning); background: var(--app-warning-soft); }
 
-.error-result .result-icon {
-    color: var(--app-danger);
-    background: var(--app-danger-soft);
-}
+.alert { padding: 12px 14px; color: var(--app-label); background: var(--app-info-soft); border: 1px solid var(--app-info-border); border-radius: var(--app-radius); }
+.alert-danger, .alert.error { color: var(--app-danger); background: var(--app-danger-soft); border-color: var(--app-danger-border); }
+.empty-state { padding: 32px 20px; color: var(--app-muted); text-align: center; }
 
-.form-modal-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 16px 18px;
-    border-bottom: 1px solid var(--app-border-soft);
-}
+/* Dialog and footer */
+.modal-backdrop, .result-modal-backdrop { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; padding: 24px; background: var(--app-overlay); }
+.modal-backdrop.show, .result-modal-backdrop.show { display: grid; }
+.modal-backdrop[hidden], .result-modal-backdrop[hidden] { display: none; }
+.form-modal, .result-modal { width: min(100%, 560px); max-height: calc(100vh - 48px); overflow: auto; }
+.result-modal { padding: 24px; text-align: center; }
+.form-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--app-border-soft); }
+.form-modal-header h2 { margin: 0; font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.form-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.app-footer { padding: 18px 24px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); text-align: center; }
 
-.form-modal-header h2 {
-    margin: 0;
-    color: var(--app-text);
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 1.25;
-}
-
-.form-modal-header .eyebrow {
-    margin: 0 0 4px;
-    color: var(--app-muted);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.35;
-}
-
-.form-modal .master-form {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-    padding: 18px;
-}
-
-.form-modal .master-form label,
-.form-modal .spp-edit-readonly {
-    display: grid;
-    gap: 6px;
-    color: var(--app-label);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.35;
-}
-
-.form-modal .spp-edit-readonly,
-.form-modal .span-2 {
-    grid-column: 1 / -1;
-}
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin: 20px 0 0;
-}
+.pagination { display: flex; flex-wrap: wrap; gap: 6px; }
+.pagination a, .pagination span { display: inline-grid; width: 36px; height: 36px; place-items: center; color: var(--app-label); background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius); }
+.pagination .active span, .pagination a:hover { color: var(--app-on-primary); background: var(--app-primary); border-color: var(--app-primary); }
 
 @media (max-width: 960px) {
-    .app-shell {
-        display: block;
-    }
-
-    .sidebar {
-        position: fixed;
-        inset: 0 auto 0 0;
-        z-index: 40;
-        transform: translateX(-100%);
-        transition: transform .2s ease;
-    }
-
-    body.sidebar-open .sidebar,
-    .sidebar.open {
-        transform: translateX(0);
-    }
-
-    .sidebar-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 35;
-        display: none;
-        background: rgba(2, 6, 23, .38);
-    }
-
-    body.sidebar-open .sidebar-overlay,
-    .sidebar-overlay.show {
-        display: block;
-    }
-
-    .sidebar-close {
-        display: inline-grid;
-    }
-
-    .topbar {
-        padding-inline: 16px;
-    }
+    .app-shell { display: block; }
+    .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 40; transform: translateX(-100%); transition: transform .2s ease; }
+    body.sidebar-open .sidebar, .sidebar.open { transform: translateX(0); }
+    .sidebar-overlay { position: fixed; inset: 0; z-index: 35; display: none; background: var(--app-overlay); }
+    body.sidebar-open .sidebar-overlay, .sidebar-overlay.show { display: block; }
+    .sidebar-close { display: inline-flex; }
 }
 
 @media (max-width: 760px) {
-    :root {
-        --app-page-padding-x: 16px;
-        --app-page-padding-y: 16px;
-    }
-
-    .topbar {
-        gap: 8px;
-        min-height: 60px;
-    }
-
-    .active-year-pill small {
-        display: none;
-    }
-
-    .form-actions {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
-
-    .form-actions .button,
-    .form-actions button,
-    .form-actions a {
-        width: 100%;
-    }
-}
-
-@media (max-width: 640px) {
-    .modal-backdrop.show,
-    .result-modal-backdrop.show {
-        align-items: start;
-        overflow-y: auto;
-        padding: 16px;
-    }
-
-    .form-modal,
-    .result-modal {
-        max-height: none;
-    }
-
-    .form-modal .master-form {
-        grid-template-columns: 1fr;
-        padding: 16px;
-    }
-}
-
-/* DARK THEME FINAL LOCK: keep this block at the end of the stylesheet. */
-html[data-theme="dark"],
-html[data-theme="dark"] body,
-html[data-theme="dark"] body .app-shell,
-html[data-theme="dark"] body .main-panel,
-html[data-theme="dark"] body main,
-html[data-theme="dark"] body footer {
-    background: #07140f !important;
-    color: #e7f0ea !important;
-}
-
-html[data-theme="dark"] body .topbar,
-html[data-theme="dark"] body .sidebar,
-html[data-theme="dark"] body .sidebar .brand,
-html[data-theme="dark"] body .student-workspace,
-html[data-theme="dark"] body .student-list-filter-card,
-html[data-theme="dark"] body .student-data-card,
-html[data-theme="dark"] body .student-list-table-card,
-html[data-theme="dark"] body .master-card,
-html[data-theme="dark"] body .card,
-html[data-theme="dark"] body .table-wrap,
-html[data-theme="dark"] body .student-fee-card-filter,
-html[data-theme="dark"] body .student-filter-panel,
-html[data-theme="dark"] body .student-reference-filter,
-html[data-theme="dark"] body .payment-transaction-workspace,
-html[data-theme="dark"] body .payment-one-stop-main,
-html[data-theme="dark"] body .payment-one-stop-side,
-html[data-theme="dark"] body .login-card {
-    background: #0b1b14 !important;
-    border-color: #284337 !important;
-    box-shadow: none !important;
-}
-
-html[data-theme="dark"] body .topbar {
-    background: #0b1b14 !important;
-    border-bottom: 1px solid #284337 !important;
-}
-
-html[data-theme="dark"] body .sidebar {
-    background: #07140f !important;
-    border-right: 1px solid #284337 !important;
-}
-
-html[data-theme="dark"] body .sidebar-overlay {
-    background: rgba(0, 0, 0, .56) !important;
-}
-
-html[data-theme="dark"] body h1,
-html[data-theme="dark"] body h2,
-html[data-theme="dark"] body h3,
-html[data-theme="dark"] body h4,
-html[data-theme="dark"] body th,
-html[data-theme="dark"] body strong,
-html[data-theme="dark"] body label,
-html[data-theme="dark"] body .student-master-heading h1,
-html[data-theme="dark"] body .student-page .student-master-heading h1,
-html[data-theme="dark"] body .master-hero h1,
-html[data-theme="dark"] body .payment-page-heading h1,
-html[data-theme="dark"] body .brand strong,
-html[data-theme="dark"] body .brand strong span {
-    color: #e7f0ea !important;
-}
-
-html[data-theme="dark"] body p,
-html[data-theme="dark"] body small,
-html[data-theme="dark"] body .student-master-heading p,
-html[data-theme="dark"] body .student-page .student-master-heading p,
-html[data-theme="dark"] body .master-hero p,
-html[data-theme="dark"] body .payment-page-heading p,
-html[data-theme="dark"] body .student-reference-card-count,
-html[data-theme="dark"] body .student-reference-card-count span {
-    color: #b9c9c0 !important;
-}
-
-html[data-theme="dark"] body .nav-item,
-html[data-theme="dark"] body .nav-submenu a,
-html[data-theme="dark"] body .icon-button,
-html[data-theme="dark"] body .student-ghost-actions .icon-button,
-html[data-theme="dark"] body .student-ghost-actions .icon-button .icon {
-    color: #cfe0d6 !important;
-}
-
-html[data-theme="dark"] body .nav-item.active,
-html[data-theme="dark"] body .nav-item:hover,
-html[data-theme="dark"] body .nav-submenu a.active,
-html[data-theme="dark"] body .nav-submenu a:hover {
-    color: #e7f0ea !important;
-    background: #123323 !important;
-}
-
-html[data-theme="dark"] body .theme-toggle-button,
-html[data-theme="dark"] body .notification-button,
-html[data-theme="dark"] body .logout-button,
-html[data-theme="dark"] body .menu-toggle,
-html[data-theme="dark"] body .active-year-pill,
-html[data-theme="dark"] body .login-theme-toggle {
-    color: #a7f3c4 !important;
-    background: #0f241a !important;
-    border-color: #335247 !important;
-    box-shadow: none !important;
-}
-
-html[data-theme="dark"] body .active-year-pill small,
-html[data-theme="dark"] body .active-year-pill strong {
-    color: #cfe0d6 !important;
-}
-
-html[data-theme="dark"] body input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
-html[data-theme="dark"] body select,
-html[data-theme="dark"] body textarea,
-html[data-theme="dark"] body .student-fee-filter-search,
-html[data-theme="dark"] body .student-fee-filter-search input,
-html[data-theme="dark"] body .login-input {
-    color: #e7f0ea !important;
-    background: #0f241a !important;
-    border-color: #335247 !important;
-    box-shadow: none !important;
-}
-
-html[data-theme="dark"] body input::placeholder,
-html[data-theme="dark"] body textarea::placeholder {
-    color: #8ea199 !important;
-}
-
-html[data-theme="dark"] body input:focus,
-html[data-theme="dark"] body select:focus,
-html[data-theme="dark"] body textarea:focus {
-    border-color: #57c785 !important;
-    box-shadow: 0 0 0 3px rgba(87, 199, 133, .16) !important;
-    outline: 0 !important;
-}
-
-html[data-theme="dark"] body table,
-html[data-theme="dark"] body .data-table,
-html[data-theme="dark"] body .student-flat-table,
-html[data-theme="dark"] body .payment-transaction-table {
-    background: #0b1b14 !important;
-    color: #e7f0ea !important;
-}
-
-html[data-theme="dark"] body table thead th,
-html[data-theme="dark"] body .data-table thead th,
-html[data-theme="dark"] body .student-flat-table thead th,
-html[data-theme="dark"] body .payment-transaction-table thead th {
-    color: #e7f0ea !important;
-    background: #102419 !important;
-    border-color: #284337 !important;
-}
-
-html[data-theme="dark"] body table tbody td,
-html[data-theme="dark"] body table tfoot td,
-html[data-theme="dark"] body .data-table tbody td,
-html[data-theme="dark"] body .data-table tfoot td,
-html[data-theme="dark"] body .student-flat-table tbody td,
-html[data-theme="dark"] body .student-flat-table tfoot td,
-html[data-theme="dark"] body .payment-transaction-table tbody td,
-html[data-theme="dark"] body .payment-transaction-table tfoot td {
-    color: #dbe8e1 !important;
-    background: #0b1b14 !important;
-    border-color: #284337 !important;
-}
-
-html[data-theme="dark"] body table tbody tr:hover td,
-html[data-theme="dark"] body .data-table tbody tr:hover td,
-html[data-theme="dark"] body .student-flat-table tbody tr:hover td,
-html[data-theme="dark"] body .payment-transaction-table tbody tr:hover td {
-    background: #10281d !important;
-}
-
-html[data-theme="dark"] body .student-fee-card-search-button,
-html[data-theme="dark"] body .fee-type-card-search-button,
-html[data-theme="dark"] body .student-search-button,
-html[data-theme="dark"] body .button-primary,
-html[data-theme="dark"] body .login-submit {
-    color: #ffffff !important;
-    background: #00693d !important;
-    border-color: #00693d !important;
-}
-
-html[data-theme="dark"] body .student-fee-card-reset-button,
-html[data-theme="dark"] body .fee-type-card-reset-button,
-html[data-theme="dark"] body .student-filter-reset,
-html[data-theme="dark"] body .button-secondary,
-html[data-theme="dark"] body .login-access-reset {
-    color: #dbe8e1 !important;
-    background: #0f241a !important;
-    border-color: #335247 !important;
-}
-
-/* DARK THEME OVERRIDE V2: higher specificity for page-level rules that use !important. */
-html[data-theme="dark"] {
-    color-scheme: dark !important;
-    --mawa-dark-canvas: #07140f;
-    --mawa-dark-panel: #0b1b14;
-    --mawa-dark-panel-soft: #0f241a;
-    --mawa-dark-header: #102419;
-    --mawa-dark-hover: #10281d;
-    --mawa-dark-border: #284337;
-    --mawa-dark-field-border: #335247;
-    --mawa-dark-text: #e7f0ea;
-    --mawa-dark-muted: #b9c9c0;
-    --mawa-dark-placeholder: #8ea199;
-    --mawa-dark-accent: #57c785;
-    --mawa-dark-primary: #00693d;
-    --mawa-dark-primary-hover: #0d7c4a;
-}
-
-html[data-theme="dark"],
-html[data-theme="dark"] body,
-html[data-theme="dark"] body.login-body,
-html[data-theme="dark"] body .app-shell,
-html[data-theme="dark"] body .app-shell .main-panel,
-html[data-theme="dark"] body .app-shell .main-panel main,
-html[data-theme="dark"] body .app-shell .main-panel footer,
-html[data-theme="dark"] body .login-page {
-    background: var(--mawa-dark-canvas) !important;
-    color: var(--mawa-dark-text) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel .topbar,
-html[data-theme="dark"] body .app-shell > .sidebar,
-html[data-theme="dark"] body .app-shell .sidebar .brand {
-    background: var(--mawa-dark-panel) !important;
-    border-color: var(--mawa-dark-border) !important;
-    box-shadow: none !important;
-}
-
-html[data-theme="dark"] body .app-shell > .sidebar {
-    border-right: 1px solid var(--mawa-dark-border) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel .topbar {
-    border-bottom: 1px solid var(--mawa-dark-border) !important;
-}
-
-html[data-theme="dark"] body .brand strong,
-html[data-theme="dark"] body .brand strong span,
-html[data-theme="dark"] body .brand small,
-html[data-theme="dark"] body .login-brand h1,
-html[data-theme="dark"] body .login-brand h1 span,
-html[data-theme="dark"] body .app-shell .main-panel main h1,
-html[data-theme="dark"] body .app-shell .main-panel main h2,
-html[data-theme="dark"] body .app-shell .main-panel main h3,
-html[data-theme="dark"] body .app-shell .main-panel main h4,
-html[data-theme="dark"] body .app-shell .main-panel main th,
-html[data-theme="dark"] body .app-shell .main-panel main label,
-html[data-theme="dark"] body .app-shell .main-panel main strong,
-html[data-theme="dark"] body .app-shell .main-panel main .student-master-heading h1,
-html[data-theme="dark"] body .app-shell .main-panel main .master-hero h1,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-page-heading h1 {
-    color: var(--mawa-dark-text) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main p,
-html[data-theme="dark"] body .app-shell .main-panel main small,
-html[data-theme="dark"] body .app-shell .main-panel main .student-master-heading p,
-html[data-theme="dark"] body .app-shell .main-panel main .master-hero p,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-page-heading p,
-html[data-theme="dark"] body .app-shell .main-panel main .student-reference-card-count,
-html[data-theme="dark"] body .app-shell .main-panel main .list-toolbar,
-html[data-theme="dark"] body .app-shell .main-panel main .list-toolbar span {
-    color: var(--mawa-dark-muted) !important;
-}
-
-html[data-theme="dark"] body .app-shell .nav-item,
-html[data-theme="dark"] body .app-shell .nav-submenu a,
-html[data-theme="dark"] body .app-shell .nav-item .icon,
-html[data-theme="dark"] body .app-shell .nav-submenu a .icon,
-html[data-theme="dark"] body .app-shell .nav-chevron {
-    color: #cfe0d6 !important;
-    stroke: currentColor !important;
-}
-
-html[data-theme="dark"] body .app-shell .nav-item:hover,
-html[data-theme="dark"] body .app-shell .nav-item.active,
-html[data-theme="dark"] body .app-shell .nav-submenu a:hover,
-html[data-theme="dark"] body .app-shell .nav-submenu a.active {
-    color: var(--mawa-dark-text) !important;
-    background: #123323 !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel .topbar .icon-button,
-html[data-theme="dark"] body .app-shell .main-panel .topbar .theme-toggle-button,
-html[data-theme="dark"] body .app-shell .main-panel .topbar .notification-button,
-html[data-theme="dark"] body .app-shell .main-panel .topbar .logout-button,
-html[data-theme="dark"] body .app-shell .main-panel .topbar .menu-toggle,
-html[data-theme="dark"] body .app-shell .main-panel .topbar .active-year-pill,
-html[data-theme="dark"] body .login-theme-toggle {
-    color: #a7f3c4 !important;
-    background: var(--mawa-dark-panel-soft) !important;
-    border-color: var(--mawa-dark-field-border) !important;
-    box-shadow: none !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel .topbar .active-year-pill small,
-html[data-theme="dark"] body .app-shell .main-panel .topbar .active-year-pill strong {
-    color: #cfe0d6 !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .student-list-filter-card,
-html[data-theme="dark"] body .app-shell .main-panel main .student-data-card,
-html[data-theme="dark"] body .app-shell .main-panel main .student-list-table-card,
-html[data-theme="dark"] body .app-shell .main-panel main .master-create-card,
-html[data-theme="dark"] body .app-shell .main-panel main .master-card,
-html[data-theme="dark"] body .app-shell .main-panel main .card,
-html[data-theme="dark"] body .app-shell .main-panel main .table-wrap,
-html[data-theme="dark"] body .app-shell .main-panel main .student-fee-card-filter,
-html[data-theme="dark"] body .app-shell .main-panel main .student-filter-panel,
-html[data-theme="dark"] body .app-shell .main-panel main .student-reference-filter,
-html[data-theme="dark"] body .app-shell .main-panel main .identity-cleanup-canvas,
-html[data-theme="dark"] body .app-shell .main-panel main .metric-card,
-html[data-theme="dark"] body .app-shell .main-panel main .dashboard-card,
-html[data-theme="dark"] body .app-shell .main-panel main .dashboard-hero,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-workspace,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-one-stop-main,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-one-stop-side,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-registration-summary,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-form-body,
-html[data-theme="dark"] body .app-shell .main-panel main .fee-type-card,
-html[data-theme="dark"] body .app-shell .main-panel main .setting-card,
-html[data-theme="dark"] body .login-card,
-html[data-theme="dark"] body .login-role-card,
-html[data-theme="dark"] body .login-selected-role-box {
-    background: var(--mawa-dark-panel) !important;
-    border-color: var(--mawa-dark-border) !important;
-    box-shadow: none !important;
-}
-
-html[data-theme="dark"] body .login-role-card:hover,
-html[data-theme="dark"] body .login-type-radio:checked + .login-type-radio + .login-type-radio + .login-role-grid .login-role-card,
-html[data-theme="dark"] body .login-role-icon,
-html[data-theme="dark"] body .app-shell .main-panel main .metric-icon,
-html[data-theme="dark"] body .app-shell .main-panel main .badge,
-html[data-theme="dark"] body .app-shell .main-panel main .chip {
-    background: #143d2a !important;
-    color: #a7f3c4 !important;
-    border-color: var(--mawa-dark-field-border) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
-html[data-theme="dark"] body .app-shell .main-panel main select,
-html[data-theme="dark"] body .app-shell .main-panel main textarea,
-html[data-theme="dark"] body .app-shell .main-panel main output,
-html[data-theme="dark"] body .app-shell .main-panel main .student-fee-filter-search,
-html[data-theme="dark"] body .app-shell .main-panel main .student-fee-filter-search input,
-html[data-theme="dark"] body .login-input,
-html[data-theme="dark"] body .login-input input,
-html[data-theme="dark"] body .login-input select {
-    color: var(--mawa-dark-text) !important;
-    background: var(--mawa-dark-panel-soft) !important;
-    border-color: var(--mawa-dark-field-border) !important;
-    box-shadow: none !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main input::placeholder,
-html[data-theme="dark"] body .app-shell .main-panel main textarea::placeholder,
-html[data-theme="dark"] body .login-input input::placeholder {
-    color: var(--mawa-dark-placeholder) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main input:focus,
-html[data-theme="dark"] body .app-shell .main-panel main select:focus,
-html[data-theme="dark"] body .app-shell .main-panel main textarea:focus,
-html[data-theme="dark"] body .login-input:focus-within {
-    border-color: var(--mawa-dark-accent) !important;
-    box-shadow: 0 0 0 3px rgba(87, 199, 133, .16) !important;
-    outline: 0 !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main table,
-html[data-theme="dark"] body .app-shell .main-panel main .data-table,
-html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table,
-html[data-theme="dark"] body .app-shell .main-panel main .student-master-table,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-table {
-    background: var(--mawa-dark-panel) !important;
-    color: var(--mawa-dark-text) !important;
-    border-color: var(--mawa-dark-border) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main table thead th,
-html[data-theme="dark"] body .app-shell .main-panel main .data-table thead th,
-html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table thead th,
-html[data-theme="dark"] body .app-shell .main-panel main .student-master-table thead th,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-table thead th {
-    color: var(--mawa-dark-text) !important;
-    background: var(--mawa-dark-header) !important;
-    border-color: var(--mawa-dark-border) !important;
-    border-bottom-color: var(--mawa-dark-border) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main table tbody td,
-html[data-theme="dark"] body .app-shell .main-panel main table tfoot td,
-html[data-theme="dark"] body .app-shell .main-panel main .data-table tbody td,
-html[data-theme="dark"] body .app-shell .main-panel main .data-table tfoot td,
-html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table tbody td,
-html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table tfoot td,
-html[data-theme="dark"] body .app-shell .main-panel main .student-master-table tbody td,
-html[data-theme="dark"] body .app-shell .main-panel main .student-master-table tfoot td,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-table tbody td,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-table tfoot td {
-    color: #dbe8e1 !important;
-    background: var(--mawa-dark-panel) !important;
-    border-color: var(--mawa-dark-border) !important;
-    border-bottom-color: var(--mawa-dark-border) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main table tbody tr:hover td,
-html[data-theme="dark"] body .app-shell .main-panel main .data-table tbody tr:hover td,
-html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table tbody tr:hover td,
-html[data-theme="dark"] body .app-shell .main-panel main .student-master-table tbody tr:hover td,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-transaction-table tbody tr:hover td {
-    background: var(--mawa-dark-hover) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .student-name,
-html[data-theme="dark"] body .app-shell .main-panel main .student-flat-table td strong,
-html[data-theme="dark"] body .app-shell .main-panel main .student-master-table td strong,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-student-name,
-html[data-theme="dark"] body .app-shell .main-panel main .money,
-html[data-theme="dark"] body .app-shell .main-panel main .amount,
-html[data-theme="dark"] body .app-shell .main-panel main .currency,
-html[data-theme="dark"] body .app-shell .main-panel main [class*="total"] strong {
-    color: #9ff0bd !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .button-primary,
-html[data-theme="dark"] body .app-shell .main-panel main .student-search-button,
-html[data-theme="dark"] body .app-shell .main-panel main .student-fee-card-search-button,
-html[data-theme="dark"] body .app-shell .main-panel main .fee-type-card-search-button,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-submit-button,
-html[data-theme="dark"] body .login-submit {
-    color: #ffffff !important;
-    background: var(--mawa-dark-primary) !important;
-    border-color: var(--mawa-dark-primary) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .button-primary:hover,
-html[data-theme="dark"] body .app-shell .main-panel main .student-search-button:hover,
-html[data-theme="dark"] body .app-shell .main-panel main .student-fee-card-search-button:hover,
-html[data-theme="dark"] body .app-shell .main-panel main .fee-type-card-search-button:hover,
-html[data-theme="dark"] body .app-shell .main-panel main .payment-submit-button:hover,
-html[data-theme="dark"] body .login-submit:hover {
-    background: var(--mawa-dark-primary-hover) !important;
-    border-color: var(--mawa-dark-primary-hover) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .button-secondary,
-html[data-theme="dark"] body .app-shell .main-panel main .student-filter-reset,
-html[data-theme="dark"] body .app-shell .main-panel main .student-fee-card-reset-button,
-html[data-theme="dark"] body .app-shell .main-panel main .fee-type-card-reset-button,
-html[data-theme="dark"] body .login-access-reset {
-    color: #dbe8e1 !important;
-    background: var(--mawa-dark-panel-soft) !important;
-    border-color: var(--mawa-dark-field-border) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .icon-button,
-html[data-theme="dark"] body .app-shell .main-panel main .student-ghost-actions .icon-button {
-    color: #cfe0d6 !important;
-    background: transparent !important;
-    border-color: transparent !important;
-    box-shadow: none !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .icon-button:hover,
-html[data-theme="dark"] body .app-shell .main-panel main .student-ghost-actions .icon-button:hover {
-    color: #a7f3c4 !important;
-    background: #123323 !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .delete-button,
-html[data-theme="dark"] body .app-shell .main-panel main .danger,
-html[data-theme="dark"] body .app-shell .main-panel main .text-danger {
-    color: #ff9aa2 !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .alert,
-html[data-theme="dark"] body .app-shell .main-panel main .empty-state {
-    background: var(--mawa-dark-panel-soft) !important;
-    color: var(--mawa-dark-muted) !important;
-    border-color: var(--mawa-dark-field-border) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .pagination,
-html[data-theme="dark"] body .app-shell .main-panel main .pagination a,
-html[data-theme="dark"] body .app-shell .main-panel main .pagination span {
-    background: var(--mawa-dark-panel) !important;
-    color: var(--mawa-dark-muted) !important;
-    border-color: var(--mawa-dark-border) !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .chart-bar,
-html[data-theme="dark"] body .app-shell .main-panel main [class*="bar-fill"] {
-    background: #188556 !important;
-    border-color: #188556 !important;
-}
-
-html[data-theme="dark"] body .app-shell .main-panel main .chart-grid-line,
-html[data-theme="dark"] body .app-shell .main-panel main [class*="chart-grid"],
-html[data-theme="dark"] body .app-shell .main-panel main [class*="axis"] {
-    border-color: rgba(185, 201, 192, .22) !important;
-    color: var(--mawa-dark-muted) !important;
-}
-
-html[data-theme="dark"] body ::selection {
-    color: #06140e !important;
-    background: #9ff0bd !important;
-}
-
-html[data-theme="dark"] body ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-html[data-theme="dark"] body ::-webkit-scrollbar-track {
-    background: #07140f;
-}
-
-html[data-theme="dark"] body ::-webkit-scrollbar-thumb {
-    background: #335247;
-    border: 2px solid #07140f;
-    border-radius: 999px;
-}
-
-html[data-theme="dark"] body ::-webkit-scrollbar-thumb:hover {
-    background: #477064;
-}
-
-/* Menu Pembayaran final: consolidated PRD styles, scoped to /keuangan/pembayaran. */
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page {
-    width: 100% !important;
-    max-width: 1200px !important;
-    margin: 0 auto !important;
-    padding: 24px 32px 32px !important;
-    color: #020617 !important;
-    background: #ffffff !important;
-    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-    font-size: 14px !important;
-    line-height: 1.35 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page *,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page *::before,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page *::after {
-    box-sizing: border-box !important;
-    letter-spacing: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-transaction-workspace {
-    display: block !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    overflow: visible !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-page-head {
-    display: flex !important;
-    align-items: flex-start !important;
-    justify-content: space-between !important;
-    gap: 16px !important;
-    margin: 0 0 16px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-page-head h1 {
-    margin: 0 !important;
-    color: #020617 !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-page-head p {
-    max-width: 560px !important;
-    margin: 4px 0 0 !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.45 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-import-action,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    padding: 0 16px !important;
-    color: #ffffff !important;
-    background: #004528 !important;
-    border: 1px solid #004528 !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1 !important;
-    text-decoration: none !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-import-action {
-    min-width: 148px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-button {
-    width: 100% !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-import-action:hover,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-button:hover {
-    background: #0d5f36 !important;
-    border-color: #0d5f36 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-button:disabled {
-    cursor: not-allowed !important;
-    opacity: .6 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-import-action .icon {
-    width: 18px !important;
-    height: 18px !important;
-    stroke: currentColor !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-layout {
-    display: grid !important;
-    grid-template-columns: minmax(280px, 370px) minmax(0, 1fr) !important;
-    align-items: start !important;
-    gap: 16px 32px !important;
-    width: 100% !important;
-    margin: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-side,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person {
-    display: contents !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-main,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-form,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-payment-panel {
-    width: 100% !important;
-    min-width: 0 !important;
-    max-width: none !important;
-    margin: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-search-panel,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person-head.payment-one-stop-profile-card,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-card,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-summary-card,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-card,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    overflow: hidden !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-search-panel {
-    display: grid !important;
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-    gap: 18px !important;
-    max-width: 370px !important;
-    min-height: 150px !important;
-    padding: 22px 28px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-heading,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-panel-heading,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-title,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-payment-head,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-panel-heading h2,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-title h2,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head h2,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-payment-head h2,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-title h2 {
-    margin: 0 !important;
-    color: #020617 !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    line-height: 1.25 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search label {
-    display: block !important;
-    width: 100% !important;
-    margin: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-field {
-    position: relative !important;
-    display: flex !important;
-    align-items: center !important;
-    width: 100% !important;
-    max-width: 314px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-field input[type="search"],
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls select,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls input[type="text"] {
-    width: 100% !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    color: #020617 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 40px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-field input[type="search"] {
-    padding: 0 46px 0 12px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls select,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls input[type="text"] {
-    padding: 0 12px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page input::placeholder {
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page input:focus,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page select:focus,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page textarea:focus {
-    border-color: #157144 !important;
-    outline: 0 !important;
-    box-shadow: 0 0 0 3px rgba(21, 113, 68, .14) !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-reset {
-    position: absolute !important;
-    right: 6px !important;
-    top: 50% !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 32px !important;
-    height: 32px !important;
-    color: #707971 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    transform: translateY(-50%) !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-reset .icon {
-    width: 18px !important;
-    height: 18px !important;
-    stroke: currentColor !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-list {
-    display: grid !important;
-    gap: 8px !important;
-    width: 100% !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-card {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) max-content !important;
-    align-items: center !important;
-    gap: 12px !important;
-    width: 100% !important;
-    padding: 12px !important;
-    color: #020617 !important;
-    background: #fbfdf8 !important;
-    border: 1px solid #dfe5dc !important;
-    border-radius: 8px !important;
-    text-decoration: none !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-card:hover,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-card.is-selected {
-    border-color: #157144 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy {
-    display: grid !important;
-    gap: 4px !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy strong {
-    color: #020617 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1.25 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-copy small,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-unit-count {
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
-    display: grid !important;
-    grid-column: 2 !important;
-    grid-row: 1 !important;
-    align-content: center !important;
-    gap: 12px !important;
-    min-height: 150px !important;
-    padding: 24px 48px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state strong {
-    color: #020617 !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    line-height: 1.25 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state span {
-    max-width: 520px !important;
-    color: #404942 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.45 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person-head.payment-one-stop-profile-card {
-    position: relative !important;
-    display: grid !important;
-    grid-column: 2 !important;
-    grid-row: 1 !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 16px !important;
-    min-height: 0 !important;
-    padding: 24px 48px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-student-icon {
-    display: none !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-list {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    gap: 12px !important;
-    width: min(560px, 100%) !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-item {
-    display: grid !important;
-    grid-template-columns: 220px 16px minmax(0, 1fr) !important;
-    align-items: start !important;
-    gap: 12px !important;
-    min-height: 22px !important;
-    color: #020617 !important;
-    font-size: 14px !important;
-    line-height: 1.35 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-item > span:first-child,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-item > span:nth-child(2) {
-    color: #334155 !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-item > strong {
-    min-width: 0 !important;
-    color: #020617 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1.35 !important;
-    overflow-wrap: anywhere !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-payment-panel {
-    display: block !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    box-shadow: none !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-form {
-    grid-column: 1 / -1 !important;
-    grid-row: 2 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-form .payment-prd-pay-grid {
-    display: grid !important;
-    grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr) !important;
-    align-items: start !important;
-    gap: 20px !important;
-    width: 100% !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-card,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-summary-card {
-    display: block !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-payment-head {
-    display: flex !important;
-    align-items: center !important;
-    min-height: 58px !important;
-    padding: 0 28px !important;
-    border-bottom: 1px solid #e5e7eb !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-error,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty {
-    margin: 16px 24px !important;
-    padding: 12px 14px !important;
-    color: #707971 !important;
-    background: #fbfdf8 !important;
-    border: 1px solid #dfe5dc !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.4 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-error {
-    color: #ef1f2d !important;
-    background: #fff4f4 !important;
-    border-color: #f2cfd2 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-section {
-    padding: 18px 24px 0 !important;
-    border-top: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-optional-section {
-    margin-top: 16px !important;
-    padding-top: 16px !important;
-    border-top: 1px solid #e5e7eb !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-section-title {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) max-content !important;
-    align-items: center !important;
-    gap: 12px !important;
-    margin: 0 0 12px !important;
-    padding: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-section-title strong {
-    color: #020617 !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    line-height: 1.25 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-section-title span {
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.25 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-list {
-    display: grid !important;
-    gap: 0 !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-row {
-    display: grid !important;
-    grid-template-columns: 28px minmax(0, 1fr) minmax(128px, max-content) !important;
-    align-items: start !important;
-    gap: 12px !important;
-    width: 100% !important;
-    min-height: 0 !important;
-    margin: 0 !important;
-    padding: 16px 0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-bottom: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    cursor: pointer !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-row:first-child {
-    padding-top: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-row + .payment-one-stop-bill-modern-row {
-    border-top: 1px solid #e5e7eb !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-row input[type="checkbox"] {
-    width: 18px !important;
-    height: 18px !important;
-    margin: 2px 0 0 !important;
-    accent-color: #004528 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-copy {
-    display: grid !important;
-    gap: 6px !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-copy strong {
-    color: #020617 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1.25 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-copy > span {
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-period-field {
-    display: grid !important;
-    grid-template-columns: max-content 168px !important;
-    align-items: center !important;
-    gap: 10px !important;
-    margin-top: 8px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-period-field > span {
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.25 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-period-field select {
-    width: 168px !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    padding: 0 10px !important;
-    color: #020617 !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-amount,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-amount,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-amount {
-    display: inline-flex !important;
-    align-items: baseline !important;
-    justify-content: flex-end !important;
-    gap: 4px !important;
-    min-width: 128px !important;
-    color: #004528 !important;
-    text-align: right !important;
-    white-space: nowrap !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1.25 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-total {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) max-content !important;
-    align-items: center !important;
-    gap: 16px !important;
-    margin: 0 24px !important;
-    padding: 14px 0 16px !important;
-    color: #020617 !important;
-    background: transparent !important;
-    border-top: 1px solid #e5e7eb !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-total > span:first-child {
-    color: #020617 !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-total strong {
-    color: #004528 !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls {
-    display: grid !important;
-    gap: 12px !important;
-    padding: 24px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls > label {
-    display: grid !important;
-    gap: 8px !important;
-    margin: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls > label > span,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-upload > span {
-    color: #334155 !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-    line-height: 1.25 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls input[data-payment-paid-display] {
-    background: #fbfdf8 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-total-box {
-    display: grid !important;
-    gap: 6px !important;
-    padding: 16px 18px !important;
-    background: #fbfdf8 !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-total-box > span:first-child {
-    color: #334155 !important;
-    font-size: 14px !important;
-    font-weight: 500 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-total-box .payment-one-stop-bill-total-amount {
-    display: inline-flex !important;
-    align-items: baseline !important;
-    gap: 4px !important;
-    color: #004528 !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-total-box b {
-    color: #004528 !important;
-    font-size: 20px !important;
-    font-weight: 700 !important;
-    line-height: 1.2 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) !important;
-    align-items: start !important;
-    gap: 10px !important;
-    padding: 14px 16px !important;
-    color: #020617 !important;
-    background: #fbfdf8 !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card[hidden],
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-upload[hidden] {
-    display: none !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card span,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card small {
-    display: block !important;
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card strong {
-    display: block !important;
-    margin: 6px 0 2px !important;
-    color: #020617 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    overflow-wrap: anywhere !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-card button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    justify-self: start !important;
-    gap: 8px !important;
-    width: fit-content !important;
-    min-width: 168px !important;
-    height: 40px !important;
-    padding: 0 12px !important;
-    color: #004528 !important;
-    background: #e9f8ef !important;
-    border: 1px solid #dfe5dc !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-transfer-upload {
-    display: grid !important;
-    gap: 8px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-field {
-    position: relative !important;
-    display: grid !important;
-    grid-template-columns: 34px minmax(0, 1fr) !important;
-    align-items: center !important;
-    gap: 10px !important;
-    min-height: 58px !important;
-    padding: 12px !important;
-    background: #fbfdf8 !important;
-    border: 1px dashed #d1d5db !important;
-    border-radius: 8px !important;
-    cursor: pointer !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-field input[type="file"] {
-    position: absolute !important;
-    inset: 0 !important;
-    opacity: 0 !important;
-    cursor: pointer !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-icon {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 34px !important;
-    height: 34px !important;
-    color: #004528 !important;
-    background: #e9f8ef !important;
-    border-radius: 8px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-copy {
-    display: grid !important;
-    gap: 4px !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-copy strong {
-    color: #020617 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-upload-copy small {
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-card {
-    grid-column: 1 / -1 !important;
-    grid-row: 3 !important;
-    margin-top: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 16px !important;
-    min-height: 64px !important;
-    padding: 0 42px !important;
-    border-bottom: 1px solid #e5e7eb !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-title {
-    display: grid !important;
-    gap: 4px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-title span {
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-link {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    height: 40px !important;
-    padding: 0 16px !important;
-    color: #004528 !important;
-    background: #fbfdf8 !important;
-    border: 1px solid #dfe5dc !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    text-decoration: none !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-list {
-    display: grid !important;
-    gap: 8px !important;
-    padding: 24px 28px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-item {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) minmax(132px, max-content) 116px !important;
-    align-items: center !important;
-    gap: 16px !important;
-    min-height: 64px !important;
-    padding: 12px 16px !important;
-    background: #ffffff !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-copy {
-    display: grid !important;
-    gap: 4px !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-copy strong {
-    color: #020617 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    line-height: 1.25 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-meta {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 4px 8px !important;
-    color: #707971 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-meta > span,
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-meta > small {
-    color: #707971 !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-actions {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap: 8px !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-actions form {
-    display: inline-flex !important;
-    margin: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-action {
-    display: inline-grid !important;
-    place-items: center !important;
-    width: 28px !important;
-    height: 28px !important;
-    padding: 0 !important;
-    color: #004528 !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-radius: 8px !important;
-    box-shadow: none !important;
-    text-decoration: none !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-action .icon {
-    width: 18px !important;
-    height: 18px !important;
-    stroke: currentColor !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-action.danger {
-    color: #ef1f2d !important;
-}
-
-html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-empty {
-    margin: 24px 28px !important;
-    padding: 24px !important;
-    color: #707971 !important;
-    background: #fbfdf8 !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 400 !important;
-}
-
-html body .payment-receipt-fallback-modal[hidden],
-html body .payment-history-delete-modal[hidden] {
-    display: none !important;
-}
-
-html body .payment-receipt-fallback-modal.show,
-html body .payment-history-delete-modal.show {
-    display: grid !important;
-}
-
-html body .payment-receipt-fallback-actions,
-html body .payment-history-delete-modal .form-actions {
-    display: flex !important;
-    justify-content: center !important;
-    gap: 10px !important;
-}
-
-html body .payment-history-delete-modal .form-modal {
-    max-width: 420px !important;
-}
-
-@media (width <= 1180px) {
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-form .payment-prd-pay-grid {
-        grid-template-columns: minmax(0, 1fr) !important;
-    }
-}
-
-@media (width <= 960px) {
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-layout {
-        grid-template-columns: minmax(0, 1fr) !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-search-panel,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person-head.payment-one-stop-profile-card,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-pay-form,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-card {
-        grid-column: 1 / -1 !important;
-        grid-row: auto !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-search-panel {
-        max-width: none !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-search-field {
-        max-width: none !important;
-    }
-}
-
-@media (width <= 760px) {
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page {
-        padding: 16px !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-page-head,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-head {
-        flex-direction: column !important;
-        align-items: stretch !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-import-action,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-history-link {
-        width: 100% !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-search-panel,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-person-head.payment-one-stop-profile-card,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-empty-state {
-        padding: 20px 18px !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-profile-item {
-        grid-template-columns: minmax(0, 1fr) 12px minmax(0, 1.3fr) !important;
-        gap: 8px !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bills-head,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-payment-head,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-head,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-section,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-total,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-form-controls,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-list {
-        padding-inline: 18px !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-total {
-        margin-inline: 18px !important;
-        padding-inline: 0 !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-bill-modern-row {
-        grid-template-columns: 24px minmax(0, 1fr) !important;
-        gap: 10px !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-bill-amount {
-        grid-column: 2 !important;
-        justify-content: flex-start !important;
-        text-align: left !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-period-field {
-        grid-template-columns: minmax(0, 1fr) !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-prd-period-field select {
-        width: 100% !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-item {
-        grid-template-columns: minmax(0, 1fr) !important;
-        align-items: start !important;
-    }
-
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-amount,
-    html body .app-shell .main-panel main.payment-hub-page.payment-transaction-page.payment-flat-page .payment-one-stop-history-actions {
-        justify-content: flex-start !important;
-    }
-
-    html body .payment-receipt-fallback-actions,
-    html body .payment-history-delete-modal .form-actions {
-        flex-direction: column !important;
-    }
-}
-
-html body .app-footer {
-    margin: 0;
-    padding: 8px 16px 12px;
-    color: #707971;
-    background: transparent;
-    border: 0;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.4;
-}
-
-html body .app-shell .main-panel main.payment-hub-page + .app-footer,
-html body .app-shell .main-panel main.payment-flat-page + .app-footer {
-    box-sizing: border-box;
-    width: 100%;
-    margin: 0 auto;
-    padding: 8px 16px 12px;
-    color: #707971;
-    background: transparent;
-    border: 0;
-    text-align: center;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 1.4;
-}
-
-/* Compact failed-payment review table. */
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-head {
-    align-items: center !important;
-    gap: 16px !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-title {
-    display: grid !important;
-    gap: 3px !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-title strong {
-    color: #020617 !important;
-    font-size: 16px !important;
-    font-weight: 700 !important;
-    line-height: 1.35 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-title span {
-    color: #707971 !important;
-    font-size: 13px !important;
-    font-weight: 400 !important;
-    line-height: 1.35 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search {
-    box-sizing: border-box !important;
-    display: grid !important;
-    grid-template-columns: 18px minmax(0, 1fr) !important;
-    align-items: center !important;
-    flex: 0 1 320px !important;
-    width: 100% !important;
-    min-width: 240px !important;
-    max-width: 360px !important;
-    height: 40px !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 8px !important;
-    background: #ffffff !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search:focus-within {
-    border-color: #157144 !important;
-    outline: 2px solid rgba(21, 113, 68, .12) !important;
-    outline-offset: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search-icon {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 18px !important;
-    height: 18px !important;
-    margin-left: 12px !important;
-    color: #64748b !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search-icon .icon {
-    width: 16px !important;
-    height: 16px !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search input {
-    box-sizing: border-box !important;
-    width: 100% !important;
-    height: 38px !important;
-    min-height: 38px !important;
-    min-width: 0 !important;
-    padding: 0 12px 0 8px !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    background: #ffffff !important;
-    color: #0f172a !important;
-    font: inherit !important;
-    font-size: 14px !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search input:focus {
-    outline: none !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-wrap {
-    overflow-x: auto !important;
-    overflow-y: visible !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table {
-    min-width: 860px !important;
-    table-layout: fixed !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th,
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table td {
-    height: 52px !important;
-    padding: 10px 12px !important;
-    vertical-align: middle !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(1) { width: 7% !important; }
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(2) { width: 12% !important; }
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(3) { width: 27% !important; }
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(4) { width: 16% !important; }
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(5) { width: 16% !important; }
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table th:nth-child(6) { width: 22% !important; }
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table td strong {
-    font-weight: 500 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-amount {
-    text-align: right !important;
-    white-space: nowrap !important;
-    font-variant-numeric: tabular-nums !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-problem-cell {
-    display: grid !important;
-    align-content: center !important;
-    justify-items: start !important;
-    gap: 4px !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-problem-cell > span {
-    overflow: hidden !important;
-    max-width: 100% !important;
-    color: #991b1b !important;
-    font-weight: 600 !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-toggle {
-    appearance: none !important;
-    width: auto !important;
-    padding: 0 !important;
-    border: 0 !important;
-    background: transparent !important;
-    color: #004528 !important;
-    font: inherit !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    line-height: 1.35 !important;
-    text-decoration: underline !important;
-    text-underline-offset: 2px !important;
-    cursor: pointer !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-toggle:focus-visible {
-    border-radius: 3px !important;
-    outline: 2px solid #004528 !important;
-    outline-offset: 2px !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-row[hidden] {
-    display: none !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table .payment-import-preview-detail-row td {
-    height: auto !important;
-    padding: 0 !important;
-    background: #fbfdf8 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 16px !important;
-    padding: 14px 16px 16px !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content > div {
-    display: grid !important;
-    gap: 4px !important;
-    min-width: 0 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content strong {
-    color: #334155 !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    line-height: 1.35 !important;
-    text-transform: uppercase !important;
-    letter-spacing: .02em !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content p {
-    margin: 0 !important;
-    color: #475569 !important;
-    font-size: 13px !important;
-    line-height: 1.5 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-pagination {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 12px !important;
-    min-width: 0 !important;
-    margin-top: 12px !important;
-    color: #64748b !important;
-    font-size: 13px !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-pagination [data-payment-import-preview-pages] {
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-width: 32px !important;
-    height: 32px !important;
-    padding: 0 8px !important;
-    border: 1px solid #d1d5db !important;
-    border-radius: 6px !important;
-    background: #ffffff !important;
-    color: #334155 !important;
-    font: inherit !important;
-    font-size: 13px !important;
-    cursor: pointer !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button:hover:not(:disabled),
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button.is-current {
-    border-color: #b7d6c6 !important;
-    background: #f0fbf5 !important;
-    color: #004528 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-page-button:disabled {
-    color: #94a3b8 !important;
-    cursor: not-allowed !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    gap: 12px !important;
-    min-height: 72px !important;
-    padding: 16px !important;
-    border: 1px solid #b7d6c6 !important;
-    border-radius: 8px !important;
-    background: #f0fbf5 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty-icon {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex: 0 0 24px !important;
-    width: 24px !important;
-    height: 24px !important;
-    border-radius: 50% !important;
-    background: #0d5f36 !important;
-    color: #ffffff !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty-icon .icon {
-    width: 15px !important;
-    height: 15px !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success > div {
-    display: grid !important;
-    gap: 2px !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success strong {
-    color: #0d5f36 !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-empty.is-success span:not(.payment-import-preview-empty-icon) {
-    color: #475569 !important;
-    font-size: 13px !important;
-}
-
-html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-top .button {
-    background: #004528 !important;
-    border-color: #004528 !important;
-    color: #ffffff !important;
-}
-
-@media (max-width: 700px) {
-    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-table-head {
-        align-items: stretch !important;
-        flex-direction: column !important;
-    }
-
-    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-search {
-        width: 100% !important;
-        min-width: 0 !important;
-        max-width: none !important;
-    }
-
-    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-pagination {
-        align-items: flex-start !important;
-        flex-direction: column !important;
-    }
-
-    html body .app-shell .main-panel main.payment-import-preview-page .payment-import-preview-detail-content {
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-    }
+    :root { --app-page-padding-x: 16px; --app-page-padding-y: 16px; }
+    .topbar { min-height: 60px; padding-inline: 16px; }
+    .active-year-pill small { display: none; }
+    .form-actions { display: grid; grid-template-columns: 1fr; }
+    .form-actions .button, .form-actions button, .form-actions a { width: 100%; }
+    .modal-backdrop.show, .result-modal-backdrop.show { align-items: start; overflow-y: auto; padding: 16px; }
 }

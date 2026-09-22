@@ -1,3 +1,46 @@
+// ============================================================
+// Application theme: independent from payment and form workflows.
+// ============================================================
+const themeToggle = document.querySelector('[data-theme-toggle]');
+const themeStorageKey = 'mawa-center-theme';
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+const systemThemeQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
+
+const storedTheme = () => {
+    try {
+        const value = window.localStorage.getItem(themeStorageKey);
+        return value === 'light' || value === 'dark' ? value : null;
+    } catch {
+        return null;
+    }
+};
+
+const applyTheme = (theme) => {
+    const isDark = theme === 'dark';
+    document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+    themeToggle?.setAttribute('aria-label', isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
+    themeToggle?.setAttribute('title', isDark ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
+    themeToggle?.setAttribute('aria-pressed', String(isDark));
+    themeColorMeta?.setAttribute('content', isDark ? '#1c2536' : '#ffffff');
+};
+
+const initialTheme = storedTheme() ?? (systemThemeQuery?.matches ? 'dark' : 'light');
+applyTheme(initialTheme);
+
+themeToggle?.addEventListener('click', () => {
+    const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(nextTheme);
+    try {
+        window.localStorage.setItem(themeStorageKey, nextTheme);
+    } catch {
+        // Theme remains active for this session when storage is unavailable.
+    }
+});
+
+systemThemeQuery?.addEventListener('change', (event) => {
+    if (!storedTheme()) applyTheme(event.matches ? 'dark' : 'light');
+});
+
 const sidebar = document.querySelector('[data-sidebar]');
 const overlay = document.querySelector('[data-sidebar-overlay]');
 const toast = document.querySelector('[data-toast]');
@@ -140,6 +183,13 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     const defaultSubmitLabel = submitLabel?.textContent || 'Bayar & Cetak Struk';
     const isEditPayment = Boolean(form.dataset.paymentEditMode);
     const hasTransferProof = form.dataset.paymentHasTransferProof === 'true';
+    const paymentWorkspace = form.closest('.payment-prd-layout');
+    const statTotalOutput = paymentWorkspace?.querySelector('[data-payment-stat-total]');
+    const statPaidOutput = paymentWorkspace?.querySelector('[data-payment-stat-paid]');
+    const statRemainingOutput = paymentWorkspace?.querySelector('[data-payment-stat-remaining]');
+    const statPercentOutput = paymentWorkspace?.querySelector('[data-payment-stat-percent]');
+    const statProgress = paymentWorkspace?.querySelector('[data-payment-stat-progress]');
+    const statRemainingNote = paymentWorkspace?.querySelector('[data-payment-stat-remaining-note]');
     let paidTouched = false;
     let validationAttempted = Boolean(paidError?.textContent.trim() || transferError?.textContent.trim());
     let isSubmitting = false;
@@ -181,6 +231,23 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     };
 
     const formatTotal = (total) => (total > 0 ? formatter.format(total) : '');
+
+    const syncReferenceStats = (total) => {
+        const paidAmount = Number(digitsOnly(paidInput?.value || '0'));
+        const remaining = Math.max(total - paidAmount, 0);
+        const percent = total > 0 ? Math.min(100, Math.round((paidAmount / total) * 100)) : 0;
+
+        if (statTotalOutput) statTotalOutput.textContent = formatter.format(total);
+        if (statPaidOutput) statPaidOutput.textContent = formatter.format(paidAmount);
+        if (statRemainingOutput) statRemainingOutput.textContent = formatter.format(remaining);
+        if (statPercentOutput) statPercentOutput.textContent = String(percent);
+        if (statProgress) statProgress.style.width = `${percent}%`;
+        if (statRemainingNote) {
+            statRemainingNote.textContent = remaining > 0
+                ? 'Masih ada nominal yang belum dibayar'
+                : 'Pembayaran terpilih lunas';
+        }
+    };
 
     const showFieldError = (target, message, shouldShow) => {
         if (!target) return;
@@ -224,6 +291,7 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         showFieldError(paidError, paidMessage, showErrors);
         showFieldError(transferError, proofMessage, showErrors);
         if (paidTotalOutput) paidTotalOutput.textContent = `${formatter.format(paidAmount)},-`;
+        syncReferenceStats(total);
 
         const isValid = total > 0
             && paidAmount > 0
@@ -812,14 +880,6 @@ document.querySelectorAll('[data-alert-close]').forEach((button) => {
 document.querySelectorAll('[data-alert]').forEach((alert) => {
     alert.addEventListener('click', (event) => {
         if (event.target === alert) alert.remove();
-    });
-});
-
-document.querySelectorAll('[data-master-nav-toggle]').forEach((button) => {
-    button.addEventListener('click', () => {
-        const group = button.closest('.master-nav');
-        const open = group.classList.toggle('open');
-        button.setAttribute('aria-expanded', String(open));
     });
 });
 

@@ -29,7 +29,7 @@
             <b data-student-import-progress-percent>0%</b>
         </div>
         <div class="student-import-progress-track" aria-hidden="true">
-            <span data-student-import-progress-bar style="width: 0%"></span>
+            <span data-student-import-progress-bar></span>
         </div>
         <div class="student-import-progress-meta">
             <span>Diproses <strong data-student-import-progress-processed>0</strong>/<strong data-student-import-progress-total>{{ number_format($studentImportTotal, 0, ',', '.') }}</strong></span>

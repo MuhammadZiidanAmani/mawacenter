@@ -6,86 +6,7 @@
     <title>Master Data - MA'WA CENTER</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @if(($tab ?? null) === 'students')
-        <style data-student-data-mobile-final-lock>
-            @media (max-width: 960px) {
-                html body.student-data-body,
-                html body.student-data-body .app-shell,
-                html body.student-data-body .main-panel,
-                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) {
-                    max-width:100vw !important;
-                    overflow-x:hidden !important;
-                }
-
-                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) {
-                    box-sizing:border-box !important;
-                    width:100% !important;
-                    min-width:0 !important;
-                    padding:16px !important;
-                }
-
-                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-reference-align-lock {
-                    box-sizing:border-box !important;
-                    width:100% !important;
-                    max-width:100% !important;
-                    min-width:0 !important;
-                    margin-inline:0 !important;
-                    overflow:hidden !important;
-                }
-
-                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-list-filter-card.student-reference-align-lock > .student-flat-header,
-                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) > section.student-list-filter-card.student-reference-align-lock .student-title-actions {
-                    display:grid !important;
-                    grid:auto / 1fr !important;
-                    gap:8px !important;
-                    width:100% !important;
-                    min-width:0 !important;
-                    max-width:100% !important;
-                }
-
-                html body.student-data-body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock .student-title-actions.student-export-actions {
-                    display:grid !important;
-                    grid:auto / 1fr !important;
-                    gap:8px !important;
-                    width:100% !important;
-                    min-width:0 !important;
-                    max-width:100% !important;
-                }
-
-                html body.student-data-body main.student-page:not(.student-create-page):not(.student-import-page) .student-title-actions :is(.button, .student-add-button, .action-purple, .action-green),
-                html body.student-data-body form#student-data-filter .student-filter-actions .button,
-                html body.student-data-body .app-shell .main-panel main.student-page:not(.student-create-page):not(.student-import-page):not(.payment-flat-page):not(.report-flat-page):not(.bill-page):not(.student-management-page):not(.identity-cleanup-page):not(.student-alumni-v7) > section.student-list-filter-card.student-reference-align-lock .student-title-actions.student-export-actions :is(.button, .student-add-button, .action-purple, .action-green) {
-                    box-sizing:border-box !important;
-                    width:100% !important;
-                    min-width:0 !important;
-                    max-width:100% !important;
-                    height:40px !important;
-                    justify-content:center !important;
-                    padding-inline:10px !important;
-                    overflow:hidden !important;
-                    text-overflow:ellipsis !important;
-                    white-space:nowrap !important;
-                }
-
-                html body.student-data-body form#student-data-filter.student-filter-panel.student-reference-filter.student-fee-card-filter,
-                html body.student-data-body form#student-data-filter .student-reference-filter-grid,
-                html body.student-data-body form#student-data-filter .student-filter-actions.student-data-filter-actions {
-                    display:grid !important;
-                    grid:auto / 1fr !important;
-                    grid-column:auto !important;
-                    grid-row:auto !important;
-                    width:100% !important;
-                    min-width:0 !important;
-                    max-width:100% !important;
-                    overflow:hidden !important;
-                }
-
-                html body.student-data-body form#student-data-filter .student-filter-actions.student-data-filter-actions {
-                    grid:auto / 1fr 1fr !important;
-                    gap:8px !important;
-                }
-            }
-        </style>
-    @endif
+        @endif
 </head>
 <body class="{{ ($tab ?? null) === 'students' ? 'student-data-body' : 'master-data-body' }}">
 @php
@@ -176,6 +97,7 @@
             <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar" title="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
             <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ optional($academicYears->firstWhere('is_active', true))->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
+            @include('partials.theme-toggle')
             <button class="icon-button notification-button" type="button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}<span></span></button>
             @include('partials.logout-button', ['icon' => $icon('logout')])
         </header>
