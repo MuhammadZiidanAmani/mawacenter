@@ -35,6 +35,7 @@ main.payment-hub-page {
 .payment-hub-page > .payment-prd-page-head,
 .payment-hub-page > .payment-one-stop-layout:not(.is-student-selected) {
     width: min(100%, var(--app-content-width));
+    min-width: 0;
     margin-inline: auto;
 }
 
@@ -84,6 +85,9 @@ main.payment-hub-page {
 /* The unselected state is a data-first overview. */
 .payment-overview-panel {
     display: grid;
+    width: 100%;
+    min-width: 0;
+    max-width: 1200px;
     gap: 20px;
     overflow: visible;
     background: transparent;
@@ -171,34 +175,35 @@ main.payment-hub-page {
     gap: 8px;
 }
 
+.payment-overview-panel > section,
+.payment-overview-table-wrap {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+}
+
 .payment-overview-table-wrap {
     overflow-x: auto;
 }
 
 .payment-overview-table-frame {
-    min-width: 1160px;
+    min-width: 900px;
     overflow: hidden;
     background: var(--app-surface);
     border: 1px solid var(--app-border);
     border-radius: var(--app-radius);
 }
 
-.payment-overview-progress > span.is-empty,
 .payment-reference-progress > span.is-empty { width: 0; }
 
-.payment-overview-progress > span.is-trace,
 .payment-reference-progress > span.is-trace { width: 12%; }
 
-.payment-overview-progress > span.is-quarter,
 .payment-reference-progress > span.is-quarter { width: 25%; }
 
-.payment-overview-progress > span.is-half,
 .payment-reference-progress > span.is-half { width: 50%; }
 
-.payment-overview-progress > span.is-most,
 .payment-reference-progress > span.is-most { width: 75%; }
 
-.payment-overview-progress > span.is-complete,
 .payment-reference-progress > span.is-complete { width: 100%; }
 
 .payment-overview-table {
@@ -221,25 +226,21 @@ main.payment-hub-page {
     background: var(--app-surface);
     font-size: var(--app-text-body-size);
     font-weight: 600;
-    text-align: left;
+    text-align: center;
 }
 
-.payment-overview-table th:nth-child(1) { width: 48px; text-align: center; }
-.payment-overview-table th:nth-child(2) { width: 260px; }
+.payment-overview-table th:nth-child(1) { width: 56px; }
+.payment-overview-table th:nth-child(2) { width: 300px; }
 .payment-overview-table th:nth-child(3) { width: 200px; }
-.payment-overview-table th:nth-child(4) { width: 140px; text-align: right; }
-.payment-overview-table th:nth-child(5) { width: 160px; text-align: right; }
-.payment-overview-table th:nth-child(6) { width: 135px; text-align: right; }
-.payment-overview-table th:nth-child(7) { width: 150px; text-align: center; }
-.payment-overview-table th:nth-child(8) { width: 68px; text-align: center; }
+.payment-overview-table th:nth-child(4) { width: 170px; }
+.payment-overview-table th:nth-child(5) { width: 150px; }
+.payment-overview-table th:nth-child(6) { width: 68px; }
 
 .payment-overview-table :is(th, td):nth-child(1),
-.payment-overview-table :is(th, td):nth-child(7),
-.payment-overview-table :is(th, td):nth-child(8) { text-align: center; }
+.payment-overview-table :is(th, td):nth-child(5),
+.payment-overview-table :is(th, td):nth-child(6) { text-align: center; }
 
-.payment-overview-table :is(td):nth-child(4),
-.payment-overview-table :is(td):nth-child(5),
-.payment-overview-table :is(td):nth-child(6) { text-align: right; }
+.payment-overview-table :is(td):nth-child(4) { text-align: right; }
 
 .payment-overview-table tbody tr:last-child td { border-bottom: 0; }
 
@@ -283,18 +284,6 @@ main.payment-hub-page {
     font-weight: 600;
 }
 
-.payment-overview-paid,
-.payment-overview-remaining {
-    display: block;
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-}
-
-.payment-overview-paid { color: var(--app-success); }
-.payment-overview-remaining { color: var(--app-danger); }
-.payment-overview-remaining.is-clear { color: var(--app-success); }
-
-.payment-overview-progress,
 .payment-reference-progress {
     display: block;
     width: 100%;
@@ -305,7 +294,6 @@ main.payment-hub-page {
     border-radius: 999px;
 }
 
-.payment-overview-progress > span,
 .payment-reference-progress > span {
     display: block;
     height: 100%;
@@ -318,22 +306,27 @@ main.payment-hub-page {
     min-height: 28px;
     align-items: center;
     padding: 4px 10px;
-    color: var(--app-danger);
-    background: var(--app-danger-soft);
+    color: var(--app-warning);
+    background: var(--app-warning-soft);
     border-radius: 999px;
     font-size: var(--app-text-meta-size);
     font-weight: 600;
     white-space: nowrap;
 }
 
-.payment-overview-status.is-installment {
-    color: var(--app-warning);
-    background: var(--app-warning-soft);
-}
-
 .payment-overview-status.is-paid {
     color: var(--app-success);
     background: var(--app-success-soft);
+}
+
+.payment-overview-status.is-running {
+    color: var(--app-primary);
+    background: var(--app-primary-soft);
+}
+
+.payment-overview-status.is-overdue {
+    color: var(--app-danger);
+    background: var(--app-danger-soft);
 }
 
 .payment-overview-action {
@@ -370,6 +363,53 @@ main.payment-hub-page {
 }
 
 .payment-overview-empty { padding: 36px 16px; }
+
+.payment-overview-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--app-muted);
+}
+
+.payment-overview-pagination p { margin: 0; }
+
+.payment-overview-pagination-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.payment-overview-page-button {
+    display: inline-grid;
+    min-width: 34px;
+    min-height: 34px;
+    place-items: center;
+    padding: 0 10px;
+    color: var(--app-label);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    font-size: var(--app-text-meta-size);
+    font-weight: 600;
+    line-height: var(--app-text-meta-leading);
+}
+
+.payment-overview-page-button .icon { width: 16px; height: 16px; }
+
+.payment-overview-page-button:hover,
+.payment-overview-page-button.is-active {
+    color: var(--app-on-primary);
+    background: var(--app-primary);
+    border-color: var(--app-primary);
+}
+
+.payment-overview-page-button.is-disabled,
+.payment-overview-page-button.is-ellipsis {
+    color: var(--app-muted);
+    background: var(--app-panel-soft);
+    pointer-events: none;
+}
 
 /* Student selection and cashier workspace. */
 .payment-prd-layout.is-student-selected {
@@ -549,6 +589,8 @@ main.payment-hub-page {
 @media (max-width: 1180px) {
     .payment-prd-layout.is-student-selected { grid-template-columns: 1fr; grid-template-areas: "student" "stats" "summary" "bills" "history"; }
 
+    .payment-overview-panel { max-width: none; }
+
     .payment-overview-filter {
         grid-template-columns: minmax(220px, 1fr) minmax(150px, 1fr) auto;
     }
@@ -569,6 +611,8 @@ main.payment-hub-page {
     .payment-overview-filter-actions .button { flex: 1; }
     .payment-overview-filter > label:last-of-type,
     .payment-overview-filter-actions { grid-column: auto; grid-row: auto; }
+    .payment-overview-pagination { align-items: stretch; flex-direction: column; }
+    .payment-overview-pagination-links { justify-content: center; }
     .payment-reference-stats { grid-template-columns: 1fr; }
     .payment-prd-bill-heading { display: grid; grid-template-columns: 1fr; }
     .payment-one-stop-history-item { grid-template-columns: 1fr max-content; }

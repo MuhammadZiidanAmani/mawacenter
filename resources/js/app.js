@@ -47,6 +47,25 @@ const toast = document.querySelector('[data-toast]');
 const passwordInput = document.querySelector('[data-password]');
 const passwordToggle = document.querySelector('[data-password-toggle]');
 const currencyInputs = Array.from(document.querySelectorAll('[data-currency-input]'));
+const paymentUnitFilter = document.querySelector('[data-payment-unit-filter]');
+const paymentClassFilter = document.querySelector('[data-payment-class-filter]');
+
+paymentUnitFilter?.addEventListener('change', () => {
+    if (!paymentClassFilter || paymentUnitFilter.value === paymentUnitFilter.dataset.selectedUnit) return;
+
+    const selectedUnitId = paymentUnitFilter.value;
+    const classPlaceholder = paymentClassFilter.querySelector('option[value=""]');
+    paymentClassFilter.value = '';
+    paymentClassFilter.disabled = selectedUnitId === '';
+    if (classPlaceholder) {
+        classPlaceholder.textContent = selectedUnitId ? 'Semua Kelas' : 'Pilih unit pendidikan terlebih dahulu';
+    }
+    paymentClassFilter.querySelectorAll('[data-payment-class-unit]').forEach((option) => {
+        const belongsToSelectedUnit = option.dataset.paymentClassUnit === selectedUnitId;
+        option.hidden = !belongsToSelectedUnit;
+        option.disabled = !belongsToSelectedUnit;
+    });
+});
 
 // ============================================================
 // Login: Toggle mode Wali Santri

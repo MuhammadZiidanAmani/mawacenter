@@ -129,7 +129,7 @@
                                     </label>
                                     <label>
                                         <span>Unit Pendidikan</span>
-                                        <select name="unit_id" aria-label="Filter unit pendidikan">
+                                        <select name="unit_id" aria-label="Filter unit pendidikan" data-payment-unit-filter data-selected-unit="{{ $selectedUnitId ?? '' }}">
                                             <option value="">Semua Unit</option>
                                             @foreach($educationUnits ?? [] as $unit)
                                                 <option value="{{ $unit->id }}" @selected((int) ($selectedUnitId ?? 0) === $unit->id)>{{ $unit->name }}</option>
@@ -138,10 +138,15 @@
                                     </label>
                                     <label>
                                         <span>Kelas</span>
-                                        <select name="class_id" aria-label="Filter kelas">
-                                            <option value="">Semua Kelas</option>
+                                        <select name="class_id" aria-label="Filter kelas" data-payment-class-filter @disabled(! ($selectedUnitId ?? 0))>
+                                            <option value="">{{ ($selectedUnitId ?? 0) ? 'Semua Kelas' : 'Pilih unit pendidikan terlebih dahulu' }}</option>
                                             @foreach($classes ?? [] as $class)
-                                                <option value="{{ $class->id }}" @selected((int) ($selectedClassId ?? 0) === $class->id)>{{ collect([$class->educationUnit?->code, $class->name])->filter()->join(' - ') }}</option>
+                                                <option
+                                                    value="{{ $class->id }}"
+                                                    data-payment-class-unit="{{ $class->education_unit_id }}"
+                                                    @selected((int) ($selectedClassId ?? 0) === $class->id)
+                                                    @if(($selectedUnitId ?? 0) && (int) $class->education_unit_id !== (int) $selectedUnitId) hidden disabled @endif
+                                                >{{ collect([$class->educationUnit?->code, $class->name])->filter()->join(' - ') }}</option>
                                             @endforeach
                                         </select>
                                     </label>
@@ -157,12 +162,10 @@
                                             <table class="payment-overview-table">
                                             <thead>
                                                 <tr>
-                                                    <th>#</th>
-                                                    <th>Siswa</th>
-                                                    <th>Program / Kelas</th>
-                                                    <th>Total Kewajiban</th>
-                                                    <th>Telah Dibayar</th>
-                                                    <th>Sisa Tagihan</th>
+                                                    <th>No</th>
+                                                    <th>Nama Siswa</th>
+                                                    <th>Unit / Kelas</th>
+                                                    <th>Total Tagihan</th>
                                                     <th>Status Pembayaran</th>
                                                     <th>Aksi</th>
                                                 </tr>
@@ -183,17 +186,7 @@
                                                         <td>{{ $row['unit_summary'] }}</td>
                                                         <td>Rp {{ number_format($row['total'], 0, ',', '.') }}</td>
                                                         <td>
-                                                            <span class="payment-overview-paid">Rp {{ number_format($row['paid'], 0, ',', '.') }}</span>
-                                                            <span class="payment-overview-progress" aria-hidden="true"><span @class(['is-empty' => $row['percent'] < 1, 'is-trace' => $row['percent'] > 0 && $row['percent'] < 25, 'is-quarter' => $row['percent'] >= 25 && $row['percent'] < 50, 'is-half' => $row['percent'] >= 50 && $row['percent'] < 75, 'is-most' => $row['percent'] >= 75 && $row['percent'] < 100, 'is-complete' => $row['percent'] >= 100])></span></span>
-                                                            <small>{{ $row['percent'] }}%</small>
-                                                        </td>
-                                                        <td>
-                                                            <span @class(['payment-overview-remaining', 'is-clear' => $row['remaining'] < 1])>Rp {{ number_format($row['remaining'], 0, ',', '.') }}</span>
-                                                        </td>
-                                                        <td>
-                                                            <span @class(['payment-overview-status', 'is-paid' => $row['status'] === 'Lunas', 'is-installment' => $row['status'] === 'Sedang Mencicil'])>
-                                                                {{ $row['status'] === 'Lunas' ? 'Lunas' : $row['outstanding_count'].' Tagihan' }}
-                                                            </span>
+                                                            <span @class(['payment-overview-status', 'is-paid' => $row['status'] === 'Lunas', 'is-running' => $row['status'] === 'Berjalan', 'is-overdue' => $row['status'] === 'Jatuh Tempo'])>{{ $row['status'] }}</span>
                                                         </td>
                                                         <td>
                                                             <a class="payment-overview-action" href="{{ route('finance.payments.index', array_filter(['search' => $row['name'], 'student_id' => $row['identity_id'], 'unit_id' => ($selectedUnitId ?? 0) ?: null, 'class_id' => ($selectedClassId ?? 0) ?: null])) }}" aria-label="Lihat detail tagihan {{ $row['name'] }}" title="Detail Tagihan">
@@ -203,7 +196,7 @@
                                                     </tr>
                                                 @empty
                                                     <tr>
-                                                        <td colspan="8">
+                                                        <td colspan="6">
                                                             <div class="payment-overview-empty">
                                                                 <strong>Siswa tidak ditemukan</strong>
                                                                 <span>Periksa kembali kata kunci pencarian.</span>
@@ -216,6 +209,57 @@
                                         </div>
                                     </div>
                                 </section>
+                                @if(($paymentOverviewRows ?? collect())->total() > 0)
+                                    <nav class="payment-overview-pagination" aria-label="Navigasi halaman pembayaran">
+                                        <p>Menampilkan {{ number_format($paymentOverviewRows->firstItem(), 0, ',', '.') }}-{{ number_format($paymentOverviewRows->lastItem(), 0, ',', '.') }} dari {{ number_format($paymentOverviewRows->total(), 0, ',', '.') }} siswa</p>
+                                        @if($paymentOverviewRows->hasPages())
+                                            @php
+                                                $currentPage = (int) $paymentOverviewRows->currentPage();
+                                                $lastPage = (int) $paymentOverviewRows->lastPage();
+                                                $pageStart = max(1, $currentPage - 1);
+                                                $pageEnd = min($lastPage, $currentPage + 1);
+                                                $pageItems = [];
+
+                                                if ($pageStart > 1) {
+                                                    $pageItems[1] = $paymentOverviewRows->url(1);
+                                                    if ($pageStart > 2) $pageItems['ellipsis-start'] = null;
+                                                }
+
+                                                for ($page = $pageStart; $page <= $pageEnd; $page++) {
+                                                    $pageItems[$page] = $paymentOverviewRows->url($page);
+                                                }
+
+                                                if ($pageEnd < $lastPage) {
+                                                    if ($pageEnd < $lastPage - 1) $pageItems['ellipsis-end'] = null;
+                                                    $pageItems[$lastPage] = $paymentOverviewRows->url($lastPage);
+                                                }
+                                            @endphp
+                                            <div class="payment-overview-pagination-links">
+                                                @if($paymentOverviewRows->onFirstPage())
+                                                    <span class="payment-overview-page-button is-disabled" aria-disabled="true" title="Halaman sebelumnya">{!! $icon('arrow-left') !!}</span>
+                                                @else
+                                                    <a class="payment-overview-page-button" href="{{ $paymentOverviewRows->previousPageUrl() }}" rel="prev" aria-label="Halaman sebelumnya" title="Halaman sebelumnya">{!! $icon('arrow-left') !!}</a>
+                                                @endif
+
+                                                @foreach($pageItems as $page => $url)
+                                                    @if($url === null)
+                                                        <span class="payment-overview-page-button is-ellipsis" aria-hidden="true">...</span>
+                                                    @elseif((int) $page === $currentPage)
+                                                        <span class="payment-overview-page-button is-active" aria-current="page">{{ $page }}</span>
+                                                    @else
+                                                        <a class="payment-overview-page-button" href="{{ $url }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                                    @endif
+                                                @endforeach
+
+                                                @if($paymentOverviewRows->hasMorePages())
+                                                    <a class="payment-overview-page-button" href="{{ $paymentOverviewRows->nextPageUrl() }}" rel="next" aria-label="Halaman berikutnya" title="Halaman berikutnya">{!! $icon('arrow-right') !!}</a>
+                                                @else
+                                                    <span class="payment-overview-page-button is-disabled" aria-disabled="true" title="Halaman berikutnya">{!! $icon('arrow-right') !!}</span>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </nav>
+                                @endif
                             </section>
                         @else
                         <section @class(['payment-one-stop-main', 'payment-prd-search-panel', 'payment-selected-student-context' => $selectedRegistrations])>

@@ -18,6 +18,7 @@ use App\Services\SppPaymentService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -50,10 +51,11 @@ class PaymentController extends Controller
         }
         $people = collect();
         $paymentHistory = collect();
-        $unitIds = $request->user()?->accessibleUnitIds();
+        $accessibleUnitIds = $request->user()?->accessibleUnitIds();
+        $unitIds = $accessibleUnitIds;
         $educationUnits = EducationUnit::query()
             ->where('is_active', true)
-            ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
+            ->when(is_array($accessibleUnitIds), fn ($query) => $query->whereIn('id', $accessibleUnitIds))
             ->orderByRaw("CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
             ->orderBy('name')
             ->get();
@@ -63,17 +65,21 @@ class PaymentController extends Controller
             abort_unless($educationUnits->contains('id', $selectedUnitId), 403, 'Anda tidak memiliki akses ke unit ini.');
             $unitIds = [$selectedUnitId];
         }
+        $selectedClassId = (int) $request->integer('class_id');
+        abort_if($selectedClassId > 0 && $selectedUnitId < 1, 422, 'Pilih unit pendidikan terlebih dahulu.');
+
         $classes = SchoolClass::query()
             ->with('educationUnit')
             ->where('is_active', true)
             ->whereHas('educationUnit', fn ($query) => $query->where('is_active', true))
-            ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
+            ->when(is_array($accessibleUnitIds), fn ($query) => $query->whereIn('education_unit_id', $accessibleUnitIds))
+            ->orderBy('education_unit_id')
             ->orderBy('name')
             ->get();
-        $selectedClassId = (int) $request->integer('class_id');
 
         if ($selectedClassId > 0) {
-            abort_unless($classes->contains('id', $selectedClassId), 403, 'Anda tidak memiliki akses ke kelas ini.');
+            $selectedClass = $classes->firstWhere('id', $selectedClassId);
+            abort_unless($selectedClass && (int) $selectedClass->education_unit_id === $selectedUnitId, 403, 'Anda tidak memiliki akses ke kelas ini.');
         }
 
         if ($search !== '') {
@@ -784,57 +790,59 @@ class PaymentController extends Controller
             });
     }
 
-    private function paymentOverviewRows(?array $unitIds, int $classId = 0, string $search = ''): Collection
+    private function paymentOverviewRows(?array $unitIds, int $classId = 0, string $search = ''): LengthAwarePaginator
     {
         $needle = $search !== '' ? $this->escapeLike($search) : '';
-        $registrations = $this->paymentStudentBaseQuery($unitIds, $classId)
-            ->with(['academicYear', 'schoolClass.educationUnit'])
+        $studentQuery = $this->paymentStudentBaseQuery($unitIds, $classId)
             ->when($needle !== '', fn ($query) => $query->where(fn ($student) => $student
                 ->where('nis', 'like', "{$needle}%")
                 ->orWhere('nisn', 'like', "{$needle}%")
-                ->orWhere('name', 'like', "%{$needle}%")))
-            ->orderBy('name')
-            ->limit(60)
-            ->get();
-
-        $groups = $registrations
-            ->groupBy(fn (Student $student) => $student->identity_student_id ?: $student->id)
-            ->take(30);
-        $registrationIds = $groups->flatten()->pluck('id')->values();
+                ->orWhere('name', 'like', "%{$needle}%")));
+        $identityPages = (clone $studentQuery)
+            ->selectRaw('COALESCE(identity_student_id, id) as payment_identity_id')
+            ->groupByRaw('COALESCE(identity_student_id, id)')
+            ->orderByRaw('MIN(name)')
+            ->paginate(10, ['payment_identity_id'], 'page');
+        $identityIds = $identityPages->getCollection()
+            ->pluck('payment_identity_id')
+            ->map(fn ($identityId) => (int) $identityId)
+            ->values();
+        $registrations = $identityIds->isEmpty()
+            ? collect()
+            : $this->paymentStudentBaseQuery($unitIds, $classId)
+                ->with(['academicYear', 'schoolClass.educationUnit'])
+                ->where(fn ($query) => $query
+                    ->whereIn('id', $identityIds)
+                    ->orWhereIn('identity_student_id', $identityIds))
+                ->orderBy('name')
+                ->get();
+        $groups = $registrations->groupBy(fn (Student $student) => $student->identity_student_id ?: $student->id);
+        $registrationIds = $registrations->pluck('id')->values();
         $billSums = $registrationIds->isEmpty()
             ? collect()
             : Bill::query()
                 ->select('student_id')
                 ->selectRaw('SUM(total_amount) as total_amount')
-                ->selectRaw('SUM(paid_amount) as paid_amount')
                 ->selectRaw('SUM(remaining_amount) as remaining_amount')
+                ->selectRaw('MAX(CASE WHEN remaining_amount > 0 AND due_date IS NOT NULL AND due_date < ? THEN 1 ELSE 0 END) as has_overdue_amount', [now()->toDateString()])
                 ->whereIn('student_id', $registrationIds)
                 ->where('status', '!=', 'Dibatalkan')
-                ->groupBy('student_id')
-                ->get()
-                ->keyBy('student_id');
-        $outstandingCounts = $registrationIds->isEmpty()
-            ? collect()
-            : Bill::query()
-                ->select('student_id')
-                ->selectRaw('COUNT(*) as outstanding_count')
-                ->whereIn('student_id', $registrationIds)
-                ->where('status', '!=', 'Dibatalkan')
-                ->where('remaining_amount', '>', 0)
                 ->groupBy('student_id')
                 ->get()
                 ->keyBy('student_id');
 
-        return $groups->map(function (Collection $studentRegistrations, int $identityId) use ($billSums, $outstandingCounts) {
+        $rows = $identityPages->getCollection()->map(function (Student $pageIdentity) use ($groups, $billSums) {
+            $identityId = (int) $pageIdentity->payment_identity_id;
+            $studentRegistrations = $groups->get($identityId, collect());
             $identity = $studentRegistrations->firstWhere('identity_student_id', null) ?? $studentRegistrations->first();
             $total = $studentRegistrations->sum(fn (Student $student) => (int) ($billSums->get($student->id)?->total_amount ?? 0));
-            $paid = $studentRegistrations->sum(fn (Student $student) => (int) ($billSums->get($student->id)?->paid_amount ?? 0));
             $remaining = $studentRegistrations->sum(fn (Student $student) => (int) ($billSums->get($student->id)?->remaining_amount ?? 0));
-            $outstanding = $studentRegistrations->sum(fn (Student $student) => (int) ($outstandingCounts->get($student->id)?->outstanding_count ?? 0));
-            $percent = $total > 0 ? min(100, (int) round(($paid / $total) * 100)) : 0;
+            $hasOverdueAmount = $studentRegistrations->contains(
+                fn (Student $student) => (bool) ($billSums->get($student->id)?->has_overdue_amount ?? false)
+            );
             $unitSummary = $studentRegistrations
                 ->map(fn (Student $student) => collect([
-                    $student->schoolClass?->educationUnit?->code,
+                    $student->schoolClass?->educationUnit?->code ?? $student->schoolClass?->educationUnit?->name,
                     $student->schoolClass?->name,
                 ])->filter()->join(' - '))
                 ->filter()
@@ -848,13 +856,11 @@ class PaymentController extends Controller
                 'academic_year' => $identity?->academicYear?->name ?? '-',
                 'unit_summary' => $unitSummary ?: '-',
                 'total' => $total,
-                'paid' => $paid,
-                'remaining' => $remaining,
-                'outstanding_count' => $outstanding,
-                'percent' => $percent,
-                'status' => $total > 0 && $remaining < 1 ? 'Lunas' : ($paid > 0 ? 'Sedang Mencicil' : 'Belum Lunas'),
+                'status' => $remaining < 1 ? 'Lunas' : ($hasOverdueAmount ? 'Jatuh Tempo' : 'Berjalan'),
             ];
-        })->values();
+        });
+
+        return $identityPages->setCollection($rows);
     }
 
     private function paymentRegistrationsForIdentity(int $identityId, ?array $unitIds, int $classId = 0): Collection

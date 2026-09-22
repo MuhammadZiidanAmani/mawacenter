@@ -417,6 +417,12 @@ class PaymentMenuTest extends TestCase
         $cashier = $this->scopedCashier($assignedUnit);
 
         $this->actingAs($cashier)
+            ->get(route('finance.payments.index'))
+            ->assertOk()
+            ->assertSee('name="class_id" aria-label="Filter kelas" data-payment-class-filter disabled', false)
+            ->assertSeeText('Pilih unit pendidikan terlebih dahulu');
+
+        $this->actingAs($cashier)
             ->get(route('finance.payments.index', ['unit_id' => $assignedUnit->id]))
             ->assertOk()
             ->assertSeeText('Siswa Unit RA')
@@ -430,11 +436,104 @@ class PaymentMenuTest extends TestCase
             ->assertOk()
             ->assertSeeText('Siswa Unit RA')
             ->assertDontSeeText('Siswa Kelas Lain')
-            ->assertSee('<option value="'.$assignedClass->id.'" selected>', false);
+            ->assertSee('data-payment-class-unit="'.$assignedUnit->id.'"', false)
+            ->assertSeeText('RA - A1');
+
+        $this->actingAs($cashier)
+            ->get(route('finance.payments.index', ['class_id' => $assignedClass->id]))
+            ->assertUnprocessable();
 
         $this->actingAs($cashier)
             ->get(route('finance.payments.index', ['unit_id' => $otherUnit->id]))
             ->assertForbidden();
+    }
+
+    public function test_payment_overview_uses_bill_due_dates_for_statuses_and_compact_columns(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-07-10 09:00:00'));
+
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'RA', 'name' => 'RA Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'A1', 'level' => 'A1', 'is_active' => true]);
+        $students = collect([
+            Student::create(['nis' => 'STATUS-LUNAS', 'name' => 'Siswa Lunas', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]),
+            Student::create(['nis' => 'STATUS-BERJALAN', 'name' => 'Siswa Berjalan', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]),
+            Student::create(['nis' => 'STATUS-JATUH-TEMPO', 'name' => 'Siswa Jatuh Tempo', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]),
+        ]);
+
+        $createBill = function (Student $student, string $dueDate, int $paidAmount, int $remainingAmount): void {
+            Bill::create([
+                'student_id' => $student->id,
+                'academic_year_id' => $student->academic_year_id,
+                'source_type' => 'spp',
+                'generation_key' => hash('sha256', 'payment-overview-status-'.$student->id),
+                'year' => 2026,
+                'month' => 7,
+                'title' => 'SPP Juli 2026',
+                'issue_date' => '2026-07-01',
+                'due_date' => $dueDate,
+                'original_amount' => 100000,
+                'discount_amount' => 0,
+                'total_amount' => 100000,
+                'paid_amount' => $paidAmount,
+                'remaining_amount' => $remainingAmount,
+                'status' => $remainingAmount === 0 ? 'Lunas' : 'Belum Dibayar',
+            ]);
+        };
+
+        $createBill($students[0], '2026-07-10', 100000, 0);
+        $createBill($students[1], '2026-07-10', 0, 100000);
+        $createBill($students[2], '2026-07-09', 0, 100000);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.index', ['unit_id' => $unit->id, 'class_id' => $class->id]))
+            ->assertOk()
+            ->assertSee('<th>No</th>', false)
+            ->assertSee('<th>Nama Siswa</th>', false)
+            ->assertSee('<th>Unit / Kelas</th>', false)
+            ->assertSee('<th>Total Tagihan</th>', false)
+            ->assertDontSee('<th>Telah Dibayar</th>', false)
+            ->assertDontSee('<th>Sisa Tagihan</th>', false)
+            ->assertSeeText('Lunas')
+            ->assertSeeText('Berjalan')
+            ->assertSeeText('Jatuh Tempo');
+    }
+
+    public function test_payment_overview_paginates_ten_students_per_page(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '1A', 'level' => 1, 'is_active' => true]);
+
+        foreach (range(1, 11) as $number) {
+            Student::create([
+                'nis' => 'PAGE-'.str_pad((string) $number, 2, '0', STR_PAD_LEFT),
+                'name' => 'Siswa Halaman '.str_pad((string) $number, 2, '0', STR_PAD_LEFT),
+                'gender' => 'P',
+                'school_class_id' => $class->id,
+                'academic_year_id' => $year->id,
+                'is_active' => true,
+            ]);
+        }
+
+        $user = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($user)
+            ->get(route('finance.payments.index', ['unit_id' => $unit->id]))
+            ->assertOk()
+            ->assertSeeText('Siswa Halaman 01')
+            ->assertSeeText('Siswa Halaman 10')
+            ->assertDontSeeText('Siswa Halaman 11')
+            ->assertSeeText('Lunas')
+            ->assertSeeText('Menampilkan 1-10 dari 11 siswa')
+            ->assertSee('page=2', false);
+
+        $this->actingAs($user)
+            ->get(route('finance.payments.index', ['unit_id' => $unit->id, 'page' => 2]))
+            ->assertOk()
+            ->assertDontSeeText('Siswa Halaman 01')
+            ->assertSeeText('Siswa Halaman 11')
+            ->assertSeeText('Menampilkan 11-11 dari 11 siswa');
     }
 
     public function test_bill_list_preserves_hierarchy_default_selection_and_single_visible_total(): void
