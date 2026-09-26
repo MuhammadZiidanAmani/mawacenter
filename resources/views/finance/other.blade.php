@@ -526,9 +526,9 @@
                 <?php endif; ?>
             </section>
             @endunless
-            <div class="modal-backdrop" data-other-edit-modal>
+            <div class="modal-backdrop" data-other-edit-modal role="dialog" aria-modal="true" aria-labelledby="other-edit-modal-title">
                 <div class="form-modal spp-edit-modal">
-                    <div class="form-modal-header"><div><p class="eyebrow">Pembayaran · {{ $paymentSection['title'] }}</p><h2>Edit Transaksi</h2></div><button type="button" class="icon-button" data-other-crud-close>×</button></div>
+                    <div class="form-modal-header"><div><p class="eyebrow">Pembayaran · {{ $paymentSection['title'] }}</p><h2 id="other-edit-modal-title">Edit Transaksi</h2></div><button type="button" class="icon-button" data-other-crud-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
                     <form method="POST" data-other-edit-form class="master-form spp-edit-form">@csrf @method('PUT')
                         <div class="spp-edit-readonly"><span data-other-edit-summary>Data siswa dan kategori pembayaran tidak dapat diubah.</span></div>
                         <label>Tanggal Transaksi<input type="date" name="transaction_date" required></label>
@@ -539,10 +539,10 @@
                     </form>
                 </div>
             </div>
-            <div class="modal-backdrop" data-other-delete-modal>
+            <div class="modal-backdrop" data-other-delete-modal role="dialog" aria-modal="true" aria-labelledby="other-delete-modal-title">
                 <div class="form-modal spp-delete-modal">
                     <div class="spp-delete-icon">!</div>
-                    <h2>Hapus Transaksi?</h2>
+                    <h2 id="other-delete-modal-title">Hapus Transaksi?</h2>
                     <p>Transaksi pembayaran <strong data-other-delete-name></strong> akan dihapus dan sisa tagihan akan dihitung ulang.</p>
                     <form method="POST" data-other-delete-form>@csrf @method('DELETE')<div class="form-actions"><button type="button" class="button button-secondary" data-other-crud-close>Batal</button><button class="button button-danger">Ya, Hapus Transaksi</button></div></form>
                 </div>

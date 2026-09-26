@@ -171,11 +171,15 @@
                                             </div>
                                             <i aria-hidden="true">
                                                 @if(($row['paid_count'] ?? 0) > 0)
-                                                    @php($paidProgress = min(100, max(0, (int) (round((($row['paid_percent'] ?? 0) / 5)) * 5))))
+                                                    @php
+                                                        $paidProgress = min(100, max(0, (int) (round((($row['paid_percent'] ?? 0) / 5)) * 5)));
+                                                    @endphp
                                                     <b class="paid chart-progress-{{ $paidProgress }}"></b>
                                                 @endif
                                                 @if(($row['partial_count'] ?? 0) > 0)
-                                                    @php($partialProgress = min(100, max(0, (int) (round((($row['partial_percent'] ?? 0) / 5)) * 5))))
+                                                    @php
+                                                        $partialProgress = min(100, max(0, (int) (round((($row['partial_percent'] ?? 0) / 5)) * 5)));
+                                                    @endphp
                                                     <b class="partial chart-progress-{{ $partialProgress }}"></b>
                                                 @endif
                                             </i>
@@ -201,7 +205,9 @@
                                         @php
                                             $paymentWidth = max(3, min(100, round(((int) ($row['paid'] ?? 0) / $maxMonthlyPayment) * 100)));
                                         @endphp
-                                        @php($paymentProgress = min(100, max(5, (int) (round(($paymentWidth / 5)) * 5))))
+                                        @php
+                                            $paymentProgress = min(100, max(5, (int) (round(($paymentWidth / 5)) * 5)));
+                                        @endphp
                                         <div class="monthly-spp-arrears-row chart-progress-{{ $paymentProgress }}">
                                             <div>
                                                 <strong title="{{ $row['unit'] ?? '-' }}">{{ $row['unit_code'] ?? '-' }}</strong>
@@ -276,7 +282,9 @@
                                                     @php
                                                         $height = max(2, min(100, round(((int) ($row['amount'] ?? 0) / $unitAxisMax) * 100)));
                                                     @endphp
-                                                    @php($unitProgress = min(100, max(5, (int) (round(($height / 5)) * 5))))
+                                                    @php
+                                                        $unitProgress = min(100, max(5, (int) (round(($height / 5)) * 5)));
+                                                    @endphp
                                                     <div class="report-unit-bar chart-progress-{{ $unitProgress }}" title="{{ ($row['unit'] ?? '-').' '.$rupiah($row['amount'] ?? 0) }}">
                                                         <i></i>
                                                         <span>{{ $row['unit_code'] ?? $row['unit'] ?? '-' }}</span>
@@ -320,7 +328,9 @@
                                         @php
                                             $width = max(4, min(100, round(((int) ($row['amount'] ?? 0) / $maxClassAmount) * 100)));
                                         @endphp
-                                        @php($classProgress = min(100, max(5, (int) (round(($width / 5)) * 5))))
+                                        @php
+                                            $classProgress = min(100, max(5, (int) (round(($width / 5)) * 5)));
+                                        @endphp
                                         <div class="report-class-progress-item chart-progress-{{ $classProgress }}">
                                             <div>
                                                 <span>{{ $row['class'] ?? '-' }}</span>
@@ -731,14 +741,14 @@
             </section>
 
             @if($reportKey === 'transactions')
-                <div class="modal-backdrop report-payment-modal-backdrop" data-report-correction-modal>
+                <div class="modal-backdrop report-payment-modal-backdrop" data-report-correction-modal role="dialog" aria-modal="true" aria-labelledby="report-correction-modal-title">
                     <div class="form-modal report-payment-modal">
                         <div class="form-modal-header">
                             <div>
                                 <p class="eyebrow">Laporan Transaksi</p>
-                                <h2>Koreksi Transaksi</h2>
+                                <h2 id="report-correction-modal-title">Koreksi Transaksi</h2>
                             </div>
-                            <button type="button" class="icon-button" data-report-payment-close>&times;</button>
+                            <button type="button" class="icon-button" data-report-payment-close title="Tutup modal" aria-label="Tutup modal">&times;</button>
                         </div>
                         <form method="POST" data-report-correction-form class="master-form report-payment-form">
                             @csrf
@@ -761,14 +771,14 @@
                         </form>
                     </div>
                 </div>
-                <div class="modal-backdrop report-payment-modal-backdrop" data-report-cancel-modal>
+                <div class="modal-backdrop report-payment-modal-backdrop" data-report-cancel-modal role="dialog" aria-modal="true" aria-labelledby="report-cancel-modal-title">
                     <div class="form-modal report-payment-modal report-payment-cancel-modal">
                         <div class="form-modal-header">
                             <div>
                                 <p class="eyebrow">Laporan Transaksi</p>
-                                <h2>Batalkan Transaksi</h2>
+                                <h2 id="report-cancel-modal-title">Batalkan Transaksi</h2>
                             </div>
-                            <button type="button" class="icon-button" data-report-payment-close>&times;</button>
+                            <button type="button" class="icon-button" data-report-payment-close title="Tutup modal" aria-label="Tutup modal">&times;</button>
                         </div>
                         <form method="POST" data-report-cancel-form class="master-form report-payment-form">
                             @csrf

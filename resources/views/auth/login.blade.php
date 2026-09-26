@@ -37,11 +37,11 @@
             <input type="hidden" name="login_type" value="{{ $isWaliMode ? 'wali' : '' }}" data-login-type-value>
 
             {{-- Field Unit Pendidikan: hanya tampil di mode Wali Santri --}}
-            <label class="login-guardian-field">
+            <label class="login-guardian-field" data-login-guardian-field>
                 <span>Unit Pendidikan</span>
                 <span class="login-input">
                     {!! $icon('<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h8M10 19v-4h4v4"/>') !!}
-                    <select name="guardian_unit_id" data-guardian-unit>
+                    <select name="guardian_unit_id" data-guardian-unit{{ $isWaliMode ? '' : ' disabled' }}>
                         <option value="">Pilih unit pendidikan</option>
                         @foreach($educationUnits as $unit)
                             <option value="{{ $unit->id }}" @selected(old('guardian_unit_id') == $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>

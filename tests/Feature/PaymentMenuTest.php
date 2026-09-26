@@ -15,6 +15,8 @@ use App\Models\SppPaymentItem;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\BillService;
+use App\Services\GoogleDriveStorageException;
+use App\Services\GoogleDriveStorageService;
 use App\Services\OtherPaymentService;
 use App\Support\StudentXlsx;
 use Carbon\CarbonImmutable;
@@ -202,6 +204,7 @@ class PaymentMenuTest extends TestCase
 
     public function test_bulk_payment_rolls_back_every_record_and_uploaded_proof_when_one_item_fails(): void
     {
+        config(['payments.transfer_proof_upload_enabled' => true]);
         Storage::fake('local');
         $this->travelTo(CarbonImmutable::parse('2026-07-15 09:00:00'));
         $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
@@ -249,6 +252,13 @@ class PaymentMenuTest extends TestCase
         ]);
         $otherPayments->shouldReceive('record')->once()->andThrow(new RuntimeException('Simulasi transaksi kedua gagal.'));
         $this->app->instance(OtherPaymentService::class, $otherPayments);
+        $drive = Mockery::mock(GoogleDriveStorageService::class);
+        $drive->shouldReceive('upload')->once()->andReturn([
+            'file_id' => 'drive-atomic-proof',
+            'metadata' => ['name' => 'proof.pdf', 'mime_type' => 'application/pdf', 'size' => 12, 'uploaded_at' => '2026-07-15T09:00:00+07:00'],
+        ]);
+        $drive->shouldReceive('delete')->once()->with('drive-atomic-proof');
+        $this->app->instance(GoogleDriveStorageService::class, $drive);
         $this->actingAs(User::factory()->create(['role' => 'admin']));
         $this->withoutExceptionHandling();
 
@@ -313,14 +323,15 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get('/keuangan/pembayaran')
             ->assertOk()
-            ->assertSee('<h1>Pembayaran</h1>', false)
+            ->assertSee('<h1>Daftar Pembayaran Siswa</h1>', false)
             ->assertSee('href="'.route('finance.payments.import').'"', false)
             ->assertSee('Import Excel')
             ->assertDontSee('<h1>Transaksi Baru</h1>', false)
             ->assertSee('Cari Siswa')
-            ->assertSee('placeholder="Cari nama, NIS, atau NISN..."', false)
-            ->assertSee('Belum ada siswa dipilih')
-            ->assertSee('Cari siswa berdasarkan nama, NIS, atau NISN untuk melihat tagihan pembayaran.')
+            ->assertSee('placeholder="Ketik nama siswa atau NIS..."', false)
+            ->assertSeeText('Siswa tidak ditemukan')
+            ->assertDontSeeText('Belum ada siswa dipilih')
+            ->assertDontSee('Cari siswa berdasarkan nama, NIS, atau NISN untuk melihat tagihan pembayaran.')
             ->assertDontSee('Riwayat SPP')
             ->assertDontSee('Riwayat Daftar Ulang')
             ->assertDontSee('Riwayat Laundry')
@@ -351,13 +362,15 @@ class PaymentMenuTest extends TestCase
         $response
             ->assertOk()
             ->assertSee('class="payment-one-stop-layout payment-prd-layout is-student-selected"', false)
-            ->assertSee('payment-selected-student-context', false)
-            ->assertSeeText('Siswa dipilih')
+            ->assertSee('class="payment-selected-page-head"', false)
             ->assertSeeText('AHMAD ISA')
-            ->assertSeeText('NIS 220006')
-            ->assertSeeText('PONPES • 11A')
-            ->assertSeeText('Ganti Siswa')
-            ->assertSee('href="'.route('finance.payments.index').'" aria-label="Ganti siswa"', false)
+            ->assertSeeText('PONPES')
+            ->assertSeeText('11A')
+            ->assertSee('href="'.route('finance.payments.index').'" class="payment-selected-back" aria-label="Kembali ke daftar pembayaran"', false)
+            ->assertDontSee('data-payment-student-nis', false)
+            ->assertDontSeeText('Import Excel')
+            ->assertDontSee('<h2>Data Siswa</h2>', false)
+            ->assertDontSeeText('Siswa dipilih')
             ->assertDontSee('<h2>Cari Siswa</h2>', false)
             ->assertDontSee('placeholder="Cari nama, NIS, atau NISN..."', false);
 
@@ -366,7 +379,8 @@ class PaymentMenuTest extends TestCase
         $xpath = new \DOMXPath($dom);
         $selectedLayout = '//div[contains(concat(" ", normalize-space(@class), " "), " payment-prd-layout ") and contains(concat(" ", normalize-space(@class), " "), " is-student-selected ")]';
 
-        $this->assertCount(1, $xpath->query($selectedLayout.'/section[contains(concat(" ", normalize-space(@class), " "), " payment-prd-search-panel ")]'));
+        $this->assertCount(1, $xpath->query('//header[contains(concat(" ", normalize-space(@class), " "), " payment-selected-page-head ")]'));
+        $this->assertCount(0, $xpath->query($selectedLayout.'/section[contains(concat(" ", normalize-space(@class), " "), " payment-prd-search-panel ")]'));
         $this->assertCount(1, $xpath->query($selectedLayout.'/form[contains(concat(" ", normalize-space(@class), " "), " payment-one-stop-pay-form ")]'));
         $this->assertCount(1, $xpath->query($selectedLayout.'/form/section[contains(concat(" ", normalize-space(@class), " "), " payment-prd-bill-card ")]'));
         $this->assertCount(1, $xpath->query($selectedLayout.'/form/section[contains(concat(" ", normalize-space(@class), " "), " payment-prd-summary-card ")]'));
@@ -376,9 +390,66 @@ class PaymentMenuTest extends TestCase
         $this->actingAs($user)
             ->get(route('finance.payments.index'))
             ->assertOk()
-            ->assertSee('placeholder="Cari nama, NIS, atau NISN..."', false)
-            ->assertSee('autofocus', false)
+            ->assertSee('placeholder="Ketik nama siswa atau NIS..."', false)
+            ->assertDontSee('autofocus', false)
             ->assertDontSee('payment-selected-student-card', false);
+    }
+
+    public function test_selected_student_summary_uses_payable_bills_and_excludes_future_bills(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-09-23 08:00:00'));
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PAUD', 'name' => 'PAUD Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'A1', 'level' => 'A1', 'is_active' => true]);
+        $student = Student::create([
+            'nis' => 'SUMMARY-001',
+            'name' => 'Siswa Ringkasan',
+            'gender' => 'P',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+
+        foreach ([
+            ['key' => 'summary-active-one', 'total' => 500000, 'paid' => 125000, 'remaining' => 375000, 'status' => 'Sebagian'],
+            ['key' => 'summary-active-two', 'total' => 250000, 'paid' => 250000, 'remaining' => 0, 'status' => 'Lunas'],
+            ['key' => 'summary-future', 'total' => 50000, 'paid' => 0, 'remaining' => 50000, 'status' => 'Belum Dibayar', 'issue_date' => '2026-10-01', 'due_date' => '2026-10-10'],
+            ['key' => 'summary-cancelled', 'total' => 900000, 'paid' => 0, 'remaining' => 900000, 'status' => 'Dibatalkan'],
+        ] as $bill) {
+            Bill::create([
+                'student_id' => $student->id,
+                'academic_year_id' => $year->id,
+                'source_type' => 'manual',
+                'generation_key' => $bill['key'],
+                'title' => 'Tagihan Ringkasan',
+                'issue_date' => $bill['issue_date'] ?? '2026-07-01',
+                'due_date' => $bill['due_date'] ?? '2026-07-10',
+                'original_amount' => $bill['total'],
+                'discount_amount' => 0,
+                'total_amount' => $bill['total'],
+                'paid_amount' => $bill['paid'],
+                'remaining_amount' => $bill['remaining'],
+                'status' => $bill['status'],
+            ]);
+        }
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.index', [
+                'search' => $student->name,
+                'student_id' => $student->id,
+            ]))
+            ->assertOk()
+            ->assertSeeInOrder([
+                'TOTAL KEWAJIBAN',
+                '750.000',
+                'TOTAL YANG SUDAH DIBAYARKAN',
+                '375.000',
+                'SISA TAGIHAN',
+                '375.000',
+            ])
+            ->assertSeeText('2 tagihan tercatat')
+            ->assertSeeText('50% dari total kewajiban')
+            ->assertDontSeeText('800.000');
     }
 
     public function test_payment_overview_filters_by_an_accessible_education_unit(): void
@@ -485,18 +556,26 @@ class PaymentMenuTest extends TestCase
         $createBill($students[1], '2026-07-10', 0, 100000);
         $createBill($students[2], '2026-07-09', 0, 100000);
 
-        $this->actingAs(User::factory()->create(['role' => 'admin']))
+        $response = $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get(route('finance.payments.index', ['unit_id' => $unit->id, 'class_id' => $class->id]))
             ->assertOk()
             ->assertSee('<th>No</th>', false)
             ->assertSee('<th>Nama Siswa</th>', false)
-            ->assertSee('<th>Unit / Kelas</th>', false)
+            ->assertSee('<th>Kelas</th>', false)
             ->assertSee('<th>Total Tagihan</th>', false)
             ->assertDontSee('<th>Telah Dibayar</th>', false)
             ->assertDontSee('<th>Sisa Tagihan</th>', false)
+            ->assertDontSee('NIS:', false)
+            ->assertSeeText('STATUS-LUNAS/RA')
             ->assertSeeText('Lunas')
             ->assertSeeText('Berjalan')
             ->assertSeeText('Jatuh Tempo');
+
+        $dom = new \DOMDocument;
+        @$dom->loadHTML($response->getContent());
+        $classCell = (new \DOMXPath($dom))->query('//table[contains(concat(" ", normalize-space(@class), " "), " payment-overview-table ")]/tbody/tr[1]/td[3]')->item(0);
+        $this->assertNotNull($classCell);
+        $this->assertSame('A1', trim($classCell->textContent));
     }
 
     public function test_payment_overview_paginates_ten_students_per_page(): void
@@ -534,6 +613,92 @@ class PaymentMenuTest extends TestCase
             ->assertDontSeeText('Siswa Halaman 01')
             ->assertSeeText('Siswa Halaman 11')
             ->assertSeeText('Menampilkan 11-11 dari 11 siswa');
+    }
+
+    public function test_payment_overview_supports_approved_page_sizes_and_preserves_filters(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '1A', 'level' => 1, 'is_active' => true]);
+
+        foreach (range(1, 101) as $number) {
+            Student::create([
+                'nis' => 'SHOW-'.str_pad((string) $number, 3, '0', STR_PAD_LEFT),
+                'name' => 'Siswa Ukuran Halaman '.str_pad((string) $number, 3, '0', STR_PAD_LEFT),
+                'gender' => 'P',
+                'school_class_id' => $class->id,
+                'academic_year_id' => $year->id,
+                'is_active' => true,
+            ]);
+        }
+
+        $user = User::factory()->create(['role' => 'admin']);
+        $filters = [
+            'search' => 'Siswa Ukuran Halaman',
+            'unit_id' => $unit->id,
+            'class_id' => $class->id,
+        ];
+
+        $defaultResponse = $this->actingAs($user)
+            ->get(route('finance.payments.index', $filters))
+            ->assertOk()
+            ->assertSeeText('Menampilkan 1-10 dari 101 siswa')
+            ->assertSee('<option value="10" selected>', false);
+
+        $this->assertStringContainsString('page=2', $defaultResponse->getContent());
+        $toolbarDom = new \DOMDocument;
+        @$toolbarDom->loadHTML($defaultResponse->getContent());
+        $toolbarXpath = new \DOMXPath($toolbarDom);
+        $overviewForm = '//form[contains(concat(" ", normalize-space(@class), " "), " payment-overview-form ")]';
+        $filterCard = $overviewForm.'/div[contains(concat(" ", normalize-space(@class), " "), " payment-overview-filter ")]';
+        $tableToolbar = $overviewForm.'/div[contains(concat(" ", normalize-space(@class), " "), " payment-overview-table-toolbar ")]';
+        $this->assertCount(1, $toolbarXpath->query($overviewForm));
+        $this->assertCount(1, $toolbarXpath->query($tableToolbar.'//select[@name="per_page"]'));
+        $this->assertCount(1, $toolbarXpath->query($tableToolbar.'//select[@data-payment-overview-per-page]'));
+        $this->assertCount(1, $toolbarXpath->query($tableToolbar.'//input[@name="search"]'));
+        $this->assertCount(0, $toolbarXpath->query($filterCard.'//select[@name="per_page"]'));
+        $this->assertCount(0, $toolbarXpath->query($filterCard.'//input[@name="search"]'));
+
+        $response = $this->actingAs($user)
+            ->get(route('finance.payments.index', $filters + ['per_page' => 25]))
+            ->assertOk()
+            ->assertSeeText('Menampilkan 1-25 dari 101 siswa')
+            ->assertSee('<option value="25" selected>', false);
+        $dom = new \DOMDocument;
+        @$dom->loadHTML($response->getContent());
+        $pageTwoUrl = (new \DOMXPath($dom))->query('//a[@aria-label="Halaman 2"]/@href')->item(0)?->nodeValue;
+        $this->assertNotNull($pageTwoUrl);
+        parse_str(parse_url(html_entity_decode($pageTwoUrl), PHP_URL_QUERY) ?? '', $pageTwoQuery);
+        $this->assertSame('Siswa Ukuran Halaman', $pageTwoQuery['search'] ?? null);
+        $this->assertSame((string) $unit->id, $pageTwoQuery['unit_id'] ?? null);
+        $this->assertSame((string) $class->id, $pageTwoQuery['class_id'] ?? null);
+        $this->assertSame('25', $pageTwoQuery['per_page'] ?? null);
+        $this->assertSame('2', $pageTwoQuery['page'] ?? null);
+
+        $this->actingAs($user)
+            ->get(route('finance.payments.index', $filters + ['per_page' => 50]))
+            ->assertOk()
+            ->assertSeeText('Menampilkan 1-50 dari 101 siswa')
+            ->assertSee('<option value="50" selected>', false);
+
+        $this->actingAs($user)
+            ->get(route('finance.payments.index', $filters + ['per_page' => 100]))
+            ->assertOk()
+            ->assertSeeText('Menampilkan 1-100 dari 101 siswa')
+            ->assertSee('<option value="100" selected>', false);
+
+        $this->actingAs($user)
+            ->get(route('finance.payments.index', $filters + ['per_page' => 'all', 'page' => 2]))
+            ->assertOk()
+            ->assertSeeText('Menampilkan 1-101 dari 101 siswa')
+            ->assertSee('<option value="all" selected>', false)
+            ->assertDontSee('aria-label="Halaman berikutnya"', false);
+
+        $this->actingAs($user)
+            ->get(route('finance.payments.index', $filters + ['per_page' => 99]))
+            ->assertOk()
+            ->assertSeeText('Menampilkan 1-10 dari 101 siswa')
+            ->assertSee('<option value="10" selected>', false);
     }
 
     public function test_bill_list_preserves_hierarchy_default_selection_and_single_visible_total(): void
@@ -595,11 +760,11 @@ class PaymentMenuTest extends TestCase
                 'student_id' => $student->id,
             ]))
             ->assertOk()
-            ->assertSeeText('Tagihan Wajib')
+            ->assertDontSeeText('Tagihan Wajib')
             ->assertSeeText('Pembayaran Opsional')
             ->assertSeeText('Total Pembayaran')
-            ->assertSeeText('Total Dibayar')
-            ->assertSee('<b data-payment-total>800.000,-</b>', false)
+            ->assertDontSeeText('Total Dibayar')
+            ->assertSee('<b data-payment-total>0,-</b>', false)
             ->assertDontSee('data-payment-mandatory-total', false);
 
         $dom = new \DOMDocument;
@@ -617,24 +782,31 @@ class PaymentMenuTest extends TestCase
         $this->assertCount(0, $xpath->query($optionalSection.$billRows.'/input[@data-payment-bill and @checked]'));
         $this->assertCount(0, $xpath->query($billCard.'//label[contains(concat(" ", normalize-space(@class), " "), " payment-prd-bill-row ")]'));
         $this->assertCount(3, $xpath->query($billCard.$billRows.'/label[contains(concat(" ", normalize-space(@class), " "), " payment-prd-bill-choice ")]'));
-        $this->assertCount(3, $xpath->query($billCard.$billRows.'//span[contains(concat(" ", normalize-space(@class), " "), " payment-prd-bill-heading ")]//*[@data-payment-bill-amount]'));
-        $this->assertGreaterThanOrEqual(2, $xpath->query($billCard.$billRows.'/label[contains(concat(" ", normalize-space(@class), " "), " payment-prd-period-field ")]/select[@data-payment-period-select]')->count());
+        $this->assertCount(3, $xpath->query($billCard.$billRows.'//*[@data-payment-bill-amount]'));
+        $this->assertCount(3, $xpath->query($billCard.$billRows.'//input[@data-payment-bill-input]'));
+        $this->assertCount(3, $xpath->query($billCard.$billRows.'//button[@data-payment-bill-full]'));
+        $this->assertCount(0, $xpath->query($billCard.'//*[@data-payment-period-select]'));
         $this->assertCount(0, $xpath->query($billCard.'//*[@data-payment-mandatory-total]'));
         $this->assertCount(1, $xpath->query($summaryCard.'//*[@data-payment-total]'));
+        $this->assertCount(1, $xpath->query($summaryCard.'//*[@data-payment-selected-summary]'));
+        $this->assertCount(1, $xpath->query($summaryCard.'//*[@data-payment-selected-count]'));
+        $this->assertCount(1, $xpath->query($summaryCard.'//*[@data-payment-selected-list]'));
+        $this->assertCount(1, $xpath->query($summaryCard.'//input[@type="date" and @name="transaction_date"]'));
+        $this->assertCount(1, $xpath->query($summaryCard.'//input[@type="time" and @name="transaction_time"]'));
+        $this->assertCount(1, $xpath->query($summaryCard.'//fieldset[contains(concat(" ", normalize-space(@class), " "), " payment-prd-method-card ")]'));
         $this->assertCount(0, $xpath->query($summaryCard.'//select[@data-payment-type or @name="payment_method"]'));
-        $this->assertCount(1, $xpath->query($summaryCard.'//input[@type="hidden" and @data-payment-type and @value="full"]'));
-        $this->assertCount(2, $xpath->query($summaryCard.'//input[@type="radio" and @data-payment-type-option]'));
-        $this->assertCount(1, $xpath->query($summaryCard.'//input[@type="radio" and @data-payment-type-option and @value="full" and @checked]'));
+        $this->assertCount(0, $xpath->query($summaryCard.'//*[@data-payment-type]'));
+        $this->assertCount(0, $xpath->query($summaryCard.'//*[@data-payment-type-option]'));
         $this->assertCount(1, $xpath->query($summaryCard.'//input[@type="hidden" and @name="payment_method" and @data-payment-method and @value="Cash"]'));
         $this->assertCount(2, $xpath->query($summaryCard.'//input[@type="radio" and @data-payment-method-option]'));
         $this->assertCount(1, $xpath->query($summaryCard.'//input[@type="radio" and @data-payment-method-option and @value="Cash" and @checked]'));
         $this->assertCount(0, $xpath->query($summaryCard.'//*[contains(concat(" ", normalize-space(@class), " "), " payment-prd-segment-check ")]'));
         $this->assertCount(0, $xpath->query($summaryCard.'//input[@type="radio" and @data-payment-type-option and @checked]/following-sibling::span//*[name()="svg"]'));
         $this->assertCount(0, $xpath->query($summaryCard.'//input[@type="radio" and @data-payment-method-option and @checked]/following-sibling::span//*[name()="svg"]'));
-        $this->assertCount(1, $xpath->query($summaryCard.'//span[contains(concat(" ", normalize-space(@class), " "), " payment-prd-money-input ")]/input[@name="paid_amount" and @data-payment-paid-display and @readonly]'));
-        $this->assertCount(1, $xpath->query($summaryCard.'//*[@data-payment-paid-total]'));
-        $this->assertCount(1, $xpath->query($summaryCard.'//*[@data-payment-transfer-panel and @hidden]'));
-        $this->assertCount(1, $xpath->query($summaryCard.'//input[@name="transfer_proof" and @data-payment-transfer-file and @accept=".jpg,.jpeg,.png,.pdf"]'));
+        $this->assertCount(1, $xpath->query($summaryCard.'//input[@type="hidden" and @name="paid_amount" and @data-payment-paid-display and @value="0"]'));
+        $this->assertCount(0, $xpath->query($summaryCard.'//*[@data-payment-paid-total]'));
+        $this->assertCount(0, $xpath->query($summaryCard.'//*[@data-payment-transfer-panel]'));
+        $this->assertCount(0, $xpath->query($summaryCard.'//input[@name="transfer_proof" and @data-payment-transfer-file and @accept=".jpg,.jpeg,.png,.pdf"]'));
         $this->assertCount(1, $xpath->query($summaryCard.'//button[@data-payment-submit]/*[@data-payment-submit-label]'));
 
         foreach ($xpath->query($billCard.$billRows) as $row) {
@@ -650,8 +822,7 @@ class PaymentMenuTest extends TestCase
                 'search' => $student->name,
                 'student_id' => $student->id,
             ]))
-            ->assertOk()
-            ->assertDontSeeText('Transfer Bank');
+            ->assertOk();
         $cashOnlyDom = new \DOMDocument;
         @$cashOnlyDom->loadHTML($cashOnlyResponse->getContent());
         $cashOnlyXpath = new \DOMXPath($cashOnlyDom);
@@ -661,6 +832,7 @@ class PaymentMenuTest extends TestCase
 
     public function test_transfer_payment_requires_transfer_proof(): void
     {
+        config(['payments.transfer_proof_upload_enabled' => true]);
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
@@ -680,6 +852,121 @@ class PaymentMenuTest extends TestCase
             ->assertRedirect(route('finance.payments.index'))
             ->assertSessionHasErrors([
                 'transfer_proof' => 'Bukti transfer wajib diunggah untuk metode pembayaran Transfer.',
+            ]);
+
+        $this->assertDatabaseCount('spp_payments', 0);
+        $this->assertDatabaseCount('other_payments', 0);
+    }
+
+    public function test_transfer_payment_can_be_recorded_without_a_proof_while_uploads_are_disabled(): void
+    {
+        config(['payments.transfer_proof_upload_enabled' => false]);
+        $this->travelTo(CarbonImmutable::parse('2026-07-15 09:00:00'));
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'I A', 'level' => 'Kelas I']);
+        $student = Student::create([
+            'nis' => '3003', 'name' => 'Siswa Transfer Tanpa Bukti', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01', 'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id, 'academic_year_id' => $year->id,
+            'payment_group' => 'spp', 'code' => 'SPP-TRANSFER-NO-PROOF', 'name' => 'SPP Transfer Tanpa Bukti',
+            'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->post(route('finance.payments.store'), [
+                'student_id' => $student->id,
+                'search' => $student->name,
+                'bill_keys' => [$student->id.':spp'],
+                'payment_method' => 'Transfer',
+                'paid_amount' => 100000,
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('spp_payments', [
+            'student_id' => $student->id,
+            'payment_method' => 'Transfer',
+            'transfer_proof_path' => null,
+            'transfer_proof_file_id' => null,
+        ]);
+    }
+
+    public function test_transfer_payment_rejects_invalid_or_oversized_proof_before_uploading(): void
+    {
+        config(['payments.transfer_proof_upload_enabled' => true]);
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        $student = Student::create([
+            'nis' => '3001', 'name' => 'Siswa Validasi Bukti', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->from(route('finance.payments.index'))
+            ->post(route('finance.payments.store'), [
+                'student_id' => $student->id,
+                'search' => $student->name,
+                'payment_method' => 'Transfer',
+                'paid_amount' => 100000,
+                'transfer_proof' => UploadedFile::fake()->create('proof.exe', 12, 'application/octet-stream'),
+            ])
+            ->assertRedirect(route('finance.payments.index'))
+            ->assertSessionHasErrors('transfer_proof');
+
+        $this->from(route('finance.payments.index'))
+            ->post(route('finance.payments.store'), [
+                'student_id' => $student->id,
+                'search' => $student->name,
+                'payment_method' => 'Transfer',
+                'paid_amount' => 100000,
+                'transfer_proof' => UploadedFile::fake()->create('proof.pdf', 2049, 'application/pdf'),
+            ])
+            ->assertRedirect(route('finance.payments.index'))
+            ->assertSessionHasErrors('transfer_proof');
+
+        $this->assertDatabaseCount('spp_payments', 0);
+        $this->assertDatabaseCount('other_payments', 0);
+    }
+
+    public function test_transfer_payment_upload_failure_rejects_the_transaction_without_creating_payments(): void
+    {
+        config(['payments.transfer_proof_upload_enabled' => true]);
+        $this->travelTo(CarbonImmutable::parse('2026-07-15 09:00:00'));
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'I A', 'level' => 'Kelas I']);
+        $student = Student::create([
+            'nis' => '3002', 'name' => 'Siswa Upload Gagal', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01', 'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id, 'academic_year_id' => $year->id,
+            'payment_group' => 'spp', 'code' => 'SPP-DRIVE-FAIL', 'name' => 'SPP Drive Gagal',
+            'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
+        ]);
+        $drive = Mockery::mock(GoogleDriveStorageService::class);
+        $drive->shouldReceive('upload')->once()->andThrow(new GoogleDriveStorageException('Bukti transfer gagal diunggah ke Google Drive. Silakan coba lagi.'));
+        $this->app->instance(GoogleDriveStorageService::class, $drive);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->from(route('finance.payments.index', ['search' => $student->name]))
+            ->post(route('finance.payments.store'), [
+                'student_id' => $student->id,
+                'search' => $student->name,
+                'bill_keys' => [$student->id.':spp'],
+                'payment_method' => 'Transfer',
+                'paid_amount' => 100000,
+                'transfer_proof' => UploadedFile::fake()->create('proof.pdf', 12, 'application/pdf'),
+            ])
+            ->assertRedirect(route('finance.payments.index', ['search' => $student->name]))
+            ->assertSessionHasErrors([
+                'transfer_proof' => 'Bukti transfer gagal diunggah ke Google Drive. Silakan coba lagi.',
             ]);
 
         $this->assertDatabaseCount('spp_payments', 0);
@@ -733,6 +1020,8 @@ class PaymentMenuTest extends TestCase
         $this->get($response->headers->get('Location'))
             ->assertOk()
             ->assertSee('data-payment-success-modal', false)
+            ->assertSee('role="dialog"', false)
+            ->assertSee('aria-modal="true"', false)
             ->assertSeeInOrder([
                 'Pembayaran Berhasil',
                 'Transaksi pembayaran berhasil disimpan dan tagihan telah diperbarui.',
@@ -824,19 +1113,20 @@ class PaymentMenuTest extends TestCase
             ]));
         $response->assertOk()
             ->assertSeeInOrder([
-                'payment-one-stop-profile-card',
+                'payment-selected-page-head',
                 'payment-one-stop-pay-form',
                 'payment-one-stop-history-card',
             ], false)
             ->assertSee('Riwayat Terbaru')
             ->assertSee('Transaksi terakhir siswa ini')
-            ->assertSee('Lihat Semua di Laporan')
-            ->assertSee(route('reports.transactions'), false)
+            ->assertDontSee('Lihat Semua di Laporan')
+            ->assertDontSee('payment-prd-history-link', false)
             ->assertSee('title="Download PDF"', false)
             ->assertSee('>Struk<', false)
             ->assertSee('>PDF<', false)
             ->assertSee('class="payment-one-stop-history-action danger"', false)
             ->assertSee('data-payment-delete-confirm', false)
+            ->assertSee('data-payment-delete-cancel', false)
             ->assertSee('Ya, Hapus')
             ->assertDontSee('>Periode<', false)
             ->assertDontSee('name="history_period"', false)
@@ -964,11 +1254,11 @@ class PaymentMenuTest extends TestCase
         $response = $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get(route('finance.payments.index', ['search' => $student->name]))
             ->assertOk()
-            ->assertSee('SPP MTs')
+            ->assertSee('BIAYA BULANAN')
             ->assertSee('Laundry Bulanan')
             ->assertSee('Daftar Ulang')
             ->assertSee('Tunai')
-            ->assertSee('Transfer Bank')
+            ->assertSee('Transfer')
             ->assertSee(route('finance.spp.receipt', $sppPayment), false)
             ->assertSee(route('finance.spp.receipt.download', $sppPayment), false)
             ->assertSee(route('finance.other.receipt', $laundryPayment), false)
@@ -980,6 +1270,7 @@ class PaymentMenuTest extends TestCase
         @$dom->loadHTML($response->getContent());
         $xpath = new \DOMXPath($dom);
         $this->assertCount(3, $xpath->query('//article[contains(concat(" ", normalize-space(@class), " "), " payment-one-stop-history-item ")]'));
+        $this->assertCount(3, $xpath->query('//article[contains(concat(" ", normalize-space(@class), " "), " payment-one-stop-history-item ")]//div[contains(concat(" ", normalize-space(@class), " "), " payment-one-stop-history-side ")]'));
     }
 
     public function test_multi_unit_student_switches_registration_context_and_resets_bill_list(): void
@@ -1002,17 +1293,15 @@ class PaymentMenuTest extends TestCase
             ->assertSee('data-payment-context-switch', false)
             ->assertSee('value="'.$context['identity']->id.'"', false)
             ->assertSee('value="'.$context['pondokRegistration']->id.'"', false)
-            ->assertSee('NIS '.$context['identity']->nis)
-            ->assertSee('SPP MTs');
+            ->assertSee($context['identity']->nis)
+            ->assertDontSee('NIS '.$context['identity']->nis)
+            ->assertSee('BIAYA BULANAN');
         $defaultDom = new \DOMDocument;
         @$defaultDom->loadHTML($defaultResponse->getContent());
-        $defaultMeta = (new \DOMXPath($defaultDom))->query('//div[contains(concat(" ", normalize-space(@class), " "), " payment-selected-student-meta ")]')->item(0);
+        $defaultMeta = (new \DOMXPath($defaultDom))->query('//p[contains(concat(" ", normalize-space(@class), " "), " payment-selected-student-meta ")]')->item(0);
         $this->assertNotNull($defaultMeta);
-        $this->assertSame('NIS '.$context['identity']->nis, trim(preg_replace('/\s+/', ' ', $defaultMeta->textContent)));
+        $this->assertSame($context['identity']->nis.' • MTs • VII A', trim(preg_replace('/\s+/', ' ', $defaultMeta->textContent)));
         $this->assertStringContainsString('value="'.$context['identity']->id.':spp"', $defaultResponse->getContent());
-        preg_match('/data-payment-total>([^<]+)/', $defaultResponse->getContent(), $defaultTotalMatch);
-        $defaultTotal = $defaultTotalMatch[1] ?? null;
-        $this->assertNotNull($defaultTotal);
 
         $switchedResponse = $this->actingAs($admin)->get(route('finance.payments.index', [
             'search' => $context['identity']->name,
@@ -1021,21 +1310,20 @@ class PaymentMenuTest extends TestCase
         ]));
 
         $switchedResponse->assertOk()
-            ->assertSee('NIS '.$context['pondokRegistration']->nis)
+            ->assertSee($context['pondokRegistration']->nis)
+            ->assertDontSee('NIS '.$context['pondokRegistration']->nis)
             ->assertSee('PONPES')
-            ->assertSee('SPP PONPES')
+            ->assertSee('BIAYA BULANAN')
             ->assertSee('Unit Aktif')
             ->assertSee('payment-context-segmented', false)
             ->assertDontSee('Ganti Unit');
         $switchedDom = new \DOMDocument;
         @$switchedDom->loadHTML($switchedResponse->getContent());
-        $switchedMeta = (new \DOMXPath($switchedDom))->query('//div[contains(concat(" ", normalize-space(@class), " "), " payment-selected-student-meta ")]')->item(0);
+        $switchedMeta = (new \DOMXPath($switchedDom))->query('//p[contains(concat(" ", normalize-space(@class), " "), " payment-selected-student-meta ")]')->item(0);
         $this->assertNotNull($switchedMeta);
-        $this->assertSame('NIS '.$context['pondokRegistration']->nis, trim(preg_replace('/\s+/', ' ', $switchedMeta->textContent)));
+        $this->assertSame($context['pondokRegistration']->nis.' • PONPES • Asrama A', trim(preg_replace('/\s+/', ' ', $switchedMeta->textContent)));
         $this->assertStringContainsString('value="'.$context['pondokRegistration']->id.':spp"', $switchedResponse->getContent());
         $this->assertStringNotContainsString('value="'.$context['identity']->id.':spp"', $switchedResponse->getContent());
-        preg_match('/data-payment-total>([^<]+)/', $switchedResponse->getContent(), $switchedTotalMatch);
-        $this->assertNotSame($defaultTotal, $switchedTotalMatch[1] ?? null);
 
         $this->actingAs($admin)
             ->get(route('finance.payments.index'))
@@ -1050,12 +1338,54 @@ class PaymentMenuTest extends TestCase
         ]));
 
         $reverseResponse->assertOk()
-            ->assertSee('NIS '.$context['identity']->nis)
-            ->assertSee('SPP MTs')
+            ->assertSee($context['identity']->nis)
+            ->assertDontSee('NIS '.$context['identity']->nis)
+            ->assertSee('BIAYA BULANAN')
             ->assertSee('payment-context-segmented', false)
-            ->assertDontSee('SPP PONPES');
+            ->assertSee('Unit Aktif');
         $this->assertStringContainsString('value="'.$context['identity']->id.':spp"', $reverseResponse->getContent());
         $this->assertStringNotContainsString('value="'.$context['pondokRegistration']->id.':spp"', $reverseResponse->getContent());
+    }
+
+    public function test_multi_unit_student_uses_a_select_for_more_than_three_active_registrations(): void
+    {
+        $context = $this->multiUnitPaymentContext();
+        $miUnit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $maUnit = EducationUnit::create(['code' => 'MA', 'name' => 'Madrasah Aliyah', 'is_active' => true]);
+        $miClass = SchoolClass::create(['education_unit_id' => $miUnit->id, 'name' => 'VI A', 'level' => 'Kelas VI', 'is_active' => true]);
+        $maClass = SchoolClass::create(['education_unit_id' => $maUnit->id, 'name' => 'X A', 'level' => 'Kelas X', 'is_active' => true]);
+        $miRegistration = Student::create([
+            'identity_student_id' => $context['identity']->id,
+            'nis' => 'MULTI-MI',
+            'name' => $context['identity']->name,
+            'gender' => 'L',
+            'school_class_id' => $miClass->id,
+            'academic_year_id' => $context['year']->id,
+            'billing_start_date' => '2026-07-01',
+            'is_active' => true,
+        ]);
+        $maRegistration = Student::create([
+            'identity_student_id' => $context['identity']->id,
+            'nis' => 'MULTI-MA',
+            'name' => $context['identity']->name,
+            'gender' => 'L',
+            'school_class_id' => $maClass->id,
+            'academic_year_id' => $context['year']->id,
+            'billing_start_date' => '2026-07-01',
+            'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.index', ['search' => $context['identity']->name]))
+            ->assertOk()
+            ->assertSee('Unit Aktif')
+            ->assertSee('id="payment-unit-context-select"', false)
+            ->assertSee('name="registration_id"', false)
+            ->assertSee('MI • VI A')
+            ->assertSee('MA • X A')
+            ->assertSee('value="'.$miRegistration->id.'"', false)
+            ->assertSee('value="'.$maRegistration->id.'"', false)
+            ->assertDontSee('payment-context-segmented', false);
     }
 
     public function test_single_unit_student_does_not_show_unit_switcher(): void
@@ -1077,8 +1407,10 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get(route('finance.payments.index', ['search' => $student->name]))
             ->assertOk()
-            ->assertSee('MTs • VII A')
-            ->assertSee('Unit Aktif')
+            ->assertSee($student->nis)
+            ->assertSee('MTs')
+            ->assertSee('VII A')
+            ->assertDontSee('Unit Aktif')
             ->assertDontSee('Ganti Unit')
             ->assertDontSee('payment-unit-context-form', false)
             ->assertDontSee('payment-context-segmented', false);
@@ -1098,8 +1430,10 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get(route('finance.payments.index', ['search' => $student->name]))
             ->assertOk()
-            ->assertSee('PONPES • Asrama')
-            ->assertSee('Unit Aktif')
+            ->assertSee($student->nis)
+            ->assertSee('PONPES')
+            ->assertSee('Asrama')
+            ->assertDontSee('Unit Aktif')
             ->assertDontSee('payment-unit-context-form', false)
             ->assertDontSee('payment-context-segmented', false);
     }
@@ -1113,8 +1447,9 @@ class PaymentMenuTest extends TestCase
             ->get(route('finance.payments.index', ['search' => $context['identity']->name]));
 
         $response->assertOk()
-            ->assertSee('MTs • VII A')
-            ->assertSee('Unit Aktif')
+            ->assertSee('MTs')
+            ->assertSee('VII A')
+            ->assertDontSee('Unit Aktif')
             ->assertDontSee('payment-unit-context-form', false)
             ->assertDontSee('registration_id='.$context['pondokRegistration']->id, false);
     }
@@ -1144,7 +1479,7 @@ class PaymentMenuTest extends TestCase
             ->assertOk()
             ->assertSee($longName)
             ->assertSee('Unit Aktif')
-            ->assertSee('Ganti Siswa');
+            ->assertDontSee('Ganti Siswa');
     }
 
     public function test_multi_unit_switcher_is_limited_to_units_accessible_by_the_operator(): void
@@ -1155,8 +1490,8 @@ class PaymentMenuTest extends TestCase
         $this->actingAs($cashier)
             ->get(route('finance.payments.index', ['search' => $context['identity']->name]))
             ->assertOk()
-            ->assertSee('SPP MTs')
-            ->assertDontSee('SPP PONPES')
+            ->assertSee('BIAYA BULANAN')
+            ->assertDontSee('Unit Aktif')
             ->assertDontSee('Ganti Unit');
     }
 
@@ -1171,9 +1506,10 @@ class PaymentMenuTest extends TestCase
                 'registration_id' => $context['pondokRegistration']->id,
             ]))
             ->assertOk()
-            ->assertSee('NIS '.$context['pondokRegistration']->nis)
-            ->assertSee('PONPES • Asrama A')
-            ->assertDontSee('SPP MTs')
+            ->assertSee($context['pondokRegistration']->nis)
+            ->assertDontSee('NIS '.$context['pondokRegistration']->nis)
+            ->assertSee('PONPES')
+            ->assertSee('Asrama A')
             ->assertDontSee('Ganti Unit');
     }
 
@@ -1207,7 +1543,7 @@ class PaymentMenuTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_recent_history_remains_scoped_to_the_student_identity_after_switching_units(): void
+    public function test_recent_history_follows_the_active_registration_context(): void
     {
         $context = $this->multiUnitPaymentContext();
         $payment = SppPayment::create([
@@ -1222,14 +1558,26 @@ class PaymentMenuTest extends TestCase
             'remaining_amount' => 0, 'payment_status' => 'Lunas',
         ]);
 
-        $this->actingAs(User::factory()->create(['role' => 'admin']))
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)
             ->get(route('finance.payments.index', [
                 'search' => $context['identity']->name,
                 'student_id' => $context['identity']->id,
                 'registration_id' => $context['identity']->id,
             ]))
             ->assertOk()
-            ->assertSee('SPP PONPES')
+            ->assertDontSee('SPP PONPES')
+            ->assertDontSee(route('finance.spp.receipt', $payment), false);
+
+        $this->actingAs($admin)
+            ->get(route('finance.payments.index', [
+                'search' => $context['identity']->name,
+                'student_id' => $context['identity']->id,
+                'registration_id' => $context['pondokRegistration']->id,
+            ]))
+            ->assertOk()
+            ->assertSee('BIAYA BULANAN')
             ->assertSee(route('finance.spp.receipt', $payment), false);
     }
 
@@ -1256,7 +1604,6 @@ class PaymentMenuTest extends TestCase
                 'search' => $student->name,
             ]))
             ->assertOk()
-            ->assertSee('Tagihan wajib sudah lunas. Pembayaran opsional tersedia jika diperlukan.')
             ->assertSee('Pembayaran Opsional')
             ->assertDontSee('1 Tagihan')
             ->assertSee('payment-one-stop-optional-section is-only-optional', false)
@@ -1296,7 +1643,7 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get('/keuangan/pembayaran?search=Ahmad')
             ->assertOk()
-            ->assertSee('AHMAD FAUZAN')
+            ->assertSee('Ahmad Fauzan')
             ->assertDontSee('2 unit')
             ->assertSee('MTS-001')
             ->assertDontSee('NIS PP-099')
@@ -1551,20 +1898,20 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create());
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
-            ->assertSee('Bayar sampai')
+            ->assertDontSee('Bayar sampai')
+            ->assertSee('NOMINAL PEMBAYARAN')
+            ->assertSee('data-payment-bill-full', false)
             ->assertSee('Total Pembayaran')
-            ->assertSee('Tipe Pembayaran')
-            ->assertSee('Nominal Dibayar')
             ->assertSee('Metode Pembayaran')
-            ->assertSee('Transfer Bank')
+            ->assertSee('Transfer')
             ->assertDontSee('@hidden')
-            ->assertSee('class="button button-secondary payment-transfer-copy-button"', false)
-            ->assertSee('aria-label="Salin rekening"', false)
+            ->assertDontSee('payment-transfer-copy-button', false)
+            ->assertDontSee('aria-label="Salin rekening"', false)
             ->assertSee('class="button button-primary payment-one-stop-pay-button"', false)
-            ->assertSee('class="button button-secondary payment-prd-history-link"', false)
+            ->assertDontSee('payment-prd-history-link', false)
             ->assertSee('Bayar &amp; Cetak Struk', false)
-            ->assertSee('Juli - Desember 2026')
-            ->assertSee('>Desember 2026</option>', false);
+            ->assertSee('Juli 2026')
+            ->assertDontSeeText('Desember 2026');
 
         $this->post('/keuangan/pembayaran', [
             'student_id' => $student->id,
@@ -1580,6 +1927,131 @@ class PaymentMenuTest extends TestCase
         $this->assertDatabaseCount('spp_payment_items', 6);
         $this->assertDatabaseHas('spp_payment_items', ['year' => 2026, 'month' => 7, 'paid_amount' => 300000]);
         $this->assertDatabaseHas('spp_payment_items', ['year' => 2026, 'month' => 12, 'paid_amount' => 300000]);
+    }
+
+    public function test_payment_bill_cards_expose_per_card_input_and_full_control_without_period_selector(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-07-05 10:00:00'));
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '1A', 'level' => 1]);
+        $student = Student::create([
+            'nis' => 'CARD-001', 'name' => 'Siswa Kartu Tagihan', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01', 'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id, 'academic_year_id' => $year->id,
+            'payment_group' => 'spp', 'code' => 'SPP-CARD', 'name' => 'SPP Kartu',
+            'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.index', ['search' => $student->name]))
+            ->assertOk()
+            ->assertDontSee('SIAP DIBAYAR')
+            ->assertSee('BIAYA BULANAN')
+            ->assertDontSee('payment-prd-bill-selection', false)
+            ->assertSee('NOMINAL PEMBAYARAN')
+            ->assertSee('data-payment-bill-input', false)
+            ->assertSee('data-payment-bill-full', false)
+            ->assertSee('name="allocation_amounts['.$student->id.':spp]"', false)
+            ->assertDontSee('Bayar sampai')
+            ->assertDontSee('data-payment-bill-locked', false);
+    }
+
+    public function test_transaction_hub_records_each_card_allocation_and_uses_their_sum_as_the_cashier_total(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-07-05 10:00:00'));
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '1A', 'level' => 1]);
+        $student = Student::create([
+            'nis' => 'ALLOC-001', 'name' => 'Siswa Alokasi Kartu', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01', 'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id, 'academic_year_id' => $year->id,
+            'payment_group' => 'spp', 'code' => 'SPP-ALLOC', 'name' => 'SPP Alokasi',
+            'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
+        ]);
+        $registrationFee = FeeType::create([
+            'education_unit_id' => $unit->id, 'academic_year_id' => $year->id,
+            'payment_group' => 'daftar-ulang', 'code' => 'DU-ALLOC', 'name' => 'Daftar Ulang Alokasi',
+            'amount' => 50000, 'period' => 'Sekali Bayar', 'creates_bill' => true, 'is_active' => true,
+        ]);
+
+        $sppKey = $student->id.':spp';
+        $registrationKey = $student->id.':daftar-ulang';
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->post(route('finance.payments.store'), [
+                'student_id' => $student->id,
+                'search' => $student->name,
+                'bill_keys' => [$sppKey, $registrationKey],
+                'payment_month_counts' => [$student->id.'_spp' => 1],
+                'allocation_amounts' => [$sppKey => 25000, $registrationKey => 30000],
+                'transaction_date' => '2026-07-06',
+                'transaction_time' => '13:45',
+                'payment_method' => 'Cash',
+                'paid_amount' => 55000,
+            ])
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('spp_payments', [
+            'student_id' => $student->id,
+            'paid_amount' => 25000,
+            'transaction_at' => '2026-07-06 13:45:00',
+        ]);
+        $this->assertDatabaseHas('other_payments', [
+            'student_id' => $student->id,
+            'fee_type_id' => $registrationFee->id,
+            'paid_amount' => 30000,
+            'transaction_at' => '2026-07-06 13:45:00',
+        ]);
+    }
+
+    public function test_transaction_hub_rejects_a_card_allocation_that_exceeds_its_remaining_amount(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-07-05 10:00:00'));
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '1A', 'level' => 1]);
+        $student = Student::create([
+            'nis' => 'ALLOC-OVER', 'name' => 'Siswa Alokasi Lebih', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01', 'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id, 'academic_year_id' => $year->id,
+            'payment_group' => 'spp', 'code' => 'SPP-OVER', 'name' => 'SPP Batas',
+            'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id, 'academic_year_id' => $year->id,
+            'payment_group' => 'daftar-ulang', 'code' => 'DU-OVER', 'name' => 'Daftar Ulang Batas',
+            'amount' => 50000, 'period' => 'Sekali Bayar', 'creates_bill' => true, 'is_active' => true,
+        ]);
+
+        $sppKey = $student->id.':spp';
+        $registrationKey = $student->id.':daftar-ulang';
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->from(route('finance.payments.index', ['search' => $student->name]))
+            ->post(route('finance.payments.store'), [
+                'student_id' => $student->id,
+                'search' => $student->name,
+                'bill_keys' => [$sppKey, $registrationKey],
+                'payment_month_counts' => [$student->id.'_spp' => 1],
+                'allocation_amounts' => [$sppKey => 120000, $registrationKey => 0],
+                'payment_method' => 'Cash',
+                'paid_amount' => 120000,
+            ])
+            ->assertRedirect(route('finance.payments.index', ['search' => $student->name]))
+            ->assertSessionHasErrors('allocation_amounts.'.$sppKey);
+
+        $this->assertDatabaseCount('spp_payments', 0);
+        $this->assertDatabaseCount('other_payments', 0);
     }
 
     public function test_spp_paid_through_current_month_shows_zero_but_allows_next_month_payment(): void
@@ -1640,9 +2112,9 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']));
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
-            ->assertSee('<strong data-payment-bill-amount>0,-</strong>', false)
-            ->assertSee('Administrasi sudah lunas sampai September 2026')
-            ->assertSee('>Oktober 2026</option>', false);
+            ->assertDontSee('Bayar sampai')
+            ->assertSee('NOMINAL PEMBAYARAN')
+            ->assertSee('Oktober 2026');
 
         $this->post('/keuangan/pembayaran', [
             'student_id' => $student->id,
@@ -1693,8 +2165,8 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create());
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
-            ->assertSee('Bayar sampai')
-            ->assertSee('Agustus 2026')
+            ->assertDontSee('Bayar sampai')
+            ->assertSee('Juli 2026')
             ->assertDontSee('Juli 2026 - Agustus 2026');
 
         $this->post('/keuangan/pembayaran', [
@@ -1745,14 +2217,10 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create());
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
-            ->assertSee('Bayar sampai')
+            ->assertDontSee('Bayar sampai')
             ->assertSee('September 2025 - Juni 2026')
-            ->assertSee('value="10" data-amount="1000000"', false)
-            ->assertSee('selected>Juni 2026</option>', false)
-            ->assertSee('<b data-payment-total>1.000.000,-</b>', false)
-            ->assertSee('September - Oktober 2025')
-            ->assertSee('September 2025 - Agustus 2026')
-            ->assertSee('>Oktober 2025</option>', false);
+            ->assertSee('NOMINAL PEMBAYARAN')
+            ->assertSee('name="payment_month_counts['.$student->id.'_spp]" value="10"', false);
 
         $this->post('/keuangan/pembayaran', [
             'student_id' => $student->id,
@@ -2391,6 +2859,7 @@ class PaymentMenuTest extends TestCase
 
     public function test_transfer_payment_proof_is_stored_privately_and_served_with_payment_access(): void
     {
+        config(['payments.transfer_proof_upload_enabled' => true]);
         Storage::fake('local');
         Storage::fake('public');
         CarbonImmutable::setTestNow('2026-07-15 09:00:00');
@@ -2418,6 +2887,13 @@ class PaymentMenuTest extends TestCase
             'period' => 'Bulanan',
             'is_active' => true,
         ]);
+        $drive = Mockery::mock(GoogleDriveStorageService::class);
+        $drive->shouldReceive('upload')->once()->andReturn([
+            'file_id' => 'drive-proof-123',
+            'metadata' => ['name' => 'payment-proof.pdf', 'mime_type' => 'application/pdf', 'size' => 12, 'uploaded_at' => '2026-07-15T09:00:00+07:00'],
+        ]);
+        $drive->shouldReceive('download')->once()->with('drive-proof-123')->andReturn('proof');
+        $this->app->instance(GoogleDriveStorageService::class, $drive);
 
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->post(route('finance.payments.store'), [
@@ -2435,9 +2911,10 @@ class PaymentMenuTest extends TestCase
             ]));
 
         $payment = SppPayment::firstOrFail();
-        $this->assertNotNull($payment->transfer_proof_path);
-        Storage::disk('local')->assertExists($payment->transfer_proof_path);
-        Storage::disk('public')->assertMissing($payment->transfer_proof_path);
+        $this->assertNull($payment->transfer_proof_path);
+        $this->assertSame('drive-proof-123', $payment->transfer_proof_file_id);
+        $this->assertSame('payment-proof.pdf', $payment->transfer_proof_metadata['name']);
+        $this->assertSame([], Storage::disk('local')->allFiles('payment-proofs'));
 
         $this->get(route('finance.spp.proof', $payment))->assertOk();
 

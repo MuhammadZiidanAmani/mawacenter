@@ -15,6 +15,8 @@ use App\Models\OtherPayment;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Services\AuditLogService;
+use App\Services\GoogleDriveStorageException;
+use App\Services\GoogleDriveStorageService;
 use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentImportService;
 use App\Services\OtherPaymentService;
@@ -273,11 +275,11 @@ class OtherPaymentController extends Controller
         ]);
     }
 
-    public function proof(Request $request, OtherPayment $otherPayment): StreamedResponse
+    public function proof(Request $request, OtherPayment $otherPayment, GoogleDriveStorageService $driveStorage): StreamedResponse
     {
         $this->authorizePaymentAccess($request, $otherPayment);
 
-        return $this->proofResponse($otherPayment->transfer_proof_path);
+        return $this->proofResponse($otherPayment->transfer_proof_path, $otherPayment->transfer_proof_file_id, $otherPayment->transfer_proof_metadata, $driveStorage);
     }
 
     public function show(Request $request, OtherPayment $otherPayment): JsonResponse
@@ -775,8 +777,22 @@ class OtherPaymentController extends Controller
         }
     }
 
-    private function proofResponse(?string $path): StreamedResponse
+    private function proofResponse(?string $path, ?string $driveFileId = null, ?array $metadata = null, ?GoogleDriveStorageService $driveStorage = null): StreamedResponse
     {
+        if ($driveFileId && $driveStorage) {
+            try {
+                $contents = $driveStorage->download($driveFileId);
+            } catch (GoogleDriveStorageException $exception) {
+                abort(503, $exception->getMessage());
+            }
+
+            return response()->streamDownload(
+                static fn () => print $contents,
+                $metadata['name'] ?? 'bukti-transfer',
+                ['Content-Type' => $metadata['mime_type'] ?? 'application/octet-stream', 'Cache-Control' => 'private, no-store, max-age=0'],
+            );
+        }
+
         if (! $path) {
             abort(404);
         }

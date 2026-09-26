@@ -858,11 +858,73 @@ class MasterDataTest extends TestCase
                 ->assertSee('master-table-search', false)
                 ->assertSee('master-data-pagination-footer', false)
                 ->assertSee('master-sort-link', false)
+                ->assertSee('Tampilkan')
                 ->assertSee('Cari data')
                 ->assertSee('Menampilkan')
                 ->assertSee($sortLink, false)
                 ->assertDontSee('list-sort-heading', false);
         }
+    }
+
+    public function test_master_tabs_use_consistent_surfaces_and_keep_actions_permission_gated(): void
+    {
+        Role::create([
+            'key' => 'master_operator',
+            'name' => 'Master Operator',
+            'permissions' => ['master.manage'],
+            'is_active' => true,
+        ]);
+        Role::create([
+            'key' => 'user_operator',
+            'name' => 'User Operator',
+            'permissions' => ['users.manage'],
+            'is_active' => true,
+        ]);
+
+        $masterOperator = User::factory()->create(['role' => 'master_operator']);
+        $userOperator = User::factory()->create(['role' => 'user_operator']);
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+
+        foreach (['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts'] as $tab) {
+            $this->actingAs($masterOperator)
+                ->get('/master-data?tab='.$tab)
+                ->assertOk()
+                ->assertSee('master-page-header', false)
+                ->assertSee('master-data-surface', false)
+                ->assertSee('master-table-toolbar', false)
+                ->assertSee('master-data-pagination-footer', false)
+                ->assertSee('/master-data/create?tab='.$tab, false);
+        }
+
+        $this->actingAs($masterOperator)
+            ->get('/master-data?tab=academic-years')
+            ->assertOk()
+            ->assertSee('title="Edit"', false)
+            ->assertSee('aria-label="Edit data"', false)
+            ->assertSee('title="Hapus"', false)
+            ->assertSee('aria-label="Hapus data"', false)
+            ->assertSee('data-master-delete-form', false)
+            ->assertDontSee('onsubmit="return confirm', false)
+            ->assertSee('master-edit-modal', false)
+            ->assertSee('role="dialog"', false)
+            ->assertSee('data-modal-close', false);
+
+        $this->actingAs($masterOperator)
+            ->get('/master-data?tab=data-users')
+            ->assertForbidden();
+
+        foreach (['data-roles', 'data-users'] as $tab) {
+            $this->actingAs($userOperator)
+                ->get('/master-data?tab='.$tab)
+                ->assertOk()
+                ->assertSee('master-page-header', false)
+                ->assertSee('master-data-surface', false)
+                ->assertSee('/master-data/create?tab='.$tab, false);
+        }
+
+        $this->actingAs($userOperator)
+            ->get('/master-data?tab=academic-years')
+            ->assertForbidden();
     }
 
     public function test_all_master_data_can_be_created(): void

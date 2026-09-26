@@ -3,10 +3,15 @@
     width: 100%; min-width: 0; padding: var(--app-page-padding-y) var(--app-page-padding-x) 32px; background: var(--app-canvas);
 }
 
+:is(main.master-flat-page, main.master-create-page) { display: grid; align-content: start; gap: 16px; }
 :is(.master-flat-workspace, .student-workspace) { display: grid; width: min(100%, var(--app-content-width)); gap: 16px; margin-inline: auto; }
 .master-flat-workspace > .student-flat-header, .student-workspace > .student-flat-header, .master-create-heading-section { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.master-list-layout { display: grid; width: min(100%, var(--app-content-width)); gap: 16px; margin-inline: auto; }
+.master-flat-page > :is(.master-flat-workspace, .master-list-layout) { width: min(100%, var(--app-content-width)); margin-inline: auto; }
+.master-page-header { min-height: 72px; align-items: center; padding: 4px 0; }
 .master-sample-heading h1, .student-master-heading h1, .master-create-heading-section h1 { margin: 0; color: var(--app-text); font-size: var(--app-text-page-size); font-weight: 700; line-height: var(--app-text-page-leading); }
-.master-sample-heading p, .student-master-heading p, .master-create-heading-section p { margin: 4px 0 0; color: var(--app-muted); }
+.master-sample-heading p, .master-create-heading-section p { margin: 4px 0 0; color: var(--app-muted); font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
+.student-master-heading p { margin: 4px 0 0; color: var(--app-muted); }
 .student-title-actions, .master-table-actions, .master-data-filter-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .master-primary-add-button, .student-add-button { color: var(--app-on-primary); background: var(--app-primary); border-color: var(--app-primary); }
 .master-primary-add-button:hover, .student-add-button:hover { color: var(--app-on-primary); background: var(--app-primary-hover); border-color: var(--app-primary-hover); }
@@ -28,15 +33,43 @@
 .student-filter-actions .button, .master-data-filter-actions .button { min-width: 88px; }
 
 .master-card { overflow: hidden; }
-.student-table-toolbar-v2, .master-table-toolbar, .student-reference-card-count { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--app-border-soft); }
+.master-data-surface { display: grid; align-content: start; }
+.student-table-toolbar-v2, .student-reference-card-count { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--app-border-soft); }
+.master-table-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 14px 16px; border-bottom: 1px solid var(--app-border-soft); }
 .student-reference-card-count form, .master-table-toolbar form { min-width: 0; }
 .student-reference-card-count label, .master-data-length label { display: inline-flex; align-items: center; gap: 8px; color: var(--app-muted); }
 .student-reference-card-count select, .master-data-length select { width: auto; min-height: 36px; }
 .report-student-search-card label, .master-table-search label { display: grid; gap: 5px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
 .report-student-search-input, .master-table-search-input { display: flex; min-width: min(320px, 100%); align-items: center; gap: 8px; padding: 0 10px; border: 1px solid var(--app-border); border-radius: var(--app-radius); }
 .report-student-search-input input, .master-table-search-input input { min-height: 38px; padding: 0; border: 0; outline: 0; box-shadow: none; }
+.master-data-filter-panel { padding: 16px; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.master-data-filter-panel .master-data-filter-actions { justify-content: flex-end; }
+.master-table-toolbar { padding: 4px 0; background: transparent; border: 0; }
+.master-table-search { margin-left: auto; }
+.master-table-search label { display: flex; align-items: center; gap: 12px; }
+.master-table-search label > span:first-child { flex: 0 0 auto; }
+.master-table-search-input { min-width: min(360px, 100%); }
 .master-data-table, .student-standard-table-v2 { min-width: 720px; }
+.master-data-table th, .master-data-table td { padding: 14px 16px; }
+.master-data-table th { color: var(--app-label); background: var(--app-surface); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); text-align: left; white-space: nowrap; }
 .master-data-table td, .student-standard-table-v2 td { font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
+.master-data-table :is(th, td):last-child { text-align: right; }
+.master-data-table td strong { color: var(--app-text); font-weight: 600; }
+.master-data-table tbody tr:last-child td { border-bottom: 0; }
+.master-data-table .status, .academic-year-status, .education-unit-status, .class-card-status, .fee-type-status, .fee-discount-status, .data-role-status, .data-user-status { font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); }
+.master-sort-link { display: inline-flex; align-items: center; gap: 6px; color: inherit; text-decoration: none; }
+.master-sort-link:hover { color: var(--app-primary); }
+.master-sort-indicator { display: inline-flex; color: var(--app-muted); }
+.master-sortable-heading.is-sorted .master-sort-indicator { color: var(--app-primary); }
+.master-data-table .table-actions, .master-data-table .fee-discount-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.master-data-table .table-actions form { display: inline-flex; margin: 0; }
+.master-data-table .icon-button { width: 32px; min-width: 32px; height: 32px; padding: 0; color: var(--app-label); background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius); }
+.master-data-table .icon-button:hover { color: var(--app-primary); background: var(--app-hover-surface); border-color: var(--app-primary-border); }
+.master-data-table .delete-button:hover { color: var(--app-danger); }
+.master-data-table .empty-state { padding: 36px 20px; }
+
+.academic-year-card-section, .education-unit-card-section { width: min(100%, var(--app-content-width)); margin-inline: auto; }
+.academic-year-card, .education-unit-card { background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
 .student-class-cell, .student-actions-cell { white-space: nowrap; }
 .master-row-actions, .student-actions-cell > div { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .master-row-actions .button, .student-actions-cell .button { min-height: 32px; padding-inline: 9px; font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
@@ -65,6 +98,15 @@
 .student-page-button, .master-page-button { display: inline-grid; min-height: 34px; min-width: 34px; place-items: center; padding: 0 10px; color: var(--app-label); border: 1px solid var(--app-border); border-radius: var(--app-radius); }
 .student-page-button.is-active, .master-page-button.is-active { color: var(--app-on-primary); background: var(--app-primary); border-color: var(--app-primary); }
 .student-page-button.is-disabled, .master-page-button.is-disabled { color: var(--app-muted); background: var(--app-panel-soft); }
+.master-data-pagination-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0; color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 500; line-height: var(--app-text-meta-leading); }
+.master-page-link { display: inline-grid; min-width: 34px; min-height: 34px; place-items: center; padding: 0 10px; color: var(--app-label); border: 1px solid var(--app-border); border-radius: var(--app-radius); text-decoration: none; font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
+.master-page-link:hover { color: var(--app-primary); background: var(--app-hover-surface); border-color: var(--app-primary-border); }
+.master-page-link.is-active { color: var(--app-on-primary); background: var(--app-primary); border-color: var(--app-primary); }
+.master-page-link.is-disabled { color: var(--app-muted); background: var(--app-panel-soft); }
+
+.master-edit-modal .form-modal { width: min(100%, 640px); }
+.master-edit-modal .master-form { padding: 20px; }
+.master-edit-modal .master-form .form-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px; margin-top: 4px; border-top: 1px solid var(--app-border-soft); }
 
 @media (max-width: 760px) {
     :is(main.master-flat-page, main.master-create-page, body.master-data-body main.student-page) { padding: 16px; }
@@ -75,5 +117,12 @@
     .student-filter-actions, .master-data-filter-actions { display: grid; grid-template-columns: 1fr 1fr; }
     .student-filter-actions .button, .master-data-filter-actions .button { width: 100%; }
     .report-student-search-input, .master-table-search-input { min-width: 0; width: 100%; }
+    .master-table-search { margin-left: 0; }
+    .master-table-search label { align-items: stretch; flex-direction: column; gap: 7px; }
+    .master-data-pagination-footer { align-items: stretch; flex-direction: column; }
+    .master-pagination { justify-content: space-between; }
+    .master-edit-modal .master-form { padding: 16px; }
+    .master-edit-modal .master-form .form-actions { display: grid; grid-template-columns: 1fr; }
+    .master-edit-modal .master-form .form-actions .button { width: 100%; }
     .student-import-page-actions .button { width: 100%; }
 }

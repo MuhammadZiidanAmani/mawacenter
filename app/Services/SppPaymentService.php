@@ -303,6 +303,8 @@ class SppPaymentService
                 'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
                 'payment_method' => $data['payment_method'],
                 'transfer_proof_path' => $data['transfer_proof_path'] ?? null,
+                'transfer_proof_file_id' => $data['transfer_proof_file_id'] ?? null,
+                'transfer_proof_metadata' => $data['transfer_proof_metadata'] ?? null,
                 'status' => $data['status'],
                 'operator_name' => $data['operator_name'] ?? null,
                 'operator_user_id' => $data['operator_user_id'] ?? null,
@@ -373,6 +375,8 @@ class SppPaymentService
                 'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
                 'payment_method' => $data['payment_method'],
                 'transfer_proof_path' => $data['transfer_proof_path'] ?? null,
+                'transfer_proof_file_id' => $data['transfer_proof_file_id'] ?? null,
+                'transfer_proof_metadata' => $data['transfer_proof_metadata'] ?? null,
                 'status' => $data['status'],
                 'operator_name' => $data['operator_name'] ?? null,
                 'operator_user_id' => $data['operator_user_id'] ?? null,
@@ -458,6 +462,12 @@ class SppPaymentService
                 'transfer_proof_path' => $data['payment_method'] === 'Transfer'
                     ? ($data['transfer_proof_path'] ?? $payment->transfer_proof_path)
                     : null,
+                'transfer_proof_file_id' => $data['payment_method'] === 'Transfer'
+                    ? ($data['transfer_proof_file_id'] ?? $payment->transfer_proof_file_id)
+                    : null,
+                'transfer_proof_metadata' => $data['payment_method'] === 'Transfer'
+                    ? ($data['transfer_proof_metadata'] ?? $payment->transfer_proof_metadata)
+                    : null,
                 'status' => $data['status'],
             ]);
 
@@ -503,6 +513,12 @@ class SppPaymentService
                 'payment_method' => $data['payment_method'],
                 'transfer_proof_path' => $data['payment_method'] === 'Transfer'
                     ? ($data['transfer_proof_path'] ?? $payment->transfer_proof_path)
+                    : null,
+                'transfer_proof_file_id' => $data['payment_method'] === 'Transfer'
+                    ? ($data['transfer_proof_file_id'] ?? $payment->transfer_proof_file_id)
+                    : null,
+                'transfer_proof_metadata' => $data['payment_method'] === 'Transfer'
+                    ? ($data['transfer_proof_metadata'] ?? $payment->transfer_proof_metadata)
                     : null,
                 'status' => $data['status'],
                 'original_amount' => $quote['original_amount'],

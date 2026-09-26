@@ -113,16 +113,16 @@
                 </div>
             @endif
             @if (session('error'))
-                <div class="result-modal-backdrop show" data-alert>
-                    <div class="result-modal error-result">
-                        <span class="result-icon">!</span><strong>Perlu Diperiksa</strong><p>{{ session('error') }}</p><button type="button" class="button button-primary" data-alert-close>OK</button>
+                <div class="result-modal-backdrop show" data-alert role="dialog" aria-modal="true" aria-labelledby="master-error-title">
+                    <div class="result-modal error-result" role="document">
+                        <span class="result-icon" aria-hidden="true">!</span><strong id="master-error-title">Perlu Diperiksa</strong><p>{{ session('error') }}</p><button type="button" class="button button-primary" data-alert-close>OK</button>
                     </div>
                 </div>
             @endif
             @if ($errors->any())
-                <div class="result-modal-backdrop show" data-alert>
-                    <div class="result-modal error-result">
-                        <span class="result-icon">!</span><strong>Data Belum Dapat Disimpan</strong><p>{{ $errors->first() }}</p><button type="button" class="button button-primary" data-alert-close>OK</button>
+                <div class="result-modal-backdrop show" data-alert role="dialog" aria-modal="true" aria-labelledby="master-validation-error-title">
+                    <div class="result-modal error-result" role="document">
+                        <span class="result-icon" aria-hidden="true">!</span><strong id="master-validation-error-title">Data Belum Dapat Disimpan</strong><p>{{ $errors->first() }}</p><button type="button" class="button button-primary" data-alert-close>OK</button>
                     </div>
                 </div>
             @endif
@@ -202,8 +202,8 @@
                 @endif
             @else
             @if ($tab !== 'students')
-            <section class="student-workspace master-flat-workspace {{ in_array($tab, ['fee-types', 'fee-discounts', 'data-roles', 'data-users'], true) ? 'master-filter-card' : '' }} {{ $tab === 'fee-types' ? 'master-fee-filter-card' : '' }} {{ $tab === 'fee-discounts' ? 'master-discount-filter-card' : '' }} {{ $tab === 'data-roles' ? 'master-role-filter-card' : '' }} {{ $tab === 'data-users' ? 'master-user-filter-card' : '' }}">
-                <div class="student-flat-header">
+            <section class="student-workspace master-flat-workspace">
+                <div class="student-flat-header master-page-header">
                     @if (in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))
                     <div class="master-sample-heading">
                         <h1>{{ $labels[$tab][0] }}</h1>
@@ -798,7 +798,7 @@
                 @if ($tab !== 'classes')<div class="pagination-wrap">{{ $data->links() }}</div>@endif
             </section>
             @else
-            <section class="card master-card student-data-card {{ $tab === 'students' ? 'student-list-table-card student-reference-align-lock' : 'master-flat-card' }} {{ $tab === 'education-units' ? 'education-unit-table-card' : '' }} {{ $tab === 'classes' ? 'class-table-card' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table-card' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table-card' : '' }} {{ $tab === 'data-roles' ? 'data-role-table-card' : '' }} {{ $tab === 'data-users' ? 'data-user-table-card' : '' }}">
+            <section class="{{ $tab === 'students' ? 'card master-card student-data-card student-list-table-card student-reference-align-lock' : 'master-list-layout' }}">
                 @if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users']))
                 @if ($tab !== 'students')
                 <div class="table-toolbar">
@@ -960,6 +960,9 @@
                         default => [],
                     };
                 @endphp
+                @if ($tab !== 'students')
+                <section class="card master-card master-data-surface">
+                @endif
                 <div class="table-wrap"><table class="data-table {{ $tab !== 'students' ? 'master-data-table' : '' }} {{ $tab === 'students' ? 'student-flat-table student-master-table student-standard-table-v2' : '' }} {{ $tab === 'academic-years' ? 'academic-year-table' : '' }} {{ $tab === 'education-units' ? 'education-unit-table' : '' }} {{ $tab === 'classes' ? 'class-table' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table' : '' }} {{ $tab === 'data-roles' ? 'data-role-table' : '' }} {{ $tab === 'data-users' ? 'data-user-table' : '' }}">
                     @if ($tab === 'students')
                         @php
@@ -1101,6 +1104,9 @@
                         @empty @include('master.partials.empty') @endforelse</tbody>
                     @endif
                 </table></div>
+                @if ($tab !== 'students')
+                </section>
+                @endif
                 @if ($tab === 'students')
                     @php
                         $studentCurrentPage = $data->currentPage();
@@ -1225,9 +1231,9 @@
 </div>
 
 @unless ($showCreate || $showStudentImport)
-<div class="modal-backdrop {{ $errors->any() && ! $errors->has('file') ? 'show' : '' }} {{ $tab === 'academic-years' ? 'academic-year-edit-modal' : '' }} {{ $tab === 'education-units' ? 'education-unit-edit-modal' : '' }} {{ $tab === 'classes' ? 'class-edit-modal' : '' }} {{ $tab === 'fee-types' ? 'fee-type-edit-modal' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-edit-modal' : '' }} {{ $tab === 'data-roles' ? 'data-role-edit-modal' : '' }} {{ $tab === 'data-users' ? 'data-user-edit-modal' : '' }}" data-modal>
+<div class="modal-backdrop master-edit-modal {{ $errors->any() && ! $errors->has('file') ? 'show' : '' }} {{ $tab === 'academic-years' ? 'academic-year-edit-modal' : '' }} {{ $tab === 'education-units' ? 'education-unit-edit-modal' : '' }} {{ $tab === 'classes' ? 'class-edit-modal' : '' }} {{ $tab === 'fee-types' ? 'fee-type-edit-modal' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-edit-modal' : '' }} {{ $tab === 'data-roles' ? 'data-role-edit-modal' : '' }} {{ $tab === 'data-users' ? 'data-user-edit-modal' : '' }}" data-modal role="dialog" aria-modal="true" aria-labelledby="master-modal-title">
     <div class="form-modal">
-        <div class="form-modal-header"><div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Master Data</p>@endif<h2 data-modal-title>Edit Data</h2></div><button class="icon-button" type="button" data-modal-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
+        <div class="form-modal-header"><div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Master Data</p>@endif<h2 id="master-modal-title" data-modal-title>Edit Data</h2></div><button class="icon-button" type="button" data-modal-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
         <form method="POST" action="{{ $tab === 'students' ? route('master.students.store') : route('master.'.$tab.'.store', $masterReturnQuery) }}" data-master-form data-store-action="{{ $tab === 'students' ? route('master.students.store') : route('master.'.$tab.'.store', $masterReturnQuery) }}" class="master-form">
             @csrf <input type="hidden" name="_method" value="POST" data-form-method>
             @include('master.partials.form-fields')

@@ -67,6 +67,19 @@ paymentUnitFilter?.addEventListener('change', () => {
     });
 });
 
+document.querySelectorAll('[data-payment-overview-per-page]').forEach((control) => {
+    control.addEventListener('change', () => {
+        const form = control.form;
+
+        if (!form || form.dataset.paymentLoading === 'true') return;
+
+        form.querySelector('input[name="page"]')?.remove();
+        form.dataset.paymentLoading = 'true';
+        form.setAttribute('aria-busy', 'true');
+        form.submit();
+    });
+});
+
 // ============================================================
 // Login: Toggle mode Wali Santri
 // ============================================================
@@ -77,6 +90,7 @@ const loginTypeInput = document.querySelector('[data-login-type-value]');
 const loginUsernameLabel = document.querySelector('[data-login-username-label]');
 const loginUsernameInput = document.querySelector('[data-login-username-input]');
 const loginPasswordField = loginForm?.querySelector('.login-password-field input[type="password"]');
+const loginGuardianUnit = document.querySelector('[data-guardian-unit]');
 
 const setWaliMode = (active) => {
     if (!loginForm) return;
@@ -89,6 +103,10 @@ const setWaliMode = (active) => {
     }
     if (loginPasswordField) {
         loginPasswordField.required = true;
+    }
+    if (loginGuardianUnit) {
+        loginGuardianUnit.disabled = !active;
+        loginGuardianUnit.required = active;
     }
 };
 
@@ -183,6 +201,8 @@ document.querySelectorAll('form').forEach((form) => form.addEventListener('submi
 document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     const formatter = new Intl.NumberFormat('id-ID');
     const bills = Array.from(form.querySelectorAll('[data-payment-bill]'));
+    const billAmountInputs = Array.from(form.querySelectorAll('[data-payment-bill-input]'));
+    const hasCardAllocations = form.querySelector('[data-payment-bill-allocation]') !== null;
     const totalOutput = form.querySelector('[data-payment-total]');
     const paidInput = form.querySelector('[data-payment-paid-display]');
     const submitButton = form.querySelector('[data-payment-submit]');
@@ -195,6 +215,9 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     const uploadName = form.querySelector('[data-payment-upload-name]');
     const paidTotalOutput = form.querySelector('[data-payment-paid-total]');
     const paidError = form.querySelector('[data-payment-paid-error]');
+    const selectedSummaryList = form.querySelector('[data-payment-selected-list]');
+    const selectedSummaryCount = form.querySelector('[data-payment-selected-count]');
+    const selectedSummaryEmpty = form.querySelector('[data-payment-selected-empty]');
     const transferError = form.querySelector('[data-payment-transfer-error]');
     const paymentTypeOptions = Array.from(form.querySelectorAll('[data-payment-type-option]'));
     const methodOptions = Array.from(form.querySelectorAll('[data-payment-method-option]'));
@@ -202,71 +225,45 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     const defaultSubmitLabel = submitLabel?.textContent || 'Bayar & Cetak Struk';
     const isEditPayment = Boolean(form.dataset.paymentEditMode);
     const hasTransferProof = form.dataset.paymentHasTransferProof === 'true';
-    const paymentWorkspace = form.closest('.payment-prd-layout');
-    const statTotalOutput = paymentWorkspace?.querySelector('[data-payment-stat-total]');
-    const statPaidOutput = paymentWorkspace?.querySelector('[data-payment-stat-paid]');
-    const statRemainingOutput = paymentWorkspace?.querySelector('[data-payment-stat-remaining]');
-    const statPercentOutput = paymentWorkspace?.querySelector('[data-payment-stat-percent]');
-    const statProgress = paymentWorkspace?.querySelector('[data-payment-stat-progress]');
-    const statRemainingNote = paymentWorkspace?.querySelector('[data-payment-stat-remaining-note]');
+    const requiresTransferProof = form.dataset.paymentRequireTransferProof === 'true';
     let paidTouched = false;
     let validationAttempted = Boolean(paidError?.textContent.trim() || transferError?.textContent.trim());
     let isSubmitting = false;
 
-    const selectedTotal = () => bills
-        .filter((bill) => bill.checked)
-        .reduce((total, bill) => total + Number(bill.dataset.amount || 0), 0);
+    const selectedTotal = () => hasCardAllocations
+        ? billAmountInputs.reduce((total, input) => total + Number(digitsOnly(input.value || '0')), 0)
+        : bills
+            .filter((bill) => bill.checked)
+            .reduce((total, bill) => total + Number(bill.dataset.amount || 0), 0);
 
-    const parseBillIds = (value) => {
-        try {
-            const ids = JSON.parse(value || '[]');
-            return Array.isArray(ids) ? ids : [];
-        } catch {
-            return [];
-        }
-    };
-
-    const syncBillIds = (row) => {
-        const target = row?.querySelector('[data-payment-bill-ids]');
+    const cardInputState = (input) => {
+        const row = input.closest('[data-payment-bill-row]');
         const bill = row?.querySelector('[data-payment-bill]');
-        if (!target || !bill) return;
+        const allocation = row?.querySelector('[data-payment-bill-allocation]');
+        const fullButton = row?.querySelector('[data-payment-bill-full]');
+        const error = row?.querySelector('[data-payment-bill-error]');
+        const amount = Number(digitsOnly(input.value || '0'));
+        const balance = Number(input.dataset.paymentBillBalance || 0);
+        const isEnabled = Boolean(bill?.checked);
+        const message = amount > balance ? `Nominal tidak boleh melebihi sisa tagihan Rp ${formatter.format(balance)}.` : '';
 
-        target.replaceChildren();
-        if (!bill.checked) return;
+        input.disabled = !isEnabled;
+        if (fullButton) fullButton.disabled = !isEnabled;
+        if (allocation) {
+            allocation.disabled = !isEnabled || amount < 1;
+            allocation.value = String(amount);
+        }
+        input.setCustomValidity(message);
+        showFieldError(error, message, validationAttempted);
 
-        const periodOption = row.querySelector('[data-payment-period-select]')?.selectedOptions?.[0];
-        const ids = parseBillIds(periodOption?.dataset.billIds || bill.dataset.billIds);
-        ids.forEach((id) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'bill_ids[]';
-            input.value = id;
-            target.appendChild(input);
-        });
+        return { amount, isValid: isEnabled ? !message : true };
     };
 
-    const syncAllBillIds = () => {
-        form.querySelectorAll('[data-payment-bill-row]').forEach(syncBillIds);
-    };
+    const syncCardAllocations = () => hasCardAllocations
+        ? billAmountInputs.map(cardInputState)
+        : [];
 
     const formatTotal = (total) => (total > 0 ? formatter.format(total) : '');
-
-    const syncReferenceStats = (total) => {
-        const paidAmount = Number(digitsOnly(paidInput?.value || '0'));
-        const remaining = Math.max(total - paidAmount, 0);
-        const percent = total > 0 ? Math.min(100, Math.round((paidAmount / total) * 100)) : 0;
-
-        if (statTotalOutput) statTotalOutput.textContent = formatter.format(total);
-        if (statPaidOutput) statPaidOutput.textContent = formatter.format(paidAmount);
-        if (statRemainingOutput) statRemainingOutput.textContent = formatter.format(remaining);
-        if (statPercentOutput) statPercentOutput.textContent = String(percent);
-        if (statProgress) statProgress.style.width = `${percent}%`;
-        if (statRemainingNote) {
-            statRemainingNote.textContent = remaining > 0
-                ? 'Masih ada nominal yang belum dibayar'
-                : 'Pembayaran terpilih lunas';
-        }
-    };
 
     const showFieldError = (target, message, shouldShow) => {
         if (!target) return;
@@ -274,8 +271,59 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         target.hidden = !message || !shouldShow;
     };
 
+    const renderSelectedBillSummary = () => {
+        if (!selectedSummaryList || !selectedSummaryCount) return;
+
+        const selections = billAmountInputs.map((input) => {
+            const row = input.closest('[data-payment-bill-row]');
+            const amount = Number(digitsOnly(input.value || '0'));
+            let periodOptions = [];
+
+            try {
+                periodOptions = JSON.parse(row?.dataset.paymentBillPeriodOptions || '[]');
+            } catch {
+                periodOptions = [];
+            }
+
+            const periodOption = periodOptions.find((option) => Number(option.amount || 0) === amount)
+                || periodOptions.find((option) => amount > 0 && amount <= Number(option.amount || 0));
+
+            return {
+                amount,
+                title: row?.dataset.paymentBillTitle || 'Tagihan',
+                detail: periodOption?.detail || row?.dataset.paymentBillDetail || '',
+            };
+        }).filter((selection) => selection.amount > 0);
+
+        selectedSummaryCount.textContent = `${selections.length} Tagihan`;
+        selectedSummaryList.replaceChildren();
+
+        if (selections.length === 0) {
+            if (selectedSummaryEmpty) selectedSummaryList.append(selectedSummaryEmpty);
+            return;
+        }
+
+        selections.forEach((selection) => {
+            const item = document.createElement('div');
+            const copy = document.createElement('span');
+            const title = document.createElement('strong');
+            const detail = document.createElement('span');
+            const amount = document.createElement('strong');
+
+            item.className = 'payment-prd-cashier-selected-item';
+            copy.className = 'payment-prd-cashier-selected-copy';
+            title.textContent = selection.title;
+            detail.textContent = selection.detail;
+            amount.textContent = `Rp. ${formatter.format(selection.amount)},-`;
+            copy.append(title);
+            if (selection.detail) copy.append(detail);
+            item.append(copy, amount);
+            selectedSummaryList.append(item);
+        });
+    };
+
     const transferFileError = () => {
-        if (method?.value !== 'Transfer') return '';
+        if (method?.value !== 'Transfer' || !requiresTransferProof) return '';
 
         const file = transferFile?.files?.[0];
         if (!file) {
@@ -294,12 +342,16 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     };
 
     const renderPaymentState = (showErrors = validationAttempted) => {
+        const cardStates = syncCardAllocations();
         const total = selectedTotal();
-        const paidAmount = Number(digitsOnly(paidInput?.value || '0'));
+        if (hasCardAllocations && paidInput) paidInput.value = String(total);
+        const paidAmount = hasCardAllocations ? total : Number(digitsOnly(paidInput?.value || '0'));
         const isFullPayment = paymentType?.value !== 'partial';
         let paidMessage = '';
 
-        if (!isFullPayment && paidAmount < 1) {
+        if (hasCardAllocations && paidAmount < 1) {
+            paidMessage = 'Isi nominal setoran pada minimal satu tagihan.';
+        } else if (!hasCardAllocations && !isFullPayment && paidAmount < 1) {
             paidMessage = 'Nominal dibayar harus lebih dari 0.';
         } else if (paidAmount > total && total > 0) {
             paidMessage = 'Nominal tidak boleh melebihi total pembayaran.';
@@ -310,11 +362,11 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         showFieldError(paidError, paidMessage, showErrors);
         showFieldError(transferError, proofMessage, showErrors);
         if (paidTotalOutput) paidTotalOutput.textContent = `${formatter.format(paidAmount)},-`;
-        syncReferenceStats(total);
 
         const isValid = total > 0
             && paidAmount > 0
             && paidAmount <= total
+            && cardStates.every((state) => state.isValid)
             && proofMessage === '';
         if (submitButton) submitButton.disabled = isSubmitting || !isValid;
 
@@ -322,13 +374,13 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
     };
 
     const renderTotal = (syncPaid = false) => {
-        syncAllBillIds();
         const total = selectedTotal();
         if (totalOutput) totalOutput.textContent = `${formatter.format(total)},-`;
         if (paidInput) {
             const isFullPayment = paymentType?.value !== 'partial';
-            paidInput.readOnly = isFullPayment;
-            if (isFullPayment) {
+            if (hasCardAllocations) {
+                paidInput.value = String(total);
+            } else if (isFullPayment) {
                 paidInput.value = formatTotal(total);
                 paidTouched = false;
             } else if (syncPaid && (!paidTouched || Number(digitsOnly(paidInput.value)) > total)) {
@@ -336,6 +388,7 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
                 paidTouched = false;
             }
         }
+        renderSelectedBillSummary();
         renderPaymentState();
     };
 
@@ -376,7 +429,34 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
 
     bills.forEach((bill) => {
         bill.addEventListener('change', () => {
+            const row = bill.closest('[data-payment-bill-row]');
+            const input = row?.querySelector('[data-payment-bill-input]');
+            if (input && !bill.checked) input.value = '';
             renderMandatoryDisplayTotal();
+            renderTotal(true);
+        });
+    });
+
+    billAmountInputs.forEach((input) => {
+        input.addEventListener('input', () => {
+            const row = input.closest('[data-payment-bill-row]');
+            const bill = row?.querySelector('[data-payment-bill]');
+            if (Number(digitsOnly(input.value || '0')) > 0 && bill) bill.checked = true;
+            validationAttempted = true;
+            renderTotal(true);
+        });
+    });
+
+    form.querySelectorAll('[data-payment-bill-full]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const row = button.closest('[data-payment-bill-row]');
+            const bill = row?.querySelector('[data-payment-bill]');
+            const input = row?.querySelector('[data-payment-bill-input]');
+            if (!bill || !input || button.disabled) return;
+
+            bill.checked = true;
+            input.value = formatter.format(Number(input.dataset.paymentBillBalance || 0));
+            validationAttempted = true;
             renderTotal(true);
         });
     });
@@ -405,39 +485,7 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         });
     });
 
-    form.querySelectorAll('[data-payment-period-select]').forEach((select) => {
-        select.addEventListener('change', () => {
-            const row = select.closest('[data-payment-bill-row]');
-            const bill = row?.querySelector('[data-payment-bill]');
-            const detail = row?.querySelector('[data-payment-bill-detail]');
-            const amount = row?.querySelector('[data-payment-bill-amount]');
-            const option = select.selectedOptions?.[0];
-            if (!row || !bill || !option) return;
-
-            bill.dataset.amount = option.dataset.amount || '0';
-            bill.checked = true;
-            if (option.dataset.billIds) bill.dataset.billIds = option.dataset.billIds;
-            if (detail) detail.textContent = option.dataset.detail || '';
-            if (amount) amount.textContent = `${formatter.format(Number(option.dataset.amount || 0))},-`;
-            const displayRow = Array.from(form.querySelectorAll('[data-payment-display-row]'))
-                .find((item) => item.dataset.paymentDisplayRow === row.dataset.paymentSummaryBillKey);
-            const displayDetail = displayRow?.querySelector('[data-payment-bill-detail]');
-            const displayAmount = displayRow?.querySelector('[data-payment-bill-amount]');
-            const displayMonthCount = displayRow?.querySelector('[data-payment-bill-month-count]');
-            const displayDuration = displayRow?.querySelector('[data-payment-duration-unit]');
-            if (displayRow) displayRow.dataset.amount = option.dataset.amount || '0';
-            if (displayDetail) displayDetail.textContent = option.dataset.detail || '';
-            if (displayAmount) displayAmount.textContent = `${formatter.format(Number(option.dataset.amount || 0))},-`;
-            if (displayMonthCount && displayDuration?.dataset.paymentDurationUnit === 'Bulan') {
-                displayMonthCount.textContent = select.value || '1';
-            }
-            renderMandatoryDisplayTotal();
-            renderTotal(true);
-        });
-    });
-
     form.addEventListener('submit', (event) => {
-        syncAllBillIds();
         validationAttempted = true;
         if (isSubmitting || !renderPaymentState(true)) {
             event.preventDefault();
@@ -556,19 +604,21 @@ document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
     if (urls.length) openReceipts();
 });
 
-document.querySelectorAll('[data-payment-context-switch]').forEach((input) => {
-    input.addEventListener('change', () => {
-        const form = input.form;
+document.querySelectorAll('[data-payment-context-switch]').forEach((control) => {
+    control.addEventListener('change', () => {
+        const form = control.form;
+        const isSegmentedOption = control.matches('input[type="radio"]');
 
-        if (!input.checked || !form || form.dataset.paymentLoading === 'true') return;
+        if ((isSegmentedOption && !control.checked) || !form || form.dataset.paymentLoading === 'true') return;
 
         form.dataset.paymentLoading = 'true';
         form.classList.add('is-loading');
         form.setAttribute('aria-busy', 'true');
         form.querySelectorAll('[data-payment-context-switch]').forEach((option) => {
-            option.closest('.payment-context-option')?.classList.toggle('is-active', option === input);
+            if (!option.matches('input[type="radio"]')) return;
 
-            if (option !== input) option.disabled = true;
+            option.closest('.payment-context-option')?.classList.toggle('is-active', option === control);
+            if (option !== control) option.disabled = true;
         });
         form.submit();
     });
@@ -897,8 +947,157 @@ document.querySelectorAll('[data-alert-close]').forEach((button) => {
 });
 
 document.querySelectorAll('[data-alert]').forEach((alert) => {
+    alert.setAttribute('role', 'dialog');
+    alert.setAttribute('aria-modal', 'true');
+    if (!alert.hasAttribute('aria-label') && !alert.hasAttribute('aria-labelledby')) {
+        alert.setAttribute('aria-label', 'Notifikasi aplikasi');
+    }
     alert.addEventListener('click', (event) => {
         if (event.target === alert) alert.remove();
+    });
+});
+
+const appModalSelector = '.modal-backdrop, .result-modal-backdrop, .spp-import-modal-backdrop';
+const appModalCloseSelector = '[data-alert-close], [data-app-confirm-cancel], [data-payment-success-close], [data-payment-delete-cancel], [data-modal-close], [data-spp-crud-close], [data-report-payment-close], [data-other-crud-close], [data-spp-import-close]';
+const visibleAppModals = () => Array.from(document.querySelectorAll(appModalSelector)).filter((modal) => !modal.hidden && modal.classList.contains('show'));
+const focusAppModal = (modal) => {
+    const preferredControl = modal.querySelector('[data-payment-delete-confirm], [data-alert-close], [data-payment-success-close], [data-modal-close], [data-spp-crud-close], [data-report-payment-close], [data-other-crud-close], [data-spp-import-close], button, a[href], input, select, textarea');
+    preferredControl?.focus();
+};
+
+document.querySelectorAll(appModalSelector).forEach((modal) => {
+    if (!modal.hasAttribute('role')) modal.setAttribute('role', 'dialog');
+    if (!modal.hasAttribute('aria-modal')) modal.setAttribute('aria-modal', 'true');
+});
+
+const appModalObserver = new MutationObserver((mutations) => {
+    mutations.forEach(({ target }) => {
+        if (target.classList.contains('show') && !target.hidden) focusAppModal(target);
+    });
+});
+
+document.querySelectorAll(appModalSelector).forEach((modal) => appModalObserver.observe(modal, { attributes: true, attributeFilter: ['class', 'hidden'] }));
+visibleAppModals().forEach(focusAppModal);
+
+document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+
+    const openModals = visibleAppModals();
+    const modal = openModals[openModals.length - 1];
+    if (!modal) return;
+
+    event.preventDefault();
+    const closeButton = modal.querySelector(appModalCloseSelector);
+    if (closeButton) {
+        closeButton.click();
+    } else if (modal.matches('[data-alert]')) {
+        modal.remove();
+    } else {
+        modal.classList.remove('show');
+    }
+});
+
+const showAppAlert = (message, title = 'Perlu Diperiksa') => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'result-modal-backdrop show';
+    backdrop.dataset.alert = '';
+    backdrop.setAttribute('role', 'dialog');
+    backdrop.setAttribute('aria-modal', 'true');
+    backdrop.setAttribute('aria-label', title);
+
+    const panel = document.createElement('div');
+    panel.className = 'result-modal error-result';
+    panel.setAttribute('role', 'document');
+
+    const icon = document.createElement('span');
+    icon.className = 'result-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = '!';
+
+    const heading = document.createElement('strong');
+    heading.textContent = title;
+    const description = document.createElement('p');
+    description.textContent = message;
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'button button-primary';
+    closeButton.textContent = 'Tutup';
+    closeButton.addEventListener('click', () => backdrop.remove());
+    backdrop.addEventListener('click', (event) => {
+        if (event.target === backdrop) backdrop.remove();
+    });
+
+    panel.append(icon, heading, description, closeButton);
+    backdrop.append(panel);
+    document.body.append(backdrop);
+    closeButton.focus();
+};
+
+const confirmAppAction = ({ title, message, confirmLabel }) => new Promise((resolve) => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'result-modal-backdrop show';
+    backdrop.setAttribute('role', 'dialog');
+    backdrop.setAttribute('aria-modal', 'true');
+    backdrop.setAttribute('aria-label', title);
+
+    const panel = document.createElement('div');
+    panel.className = 'result-modal confirmation-result';
+    panel.setAttribute('role', 'document');
+
+    const icon = document.createElement('span');
+    icon.className = 'result-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = '!';
+
+    const heading = document.createElement('strong');
+    heading.textContent = title;
+    const description = document.createElement('p');
+    description.textContent = message;
+    const actions = document.createElement('div');
+    actions.className = 'payment-result-actions';
+    const cancelButton = document.createElement('button');
+    cancelButton.type = 'button';
+    cancelButton.className = 'button button-secondary';
+    cancelButton.dataset.appConfirmCancel = '';
+    cancelButton.textContent = 'Batal';
+    const confirmButton = document.createElement('button');
+    confirmButton.type = 'button';
+    confirmButton.className = 'button button-danger';
+    confirmButton.textContent = confirmLabel;
+
+    const close = (confirmed) => {
+        backdrop.remove();
+        resolve(confirmed);
+    };
+
+    cancelButton.addEventListener('click', () => close(false));
+    confirmButton.addEventListener('click', () => close(true));
+    backdrop.addEventListener('click', (event) => {
+        if (event.target === backdrop) close(false);
+    });
+
+    actions.append(cancelButton, confirmButton);
+    panel.append(icon, heading, description, actions);
+    backdrop.append(panel);
+    document.body.append(backdrop);
+    confirmButton.focus();
+});
+
+document.querySelectorAll('[data-master-delete-form]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+        if (form.dataset.confirmed === 'true') return;
+
+        event.preventDefault();
+        const confirmed = await confirmAppAction({
+            title: 'Hapus data?',
+            message: 'Data yang dihapus tidak dapat dikembalikan.',
+            confirmLabel: 'Hapus',
+        });
+
+        if (!confirmed) return;
+
+        form.dataset.confirmed = 'true';
+        form.requestSubmit();
     });
 });
 
@@ -2007,7 +2206,7 @@ document.querySelectorAll('[data-spp-edit-url]').forEach((button) => button.addE
         document.querySelector('[data-spp-edit-summary]').textContent = `${data.student.name} · ${months} · Total wajib ${sppCurrency.format(data.total_amount)}`;
         sppEditModal.classList.add('show');
     } catch (error) {
-        window.alert(error.message);
+        showAppAlert(error.message);
     }
 }));
 
@@ -2069,7 +2268,7 @@ document.querySelectorAll('[data-report-correction-url]').forEach((button) => bu
         document.querySelector('[data-report-correction-old]').textContent = sppCurrency.format(paidAmount);
         reportCorrectionModal.classList.add('show');
     } catch (error) {
-        window.alert(error.message);
+        showAppAlert(error.message);
     }
 }));
 
@@ -2106,7 +2305,7 @@ document.querySelectorAll('[data-other-edit-url]').forEach((button) => button.ad
         document.querySelector('[data-other-edit-summary]').textContent = `${data.student_name} · ${data.payment_name}`;
         otherEditModal.classList.add('show');
     } catch (error) {
-        window.alert(error.message);
+        showAppAlert(error.message);
     }
 }));
 
@@ -2520,6 +2719,11 @@ if (classMovementForm) {
     searchInput?.addEventListener('input', renderClassMovementRows);
 
     classMovementForm.addEventListener('submit', (event) => {
+        if (classMovementForm.dataset.classMovementConfirmed === 'true') {
+            delete classMovementForm.dataset.classMovementConfirmed;
+            return;
+        }
+
         const selectedCount = selectedStudents().length;
         if (selectedCount < 1) {
             event.preventDefault();
@@ -2527,9 +2731,16 @@ if (classMovementForm) {
         }
         const targetLabel = targetClass?.selectedOptions?.[0]?.textContent?.trim();
         if (targetClass && !targetClass.value) return;
-        if (!window.confirm(`Yakin ${actionLabel} ${selectedCount.toLocaleString('id-ID')} siswa ke ${targetLabel}?`)) {
-            event.preventDefault();
-        }
+        event.preventDefault();
+        confirmAppAction({
+            title: 'Konfirmasi Perubahan Siswa',
+            message: `Yakin ${actionLabel} ${selectedCount.toLocaleString('id-ID')} siswa ke ${targetLabel}?`,
+            confirmLabel: 'Konfirmasi',
+        }).then((confirmed) => {
+            if (!confirmed) return;
+            classMovementForm.dataset.classMovementConfirmed = 'true';
+            classMovementForm.requestSubmit();
+        });
     });
 
     renderClassMovementRows();

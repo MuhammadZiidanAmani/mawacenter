@@ -23,6 +23,9 @@ class AuthTest extends TestCase
             ->assertSee("MA'WA", false)
             ->assertSee('Username')
             ->assertSee('Kata Sandi')
+            ->assertSee('class="login-guardian-field"', false)
+            ->assertSee('name="guardian_unit_id" data-guardian-unit disabled', false)
+            ->assertDontSee('class="login-form wali-mode"', false)
             ->assertSee('Saya Wali Santri? Masuk di sini');
     }
 

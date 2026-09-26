@@ -62,6 +62,8 @@ class OtherPaymentService
             'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
             'payment_method' => $data['payment_method'],
             'transfer_proof_path' => $data['transfer_proof_path'] ?? null,
+            'transfer_proof_file_id' => $data['transfer_proof_file_id'] ?? null,
+            'transfer_proof_metadata' => $data['transfer_proof_metadata'] ?? null,
             'status' => $data['status'],
             'operator_name' => $data['operator_name'] ?? null,
             'operator_user_id' => $data['operator_user_id'] ?? null,

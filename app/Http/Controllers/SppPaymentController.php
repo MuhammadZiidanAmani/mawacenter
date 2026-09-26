@@ -13,6 +13,8 @@ use App\Models\SchoolClass;
 use App\Models\SppPayment;
 use App\Models\Student;
 use App\Services\AuditLogService;
+use App\Services\GoogleDriveStorageException;
+use App\Services\GoogleDriveStorageService;
 use App\Services\SppPaymentImportService;
 use App\Services\SppPaymentService;
 use Carbon\CarbonImmutable;
@@ -27,6 +29,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Throwable;
 
 class SppPaymentController extends Controller
 {
@@ -374,33 +377,55 @@ class SppPaymentController extends Controller
         ]);
     }
 
-    public function proof(Request $request, SppPayment $sppPayment): StreamedResponse
+    public function proof(Request $request, SppPayment $sppPayment, GoogleDriveStorageService $driveStorage): StreamedResponse
     {
         $this->authorizePaymentAccess($request, $sppPayment);
 
-        return $this->proofResponse($sppPayment->transfer_proof_path);
+        return $this->proofResponse($sppPayment->transfer_proof_path, $sppPayment->transfer_proof_file_id, $sppPayment->transfer_proof_metadata, $driveStorage);
     }
 
-    public function update(UpdateSppPaymentRequest $request, SppPayment $sppPayment, SppPaymentService $payments): RedirectResponse
+    public function update(UpdateSppPaymentRequest $request, SppPayment $sppPayment, SppPaymentService $payments, GoogleDriveStorageService $driveStorage): RedirectResponse
     {
         $validated = $request->validated();
         $this->authorizePaymentAccess($request, $sppPayment);
         if (array_key_exists('student_id', $validated) && (int) $validated['student_id'] !== (int) $sppPayment->student_id) {
             abort(422, 'Transaksi edit tidak sesuai dengan siswa yang dipilih.');
         }
-        if ($validated['payment_method'] === 'Transfer' && ! $sppPayment->transfer_proof_path && ! $request->hasFile('transfer_proof')) {
+        if ($validated['payment_method'] === 'Transfer' && ! $sppPayment->transfer_proof_path && ! $sppPayment->transfer_proof_file_id && ! $request->hasFile('transfer_proof')) {
             throw ValidationException::withMessages([
                 'transfer_proof' => 'Bukti transfer wajib diunggah saat metode pembayaran diubah menjadi Transfer.',
             ]);
         }
+        $newProofFileId = null;
         if ($request->hasFile('transfer_proof')) {
-            $validated['transfer_proof_path'] = $request->file('transfer_proof')->store('payment-proofs', 'local');
+            try {
+                $driveProof = $driveStorage->upload($request->file('transfer_proof'));
+            } catch (GoogleDriveStorageException $exception) {
+                throw ValidationException::withMessages(['transfer_proof' => $exception->getMessage()]);
+            }
+
+            $newProofFileId = $driveProof['file_id'];
+            $validated['transfer_proof_path'] = null;
+            $validated['transfer_proof_file_id'] = $newProofFileId;
+            $validated['transfer_proof_metadata'] = $driveProof['metadata'];
         }
         $before = $this->paymentAuditSnapshot($sppPayment->loadMissing('items'));
 
-        $payment = array_key_exists('month_count', $validated)
-            ? $payments->updatePayment($sppPayment, $validated)
-            : $payments->updateMetadata($sppPayment, $validated);
+        try {
+            $payment = array_key_exists('month_count', $validated)
+                ? $payments->updatePayment($sppPayment, $validated)
+                : $payments->updateMetadata($sppPayment, $validated);
+        } catch (Throwable $exception) {
+            if ($newProofFileId) {
+                try {
+                    $driveStorage->delete($newProofFileId);
+                } catch (GoogleDriveStorageException) {
+                    // The payment update did not succeed.
+                }
+            }
+
+            throw $exception;
+        }
         app(AuditLogService::class)->recordOperation(
             'payments.spp.update',
             $this->paymentAuditMetadata($payment),
@@ -642,8 +667,22 @@ class SppPaymentController extends Controller
         }
     }
 
-    private function proofResponse(?string $path): StreamedResponse
+    private function proofResponse(?string $path, ?string $driveFileId = null, ?array $metadata = null, ?GoogleDriveStorageService $driveStorage = null): StreamedResponse
     {
+        if ($driveFileId && $driveStorage) {
+            try {
+                $contents = $driveStorage->download($driveFileId);
+            } catch (GoogleDriveStorageException $exception) {
+                abort(503, $exception->getMessage());
+            }
+
+            return response()->streamDownload(
+                static fn () => print $contents,
+                $metadata['name'] ?? 'bukti-transfer',
+                ['Content-Type' => $metadata['mime_type'] ?? 'application/octet-stream', 'Cache-Control' => 'private, no-store, max-age=0'],
+            );
+        }
+
         if (! $path) {
             abort(404);
         }

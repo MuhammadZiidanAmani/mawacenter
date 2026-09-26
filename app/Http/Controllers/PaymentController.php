@@ -12,6 +12,8 @@ use App\Models\SchoolClass;
 use App\Models\SppPayment;
 use App\Models\Student;
 use App\Services\AuditLogService;
+use App\Services\GoogleDriveStorageException;
+use App\Services\GoogleDriveStorageService;
 use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentService;
 use App\Services\SppPaymentService;
@@ -21,7 +23,6 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -31,6 +32,7 @@ class PaymentController extends Controller
     public function index(Request $request, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): View
     {
         $search = trim($request->string('search')->value());
+        $paymentOverviewPerPage = $this->paymentOverviewPerPage($request->query('per_page'));
         $selectedStudentId = (int) $request->integer('student_id');
         $selectedRegistrationId = (int) $request->integer('registration_id');
         $activeRegistration = null;
@@ -51,6 +53,12 @@ class PaymentController extends Controller
         }
         $people = collect();
         $paymentHistory = collect();
+        $paymentSummary = [
+            'total_obligation' => 0,
+            'total_paid' => 0,
+            'remaining' => 0,
+            'bill_count' => 0,
+        ];
         $accessibleUnitIds = $request->user()?->accessibleUnitIds();
         $unitIds = $accessibleUnitIds;
         $educationUnits = EducationUnit::query()
@@ -157,7 +165,6 @@ class PaymentController extends Controller
 
                     $selectedStudentId = (int) $identityId;
                     $selectedRegistrationId = (int) $activeRegistration->id;
-                    $studentIds = $selectedRegistrations->pluck('id');
                     $feeTypes = FeeType::where('is_active', true)->get();
                     $selectedRegistrations->each(function (Student $student) use ($activeRegistration, $feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment) {
                         if ((int) $student->id !== (int) $activeRegistration->id) {
@@ -170,17 +177,41 @@ class PaymentController extends Controller
                         $student->setAttribute('payment_options', $this->paymentOptions($student, $feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment));
                         $student->setAttribute('optional_payment_options', $this->optionalPaymentOptions($student, $feeTypes, $otherPayments, $laundryPayments));
                     });
+
+                    $cashierDate = now()->toDateString();
+                    $billSummary = Bill::query()
+                        ->where('student_id', $activeRegistration->id)
+                        ->where('status', '!=', 'Dibatalkan')
+                        ->where(fn ($query) => $query
+                            ->whereNull('issue_date')
+                            ->orWhereDate('issue_date', '<=', $cashierDate))
+                        ->where(fn ($query) => $query
+                            ->whereNull('due_date')
+                            ->orWhereDate('due_date', '<=', $cashierDate))
+                        ->selectRaw('COALESCE(SUM(total_amount), 0) as total_obligation')
+                        ->selectRaw('COALESCE(SUM(paid_amount), 0) as total_paid')
+                        ->selectRaw('COUNT(*) as bill_count')
+                        ->first();
+
+                    $totalObligation = (int) ($billSummary?->total_obligation ?? 0);
+                    $totalPaid = min($totalObligation, (int) ($billSummary?->total_paid ?? 0));
+                    $paymentSummary = [
+                        'total_obligation' => $totalObligation,
+                        'total_paid' => $totalPaid,
+                        'remaining' => $totalObligation - $totalPaid,
+                        'bill_count' => (int) ($billSummary?->bill_count ?? 0),
+                    ];
                 }
 
                 $sppHistory = SppPayment::with(['student.schoolClass.educationUnit', 'items'])
-                    ->whereIn('student_id', $studentIds)
+                    ->where('student_id', $activeRegistration->id)
                     ->latest('transaction_at')
                     ->limit(5)
                     ->get()
                     ->map(fn (SppPayment $payment) => [
                         'type' => 'spp',
                         'id' => $payment->id,
-                        'title' => 'SPP '.$payment->student?->schoolClass?->educationUnit?->code,
+                        'title' => 'BIAYA BULANAN',
                         'detail' => $this->sppHistoryPeriod($payment),
                         'student' => $payment->student?->name,
                         'date' => $payment->transaction_at->format('d/m/Y H.i').' WIB',
@@ -195,7 +226,7 @@ class PaymentController extends Controller
                     ]);
 
                 $otherHistory = OtherPayment::with(['student.schoolClass.educationUnit', 'feeType', 'items'])
-                    ->whereIn('student_id', $studentIds)
+                    ->where('student_id', $activeRegistration->id)
                     ->latest('transaction_at')
                     ->limit(5)
                     ->get()
@@ -235,9 +266,13 @@ class PaymentController extends Controller
             'selectedRegistrationId' => $selectedRegistrationId,
             'activeRegistration' => $activeRegistration,
             'people' => $people,
-            'paymentOverviewRows' => $this->paymentOverviewRows($unitIds, $selectedClassId, $search),
+            'paymentOverviewRows' => $this->paymentOverviewRows($unitIds, $selectedClassId, $search, $paymentOverviewPerPage),
+            'paymentOverviewPerPage' => $paymentOverviewPerPage,
+            'paymentSummary' => $paymentSummary,
             'paymentHistory' => $paymentHistory,
             'transferAccount' => $this->transferAccount(),
+            'transferPaymentsEnabled' => config('payments.transfer_enabled'),
+            'transferProofUploadsEnabled' => config('payments.transfer_proof_upload_enabled'),
             'cashOnly' => $request->user()?->isPetugas() ?? false,
             'editSppPayment' => $editSppPayment,
             'returnUrl' => trim($request->string('return_url')->value()),
@@ -245,10 +280,13 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function store(Request $request, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): RedirectResponse
+    public function store(Request $request, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments, GoogleDriveStorageService $driveStorage): RedirectResponse
     {
         abort_unless($request->user()?->hasPermission('payments.cash.create'), 403);
 
+        $transferProofRules = config('payments.transfer_proof_upload_enabled')
+            ? ['required_if:payment_method,Transfer', 'nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048']
+            : ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'];
         $validated = $request->validate([
             'student_id' => ['required', 'exists:students,id'],
             'registration_id' => ['nullable', 'integer', 'exists:students,id'],
@@ -259,9 +297,13 @@ class PaymentController extends Controller
             'optional_keys.*' => ['string'],
             'payment_month_counts' => ['nullable', 'array'],
             'payment_month_counts.*' => ['integer', 'min:1', 'max:120'],
+            'allocation_amounts' => ['nullable', 'array'],
+            'allocation_amounts.*' => ['nullable', 'integer', 'min:0'],
+            'transaction_date' => ['nullable', 'date'],
+            'transaction_time' => ['nullable', 'date_format:H:i'],
             'payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
             'paid_amount' => ['required', 'integer', 'min:1'],
-            'transfer_proof' => ['required_if:payment_method,Transfer', 'nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'transfer_proof' => $transferProofRules,
         ], [
             'transfer_proof.required_if' => 'Bukti transfer wajib diunggah untuk metode pembayaran Transfer.',
         ]);
@@ -303,7 +345,8 @@ class PaymentController extends Controller
                 ->withInput()
                 ->withErrors(['bill_keys' => 'Pilih minimal satu tagihan atau pembayaran opsional.']);
         }
-        $selectedTotal = $this->selectedBillTotal($selectedKeys, $paymentMonthCounts, $registrations, $feeTypes, $sppPayments, $otherPayments, $laundryPayments);
+        $billAmounts = $this->selectedBillAmounts($selectedKeys, $paymentMonthCounts, $registrations, $feeTypes, $sppPayments, $otherPayments, $laundryPayments);
+        $selectedTotal = $billAmounts->sum();
         if ($selectedTotal < 1) {
             return back()
                 ->withInput()
@@ -316,20 +359,61 @@ class PaymentController extends Controller
                 ->withErrors(['paid_amount' => 'Nominal dibayar tidak boleh melebihi total tagihan terpilih Rp '.number_format($selectedTotal, 0, ',', '.').'.']);
         }
 
+        $allocationAmounts = collect($validated['allocation_amounts'] ?? [])
+            ->map(fn ($amount) => (int) $amount);
+        $usesAllocations = $allocationAmounts->isNotEmpty();
+        if ($usesAllocations) {
+            $allocationErrors = [];
+            $allocationTotal = 0;
+
+            foreach ($allocationAmounts as $billKey => $amount) {
+                if (! $selectedKeys->contains($billKey)) {
+                    $allocationErrors['allocation_amounts.'.$billKey] = 'Nominal hanya dapat dikirim untuk tagihan yang dipilih.';
+
+                    continue;
+                }
+
+                $billAmount = (int) $billAmounts->get($billKey, 0);
+                if ($amount > $billAmount) {
+                    $allocationErrors['allocation_amounts.'.$billKey] = 'Nominal tagihan tidak boleh melebihi sisa tagihan Rp '.number_format($billAmount, 0, ',', '.').'.';
+                }
+                $allocationTotal += $amount;
+            }
+
+            if ($allocationTotal !== (int) $validated['paid_amount']) {
+                $allocationErrors['paid_amount'] = 'Total nominal per tagihan harus sama dengan total dibayar.';
+            }
+
+            if ($allocationErrors !== []) {
+                throw ValidationException::withMessages($allocationErrors);
+            }
+
+            $selectedKeys = $selectedKeys
+                ->filter(fn ($billKey) => (int) $allocationAmounts->get($billKey, 0) > 0)
+                ->values();
+        }
+
         $remainingPayment = (int) $validated['paid_amount'];
         $now = now();
         $baseData = [
-            'transaction_date' => $now->toDateString(),
-            'transaction_time' => $now->format('H:i:s'),
+            'transaction_date' => $validated['transaction_date'] ?? $now->toDateString(),
+            'transaction_time' => isset($validated['transaction_time']) ? $validated['transaction_time'].':00' : $now->format('H:i:s'),
             'payment_method' => $validated['payment_method'],
             'status' => 'Diterima',
             'operator_name' => auth()->user()?->name,
             'operator_user_id' => auth()->id(),
         ];
-        $proofPath = null;
+        $driveProofFileId = null;
         if ($validated['payment_method'] === 'Transfer' && $request->hasFile('transfer_proof')) {
-            $proofPath = $request->file('transfer_proof')->store('payment-proofs', 'local');
-            $baseData['transfer_proof_path'] = $proofPath;
+            try {
+                $driveProof = $driveStorage->upload($request->file('transfer_proof'));
+            } catch (GoogleDriveStorageException $exception) {
+                throw ValidationException::withMessages(['transfer_proof' => $exception->getMessage()]);
+            }
+
+            $driveProofFileId = $driveProof['file_id'];
+            $baseData['transfer_proof_file_id'] = $driveProofFileId;
+            $baseData['transfer_proof_metadata'] = $driveProof['metadata'];
         }
         $createdPayments = collect();
 
@@ -337,7 +421,10 @@ class PaymentController extends Controller
 
         try {
             foreach ($selectedKeys as $billKey) {
-                if ($remainingPayment < 1) {
+                $availablePayment = $usesAllocations
+                    ? (int) $allocationAmounts->get($billKey, 0)
+                    : $remainingPayment;
+                if ($availablePayment < 1) {
                     break;
                 }
 
@@ -350,11 +437,11 @@ class PaymentController extends Controller
 
                 if ($group === 'optional') {
                     $feeType = $feeTypes->firstWhere('id', (int) $feeTypeId);
-                    if (! $feeType || $remainingPayment < 1) {
+                    if (! $feeType || $availablePayment < 1) {
                         continue;
                     }
 
-                    $payment = $this->recordOptionalPayment($student, $feeType, $baseData, $remainingPayment, $selectedMonthCount, $otherPayments, $laundryPayments);
+                    $payment = $this->recordOptionalPayment($student, $feeType, $baseData, $availablePayment, $selectedMonthCount, $otherPayments, $laundryPayments);
                     if (! $payment) {
                         continue;
                     }
@@ -371,7 +458,10 @@ class PaymentController extends Controller
                         'receipt_url' => route('finance.other.receipt', $payment),
                         'download_url' => route('finance.other.receipt.download', $payment),
                     ]);
-                    $remainingPayment -= (int) $payment->paid_amount;
+                    $availablePayment -= (int) $payment->paid_amount;
+                    if (! $usesAllocations) {
+                        $remainingPayment = $availablePayment;
+                    }
 
                     continue;
                 }
@@ -379,7 +469,7 @@ class PaymentController extends Controller
                 if ($group === 'spp') {
                     if ($selectedMonthCount > 0) {
                         $quote = $sppPayments->quoteNextMonths($student, $selectedMonthCount);
-                        $paidAmount = min($remainingPayment, (int) $quote['remaining_amount']);
+                        $paidAmount = min($availablePayment, (int) $quote['remaining_amount']);
                         if ($paidAmount < 1) {
                             continue;
                         }
@@ -400,7 +490,10 @@ class PaymentController extends Controller
                             'receipt_url' => route('finance.spp.receipt', $payment),
                             'download_url' => route('finance.spp.receipt.download', $payment),
                         ]);
-                        $remainingPayment -= $paidAmount;
+                        $availablePayment -= $paidAmount;
+                        if (! $usesAllocations) {
+                            $remainingPayment = $availablePayment;
+                        }
 
                         continue;
                     }
@@ -412,7 +505,7 @@ class PaymentController extends Controller
                     }
 
                     $quote = $sppPayments->quoteByMonthCount($student, $monthCount);
-                    $paidAmount = min($remainingPayment, (int) $quote['remaining_amount']);
+                    $paidAmount = min($availablePayment, (int) $quote['remaining_amount']);
                     if ($paidAmount < 1) {
                         continue;
                     }
@@ -433,7 +526,10 @@ class PaymentController extends Controller
                         'receipt_url' => route('finance.spp.receipt', $payment),
                         'download_url' => route('finance.spp.receipt.download', $payment),
                     ]);
-                    $remainingPayment -= $paidAmount;
+                    $availablePayment -= $paidAmount;
+                    if (! $usesAllocations) {
+                        $remainingPayment = $availablePayment;
+                    }
 
                     continue;
                 }
@@ -443,7 +539,7 @@ class PaymentController extends Controller
                     ->values();
 
                 foreach ($matchedFeeTypes as $feeType) {
-                    if ($remainingPayment < 1) {
+                    if ($availablePayment < 1) {
                         break;
                     }
 
@@ -453,7 +549,7 @@ class PaymentController extends Controller
                             continue;
                         }
 
-                        $paidAmount = min($remainingPayment, (int) $currentLaundry['remaining_amount']);
+                        $paidAmount = min($availablePayment, (int) $currentLaundry['remaining_amount']);
                         $payment = $laundryPayments->record($student, $feeType, $baseData + [
                             'year' => (int) $currentLaundry['year'],
                             'months' => [(int) $currentLaundry['month']],
@@ -461,7 +557,7 @@ class PaymentController extends Controller
                         ]);
                     } else {
                         $quote = $otherPayments->quote($student, $feeType, $now);
-                        $paidAmount = min($remainingPayment, (int) $quote['remaining_amount']);
+                        $paidAmount = min($availablePayment, (int) $quote['remaining_amount']);
                         if ($paidAmount < 1) {
                             continue;
                         }
@@ -483,7 +579,11 @@ class PaymentController extends Controller
                         'receipt_url' => route('finance.other.receipt', $payment),
                         'download_url' => route('finance.other.receipt.download', $payment),
                     ]);
-                    $remainingPayment -= $paidAmount;
+                    $availablePayment -= $paidAmount;
+                }
+
+                if (! $usesAllocations) {
+                    $remainingPayment = $availablePayment;
                 }
             }
 
@@ -517,8 +617,12 @@ class PaymentController extends Controller
             if (DB::transactionLevel() > 0) {
                 DB::rollBack();
             }
-            if ($proofPath) {
-                Storage::disk('local')->delete($proofPath);
+            if ($driveProofFileId) {
+                try {
+                    $driveStorage->delete($driveProofFileId);
+                } catch (GoogleDriveStorageException) {
+                    // The financial transaction has already been rolled back.
+                }
             }
 
             throw $exception;
@@ -648,34 +752,39 @@ class PaymentController extends Controller
         ]);
     }
 
-    private function selectedBillTotal(Collection $selectedKeys, Collection $paymentMonthCounts, Collection $registrations, Collection $feeTypes, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): int
+    private function selectedBillAmounts(Collection $selectedKeys, Collection $paymentMonthCounts, Collection $registrations, Collection $feeTypes, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): Collection
     {
-        $total = 0;
+        $amounts = collect();
 
         foreach ($selectedKeys as $billKey) {
+            $total = 0;
             [$studentId, $group, $feeTypeId] = array_pad(explode(':', (string) $billKey, 3), 3, null);
             $selectedMonthCount = (int) $paymentMonthCounts->get($this->paymentModeKey((string) $billKey), 0);
             $student = $registrations->get((int) $studentId);
             if (! $student || ! $group) {
+                $amounts->put($billKey, 0);
+
                 continue;
             }
 
             if ($group === 'optional') {
                 $feeType = $feeTypes->firstWhere('id', (int) $feeTypeId);
                 if (! $feeType) {
+                    $amounts->put($billKey, 0);
+
                     continue;
                 }
 
-                $total += $selectedMonthCount > 0 && $this->paymentGroup($feeType) === 'laundry'
+                $amounts->put($billKey, $selectedMonthCount > 0 && $this->paymentGroup($feeType) === 'laundry'
                     ? (int) $laundryPayments->quoteByMonthCount($student, $feeType, $selectedMonthCount)['remaining_amount']
-                    : $this->optionalPaymentTotal($student, $feeType, $otherPayments, $laundryPayments);
+                    : $this->optionalPaymentTotal($student, $feeType, $otherPayments, $laundryPayments));
 
                 continue;
             }
 
             if ($group === 'spp') {
                 if ($selectedMonthCount > 0) {
-                    $total += (int) $sppPayments->quoteNextMonths($student, $selectedMonthCount)['remaining_amount'];
+                    $amounts->put($billKey, (int) $sppPayments->quoteNextMonths($student, $selectedMonthCount)['remaining_amount']);
 
                     continue;
                 }
@@ -683,8 +792,10 @@ class PaymentController extends Controller
                 $plan = $sppPayments->paymentPlan($student);
                 $monthCount = max(0, (int) ($plan['default_month_count'] ?: $plan['max_month_count']));
                 if ($monthCount > 0) {
-                    $total += (int) $sppPayments->quoteByMonthCount($student, $monthCount)['remaining_amount'];
+                    $total = (int) $sppPayments->quoteByMonthCount($student, $monthCount)['remaining_amount'];
                 }
+
+                $amounts->put($billKey, $total);
 
                 continue;
             }
@@ -701,9 +812,11 @@ class PaymentController extends Controller
                     $total += (int) $otherPayments->quote($student, $feeType, now())['remaining_amount'];
                 }
             }
+
+            $amounts->put($billKey, $total);
         }
 
-        return $total;
+        return $amounts;
     }
 
     public function history(): View
@@ -790,7 +903,7 @@ class PaymentController extends Controller
             });
     }
 
-    private function paymentOverviewRows(?array $unitIds, int $classId = 0, string $search = ''): LengthAwarePaginator
+    private function paymentOverviewRows(?array $unitIds, int $classId = 0, string $search = '', int|string $perPage = 10): LengthAwarePaginator
     {
         $needle = $search !== '' ? $this->escapeLike($search) : '';
         $studentQuery = $this->paymentStudentBaseQuery($unitIds, $classId)
@@ -798,11 +911,15 @@ class PaymentController extends Controller
                 ->where('nis', 'like', "{$needle}%")
                 ->orWhere('nisn', 'like', "{$needle}%")
                 ->orWhere('name', 'like', "%{$needle}%")));
+        $pageSize = $perPage === 'all'
+            ? max(1, (clone $studentQuery)->count())
+            : $perPage;
         $identityPages = (clone $studentQuery)
             ->selectRaw('COALESCE(identity_student_id, id) as payment_identity_id')
             ->groupByRaw('COALESCE(identity_student_id, id)')
             ->orderByRaw('MIN(name)')
-            ->paginate(10, ['payment_identity_id'], 'page');
+            ->paginate($pageSize, ['payment_identity_id'], 'page', $perPage === 'all' ? 1 : null)
+            ->withQueryString();
         $identityIds = $identityPages->getCollection()
             ->pluck('payment_identity_id')
             ->map(fn ($identityId) => (int) $identityId)
@@ -840,27 +957,34 @@ class PaymentController extends Controller
             $hasOverdueAmount = $studentRegistrations->contains(
                 fn (Student $student) => (bool) ($billSums->get($student->id)?->has_overdue_amount ?? false)
             );
-            $unitSummary = $studentRegistrations
-                ->map(fn (Student $student) => collect([
-                    $student->schoolClass?->educationUnit?->code ?? $student->schoolClass?->educationUnit?->name,
-                    $student->schoolClass?->name,
-                ])->filter()->join(' - '))
-                ->filter()
-                ->unique()
-                ->join(' / ');
+            $unitCode = $identity?->schoolClass?->educationUnit?->code ?? $identity?->schoolClass?->educationUnit?->name;
+            $nis = $identity?->nis ?? '-';
 
             return [
                 'identity_id' => $identityId,
                 'name' => $identity?->name ?? '-',
-                'nis' => $identity?->nis ?? '-',
+                'nis_unit' => $unitCode ? $nis.'/'.$unitCode : $nis,
                 'academic_year' => $identity?->academicYear?->name ?? '-',
-                'unit_summary' => $unitSummary ?: '-',
+                'class' => $identity?->schoolClass?->name ?? '-',
                 'total' => $total,
                 'status' => $remaining < 1 ? 'Lunas' : ($hasOverdueAmount ? 'Jatuh Tempo' : 'Berjalan'),
             ];
         });
 
         return $identityPages->setCollection($rows);
+    }
+
+    private function paymentOverviewPerPage(mixed $value): int|string
+    {
+        $perPage = is_string($value) ? strtolower(trim($value)) : '';
+
+        return match ($perPage) {
+            '25' => 25,
+            '50' => 50,
+            '100' => 100,
+            'all' => 'all',
+            default => 10,
+        };
     }
 
     private function paymentRegistrationsForIdentity(int $identityId, ?array $unitIds, int $classId = 0): Collection

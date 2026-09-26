@@ -257,16 +257,16 @@
             </form>
             </section>
             @endunless
-            <div class="modal-backdrop" data-spp-detail-modal>
+            <div class="modal-backdrop" data-spp-detail-modal role="dialog" aria-modal="true" aria-labelledby="spp-detail-modal-title">
                 <div class="form-modal spp-crud-modal">
-                    <div class="form-modal-header"><div><p class="eyebrow">Pembayaran · SPP</p><h2>Detail Transaksi</h2></div><button type="button" class="icon-button" data-spp-crud-close>×</button></div>
+                    <div class="form-modal-header"><div><p class="eyebrow">Pembayaran · SPP</p><h2 id="spp-detail-modal-title">Detail Transaksi</h2></div><button type="button" class="icon-button" data-spp-crud-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
                     <div class="spp-detail-content" data-spp-detail-content></div>
                     <div class="form-actions spp-modal-actions"><button type="button" class="button button-primary" data-spp-crud-close>Tutup</button></div>
                 </div>
             </div>
-            <div class="modal-backdrop" data-spp-edit-modal>
+            <div class="modal-backdrop" data-spp-edit-modal role="dialog" aria-modal="true" aria-labelledby="spp-edit-modal-title">
                 <div class="form-modal spp-edit-modal">
-                    <div class="form-modal-header"><div><p class="eyebrow">Pembayaran · SPP</p><h2>Edit Transaksi</h2></div><button type="button" class="icon-button" data-spp-crud-close>×</button></div>
+                    <div class="form-modal-header"><div><p class="eyebrow">Pembayaran · SPP</p><h2 id="spp-edit-modal-title">Edit Transaksi</h2></div><button type="button" class="icon-button" data-spp-crud-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
                     <form method="POST" data-spp-edit-form class="master-form spp-edit-form">@csrf @method('PUT')
                         <div class="spp-edit-readonly"><span data-spp-edit-summary>Siswa dan bulan pembayaran tidak dapat dipindahkan.</span></div>
                         <label>Tanggal Transaksi<input type="date" name="transaction_date" required></label>
@@ -278,9 +278,9 @@
                     </form>
                 </div>
             </div>
-            <div class="modal-backdrop" data-spp-correction-modal>
+            <div class="modal-backdrop" data-spp-correction-modal role="dialog" aria-modal="true" aria-labelledby="spp-correction-modal-title">
                 <div class="form-modal spp-edit-modal">
-                    <div class="form-modal-header"><div><p class="eyebrow">Pembayaran · SPP</p><h2>Koreksi Nominal Pembayaran</h2></div><button type="button" class="icon-button" data-spp-crud-close>×</button></div>
+                    <div class="form-modal-header"><div><p class="eyebrow">Pembayaran · SPP</p><h2 id="spp-correction-modal-title">Koreksi Nominal Pembayaran</h2></div><button type="button" class="icon-button" data-spp-crud-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
                     <form method="POST" data-spp-correction-form class="master-form spp-edit-form">@csrf
                         <div class="spp-edit-readonly"><span>Koreksi hanya dapat mengurangi nominal sebagai refund. Penambahan pembayaran harus dicatat sebagai transaksi baru.</span></div>
                         <label class="span-2">Siswa<input type="text" data-spp-correction-name readonly></label>
@@ -291,10 +291,10 @@
                     </form>
                 </div>
             </div>
-            <div class="modal-backdrop" data-spp-delete-modal>
+            <div class="modal-backdrop" data-spp-delete-modal role="dialog" aria-modal="true" aria-labelledby="spp-delete-modal-title">
                 <div class="form-modal spp-delete-modal">
                     <div class="spp-delete-icon">!</div>
-                    <h2>Hapus Transaksi?</h2>
+                    <h2 id="spp-delete-modal-title">Hapus Transaksi?</h2>
                     <p>Transaksi pembayaran <strong data-spp-delete-name></strong> akan dihapus. Status pembayaran bulan terkait akan dihitung kembali.</p>
                     <form method="POST" data-spp-delete-form>@csrf @method('DELETE')<div class="form-actions"><button type="button" class="button button-secondary" data-spp-crud-close>Batal</button><button class="button button-danger">Ya, Hapus Transaksi</button></div></form>
                 </div>

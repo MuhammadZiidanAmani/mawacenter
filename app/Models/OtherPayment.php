@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class OtherPayment extends Model
 {
     protected $fillable = [
-        'student_id', 'fee_type_id', 'transaction_at', 'payment_method', 'transfer_proof_path', 'status',
+        'student_id', 'fee_type_id', 'transaction_at', 'payment_method', 'transfer_proof_path', 'transfer_proof_file_id', 'transfer_proof_metadata', 'status',
         'original_amount', 'discount_amount', 'total_amount', 'paid_amount',
         'remaining_amount', 'payment_status', 'operator_name', 'operator_user_id', 'import_source', 'import_key',
     ];
@@ -18,6 +18,7 @@ class OtherPayment extends Model
     {
         return [
             'transaction_at' => 'datetime',
+            'transfer_proof_metadata' => 'array',
             'original_amount' => 'integer',
             'discount_amount' => 'integer',
             'total_amount' => 'integer',
