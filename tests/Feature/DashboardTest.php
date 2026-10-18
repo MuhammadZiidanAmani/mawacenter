@@ -7,6 +7,7 @@ use App\Models\Bill;
 use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
+use App\Models\Role;
 use App\Models\SchoolClass;
 use App\Models\SppPayment;
 use App\Models\Student;
@@ -104,5 +105,55 @@ class DashboardTest extends TestCase
             ->assertOk()
             ->assertSee('Pemasukan Bulan Ini')
             ->assertSee('Belum ada transaksi diterima.');
+    }
+
+    public function test_sidebar_groups_follow_the_operational_menu_order(): void
+    {
+        $this->actingAs(User::factory()->create())->get('/')
+            ->assertOk()
+            ->assertSeeInOrder([
+                'UTAMA',
+                'KEUANGAN',
+                'LAPORAN',
+                'MANAJEMEN SISWA',
+                'MASTER DATA',
+            ]);
+    }
+
+    public function test_report_links_are_flat_and_account_menu_contains_the_available_actions(): void
+    {
+        $this->actingAs(User::factory()->create())->get('/')
+            ->assertOk()
+            ->assertSeeInOrder([
+                'LAPORAN',
+                'Transaksi Pembayaran',
+                'SPP Perbulan',
+                'SPP Pertahun',
+                'Rekap Per Unit',
+            ])
+            ->assertDontSee('data-nav-toggle', false)
+            ->assertDontSee('PENGATURAN')
+            ->assertSee('href="'.route('settings.index').'"', false)
+            ->assertSee('data-account-menu', false)
+            ->assertSee('data-account-menu-toggle', false)
+            ->assertSee('aria-label="Menu akun"', false)
+            ->assertSee('aria-expanded="false"', false)
+            ->assertSee('role="menu"', false)
+            ->assertSee('<circle cx="12" cy="8" r="4"/>', false)
+            ->assertSee('Pengaturan Akun')
+            ->assertSee('aria-label="Keluar"', false);
+
+        Role::create([
+            'key' => 'dashboard_viewer',
+            'name' => 'Dashboard Viewer',
+            'permissions' => ['dashboard.view'],
+            'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'dashboard_viewer']))->get('/')
+            ->assertOk()
+            ->assertSee('data-account-menu', false)
+            ->assertDontSee('Pengaturan Akun')
+            ->assertSee('aria-label="Keluar"', false);
     }
 }

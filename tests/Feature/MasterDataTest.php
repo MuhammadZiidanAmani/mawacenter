@@ -866,6 +866,101 @@ class MasterDataTest extends TestCase
         }
     }
 
+    public function test_master_table_surface_excludes_toolbar_filter_and_pagination(): void
+    {
+        $this->get('/master-data?tab=academic-years')
+            ->assertOk()
+            ->assertSee('master-list-layout', false)
+            ->assertDontSee('master-data-filter-panel', false)
+            ->assertSeeInOrder([
+                'master-table-toolbar',
+                'master-data-surface',
+                'master-data-pagination-footer',
+            ], false);
+
+        $this->get('/master-data?tab=classes')
+            ->assertOk()
+            ->assertSee('master-data-filter-panel', false)
+            ->assertSeeInOrder([
+                'master-data-filter-panel',
+                'master-table-toolbar',
+                'master-data-surface',
+                'master-data-pagination-footer',
+            ], false);
+    }
+
+    public function test_master_filter_panels_use_filter_and_reset_actions(): void
+    {
+        foreach ([
+            'classes' => 'master-class-filter-panel',
+            'fee-types' => 'master-fee-filter-panel',
+            'fee-discounts' => 'master-discount-filter-panel',
+            'data-users' => 'master-user-filter-panel',
+        ] as $tab => $layoutClass) {
+            $this->get('/master-data?tab='.$tab)
+                ->assertOk()
+                ->assertSee('master-data-filter-panel', false)
+                ->assertSee($layoutClass, false)
+                ->assertSee('<button class="button button-primary master-data-search-button" type="submit">Filter</button>', false)
+                ->assertSee('<a href="'.route('master.index', ['tab' => $tab]).'" class="button button-secondary master-data-reset-button">Reset</a>', false)
+                ->assertDontSee('>Terapkan</button>', false);
+        }
+    }
+
+    public function test_master_sidebar_marks_only_the_current_tab_as_active(): void
+    {
+        $masterTabs = [
+            'academic-years' => 'Tahun Pelajaran',
+            'education-units' => 'Unit Pendidikan',
+            'classes' => 'Kelas',
+            'fee-types' => 'Kategori Pembayaran',
+            'fee-discounts' => 'Keringanan Biaya',
+            'data-roles' => 'Data Role',
+            'data-users' => 'Data User',
+        ];
+
+        foreach ($masterTabs as $tab => $label) {
+            $response = $this->get(route('master.index', ['tab' => $tab]));
+
+            $response
+                ->assertOk()
+                ->assertSee('<nav class="sidebar-nav" data-sidebar-nav>', false)
+                ->assertSee('href="'.route('master.index', ['tab' => $tab]).'" class="nav-item active"', false)
+                ->assertDontSee('href="'.route('dashboard').'" class="nav-item active"', false);
+
+            foreach (array_keys($masterTabs) as $otherTab) {
+                if ($otherTab === $tab) {
+                    continue;
+                }
+
+                $response->assertDontSee('href="'.route('master.index', ['tab' => $otherTab]).'" class="nav-item active"', false);
+            }
+
+            $response->assertSee($label);
+        }
+    }
+
+    public function test_master_sidebar_hides_tabs_without_the_required_permission(): void
+    {
+        Role::create([
+            'key' => 'master_sidebar_viewer',
+            'name' => 'Master Sidebar Viewer',
+            'permissions' => ['dashboard.view'],
+            'is_active' => true,
+        ]);
+        $viewer = User::factory()->create(['role' => 'master_sidebar_viewer']);
+
+        $this->actingAs($viewer)
+            ->get(route('master.index', ['tab' => 'academic-years']))
+            ->assertForbidden();
+
+        $this->actingAs($viewer)
+            ->get('/')
+            ->assertOk()
+            ->assertDontSee('MASTER DATA')
+            ->assertDontSee('href="'.route('master.index', ['tab' => 'academic-years']).'"', false);
+    }
+
     public function test_master_tabs_use_consistent_surfaces_and_keep_actions_permission_gated(): void
     {
         Role::create([
@@ -1538,7 +1633,7 @@ class MasterDataTest extends TestCase
             ->assertSee('payment-single-canvas', false)
             ->assertSee('/keuangan/pembayaran/riwayat');
         $this->get('/keuangan/pembayaran/spp?search=Dina&per_page=25&date_from=2026-06-01&date_to=2026-06-30')
-            ->assertOk()->assertSee('Search:')->assertSee('sort=name&amp;direction=asc', false)->assertDontSee('Data Pembayaran SPP');
+            ->assertOk()->assertSee('Cari data')->assertSee('sort=name&amp;direction=asc', false)->assertDontSee('Data Pembayaran SPP');
         $this->get('/keuangan/pembayaran/spp?sort=unit&direction=desc')->assertOk();
         $this->get('/keuangan/pembayaran/spp/create?student_id='.$student->id)->assertOk()->assertSee('Pembayaran SPP')->assertSee('Jumlah Bulan')->assertSee('Dina')->assertDontSee('Siswa Nonaktif');
         $this->getJson('/keuangan/pembayaran/spp/months?student_id='.$student->id.'&year=2026')
@@ -3492,6 +3587,51 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseCount('students', 2);
     }
 
+    public function test_student_management_table_layout_keeps_toolbar_outside_the_table_surface(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        Student::create([
+            'nis' => 'LAYOUT-001',
+            'name' => 'Siswa Layout',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+
+        $this->get('/manajemen-siswa/data-siswa')
+            ->assertOk()
+            ->assertSee('student-table-toolbar-v2', false)
+            ->assertSee('student-list-layout', false)
+            ->assertSee('student-data-table-surface', false)
+            ->assertSee('student-report-pagination', false)
+            ->assertSeeInOrder([
+                'student-table-toolbar-v2',
+                'student-data-table-surface',
+                'student-report-pagination',
+            ], false);
+
+        foreach ([
+            '/manajemen-siswa/alumni' => ['student-data-table-surface', 'student-report-pagination'],
+            '/manajemen-siswa/rapikan-identitas' => ['student-data-table-surface', 'student-report-pagination'],
+            '/manajemen-siswa/pindah-kelas' => ['class-movement-table-surface', 'class-movement-pagination'],
+            '/manajemen-siswa/naik-kelas' => ['class-movement-table-surface', 'class-movement-pagination'],
+        ] as $route => [$surface, $footer]) {
+            $this->get($route)
+                ->assertOk()
+                ->assertSee('student-management-table-toolbar', false)
+                ->assertSee('student-list-layout', false)
+                ->assertSee($surface, false)
+                ->assertSeeInOrder([
+                    'student-management-table-toolbar',
+                    $surface,
+                    $footer,
+                ], false);
+        }
+    }
+
     public function test_identity_cleanup_shows_ranked_duplicate_candidates_with_filters(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'start_date' => '2025-07-01', 'end_date' => '2026-06-30', 'is_active' => true]);
@@ -3621,7 +3761,9 @@ class MasterDataTest extends TestCase
             ->assertOk()
             ->assertSee('Sudah digabung')
             ->assertSee('Gabungan')
-            ->assertSee('Pisahkan identitas', false);
+            ->assertSee('Pisahkan identitas', false)
+            ->assertSee('data-identity-split-form', false)
+            ->assertDontSee('onclick="return confirm', false);
 
         $this->post('/manajemen-siswa/rapikan-identitas/pisahkan', [
             'identity_root_id' => $rootId,

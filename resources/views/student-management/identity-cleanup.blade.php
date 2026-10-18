@@ -113,9 +113,9 @@
                 </form>
             </section>
 
-            <section class="card master-card student-data-card student-list-table-card identity-cleanup-table-card">
-                <div class="student-reference-card-count student-management-table-toolbar">
-                <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="student-reference-card-length">
+            <section class="student-list-layout identity-cleanup-table-card">
+                <div class="student-reference-card-count student-management-table-toolbar app-data-toolbar">
+                <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="student-reference-card-length app-page-size-form">
                     @foreach(request()->except(['per_page', 'page', 'status', 'search']) as $key => $value)
                         @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                     @endforeach
@@ -129,13 +129,13 @@
                         kandidat
                     </label>
                 </form>
-                <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="report-student-search-card student-management-search-card" role="search">
+                <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="report-student-search-card student-management-search-card app-data-search" role="search">
                     @foreach(request()->except(['search', 'page']) as $key => $value)
                         @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                     @endforeach
                     <label>
                         <span>Cari kandidat</span>
-                        <span class="master-table-search-input">
+                        <span class="master-table-search-input app-data-search-field">
                             {!! $icon('search') !!}
                             <input name="search" value="{{ $filters['search'] }}" placeholder="Nama, NIS, NISN, unit, kelas..." aria-label="Cari kandidat identitas">
                         </span>
@@ -143,6 +143,7 @@
                 </form>
                 </div>
 
+                <section class="card student-data-table-surface">
                 <div class="table-wrap identity-cleanup-table-wrap">
                     <table class="student-hybrid-table identity-cleanup-table">
                         <colgroup>
@@ -203,10 +204,10 @@
                                     <td class="identity-cell-center" data-label="Jumlah Data"><span class="identity-reset-mini">{{ $candidate['students']->count() }} data</span></td>
                                     <td class="identity-cell-action" data-label="Aksi">
                                         @if ($isLinkedRow)
-                                            <form method="POST" action="{{ route('student-management.identity-cleanup.split') }}">
+                                            <form method="POST" action="{{ route('student-management.identity-cleanup.split') }}" data-identity-split-form>
                                                 @csrf
                                                 <input type="hidden" name="identity_root_id" value="{{ $candidate['identity_root_id'] }}">
-                                                <button class="identity-reset-action danger" type="submit" aria-label="Pisahkan identitas" title="Pisahkan identitas" onclick="return confirm('Pisahkan data identitas ini?')">{!! $icon('split') !!}</button>
+                                                <button class="identity-reset-action danger" type="submit" aria-label="Pisahkan identitas" title="Pisahkan identitas">{!! $icon('split') !!}</button>
                                             </form>
                                         @else
                                             <a class="identity-reset-action" href="{{ $detailUrl }}" aria-label="Tinjau kandidat identitas" title="Tinjau kandidat">{!! $icon('merge') !!}</a>
@@ -224,6 +225,7 @@
                         </tbody>
                     </table>
                 </div>
+                </section>
 
                 @php
                     $identityCurrentPage = $candidates->currentPage();

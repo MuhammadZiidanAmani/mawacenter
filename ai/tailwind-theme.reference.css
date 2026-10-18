@@ -1,50 +1,63 @@
-/*
- * Reference only: not imported by resources/css/app.css.
- * Integrate once, after the Tailwind import, when a UI migration is requested.
- * Existing --app-* tokens remain the source of truth; fallbacks match app.css.
- */
-@theme inline {
-    --font-app: var(--app-font, Inter, ui-sans-serif, system-ui, sans-serif);
-    --color-app-canvas: var(--app-canvas, #ffffff);
-    --color-app-surface: var(--app-surface, #ffffff);
-    --color-app-panel-soft: var(--app-panel-soft, #fbfdf8);
-    --color-app-neutral-soft: var(--app-neutral-soft, #f9fafb);
-    --color-app-field-soft: var(--app-field-soft, #f6f8f5);
-    --color-app-text: var(--app-text, #020617);
-    --color-app-text-alt: var(--app-text-alt, #111c2c);
-    --color-app-label: var(--app-label, #334155);
-    --color-app-muted: var(--app-muted, #707971);
-    --color-app-muted-strong: var(--app-muted-strong, #404942);
-    --color-app-border: var(--app-border, #d1d5db);
-    --color-app-border-soft: var(--app-border-soft, #e5e7eb);
-    --color-app-border-green-soft: var(--app-border-green-soft, #dfe5dc);
-    --color-app-primary: var(--app-primary, #5d87ff);
-    --color-app-primary-hover: var(--app-primary-hover, #4570e7);
-    --color-app-success: var(--app-success, #13a88e);
-    --color-app-success-soft: var(--app-success-soft, #e9f8ef);
-    --color-app-success-subtle: var(--app-success-subtle, #f3fbf6);
-    --color-app-danger: var(--app-danger, #ef1f2d);
-    --color-app-danger-hover: var(--app-danger-hover, #c91724);
-    --color-app-danger-soft: var(--app-danger-soft, #fff4f4);
-    --color-app-warning: var(--app-warning, #92400e);
-    --color-app-warning-soft: var(--app-warning-soft, #fff7ed);
-    --color-app-info: var(--app-info, #2563eb);
-    --color-app-info-soft: var(--app-info-soft, #eff6ff);
-}
-
-@theme {
-    --text-ui-micro: 12px;
-    --text-ui-micro--line-height: 16px;
-    --text-ui-body: 14px;
-    --text-ui-body--line-height: 20px;
-    --text-ui-section: 16px;
-    --text-ui-section--line-height: 24px;
-    --text-ui-title: 20px;
-    --text-ui-title--line-height: 28px;
-    --radius-ui: 8px;
-    --container-ui-form: 720px;
-    --container-ui-data: 1200px;
-    --container-ui-dashboard: 1440px;
-}
-
+/* Referensi saja. Produksi mengimpor resources/css/theme.css, bukan file ai ini. */
+/* Tailwind utilities and page CSS share the same theme-aware application tokens. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+    --font-sans: var(--app-font);
+    --font-app: var(--app-font);
+    --color-primary: var(--app-primary);
+    --color-secondary: var(--app-secondary);
+    --color-success: var(--app-success);
+    --color-warning: var(--app-warning);
+    --color-error: var(--app-danger);
+    --color-info: var(--app-info);
+    --color-dark: var(--app-text);
+    --color-lightprimary: var(--app-primary-soft);
+    --color-lightsecondary: var(--app-secondary-soft);
+    --color-lightsuccess: var(--app-success-soft);
+    --color-lightwarning: var(--app-warning-soft);
+    --color-lighterror: var(--app-danger-soft);
+    --color-lightinfo: var(--app-info-soft);
+    --color-app-canvas: var(--app-canvas);
+    --color-app-surface: var(--app-surface);
+    --color-app-panel-soft: var(--app-panel-soft);
+    --color-app-neutral-soft: var(--app-neutral-soft);
+    --color-app-field-soft: var(--app-field-soft);
+    --color-app-text: var(--app-text);
+    --color-app-text-alt: var(--app-text-alt);
+    --color-app-label: var(--app-label);
+    --color-app-muted: var(--app-muted);
+    --color-app-muted-strong: var(--app-muted-strong);
+    --color-app-border: var(--app-border);
+    --color-app-border-soft: var(--app-border-soft);
+    --color-app-border-green-soft: var(--app-border-green-soft);
+    --color-app-primary: var(--app-primary);
+    --color-app-primary-hover: var(--app-primary-hover);
+    --color-app-primary-soft: var(--app-primary-soft);
+    --color-app-secondary: var(--app-secondary);
+    --color-app-secondary-soft: var(--app-secondary-soft);
+    --color-app-success: var(--app-success);
+    --color-app-success-soft: var(--app-success-soft);
+    --color-app-success-subtle: var(--app-success-subtle);
+    --color-app-danger: var(--app-danger);
+    --color-app-danger-hover: var(--app-danger-hover);
+    --color-app-danger-soft: var(--app-danger-soft);
+    --color-app-warning: var(--app-warning);
+    --color-app-warning-soft: var(--app-warning-soft);
+    --color-app-info: var(--app-info);
+    --color-app-info-soft: var(--app-info-soft);
+    --radius-admin: var(--app-radius);
+    --radius-ui: var(--app-radius);
+    --radius-field: var(--app-radius-field);
+    --text-ui-micro: var(--app-text-meta-size);
+    --text-ui-micro--line-height: var(--app-text-meta-leading);
+    --text-ui-body: var(--app-text-body-size);
+    --text-ui-body--line-height: var(--app-text-body-leading);
+    --text-ui-section: var(--app-text-section-size);
+    --text-ui-section--line-height: var(--app-text-section-leading);
+    --text-ui-title: var(--app-text-page-size);
+    --text-ui-title--line-height: var(--app-text-page-leading);
+    --container-ui-form: var(--app-form-width);
+    --container-ui-data: var(--app-content-width);
+    --container-ui-dashboard: var(--app-dashboard-width);
+}

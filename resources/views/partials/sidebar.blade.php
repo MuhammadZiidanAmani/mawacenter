@@ -35,18 +35,41 @@
         'data-roles' => ['Data Role', 'role', 'users.manage'],
         'data-users' => ['Data User', 'users', 'users.manage'],
     ];
+    if ($activeMasterMenu === '' && request()->routeIs('master.index')) {
+        $activeMasterMenu = request()->string('tab')->value() ?: 'academic-years';
+    }
     $visibleMasterMenuItems = collect($masterMenuItems)->filter(fn ($item) => $canAccess($item[2]));
-    $reportOpen = $activeMenu === 'reports';
 @endphp
 <aside class="sidebar" data-sidebar>
     <div class="brand"><div class="brand-mark"><img src="{{ asset('images/mawa-center-mark.png') }}" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
-    <nav class="sidebar-nav">
+    <nav class="sidebar-nav" data-sidebar-nav>
         @if($canAccess('dashboard.view'))
         <p class="nav-section-label">UTAMA</p>
         @endif
         @if($canAccess('dashboard.view'))
         <a href="{{ route('dashboard') }}" class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}">{!! $sidebarIcon('grid') !!}<span>Dashboard</span></a>
         @endif
+        @if($canAccessPaymentMenu || $canAccess('payments.verify_transfer') || $canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))
+        <p class="nav-section-label">KEUANGAN</p>
+        @endif
+        @if($canAccessPaymentMenu)
+        <a href="{{ $paymentMenuUrl }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
+        @endif
+        @if($canAccess('payments.verify_transfer'))
+        <a href="{{ route('finance.transfer-verifications.index') }}" class="nav-item {{ $activeMenu === 'transfer-verification' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>Verifikasi Transfer</span></a>
+        @endif
+        @if($canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))
+        <a href="{{ route('finance.bills.index') }}" class="nav-item {{ $activeMenu === 'bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan</span></a>
+        @endif
+
+        @if($canAccess('reports.view') || $canAccess('reports.view_unit'))
+        <p class="nav-section-label">LAPORAN</p>
+        <a href="{{ route('reports.transactions') }}" class="nav-item {{ $activeReportMenu === 'transactions' ? 'active' : '' }}">{!! $sidebarIcon('chart') !!}<span>Transaksi Pembayaran</span></a>
+        <a href="{{ route('reports.monthly_spp') }}" class="nav-item {{ $activeReportMenu === 'monthly-spp' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>SPP Perbulan</span></a>
+        <a href="{{ route('reports.yearly_spp') }}" class="nav-item {{ $activeReportMenu === 'yearly-spp' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>SPP Pertahun</span></a>
+        <a href="{{ route('reports.unit_recap') }}" class="nav-item {{ $activeReportMenu === 'unit-recap' ? 'active' : '' }}">{!! $sidebarIcon('database') !!}<span>Rekap Per Unit</span></a>
+        @endif
+
         @if($canAccessStudentsMenu)
         <p class="nav-section-label">MANAJEMEN SISWA</p>
         @if($canAccess('students.view'))
@@ -63,30 +86,8 @@
         <a href="{{ route('student-management.alumni.index') }}" class="nav-item {{ $activeStudentMenu === 'alumni' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>Data Alumni</span></a>
         @endif
         @endif
-        @if($canAccessPaymentMenu || $canAccess('payments.verify_transfer') || $canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian') || $canAccess('reports.view') || $canAccess('reports.view_unit'))
-        <p class="nav-section-label">KEUANGAN</p>
-        @endif
-        @if($canAccessPaymentMenu)
-        <a href="{{ $paymentMenuUrl }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
-        @endif
-        @if($canAccess('payments.verify_transfer'))
-        <a href="{{ route('finance.transfer-verifications.index') }}" class="nav-item {{ $activeMenu === 'transfer-verification' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>Verifikasi Transfer</span></a>
-        @endif
-        @if($canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))
-        <a href="{{ route('finance.bills.index') }}" class="nav-item {{ $activeMenu === 'bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan</span></a>
-        @endif
-        @if($canAccess('reports.view') || $canAccess('reports.view_unit'))
-        <div class="nav-group nested-nav {{ $reportOpen ? 'open' : '' }}">
-            <button type="button" class="nav-item nav-parent {{ $reportOpen ? 'active' : '' }}" data-nav-toggle aria-expanded="{{ $reportOpen ? 'true' : 'false' }}">{!! $sidebarIcon('chart') !!}<span>Laporan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</button>
-            <div class="nav-submenu">
-                <a href="{{ route('reports.transactions') }}" class="{{ $activeReportMenu === 'transactions' ? 'active' : '' }}">{!! $sidebarIcon('chart') !!}<span>Transaksi Pembayaran</span></a>
-                <a href="{{ route('reports.monthly_spp') }}" class="{{ $activeReportMenu === 'monthly-spp' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>SPP Perbulan</span></a>
-                <a href="{{ route('reports.yearly_spp') }}" class="{{ $activeReportMenu === 'yearly-spp' ? 'active' : '' }}">{!! $sidebarIcon('calendar') !!}<span>SPP Pertahun</span></a>
-                <a href="{{ route('reports.unit_recap') }}" class="{{ $activeReportMenu === 'unit-recap' ? 'active' : '' }}">{!! $sidebarIcon('database') !!}<span>Rekap Per Unit</span></a>
-            </div>
-        </div>
-        @endif
-        @if($visibleMasterMenuItems->isNotEmpty() || $canAccess('settings.view'))
+
+        @if($visibleMasterMenuItems->isNotEmpty())
         <p class="nav-section-label">MASTER DATA</p>
         @endif
         @if($visibleMasterMenuItems->isNotEmpty())
@@ -94,8 +95,6 @@
             <a href="{{ route('master.index', ['tab' => $key]) }}" class="nav-item {{ $activeMasterMenu === $key ? 'active' : '' }}">{!! $sidebarIcon($item[1]) !!}<span>{{ $item[0] }}</span></a>
         @endforeach
         @endif
-        @if($canAccess('settings.view'))
-        <a href="{{ route('settings.index') }}" class="nav-item {{ $activeMenu === 'settings' ? 'active' : '' }}">{!! $sidebarIcon('settings') !!}<span>Pengaturan</span>{!! $sidebarIcon('chevron', 'nav-chevron') !!}</a>
-        @endif
+
     </nav>
 </aside>

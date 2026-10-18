@@ -42,6 +42,8 @@ systemThemeQuery?.addEventListener('change', (event) => {
 });
 
 const sidebar = document.querySelector('[data-sidebar]');
+const sidebarNav = document.querySelector('[data-sidebar-nav]');
+const sidebarScrollStorageKey = 'mawa-center:sidebar-scroll-top';
 const overlay = document.querySelector('[data-sidebar-overlay]');
 const toast = document.querySelector('[data-toast]');
 const passwordInput = document.querySelector('[data-password]');
@@ -49,6 +51,38 @@ const passwordToggle = document.querySelector('[data-password-toggle]');
 const currencyInputs = Array.from(document.querySelectorAll('[data-currency-input]'));
 const paymentUnitFilter = document.querySelector('[data-payment-unit-filter]');
 const paymentClassFilter = document.querySelector('[data-payment-class-filter]');
+
+const persistSidebarScroll = () => {
+    if (!sidebarNav) return;
+
+    try {
+        window.sessionStorage.setItem(sidebarScrollStorageKey, String(sidebarNav.scrollTop));
+    } catch {
+        // Sidebar remains usable when session storage is unavailable.
+    }
+};
+
+const restoreSidebarScroll = () => {
+    if (!sidebarNav) return;
+
+    let savedScrollTop = 0;
+    try {
+        const storedValue = Number.parseInt(window.sessionStorage.getItem(sidebarScrollStorageKey) ?? '', 10);
+        savedScrollTop = Number.isFinite(storedValue) && storedValue >= 0 ? storedValue : 0;
+    } catch {
+        savedScrollTop = 0;
+    }
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            sidebarNav.scrollTop = savedScrollTop;
+        });
+    });
+};
+
+sidebarNav?.addEventListener('scroll', persistSidebarScroll, { passive: true });
+window.addEventListener('pagehide', persistSidebarScroll);
+restoreSidebarScroll();
 
 paymentUnitFilter?.addEventListener('change', () => {
     if (!paymentClassFilter || paymentUnitFilter.value === paymentUnitFilter.dataset.selectedUnit) return;
@@ -1101,11 +1135,62 @@ document.querySelectorAll('[data-master-delete-form]').forEach((form) => {
     });
 });
 
-document.querySelectorAll('[data-nav-toggle]').forEach((button) => {
-    button.addEventListener('click', () => {
-        const group = button.closest('.nested-nav');
-        const open = group.classList.toggle('open');
-        button.setAttribute('aria-expanded', String(open));
+document.querySelectorAll('[data-account-menu]').forEach((menu) => {
+    const toggle = menu.querySelector('[data-account-menu-toggle]');
+    const popup = menu.querySelector('[data-account-menu-popup]');
+    const items = Array.from(menu.querySelectorAll('[role="menuitem"]'));
+
+    if (!toggle || !popup) return;
+
+    const closeMenu = ({ returnFocus = false } = {}) => {
+        if (popup.hidden) return;
+
+        popup.hidden = true;
+        toggle.setAttribute('aria-expanded', 'false');
+        if (returnFocus) toggle.focus();
+    };
+
+    const openMenu = () => {
+        popup.hidden = false;
+        toggle.setAttribute('aria-expanded', 'true');
+        items[0]?.focus();
+    };
+
+    toggle.addEventListener('click', () => {
+        if (popup.hidden) {
+            openMenu();
+            return;
+        }
+
+        closeMenu();
+    });
+
+    menu.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeMenu({ returnFocus: true });
+    });
+
+    document.addEventListener('pointerdown', (event) => {
+        if (!menu.contains(event.target)) closeMenu();
+    });
+
+    items.forEach((item) => item.addEventListener('click', () => closeMenu()));
+});
+
+document.querySelectorAll('[data-identity-split-form]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+        if (form.dataset.confirmed === 'true') return;
+
+        event.preventDefault();
+        const confirmed = await confirmAppAction({
+            title: 'Pisahkan identitas?',
+            message: 'Data siswa akan kembali dipisahkan berdasarkan unit atau pendaftaran asalnya.',
+            confirmLabel: 'Pisahkan',
+        });
+
+        if (!confirmed) return;
+
+        form.dataset.confirmed = 'true';
+        form.requestSubmit();
     });
 });
 

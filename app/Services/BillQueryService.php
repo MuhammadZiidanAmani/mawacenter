@@ -59,7 +59,21 @@ class BillQueryService
 
         $this->applySorting($query, $sort, $direction);
 
-        $students = $query->paginate($perPage)->withQueryString();
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $total = (clone $this->baseQuery($year, $untilMonth, $filters))
+            ->distinct()
+            ->count('students.id');
+        $rows = $query->forPage($page, $perPage)->get();
+        $students = new LengthAwarePaginator(
+            $rows,
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => LengthAwarePaginator::resolveCurrentPath(),
+                'query' => request()->query(),
+            ],
+        );
         $studentIds = $students->getCollection()->pluck('student_id')->all();
         $studentModels = Student::with([
             'schoolClass:id,name,education_unit_id',
@@ -84,46 +98,24 @@ class BillQueryService
 
     public function stats(int $year, int $untilMonth, array $filters): array
     {
-        return PerformanceCache::remember(
-            'bill-stats',
-            ['year' => $year, 'until_month' => $untilMonth, 'filters' => $filters],
-            config('performance.query_cache.bill_stats_ttl', 120),
-            function () use ($year, $untilMonth, $filters) {
-                $row = $this->baseQuery($year, $untilMonth, $filters)
-                    ->selectRaw('COUNT(DISTINCT bills.student_id) as students')
-                    ->selectRaw("SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END) as spp")
-                    ->selectRaw("SUM(CASE WHEN bills.source_type <> 'spp' THEN bills.remaining_amount ELSE 0 END) as other")
-                    ->selectRaw('SUM(bills.total_amount) as billed')
-                    ->selectRaw('SUM(bills.paid_amount) as paid')
-                    ->selectRaw('SUM(bills.remaining_amount) as remaining')
-                    ->selectRaw('COUNT(DISTINCT CASE WHEN bills.remaining_amount > 0 AND bills.due_date IS NOT NULL AND bills.due_date < ? THEN bills.student_id END) as overdue_students', [now()->toDateString()])
-                    ->selectRaw('SUM(CASE WHEN bills.remaining_amount > 0 AND bills.due_date IS NOT NULL AND bills.due_date < ? THEN bills.remaining_amount ELSE 0 END) as overdue', [now()->toDateString()])
-                    ->first();
-
-                return [
-                    'students' => (int) ($row->students ?? 0),
-                    'spp' => (int) ($row->spp ?? 0),
-                    'other' => (int) ($row->other ?? 0),
-                    'billed' => (int) ($row->billed ?? 0),
-                    'paid' => (int) ($row->paid ?? 0),
-                    'remaining' => (int) ($row->remaining ?? 0),
-                    'overdue_students' => (int) ($row->overdue_students ?? 0),
-                    'overdue' => (int) ($row->overdue ?? 0),
-                ];
-            },
-        );
+        return $this->overview($year, $untilMonth, $filters)['stats'];
     }
 
     public function unitBreakdown(int $year, int $untilMonth, array $filters): Collection
     {
-        $rows = PerformanceCache::remember(
-            'bill-unit-breakdown-v4',
+        return collect($this->overview($year, $untilMonth, $filters)['units']);
+    }
+
+    public function overview(int $year, int $untilMonth, array $filters): array
+    {
+        return PerformanceCache::remember(
+            'bill-overview-v5',
             ['year' => $year, 'until_month' => $untilMonth, 'filters' => $filters],
             config('performance.query_cache.bill_stats_ttl', 120),
             function () use ($year, $untilMonth, $filters) {
                 $billableCondition = "bills.source_type = 'spp' OR bills.source_type = 'manual' OR (bills.source_type = 'fee_type' AND (fee_types.payment_group IS NULL OR fee_types.payment_group <> 'laundry'))";
 
-                return $this->baseQuery($year, $untilMonth, $filters)
+                $units = $this->baseQuery($year, $untilMonth, $filters)
                     ->leftJoin('fee_types', 'fee_types.id', '=', 'bills.fee_type_id')
                     ->select([
                         'education_units.id as unit_id',
@@ -159,10 +151,22 @@ class BillQueryService
                     ])
                     ->values()
                     ->all();
+
+                return [
+                    'stats' => [
+                        'students' => (int) collect($units)->sum('students'),
+                        'spp' => (int) collect($units)->sum('spp'),
+                        'other' => (int) collect($units)->sum('other'),
+                        'billed' => (int) collect($units)->sum('billed'),
+                        'paid' => (int) collect($units)->sum('paid'),
+                        'remaining' => (int) collect($units)->sum('remaining'),
+                        'overdue_students' => (int) collect($units)->sum('overdue_students'),
+                        'overdue' => (int) collect($units)->sum('overdue'),
+                    ],
+                    'units' => $units,
+                ];
             },
         );
-
-        return collect(is_array($rows) ? $rows : []);
     }
 
     public function statement(Student $student, int $year, int $untilMonth): array

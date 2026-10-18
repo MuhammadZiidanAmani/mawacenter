@@ -1,10 +1,10 @@
 # Design System CSS dan Tailwind MA'WA CENTER
 
-Versi: 1.1 | Tanggal: 22 September 2026 | Pasangan dokumen: [PRD induk](PRD-MAWA-CENTER.md).
+Versi: 1.2 | Tanggal: 18 Oktober 2026 | Pasangan dokumen: [PRD induk](PRD-MAWA-CENTER.md).
 
 Panduan ini menggabungkan standar visual sumber S06, ketentuan khusus PRD modul, referensi layout Pembayaran, dan struktur CSS aplikasi saat ini. Tujuannya menjaga UI administrasi yang konsisten dan membantu AI memilih class, token, serta file yang benar.
 
-**Status:** kontrak visual aktif. `resources/css/app.css` memuat token global dan modul CSS yang dimigrasikan; `ai/tailwindadmin-react-1.0.0/` adalah referensi visual utama, bukan dependency runtime. [tailwind-theme.reference.css](tailwind-theme.reference.css) tetap contoh adapter, tidak diimpor produksi.
+**Status:** kontrak visual aktif. `resources/css/app.css` memuat token global dan modul CSS; `resources/css/theme.css` menghubungkan utility Tailwind ke token tersebut. `ai/tailwindadmin-react-1.0.0/` adalah referensi visual utama, bukan dependency runtime. [tailwind-theme.reference.css](tailwind-theme.reference.css) adalah salinan contoh adapter, tidak diimpor produksi.
 
 ## Daftar Isi
 
@@ -40,7 +40,7 @@ Sumber warna aktif: `:root` di `resources/css/app.css`. Gunakan variable tersebu
 
 | Peran | Token Aktif | Nilai Terang | Contoh Utility Setelah Adapter |
 | --- | --- | --- | --- |
-| Kanvas | `--app-canvas` | `#f5f7fb` | `bg-app-canvas` |
+| Kanvas | `--app-canvas` | `#ffffff` | `bg-app-canvas` |
 | Surface | `--app-surface` | `#ffffff` | `bg-app-surface` |
 | Panel/empty lembut | `--app-panel-soft` | `#f8f9fc` | `bg-app-panel-soft` |
 | Netral ringan | `--app-neutral-soft` | `#f5f5f5` | `bg-app-neutral-soft` |
@@ -54,19 +54,21 @@ Sumber warna aktif: `:root` di `resources/css/app.css`. Gunakan variable tersebu
 | Divider | `--app-border-soft` | `#edf0f5` | `border-app-border-soft` |
 | Border lembut | `--app-border-green-soft` | `#d9e2f7` | `border-app-border-green-soft` |
 | Primer | `--app-primary` | `#5d87ff` | `bg-app-primary`, `text-app-primary` |
-| Hover primer | `--app-primary-hover` | `#4570e7` | `hover:bg-app-primary-hover` |
+| Hover primer | `--app-primary-hover` | Primer 80% + hitam, OKLab | `hover:bg-app-primary-hover` |
+| Surface primer | `--app-primary-soft` | Primer 12%, transparan | `bg-app-primary-soft` |
+| Sekunder | `--app-secondary` | `#49beff` | `bg-app-secondary` |
 | Sukses | `--app-success` | `#13a88e` | `text-app-success` |
 | Surface sukses | `--app-success-soft` | `#e8fbf7` | `bg-app-success-soft` |
-| Selected/hover lembut | `--app-success-subtle` | `#edf3ff` | `bg-app-success-subtle` |
+| Selected/hover lembut kompatibilitas | `--app-success-subtle` | Alias `--app-primary-soft` | `bg-app-success-subtle` |
 | Bahaya | `--app-danger` | `#ef4444` | `text-app-danger` |
 | Hover bahaya | `--app-danger-hover` | `#dc2626` | `hover:bg-app-danger-hover` |
 | Surface bahaya | `--app-danger-soft` | `#fef2f2` | `bg-app-danger-soft` |
-| Peringatan | `--app-warning` | `#92400e` | `text-app-warning` |
-| Surface peringatan | `--app-warning-soft` | `#fff7ed` | `bg-app-warning-soft` |
-| Informasi | `--app-info` | `#2563eb` | `text-app-info` |
-| Surface informasi | `--app-info-soft` | `#eff6ff` | `bg-app-info-soft` |
+| Peringatan | `--app-warning` | `#a16207` | `text-app-warning` |
+| Surface peringatan | `--app-warning-soft` | `#fff8e6` | `bg-app-warning-soft` |
+| Informasi | `--app-info` | `#8754ec` | `text-app-info` |
+| Surface informasi | `--app-info-soft` | Informasi 12%, transparan | `bg-app-info-soft` |
 
-Nominal baris memakai teks utama; nominal footer/total penting boleh primer. Judul/nama tidak semuanya hijau. Biru hanya info, chart, bantuan; bukan background/CTA dominan. Jangan memakai `slate-50`, `slate-500`, atau border kebiruan sebagai default aplikasi.
+Nominal baris memakai teks utama; nominal footer/total penting boleh primer. Biru primer untuk CTA, navigasi, fokus, dan chart; informasi memakai ungu sesuai template. Sukses dan peringatan mempertahankan warna semantik aplikasi yang lebih gelap daripada aksen mint/kuning template agar label tidak memakai aksen terang. Ini penyesuaian aplikasi, bukan klaim semua pasangan warna sudah lolos uji kontras. Jangan memakai `slate-50` atau `slate-500` sebagai default aplikasi.
 
 Token muted/success/danger tetap perlu pemeriksaan kontras menurut background dan ukuran aktual; keberadaan warna di standar bukan bukti lolos aksesibilitas. Status wajib memiliki teks, tidak hanya warna. Jangan mengubah token global hanya untuk memperbaiki satu layar tanpa audit lintas modul.
 
@@ -77,15 +79,17 @@ Mode gelap aktif melalui selector `html[data-theme="dark"]`. Semua komponen apli
 | Peran | Light | Dark |
 | --- | --- | --- |
 | Canvas | `#ffffff` | `#1c2536` |
-| Surface/sidebar/topbar/card | `#ffffff` | `#2a3547` |
-| Panel lembut/hover | `#f6f8fc` | `#263448` |
-| Field | `#f8fafc` | `#2a3547` |
-| Border | `#dfe5ef` | `#43536b` |
-| Teks utama | `#1c2536` | `#f5f7fb` |
-| Teks muted | `#64748b` | `#b8c4d5` |
-| Primer | `#5f82ff` | `#7195ff` |
+| Surface/sidebar/topbar/card | `#ffffff` | `#1c2536` |
+| Panel lembut | `#f8f9fc` | `#2a3851` |
+| Field | `#ffffff` | `#1c2536` |
+| Border | `#dfe5ef` | `#333f55` |
+| Teks utama/label | `#1c2536` / `#2a3547` | `#ffffff` |
+| Teks muted | `#5a6a85` | `#7c8fac` |
+| Primer | `#5d87ff` | `#5d87ff` |
+| Surface primer | Primer 12%, transparan | Primer 20%, transparan |
+| Informasi | `#8754ec` | `#8754ec` |
 
-Status sukses, bahaya, peringatan, dan informasi juga memiliki pasangan token gelap, termasuk state lembut, border, hover, focus ring, overlay, shadow, dan scrollbar. `--app-panel-soft` hanya dipakai untuk header tabel, hover, selected state, dan field lembut; bukan sebagai latar canvas halaman.
+Status sukses, bahaya, peringatan, dan informasi memakai warna semantik Tailwind Admin dengan surface transparan 20% pada dark mode. Shadow komponen dimatikan pada dark mode agar kedalaman berasal dari border `#333f55`, spacing, dan state primer. `--app-panel-soft` hanya dipakai untuk header tabel dan permukaan muted; bukan sebagai latar canvas halaman.
 
 `resources/views/partials/theme-toggle.blade.php` menempatkan tombol ikon bulan/matahari pada topbar. Kode UI mandiri di `resources/js/app.js`:
 
@@ -137,8 +141,8 @@ Pengecualian teknis hanya berlaku untuk glyph ikon pada kontrol berukuran tetap,
 | Antarsection | 20px desktop, 16px mobile |
 | Gap field/grid | 12px/16px |
 | Gap tombol | 8px |
-| Radius komponen | 7px |
-| Filter | 7px, border tipis, tanpa radius khusus |
+| Radius tombol/kontrol aksi | 10px |
+| Field dan panel filter | Field 12px; panel 12px dengan border tipis |
 
 Skala spacing 4, 8, 12, 16, 20, 24, 32px. Heading/filter/toolbar/tabel/pagination pada satu halaman memakai batas kiri-kanan yang sama. Container boleh terpusat, teks tetap rata kiri. Nominal rata kanan; No/kode/jumlah pendek/aksi rata tengah.
 
@@ -150,16 +154,17 @@ Mobile: sidebar drawer dengan overlay, filter/form satu kolom, tombol wrap atau 
 
 ### Navigasi dan Footer
 
-Sidebar/topbar putih dengan border. Normal teks label, hover primer-hover dengan success-subtle, aktif primer dengan success-soft. Item navigasi bukan tombol primer solid. Ikon memakai `currentColor`, parent expanded/active konsisten, focus terlihat. Footer copyright dinamis, 14px normal/muted, putih/transparan tanpa panel dekoratif.
+Sidebar/topbar putih dengan border. Normal teks label; hover dan aktif memakai teks primer dengan `--app-primary-soft` (alias kompatibilitas `--app-success-subtle`). Item navigasi bukan tombol primer solid. Ikon memakai `currentColor`, parent expanded/active konsisten, focus terlihat. Footer copyright dinamis, 14px normal/muted, putih/transparan tanpa panel dekoratif.
 
 ### Form dan Filter
 
-- Input/select 40px, padding horizontal 12px, radius 7px, border token, font 14px. Textarea minimal 96px dan resize vertikal.
+- Input/select 40px, padding horizontal 12px, radius field 12px, border token, font 14px. Textarea minimal 96px dan resize vertikal.
+- Geometri field native dimiliki `resources/css/components.css`; perubahan tinggi, padding, dan radius dilakukan melalui token `--app-field-*`/`--app-radius-field`, bukan selector halaman. Field gabungan memakai `.app-field-shell`; alias class lama dipetakan pada kontrak yang sama selama migrasi.
 - Label terhubung ke field, jarak 6-8px. Field wajib memiliki penanda yang jelas tanpa membuat seluruh label merah.
 - Focus ring/outline 2px primer dengan offset yang sesuai. Error di bawah field, 14px danger, `aria-invalid` dan `aria-describedby` bila diperlukan; fokus ke error pertama.
 - Readonly tetap terbaca dan dapat disalin; disabled opacity sekitar 0.55 tanpa hover aktif. Nominal Lunas memakai readonly bila nilainya perlu dikirim.
 - Unit mengendalikan kelas, nilai kelas invalid direset. Reset hanya membersihkan filter, tidak menyentuh data. Per_page/sort/direction tetap terbawa saat aksi yang mempertahankan filter.
-- Panel filter adalah tool mandiri, tidak di dalam kartu lain: putih, border, padding 16px, gap 12px, radius 7px. Desktop grid align-end, mobile satu kolom.
+- Panel filter adalah tool mandiri, tidak di dalam kartu lain: memakai surface, border, padding 16px, gap 12px, radius panel 12px. Desktop grid align-end, mobile satu kolom.
 - Acuan desktop Siswa: Unit 160px, Kelas 150px, Search 220-300px, aksi max-content. Kategori: Unit+Search; Keringanan: Unit+Kelas+Search. Status tidak ditambahkan sebagai filter utama kategori/keringanan.
 
 ### Tombol dan Ikon
@@ -185,7 +190,9 @@ Loading mempertahankan ukuran tombol dan mencegah klik ulang. Focus tidak hanya 
 
 Tabel untuk siswa, master, transaksi, rekap, tagihan: font body 14/20px weight 400, header 14/20px weight 600 Title Case, footer 14/20px weight 700. Compact header/baris 40px; detail dua baris boleh 44-56px. Tidak memaksa baris tetap 40px bila memotong konten/target sentuh.
 
-Wrapper putih, border 1px, radius 7px, shadow none; garis tabel horizontal halus, tanpa garis vertikal. `table-layout:fixed` bila perlu kestabilan; `min-width` hanya sebesar kebutuhan kolom. Baris akhir tidak memiliki divider ganda. Header/hover memakai panel-soft.
+Wrapper memakai surface, border 1px, radius panel 12px, dan shadow token; garis tabel horizontal halus, tanpa garis vertikal. `table-layout:fixed` bila perlu kestabilan; `min-width` hanya sebesar kebutuhan kolom. Baris akhir tidak memiliki divider ganda. Header/hover memakai token tabel yang bersumber dari panel-soft dan hover-surface.
+
+Semua `<table>` di dalam `.app-shell main` otomatis mengikuti kontrak tabel pada `resources/css/components.css`. Model bersama—padding sel, header, divider, hover, tipografi, footer, dan frame—diubah melalui token `--app-table-*`. CSS modul hanya boleh mengatur `min-width`, `table-layout`, lebar kolom, alignment data khusus, serta baris detail/expanded. Tabel struk, surat, PDF, dan print berada di luar shell dan tidak mengikuti kontrak tabel aplikasi.
 
 Header default tengah; nama/deskripsi isi kiri; nominal isi kanan; jumlah siswa/transaksi/no/kode pendek tengah. Footer Total Keseluruhan satu `tfoot`, nominal primer dan kanan, jumlah non-uang teks utama dan tengah, label `colspan` sesuai kolom. Total seluruh hasil filter tidak boleh berubah menjadi total halaman saja.
 
@@ -238,7 +245,7 @@ Referensi [Setelah.jpeg](Setelah.jpeg) khusus untuk susunan Pembayaran. Kartu st
 
 ### Adapter Token
 
-Tailwind `@theme` menyediakan utility dari token; `@theme inline` cocok untuk memetakan token ke CSS variable existing. Contoh terpisah ada di [tailwind-theme.reference.css](tailwind-theme.reference.css). Panduan sintaks: [Theme Variables](https://tailwindcss.com/docs/theme).
+Tailwind `@theme inline` di `resources/css/theme.css` memetakan utility ke CSS variable existing. Alias `bg-primary` dan `bg-app-primary` mengambil `--app-primary` yang sama, termasuk mode gelap. Contoh terpisah ada di [tailwind-theme.reference.css](tailwind-theme.reference.css). Panduan sintaks: [Theme Variables](https://tailwindcss.com/docs/theme).
 
 ```css
 /* Contoh setelah @import "tailwindcss" pada integrasi yang diaudit. */
@@ -249,7 +256,7 @@ Tailwind `@theme` menyediakan utility dari token; `@theme inline` cocok untuk me
 }
 ```
 
-Jangan mengimpor file `ai/` sebagai dependency produksi permanen. Saat pekerjaan integrasi diminta, tempatkan adapter final dalam `resources/css/`, gunakan satu sumber definisi token, lalu impor melalui entry CSS. Hindari mendefinisikan ulang palet pada setiap modul.
+Jangan mengimpor file `ai/` sebagai dependency produksi. Adapter produksi sudah diimpor sekali melalui entry CSS; definisi token tetap di `app.css`. Hindari mendefinisikan ulang palet pada setiap modul.
 
 Adapter mencakup `font-app`, `text-ui-body`, `text-ui-section`, `text-ui-title`, `text-ui-micro`, `rounded-ui`, `max-w-ui-form`, `max-w-ui-data`, dan `max-w-ui-dashboard`. Ukuran tetap, bukan skala viewport.
 
@@ -319,7 +326,7 @@ Gunakan class lengkap pada mapping status Blade/JS, bukan interpolasi seperti `b
 <span class="inline-flex rounded-ui px-2 py-1 text-ui-body font-medium {{ $statusClass }}">{{ $status }}</span>
 ```
 
-Jika class tidak masuk build, cek lokasi source dan hasil CSS terlebih dahulu. Tailwind mendukung `@source` untuk lokasi eksplisit. Path relatif ke file CSS pemilik directive; contoh dari `resources/css/app.css`: `@source "../views";` dan `@source "../js";`. Untuk strategi scan terbatas gunakan `source(none)` bersama semua sumber yang diperlukan, termasuk view pagination vendor bila dipakai; jangan mematikan auto-detection tanpa inventaris class.
+Jika class tidak masuk build, cek lokasi source dan hasil CSS terlebih dahulu. Entry produksi memakai `@import "tailwindcss" source(none)` dengan source eksplisit `../views`, `../js`, dan `../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views`. Path relatif terhadap `resources/css/app.css`. Referensi React dalam `ai/` tidak ikut menghasilkan utility produksi. Tambahkan source bila runtime baru membutuhkan utility di luar lokasi tersebut.
 
 ### Dark Variant
 
@@ -372,7 +379,9 @@ Nama class contoh disesuaikan dengan view yang dikerjakan; ukuran dokumen tetap 
 
 | File | Pemilik Aturan |
 | --- | --- |
-| `resources/css/app.css` | Import, token, reset/foundation, app-shell/sidebar/topbar, kontrol/tabel/modal/footer bersama |
+| `resources/css/app.css` | Import, token, reset/foundation, app-shell/sidebar/topbar, modal, dan footer bersama |
+| `resources/css/theme.css` | Adapter utility Tailwind ke token aplikasi dan variant dark berdasarkan `data-theme` |
+| `resources/css/components.css` | Kontrak visual lintas menu untuk field, field gabungan, filter, card dasar, surface/isi tabel, pagination, dan bentuk status |
 | `modules/login.css` | Login |
 | `modules/dashboard.css` | Dashboard |
 | `modules/student-management.css` | Siswa, alumni, perubahan kelas, identitas |
@@ -382,13 +391,14 @@ Nama class contoh disesuaikan dengan view yang dikerjakan; ukuran dokumen tetap 
 | `modules/bills.css` | Tagihan dan portal tagihan sesuai scope |
 | `modules/reports.css` | Laporan |
 | `modules/finance.css` | Komponen keuangan terkait sesuai penggunaan aktual |
+| `modules/cashier.css` | Form SPP/pembayaran lain, riwayat, pencarian siswa, dan import kasir |
 | `modules/settings.css` | Pengaturan |
 
 Jangan menghapus class global `.modal-backdrop`, `.form-modal`, `.result-modal-backdrop`, `.app-footer`, `.button`, `.icon-button`, `.table-wrap` tanpa audit penggunaannya. Selector `student` di Pembayaran belum tentu milik Manajemen Siswa.
 
 ### Cascade Aktual
 
-`app.css` memuat Tailwind, token, komponen bersama, lalu CSS modul. CSS lama tidak diimpor. Komponen bersama berada di `app.css`; aturan halaman tetap berada pada pemilik modulnya. Jangan menambah selector global untuk memperbaiki satu layar.
+Urutan import `app.css`: Tailwind -> adapter tema -> modul halaman -> `components.css`; definisi token dan foundation shell berada setelah import. `components.css` sengaja dimuat setelah modul agar tampilan komponen lintas menu memiliki satu pemilik. Reset elemen/form berada dalam `@layer base`, sedangkan modul halaman hanya mengatur layout, ukuran khusus, dan state yang memang berbeda. Hindari mendefinisikan ulang background, border, radius, padding sel, header, atau hover tabel di modul. CSS lama tidak diimpor.
 
 Utility Tailwind berada dalam cascade layer. Jangan memakai `!important` atau `style` inline pada halaman aplikasi; gunakan token dan class yang ter-scope. Nilai progress yang berubah saat interaksi boleh diatur oleh JavaScript existing, bukan atribut `style` di Blade. Urutan class pada atribut HTML bukan jaminan urutan kemenangan CSS.
 
@@ -423,6 +433,20 @@ Jangan menambah `body *`, aturan semua `strong/th/button/span`, atau seluruh ele
 Untuk perubahan CSS aktif jalankan `npm run build`, inspeksi browser dan screenshot sebelum/sesudah. Jika markup/JS/akses ikut berubah, jalankan feature test terkait dengan isolasi sesuai PRD. Screenshot/build tidak membuktikan keamanan data; feature test juga tidak membuktikan layout bebas overlap.
 
 Dokumentasi dan adapter referensi cukup diperiksa link, token, dan kompilasi contoh. Jangan menjalankan migrasi/seed atau mengubah data operasional untuk memverifikasi desain.
+
+### Audit Referensi 18 Oktober 2026
+
+Audit source mencakup entry CSS, adapter, dan seluruh 10 modul aktif. Acuan lokal: `src/css/globals.css`, `src/css/app.css`, layout, serta komponen button/input/table/card/badge pada [Tailwind Admin](tailwindadmin-react-1.0.0/). Perbandingan mengikuti kontrak aplikasi untuk ukuran operasional, Bahasa Indonesia, dan dokumen resmi.
+
+- Utility dan CSS modul memakai token tema yang sama; token `--app-secondary` dan `--app-primary-soft` yang sebelumnya dirujuk tanpa definisi sudah tersedia.
+- Foundation berprioritas rendah; tombol khusus modul dan header tabel tidak tertimpa aturan bersama. Field input, select, textarea, pencarian, upload, dan kontrol jumlah data memakai token khusus 12px agar sisi field terlihat konsisten membulat; tombol dan kontrol aksi tetap 10px, sedangkan card/panel memakai 12px. Pagination 36px/gap 8px, aksi tabel 32px dengan target mobile 40px.
+- Kontrak lintas menu dipusatkan di `components.css`. Lima belas view bertabel pada shell aplikasi mengikuti aturan tabel otomatis; delapan view struk/surat/PDF dipisahkan agar format cetaknya tidak berubah. Duplikasi visual tabel pada modul Pembayaran, Tagihan, Keuangan, Kasir, Master, Laporan, dan Manajemen Siswa dihapus; modul tersebut menyimpan kebutuhan struktur datanya saja.
+- Toolbar daftar memakai kontrak `app-data-toolbar`, `app-page-size-form`/`app-page-size-control`, `app-data-search`, dan `app-data-search-field`. Pilihan jumlah data memiliki lebar tetap dari `--app-page-size-width`; area pencarian, posisi label, jarak, dan susunan mobile berasal dari token/komponen bersama. View baru wajib memakai class ini agar perubahan toolbar berlaku lintas menu tanpa override modul.
+- Selector filter, pencarian, pagination Tagihan, portal wali, sorting, badge status, serta struktur chart Laporan dicocokkan dengan Blade aktif. Tidak semua class Blade membutuhkan selector tersendiri; sebagian merupakan penanda state/JS atau alternatif tampilan lama.
+- File upload dan pilihan tersembunyi mendapat fokus yang terlihat; helper screen reader tidak muncul sebagai teks visual. Nominal panjang pada kasir mobile dapat membungkus.
+- `settings.css` sudah menggunakan token dan struktur responsif yang sama, sehingga tidak memerlukan perubahan. CSS inline struk/surat/PDF tetap mengikuti kontrak cetak di bagian 8; template referensi tidak diimpor ke dokumen resmi.
+
+Build, kompilasi alias utility/dark variant, audit token/import, dan feature test dijalankan pada perubahan ini. Pemeriksaan browser dark mode dilakukan pada halaman Pembayaran dan SPP Perbulan dalam viewport desktop 1918px serta mobile 430px: sidebar/topbar/card menyatu dengan canvas `#1c2536`, pembeda permukaan memakai border `#333f55`, menu aktif memakai primary transparan, filter mobile menumpuk satu kolom, dan tabel tetap berada dalam wrapper gulir. Toolbar kedua halaman memperlihatkan ukuran pilihan jumlah data, label, lebar pencarian, dan susunan mobile yang sama. Pemeriksaan ini mencakup representasi utama komponen bersama; dialog serta state data lain tetap perlu diperiksa saat modul tersebut diubah.
 
 ## 11. Cakupan Standar Sumber
 

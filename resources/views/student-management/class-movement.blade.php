@@ -99,9 +99,9 @@
                 @if(request('direction'))<input type="hidden" name="direction" value="{{ request('direction') }}">@endif
             </form>
 
-            <section class="card master-card student-data-card student-list-table-card class-movement-data-card">
-            <div class="student-reference-card-count student-management-table-toolbar">
-                <form method="GET" action="{{ $indexRoute }}" class="student-reference-card-length">
+            <section class="student-list-layout class-movement-data-card">
+            <div class="student-reference-card-count student-management-table-toolbar app-data-toolbar">
+                <form method="GET" action="{{ $indexRoute }}" class="student-reference-card-length app-page-size-form">
                     @foreach(request()->except(['per_page', 'page', 'status', 'search']) as $key => $value)
                         @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                     @endforeach
@@ -115,13 +115,13 @@
                         siswa
                     </label>
                 </form>
-                <form method="GET" action="{{ $indexRoute }}" class="report-student-search-card student-management-search-card" role="search">
+                <form method="GET" action="{{ $indexRoute }}" class="report-student-search-card student-management-search-card app-data-search" role="search">
                     @foreach(request()->except(['search', 'page']) as $key => $value)
                         @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                     @endforeach
                     <label>
                         <span>Cari siswa</span>
-                        <span class="master-table-search-input">
+                        <span class="master-table-search-input app-data-search-field">
                             {!! $icon('search') !!}
                             <input name="search" value="{{ $filters['search'] }}" placeholder="Nama atau NIS..." aria-label="Cari siswa">
                         </span>
@@ -141,7 +141,7 @@
                         <strong>Daftar Siswa</strong>
                     </div>
 
-                    <div class="table-wrap class-movement-table-wrap">
+                    <div class="table-wrap class-movement-table-wrap class-movement-table-surface">
                         <table class="student-hybrid-table class-movement-student-table class-transfer-table">
                             <colgroup>
                                 <col class="movement-col-check">
@@ -187,9 +187,6 @@
                         </table>
                     </div>
 
-                    @if(method_exists($students, 'links'))
-                        <div class="pagination-wrap class-transfer-pagination">{{ $students->links() }}</div>
-                    @endif
                 </section>
 
                 <div class="class-transfer-action-panel">
@@ -214,7 +211,7 @@
                         <strong>Daftar Siswa</strong>
                     </div>
 
-                    <div class="table-wrap class-movement-table-wrap">
+                    <div class="table-wrap class-movement-table-wrap class-movement-table-surface">
                         <table class="student-hybrid-table class-movement-student-table class-promotion-table">
                             <colgroup>
                                 <col class="movement-col-check">
@@ -263,9 +260,6 @@
                         </table>
                     </div>
 
-                    @if(method_exists($students, 'links'))
-                        <div class="pagination-wrap class-promotion-pagination">{{ $students->links() }}</div>
-                    @endif
                 </section>
 
                 <div class="class-promotion-action-panel">

@@ -409,7 +409,7 @@
                 </form>
 
                 <div class="class-card-count">
-                    <form method="GET" action="{{ route('master.index') }}" class="class-card-length">
+                    <form method="GET" action="{{ route('master.index') }}" class="class-card-length app-page-size-form">
                         @foreach(request()->except(['per_page', 'page']) as $key => $value)
                             @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                         @endforeach
@@ -471,7 +471,7 @@
                 </form>
 
                 <div class="fee-type-card-count">
-                    <form method="GET" action="{{ route('master.index') }}" class="fee-type-card-length">
+                    <form method="GET" action="{{ route('master.index') }}" class="fee-type-card-length app-page-size-form">
                         @foreach(request()->except(['per_page', 'page']) as $key => $value)
                             @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                         @endforeach
@@ -556,7 +556,7 @@
                 </form>
 
                 <div class="fee-discount-card-count">
-                    <form method="GET" action="{{ route('master.index') }}" class="fee-discount-card-length">
+                    <form method="GET" action="{{ route('master.index') }}" class="fee-discount-card-length app-page-size-form">
                         @foreach(request()->except(['per_page', 'page']) as $key => $value)
                             @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                         @endforeach
@@ -644,7 +644,7 @@
                 </form>
 
                 <div class="data-role-card-count">
-                    <form method="GET" action="{{ route('master.index') }}" class="data-role-card-length">
+                    <form method="GET" action="{{ route('master.index') }}" class="data-role-card-length app-page-size-form">
                         @foreach(request()->except(['per_page', 'page']) as $key => $value)
                             @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                         @endforeach
@@ -728,7 +728,7 @@
                 </form>
 
                 <div class="data-user-card-count">
-                    <form method="GET" action="{{ route('master.index') }}" class="data-user-card-length">
+                    <form method="GET" action="{{ route('master.index') }}" class="data-user-card-length app-page-size-form">
                         @foreach(request()->except(['per_page', 'page']) as $key => $value)
                             @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                         @endforeach
@@ -798,7 +798,7 @@
                 @if ($tab !== 'classes')<div class="pagination-wrap">{{ $data->links() }}</div>@endif
             </section>
             @else
-            <section class="{{ $tab === 'students' ? 'card master-card student-data-card student-list-table-card student-reference-align-lock' : 'master-list-layout' }}">
+            <section class="{{ $tab === 'students' ? 'student-list-layout student-reference-align-lock' : 'master-list-layout' }}">
                 @if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users']))
                 @if ($tab !== 'students')
                 <div class="table-toolbar">
@@ -822,8 +822,8 @@
                             ? 'Menampilkan '.number_format($data->firstItem(), 0, ',', '.').'-'.number_format($data->lastItem(), 0, ',', '.').' dari '.number_format($data->total(), 0, ',', '.').' siswa'
                             : 'Menampilkan 0 dari 0 siswa';
                     @endphp
-                    <div class="student-reference-card-count student-table-toolbar-v2">
-                        <form method="GET" action="{{ route('student-management.students.index') }}" class="student-reference-card-length student-page-size-form">
+                    <div class="student-reference-card-count student-table-toolbar-v2 app-data-toolbar">
+                        <form method="GET" action="{{ route('student-management.students.index') }}" class="student-reference-card-length student-page-size-form app-page-size-form">
                             @foreach(request()->except(['per_page', 'page']) as $key => $value)
                                 @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                             @endforeach
@@ -837,13 +837,13 @@
                                 siswa
                             </label>
                         </form>
-                        <form method="GET" action="{{ route('student-management.students.index') }}" class="report-student-search-card" role="search">
+                        <form method="GET" action="{{ route('student-management.students.index') }}" class="report-student-search-card app-data-search" role="search">
                             @foreach(request()->except(['search', 'page']) as $key => $value)
                                 @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                             @endforeach
                             <label>
                                 <span>Cari Siswa</span>
-                                <span class="report-student-search-input">
+                                <span class="report-student-search-input app-data-search-field">
                                     {!! $icon('search') !!}
                                     <input type="search" name="search" value="{{ request('search') }}" placeholder="Nama / NIS / NISN" autocomplete="off" aria-label="Cari siswa">
                                 </span>
@@ -883,6 +883,7 @@
                         'master-class-filter-panel' => $tab === 'classes',
                         'master-fee-filter-panel' => $tab === 'fee-types',
                         'master-discount-filter-panel' => $tab === 'fee-discounts',
+                        'master-user-filter-panel' => $tab === 'data-users',
                     ])>
                         <input type="hidden" name="tab" value="{{ $tab }}">
                         <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">
@@ -914,14 +915,14 @@
                             <label><span>Role</span><select name="role" aria-label="Filter role"><option value="">Semua Role</option>@foreach ($roleOptions as $key => $name)<option value="{{ $key }}" @selected(request('role') === $key)>{{ $name }}</option>@endforeach</select></label>
                         @endif
                         <div class="master-data-filter-actions">
-                            <button class="button master-data-search-button">Terapkan</button>
-                            <a href="{{ route('master.index', ['tab' => $tab]) }}" class="button master-data-reset-button">Reset</a>
+                            <button class="button button-primary master-data-search-button" type="submit">Filter</button>
+                            <a href="{{ route('master.index', ['tab' => $tab]) }}" class="button button-secondary master-data-reset-button">Reset</a>
                         </div>
                     </form>
                     @endif
 
-                    <div class="master-table-toolbar">
-                        <form method="GET" action="{{ route('master.index') }}" class="master-data-length">
+                    <div class="master-table-toolbar app-data-toolbar">
+                        <form method="GET" action="{{ route('master.index') }}" class="master-data-length app-page-size-form">
                             @foreach(request()->except(['tab', 'per_page', 'page']) as $key => $value)
                                 @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                             @endforeach
@@ -936,14 +937,14 @@
                                 {{ $masterCountLabel }}
                             </label>
                         </form>
-                        <form method="GET" action="{{ route('master.index') }}" class="master-table-search">
+                        <form method="GET" action="{{ route('master.index') }}" class="master-table-search app-data-search">
                             @foreach(request()->except(['tab', 'search', 'page']) as $key => $value)
                                 @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                             @endforeach
                             <input type="hidden" name="tab" value="{{ $tab }}">
                             <label>
                                 <span>Cari data</span>
-                                <span class="master-table-search-input">{!! $icon('search') !!}<input type="search" name="search" value="{{ request('search') }}" placeholder="{{ $masterSearchPlaceholder }}" aria-label="{{ $masterSearchPlaceholder }}"></span>
+                                <span class="master-table-search-input app-data-search-field">{!! $icon('search') !!}<input type="search" name="search" value="{{ request('search') }}" placeholder="{{ $masterSearchPlaceholder }}" aria-label="{{ $masterSearchPlaceholder }}"></span>
                             </label>
                         </form>
                     </div>
@@ -960,7 +961,9 @@
                         default => [],
                     };
                 @endphp
-                @if ($tab !== 'students')
+                @if ($tab === 'students')
+                <section class="card student-data-table-surface">
+                @else
                 <section class="card master-card master-data-surface">
                 @endif
                 <div class="table-wrap"><table class="data-table {{ $tab !== 'students' ? 'master-data-table' : '' }} {{ $tab === 'students' ? 'student-flat-table student-master-table student-standard-table-v2' : '' }} {{ $tab === 'academic-years' ? 'academic-year-table' : '' }} {{ $tab === 'education-units' ? 'education-unit-table' : '' }} {{ $tab === 'classes' ? 'class-table' : '' }} {{ $tab === 'fee-types' ? 'fee-type-table' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-table' : '' }} {{ $tab === 'data-roles' ? 'data-role-table' : '' }} {{ $tab === 'data-users' ? 'data-user-table' : '' }}">
@@ -1104,9 +1107,7 @@
                         @empty @include('master.partials.empty') @endforelse</tbody>
                     @endif
                 </table></div>
-                @if ($tab !== 'students')
                 </section>
-                @endif
                 @if ($tab === 'students')
                     @php
                         $studentCurrentPage = $data->currentPage();

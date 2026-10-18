@@ -84,6 +84,7 @@ class BillController extends Controller
         $direction = $request->string('direction')->value() === 'desc' ? 'desc' : 'asc';
         $perPage = $this->perPage($request);
         $students = $bills->summaries($year, $untilMonth, $filters, $perPage, $sort, $direction);
+        $overview = $bills->overview($year, $untilMonth, $filters);
         $unitIds = $request->user()?->accessibleUnitIds();
         $syncRunId = session('bill_sync_run_id') ?: $request->integer('sync_run');
         $billSyncRun = $syncRunId ? BillSyncRun::find($syncRunId) : null;
@@ -94,8 +95,8 @@ class BillController extends Controller
             'studentsWithBills' => $students,
             'year' => $year,
             'untilMonth' => $untilMonth,
-            'overviewStats' => $bills->stats($year, $untilMonth, $filters),
-            'unitSummaries' => $bills->unitBreakdown($year, $untilMonth, $filters),
+            'overviewStats' => $overview['stats'],
+            'unitSummaries' => collect($overview['units']),
             'isGuardianView' => $isGuardian,
             'guardianStudents' => $guardianStudents,
             'selectedGuardianStudentId' => $selectedGuardianStudentId,

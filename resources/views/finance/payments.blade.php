@@ -225,19 +225,20 @@
                                     </div>
                                     </div>
 
-                                    <div class="payment-overview-table-toolbar">
-                                        <label class="payment-overview-per-page-control">
+                                    <div class="payment-overview-table-toolbar app-data-toolbar">
+                                        <label class="payment-overview-per-page-control app-page-size-control">
                                             <span>Tampilkan</span>
                                             <select name="per_page" aria-label="Jumlah siswa per halaman" data-payment-overview-per-page>
-                                                @foreach([10, 25, 50, 100] as $perPage)
+                                                @foreach([10, 25, 50, 100, 500] as $perPage)
                                                     <option value="{{ $perPage }}" @selected((int) ($paymentOverviewPerPage ?? 10) === $perPage)>{{ $perPage }}</option>
                                                 @endforeach
-                                                <option value="all" @selected(($paymentOverviewPerPage ?? 10) === 'all')>All</option>
+                                                <option value="all" @selected(($paymentOverviewPerPage ?? 10) === 'all')>Semua</option>
                                             </select>
+                                            <span>data</span>
                                         </label>
-                                        <label class="payment-overview-search-control">
-                                            <span>Cari Siswa (NIS / Nama / NISN)</span>
-                                            <span class="payment-overview-search">
+                                        <label class="payment-overview-search-control app-data-search">
+                                            <span>Cari Siswa</span>
+                                            <span class="payment-overview-search app-data-search-field">
                                                 <span aria-hidden="true">{!! $icon('search') !!}</span>
                                                 <input type="search" name="search" value="{{ $search }}" placeholder="Ketik nama siswa atau NIS...">
                                             </span>

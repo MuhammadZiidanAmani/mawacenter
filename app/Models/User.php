@@ -63,7 +63,8 @@ class User extends Authenticatable
 
     public function hasPermission(string $permission): bool
     {
-        $role = $this->roleRecord()->first();
+        $this->loadMissing('roleRecord');
+        $role = $this->getRelation('roleRecord');
 
         if (! $role || ! $role->is_active) {
             return false;

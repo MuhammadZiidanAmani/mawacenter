@@ -438,8 +438,8 @@
                         $selectedStudentLabel = trim($selectedReportStudent->name.' · '.$selectedReportStudent->nis);
                     }
                 @endphp
-                <div class="report-table-toolbar-v2">
-                    <form method="GET" action="{{ route($definition['route']) }}" class="report-page-size-form">
+                <div class="report-table-toolbar-v2 app-data-toolbar">
+                    <form method="GET" action="{{ route($definition['route']) }}" class="report-page-size-form app-page-size-form">
                         @foreach($query(['per_page']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
@@ -448,14 +448,14 @@
                                 @foreach([10, 25, 50, 100, 500] as $size)
                                     <option value="{{ $size }}" @selected(request('per_page', 10) == $size)>{{ $size }}</option>
                                 @endforeach
-                                <option value="all" @selected(request('per_page') === 'all')>All</option>
+                                <option value="all" @selected(request('per_page') === 'all')>Semua</option>
                             </select>
                             data
                         </label>
                     </form>
                     @if($studentSearchEnabled)
                         @if($studentSearchValue !== '')
-                            <div class="report-student-search-card is-selected">
+                            <div class="report-student-search-card is-selected app-data-search">
                                 <span>Cari Siswa</span>
                                 <div class="report-student-selected">
                                     <strong>{{ $selectedStudentLabel }}</strong>
@@ -463,13 +463,13 @@
                                 </div>
                             </div>
                         @else
-                            <form method="GET" action="{{ route($definition['route']) }}" class="report-student-search-card">
+                            <form method="GET" action="{{ route($definition['route']) }}" class="report-student-search-card app-data-search">
                                 @foreach($query(['student_search', 'page']) as $key => $value)
                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                 @endforeach
                                 <label>
                                     <span>Cari Siswa</span>
-                                    <span class="report-student-search-input">
+                                    <span class="report-student-search-input app-data-search-field">
                                         {!! $icon('search') !!}
                                         <input type="search" name="student_search" value="" placeholder="Nama / NIS / NISN" autocomplete="off">
                                     </span>

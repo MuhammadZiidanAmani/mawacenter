@@ -982,6 +982,7 @@ class PaymentController extends Controller
             '25' => 25,
             '50' => 50,
             '100' => 100,
+            '500' => 500,
             'all' => 'all',
             default => 10,
         };

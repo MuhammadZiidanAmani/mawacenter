@@ -14,6 +14,7 @@ use App\Models\Student;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 class ReportQueryService
@@ -33,29 +34,36 @@ class ReportQueryService
         12 => 'Desember',
     ];
 
-    public function options(): array
+    public function options(string $report): array
     {
+        $activeAcademicYear = AcademicYear::where('is_active', true)->first();
+        $usesStudentFilters = in_array($report, ['transactions', 'monthly-spp', 'yearly-spp'], true);
+
         return [
-            'academicYears' => AcademicYear::orderByDesc('is_active')->orderByDesc('id')->get(['id', 'name', 'is_active', 'start_date', 'end_date']),
-            'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
-            'educationUnits' => EducationUnit::orderByRaw($this->educationUnitOrderExpression())->orderBy('name')->get(['id', 'code', 'name']),
-            'classes' => SchoolClass::with('educationUnit:id,code,name')
-                ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
-                ->select('school_classes.*')
-                ->orderByRaw($this->educationUnitOrderExpression())
-                ->orderBy('school_classes.name')
-                ->get(),
-            'feeTypes' => FeeType::with('educationUnit:id,code,name')
-                ->orderBy('name')
-                ->get(['id', 'name', 'education_unit_id', 'payment_group']),
-            'operators' => $this->operatorOptions(),
-            'years' => $this->reportYearOptions(),
+            'academicYears' => $report === 'yearly-spp'
+                ? AcademicYear::orderByDesc('is_active')->orderByDesc('id')->get(['id', 'name', 'is_active', 'start_date', 'end_date'])
+                : collect(),
+            'activeAcademicYear' => $activeAcademicYear,
+            'educationUnits' => $usesStudentFilters
+                ? EducationUnit::orderByRaw($this->educationUnitOrderExpression())->orderBy('name')->get(['id', 'code', 'name'])
+                : collect(),
+            'classes' => $usesStudentFilters
+                ? SchoolClass::with('educationUnit:id,code,name')
+                    ->join('education_units', 'education_units.id', '=', 'school_classes.education_unit_id')
+                    ->select('school_classes.*')
+                    ->orderByRaw($this->educationUnitOrderExpression())
+                    ->orderBy('school_classes.name')
+                    ->get()
+                : collect(),
+            'feeTypes' => collect(),
+            'operators' => $report === 'transactions' ? $this->operatorOptions() : collect(),
+            'years' => $report === 'monthly-spp' ? $this->reportYearOptions() : collect(),
         ];
     }
 
-    public function filters(Request $request, string $report): array
+    public function filters(Request $request, string $report, ?AcademicYear $activeYear = null): array
     {
-        $activeYear = AcademicYear::where('is_active', true)->first();
+        $activeYear ??= AcademicYear::where('is_active', true)->first();
         $academicYearId = $request->integer('academic_year_id') ?: $activeYear?->id;
         $month = $request->integer('month') ?: now()->month;
         $untilMonth = $request->integer('until_month') ?: now()->month;
@@ -126,11 +134,71 @@ class ReportQueryService
         ];
     }
 
-    public function monthlySpp(array $filters): array
+    public function monthlySpp(array $filters, ?array $pageOptions = null): array
     {
         $period = $this->selectedSppPeriod($filters);
         $studentFilters = array_merge($filters, ['academic_year_id' => null]);
-        $students = $this->filteredStudents($studentFilters)->get();
+        $studentQuery = $this->monthlySppStudentQuery($studentFilters, $period);
+        $useDatabasePagination = $this->supportsStudentPagination($pageOptions, [
+            'nis', 'student', 'unit', 'class', 'month', 'year',
+        ]);
+        $rowsPaginator = null;
+
+        if ($useDatabasePagination) {
+            $this->applyStudentRowSort($studentQuery, $pageOptions['sort'] ?? null, $pageOptions['direction'] ?? 'asc');
+            $rowsPaginator = $studentQuery->paginate(
+                (int) $pageOptions['per_page'],
+                ['students.*'],
+                'page',
+                (int) $pageOptions['page'],
+            );
+            $rows = $this->monthlySppRowsForStudents($rowsPaginator->getCollection(), $period);
+            $rowsPaginator->setCollection($rows);
+            $rowsPaginator->withPath($pageOptions['path'])->appends($pageOptions['query']);
+
+            $summaryRowsSource = $rowsPaginator->total() === $rows->count()
+                ? $rows
+                : $this->monthlySppRowsForStudents((clone $studentQuery)->get(), $period);
+        } else {
+            $rows = $this->monthlySppRowsForStudents($studentQuery->get(), $period);
+            $summaryRowsSource = $rows;
+        }
+
+        $summaryRows = $this->monthlySppUnitSummary($summaryRowsSource);
+
+        return [
+            'rows' => $rows,
+            'rowsPaginator' => $rowsPaginator,
+            'summaryCards' => [],
+            'summaryColumns' => [
+                ['key' => 'no', 'label' => 'No'],
+                ['key' => 'unit', 'label' => 'Unit Pendidikan'],
+                ['key' => 'students', 'label' => 'Jumlah Siswa', 'type' => 'number'],
+                ['key' => 'paid_count', 'label' => 'Lunas', 'type' => 'number'],
+                ['key' => 'partial_count', 'label' => 'Sebagian', 'type' => 'number'],
+                ['key' => 'paid', 'label' => 'Jumlah Penerimaan', 'type' => 'money'],
+            ],
+            'summaryRows' => $summaryRows,
+            'summaryTotals' => [
+                'label' => 'Total Keseluruhan',
+                'label_colspan' => 2,
+                'values' => [
+                    'students' => $summaryRowsSource->count(),
+                    'paid_count' => $summaryRowsSource->where('status_key', 'paid')->count(),
+                    'partial_count' => $summaryRowsSource->where('status_key', 'partial')->count(),
+                    'paid' => (int) $summaryRowsSource->sum('paid'),
+                ],
+            ],
+            'chartData' => ['units' => collect(), 'payments' => collect(), 'totals' => ['students' => 0, 'paid' => 0]],
+        ];
+    }
+
+    private function monthlySppRowsForStudents(Collection $students, array $period): Collection
+    {
+        if ($students->isEmpty()) {
+            return collect();
+        }
+
         $bills = Bill::where('source_type', 'spp')
             ->where('year', $period['year'])
             ->where('month', $period['month'])
@@ -145,7 +213,7 @@ class ReportQueryService
             ->get()
             ->groupBy('student_id');
 
-        $rows = $students->map(function (Student $student) use ($bills, $paymentItems, $period) {
+        return $students->map(function (Student $student) use ($bills, $paymentItems, $period) {
             $bill = $bills->get($student->id);
             $studentPaymentItems = $paymentItems->get($student->id, collect());
             $latestPaymentItem = $studentPaymentItems
@@ -192,41 +260,48 @@ class ReportQueryService
             ->filter(fn (array $row) => $row['paid'] > 0)
             ->filter(fn (array $row) => in_array($row['status_key'], ['paid', 'partial'], true))
             ->values();
-
-        return [
-            'rows' => $rows,
-            'summaryCards' => [],
-            'summaryColumns' => [
-                ['key' => 'no', 'label' => 'No'],
-                ['key' => 'unit', 'label' => 'Unit Pendidikan'],
-                ['key' => 'students', 'label' => 'Jumlah Siswa', 'type' => 'number'],
-                ['key' => 'paid_count', 'label' => 'Lunas', 'type' => 'number'],
-                ['key' => 'partial_count', 'label' => 'Sebagian', 'type' => 'number'],
-                ['key' => 'paid', 'label' => 'Jumlah Penerimaan', 'type' => 'money'],
-            ],
-            'summaryRows' => $this->monthlySppUnitSummary($rows),
-            'summaryTotals' => [
-                'label' => 'Total Keseluruhan',
-                'label_colspan' => 2,
-                'values' => [
-                    'students' => $rows->count(),
-                    'paid_count' => $rows->where('status_key', 'paid')->count(),
-                    'partial_count' => $rows->where('status_key', 'partial')->count(),
-                    'paid' => (int) $rows->sum('paid'),
-                ],
-            ],
-            'chartData' => ['units' => collect(), 'payments' => collect(), 'totals' => ['students' => 0, 'paid' => 0]],
-        ];
     }
 
-    public function yearlySpp(array $filters): array
+    public function yearlySpp(array $filters, ?array $pageOptions = null): array
     {
         $academicYear = AcademicYear::find($filters['academic_year_id']);
         $months = $this->academicMonths($academicYear);
         $studentFilters = array_merge($filters, ['academic_year_id' => null]);
-        $students = $this->filteredStudents($studentFilters)
-            ->where('is_active', true)
-            ->get();
+        $studentQuery = $this->filteredStudents($studentFilters)->where('is_active', true);
+        $useDatabasePagination = $this->supportsStudentPagination($pageOptions, ['nis', 'student', 'unit', 'class']);
+        $rowsPaginator = null;
+
+        if ($useDatabasePagination) {
+            $this->applyStudentRowSort($studentQuery, $pageOptions['sort'] ?? null, $pageOptions['direction'] ?? 'asc');
+            $rowsPaginator = $studentQuery->paginate(
+                (int) $pageOptions['per_page'],
+                ['students.*'],
+                'page',
+                (int) $pageOptions['page'],
+            );
+            $rows = $this->yearlySppRowsForStudents($rowsPaginator->getCollection(), $months);
+            $rowsPaginator->setCollection($rows);
+            $rowsPaginator->withPath($pageOptions['path'])->appends($pageOptions['query']);
+        } else {
+            $rows = $this->yearlySppRowsForStudents($studentQuery->get(), $months);
+        }
+
+        return [
+            'rows' => $rows,
+            'rowsPaginator' => $rowsPaginator,
+            'months' => $months,
+            'summaryCards' => [],
+            'summaryColumns' => [],
+            'summaryRows' => collect(),
+        ];
+    }
+
+    private function yearlySppRowsForStudents(Collection $students, array $months): Collection
+    {
+        if ($students->isEmpty()) {
+            return collect();
+        }
+
         $bills = Bill::where('source_type', 'spp')
             ->whereIn('student_id', $students->pluck('id')->all())
             ->where(function ($query) use ($months) {
@@ -247,7 +322,7 @@ class ReportQueryService
             ->get()
             ->groupBy('student_id');
 
-        $rows = $students->map(function (Student $student) use ($bills, $paymentItems, $months) {
+        return $students->map(function (Student $student) use ($bills, $paymentItems, $months) {
             $studentBills = $bills->get($student->id, collect())->keyBy(fn (Bill $bill) => $bill->year.'-'.$bill->month);
             $studentPaymentItems = $paymentItems->get($student->id, collect())->groupBy(fn (SppPaymentItem $item) => $item->year.'-'.$item->month);
             $row = [
@@ -288,14 +363,6 @@ class ReportQueryService
 
             return $row;
         })->values();
-
-        return [
-            'rows' => $rows,
-            'months' => $months,
-            'summaryCards' => [],
-            'summaryColumns' => [],
-            'summaryRows' => collect(),
-        ];
     }
 
     public function unitRecap(array $filters): array
@@ -544,6 +611,76 @@ class ReportQueryService
                 $this->applyStudentSearch($query, $search);
             })
             ->orderBy('name');
+    }
+
+    private function monthlySppStudentQuery(array $filters, array $period)
+    {
+        return $this->filteredStudents($filters)
+            ->where(function ($query) use ($period) {
+                $query->whereExists(function ($billQuery) use ($period) {
+                    $billQuery->selectRaw('1')
+                        ->from('bills')
+                        ->whereColumn('bills.student_id', 'students.id')
+                        ->where('bills.source_type', 'spp')
+                        ->where('bills.year', $period['year'])
+                        ->where('bills.month', $period['month'])
+                        ->where('bills.total_amount', '>', 0)
+                        ->where('bills.paid_amount', '>', 0);
+                })->orWhereExists(function ($itemQuery) use ($period) {
+                    $itemQuery->selectRaw('1')
+                        ->from('spp_payment_items')
+                        ->join('spp_payments', 'spp_payments.id', '=', 'spp_payment_items.spp_payment_id')
+                        ->whereColumn('spp_payment_items.student_id', 'students.id')
+                        ->where('spp_payment_items.year', $period['year'])
+                        ->where('spp_payment_items.month', $period['month'])
+                        ->where('spp_payment_items.total_amount', '>', 0)
+                        ->where('spp_payment_items.paid_amount', '>', 0)
+                        ->where('spp_payments.status', 'Diterima');
+                });
+            });
+    }
+
+    private function supportsStudentPagination(?array $pageOptions, array $databaseSorts): bool
+    {
+        if (! $pageOptions || ($pageOptions['per_page'] ?? 'all') === 'all') {
+            return false;
+        }
+
+        $sort = $pageOptions['sort'] ?? null;
+
+        return ! $sort || in_array($sort, $databaseSorts, true);
+    }
+
+    private function applyStudentRowSort($query, ?string $sort, string $direction): void
+    {
+        $direction = $direction === 'desc' ? 'desc' : 'asc';
+        $query->reorder();
+
+        match ($sort) {
+            'nis' => $query->orderBy('students.nis', $direction)->orderBy('students.id'),
+            'unit' => $query
+                ->orderBy(
+                    EducationUnit::query()
+                        ->select('education_units.code')
+                        ->join('school_classes', 'school_classes.education_unit_id', '=', 'education_units.id')
+                        ->whereColumn('school_classes.id', 'students.school_class_id')
+                        ->limit(1),
+                    $direction,
+                )
+                ->orderBy('students.name')
+                ->orderBy('students.id'),
+            'class' => $query
+                ->orderBy(
+                    SchoolClass::query()
+                        ->select('school_classes.name')
+                        ->whereColumn('school_classes.id', 'students.school_class_id')
+                        ->limit(1),
+                    $direction,
+                )
+                ->orderBy('students.name')
+                ->orderBy('students.id'),
+            default => $query->orderBy('students.name', $direction)->orderBy('students.id'),
+        };
     }
 
     private function applyStudentSearch($query, string $search): void

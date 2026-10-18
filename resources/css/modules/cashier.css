@@ -128,6 +128,7 @@ main.payment-flat-page:has(.spp-history) {
 .student-search-results:not([hidden]) { display: grid; }
 .student-search-results button { padding: 10px 12px; color: var(--app-label); background: transparent; border: 0; border-bottom: 1px solid var(--app-border-soft); text-align: left; cursor: pointer; }
 .student-search-results button:hover { background: var(--app-success-subtle); }
+.student-search-results button:focus-visible { outline-offset: -2px; background: var(--app-primary-soft); }
 
 .payment-spp-period-block {
     display: grid;
@@ -200,12 +201,6 @@ main.payment-flat-page:has(.spp-history) {
 /* SPP and other-payment history */
 .payment-workspace .student-filter-panel {
     display: grid;
-    gap: 12px;
-    padding: 16px;
-    background: var(--app-surface);
-    border: 1px solid var(--app-border);
-    border-radius: var(--app-radius-panel);
-    box-shadow: var(--shadow-admin);
 }
 
 .payment-filter-primary,
@@ -239,11 +234,10 @@ main.payment-flat-page:has(.spp-history) {
 .payment-advanced-filters summary { padding-top: 12px; color: var(--app-primary); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); cursor: pointer; }
 .payment-filter-secondary { padding-top: 12px; }
 
-.payment-data-card { overflow: hidden; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
-.spp-history .list-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--app-border-soft); }
+.payment-data-card { overflow: hidden; }
+.spp-history .list-toolbar { padding: 14px 16px; border-bottom: 1px solid var(--app-border-soft); }
 .spp-history .list-toolbar form { min-width: min(100%, 320px); }
 .spp-list-table { min-width: 780px; }
-.spp-list-table td { font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
 .spp-main-row > td { background: var(--app-surface); }
 .payment-student-name { display: block; color: var(--app-text); font-weight: 600; }
 .payment-student-unit { display: block; margin-top: 3px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
@@ -251,7 +245,6 @@ main.payment-flat-page:has(.spp-history) {
 .spp-total-cell, .spp-list-table td:nth-child(6) { color: var(--app-text); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .spp-expand-button { min-height: 32px; padding: 0 10px; color: var(--app-primary); background: var(--app-success-subtle); border: 1px solid var(--app-primary-border); border-radius: var(--app-radius); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); cursor: pointer; }
 .spp-expand-button:hover { background: var(--app-hover-surface); }
-.spp-expanded-row > td { padding: 0; background: var(--app-panel-soft); }
 .spp-expanded-row[hidden] { display: none; }
 
 .registration-payment-detail,
@@ -305,6 +298,7 @@ main.payment-flat-page:has(.spp-history) {
 .spp-import-modal-form { display: grid; gap: 14px; margin-top: 16px; }
 .spp-import-dropzone { display: grid; min-height: 178px; place-content: center; gap: 7px; padding: 20px; color: var(--app-muted); border: 1px dashed var(--app-border-strong); border-radius: var(--app-radius); text-align: center; cursor: pointer; }
 .spp-import-dropzone:hover { background: var(--app-success-subtle); border-color: var(--app-primary); }
+.spp-import-dropzone:focus-within { outline: 2px solid var(--app-primary); outline-offset: 2px; }
 .spp-import-dropzone input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
 .spp-import-drop-icon { justify-self: center; color: var(--app-primary); }
 .spp-import-drop-icon .icon { width: 28px; height: 28px; }
@@ -333,7 +327,6 @@ main.payment-flat-page:has(.spp-history) {
 .spp-import-stats p span, .spp-import-stats small { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 .spp-import-stats strong { color: var(--app-text); font-size: var(--app-text-total-size); font-weight: 700; line-height: var(--app-text-total-leading); font-variant-numeric: tabular-nums; }
 .spp-validation-progress { width: 100%; height: 8px; accent-color: var(--app-success); }
-.spp-import-table-wrap { border: 1px solid var(--app-border); border-radius: var(--app-radius); }
 .spp-import-table { min-width: 860px; }
 .spp-import-table small { display: block; margin-top: 3px; color: var(--app-muted); }
 .spp-line-number { color: var(--app-muted); font-variant-numeric: tabular-nums; }
@@ -363,6 +356,8 @@ main.payment-flat-page:has(.spp-history) {
 }
 
 @media (max-width: 760px) {
+    .registration-action { width: 40px; height: 40px; }
+    .spp-expand-button { min-height: 40px; }
     main.finance-page:has(.spp-form-page), main.payment-flat-page:has(.spp-history) { padding: 16px; }
     .spp-form-page .student-flat-header, .payment-workspace .student-flat-header { flex-direction: column; }
     .payment-spp-v8-form .payment-form-body { padding: 16px; }
@@ -376,7 +371,6 @@ main.payment-flat-page:has(.spp-history) {
     .payment-date-filter, .payment-student-field { grid-column: auto; }
     .payment-filter-actions, .payment-filter-actions .button { width: 100%; }
     .payment-filter-actions { display: grid; grid-template-columns: 40px 1fr; }
-    .spp-history .list-toolbar { align-items: stretch; flex-direction: column; }
     .spp-history .list-toolbar form { min-width: 0; }
     .registration-payment-detail, .spp-expanded-content { grid-template-columns: 1fr; }
     .registration-detail-item.payment-type, .registration-detail-item.time, .registration-detail-item.action { grid-column: auto; }

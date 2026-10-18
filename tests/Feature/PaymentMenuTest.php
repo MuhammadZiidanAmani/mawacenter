@@ -688,6 +688,12 @@ class PaymentMenuTest extends TestCase
             ->assertSee('<option value="100" selected>', false);
 
         $this->actingAs($user)
+            ->get(route('finance.payments.index', $filters + ['per_page' => 500]))
+            ->assertOk()
+            ->assertSeeText('Menampilkan 1-101 dari 101 siswa')
+            ->assertSee('<option value="500" selected>', false);
+
+        $this->actingAs($user)
             ->get(route('finance.payments.index', $filters + ['per_page' => 'all', 'page' => 2]))
             ->assertOk()
             ->assertSeeText('Menampilkan 1-101 dari 101 siswa')

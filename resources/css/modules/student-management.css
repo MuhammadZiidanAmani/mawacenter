@@ -1,49 +1,529 @@
-/* Student movements, alumni, and identity cleanup. */
-:is(main.student-management-page, main.class-movement-standard-page, main.identity-standard-page, main.identity-cleanup-page, main.student-alumni-page, main.student-class-alumni-page) { width: 100%; min-width: 0; padding: var(--app-page-padding-y) var(--app-page-padding-x) 32px; background: var(--app-canvas); }
-.student-management-page > *, .class-movement-standard-page > *, .identity-standard-page > *, .identity-cleanup-page > *, .student-alumni-page > *, .student-class-alumni-page > * { width: min(100%, var(--app-content-width)); margin-inline: auto; }
-.student-alumni-page, .student-class-alumni-page { display: grid; gap: 16px; }
-.student-alumni-page .student-flat-header, .student-class-alumni-page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.student-alumni-page h1, .student-class-alumni-page h1 { margin: 0; color: var(--app-text); font-size: var(--app-text-page-size); font-weight: 700; line-height: var(--app-text-page-leading); }
-.student-alumni-page p, .student-class-alumni-page p { color: var(--app-muted); }
-.student-alumni-page .student-filter-panel { display: grid; gap: 12px; padding: 16px; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
-.student-alumni-page .student-reference-filter-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.student-alumni-page .student-reference-filter-grid label { display: grid; gap: 6px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
-.student-alumni-page .student-filter-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.student-alumni-page .student-data-card { overflow: hidden; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
-.student-management-table-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--app-border-soft); }
-.student-management-search-card label { display: grid; gap: 5px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
-.alumni-table { min-width: 760px; }
-.alumni-cell-center { text-align: center; }
-.alumni-cell-main strong { color: var(--app-text); }
-.alumni-actions-cell { text-align: center; }
-.alumni-restore-button { min-height: 32px; padding-inline: 10px; color: var(--app-primary); background: var(--app-success-subtle); border-color: var(--app-primary-border); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
-.alumni-empty-cell { padding: 34px; color: var(--app-muted); text-align: center; }
-.alumni-empty-cell strong, .alumni-empty-cell span { display: block; }
-.alumni-empty-cell span { margin-top: 4px; font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
-.student-report-pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.student-report-pagination p { margin: 0; color: var(--app-muted); }
+/* Student management follows the payment table layout without changing data flows. */
+:is(body.student-data-body main.student-page, main.student-management-page, main.class-movement-standard-page, main.identity-standard-page, main.identity-cleanup-page, main.student-alumni-page, main.student-class-alumni-page) {
+    width: 100%;
+    min-width: 0;
+    padding: var(--app-page-padding-y) var(--app-page-padding-x) 32px;
+    background: var(--app-canvas);
+}
 
-.student-class-alumni-canvas { padding: 20px; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
-.student-class-alumni-page-form { display: grid; gap: 18px; }
-.student-class-alumni-page-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-.student-class-alumni-page-summary > div { display: grid; gap: 4px; padding: 12px; background: var(--app-panel-soft); border-radius: var(--app-radius); }
-.student-class-alumni-page-summary span { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
-.student-class-alumni-page-summary strong { color: var(--app-text); }
-.student-class-alumni-page-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.student-class-alumni-page-fields label { display: grid; gap: 6px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
-.student-class-alumni-page-warning { margin: 0; padding: 12px; color: var(--app-warning); background: var(--app-warning-soft); border: 1px solid var(--app-warning-border); border-radius: var(--app-radius); line-height: var(--app-text-body-leading); }
-.student-class-alumni-page-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+:is(body.student-data-body main.student-page, .student-management-page, .class-movement-standard-page, .identity-standard-page, .identity-cleanup-page, .student-alumni-page, .student-class-alumni-page) > * {
+    width: min(100%, var(--app-content-width));
+    min-width: 0;
+    margin-inline: auto;
+}
 
-.class-movement-standard-page, .identity-standard-page, .identity-cleanup-page { display: grid; gap: 16px; }
-.class-movement-standard-page :is(.card, .class-movement-card, .identity-card, .identity-review-card), .identity-standard-page :is(.card, .identity-card), .identity-cleanup-page :is(.card, .identity-review-card) { padding: 18px; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
-.class-movement-standard-page :is(.master-form, .class-movement-form), .identity-standard-page :is(.master-form, .identity-form), .identity-cleanup-page :is(.master-form, .identity-form) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-.class-movement-standard-page label, .identity-standard-page label, .identity-cleanup-page label { display: grid; gap: 6px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
-.class-movement-standard-page .span-2, .identity-standard-page .span-2, .identity-cleanup-page .span-2 { grid-column: 1 / -1; }
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .identity-cleanup-page, .student-alumni-page, .student-class-alumni-page) {
+    display: grid;
+    gap: 20px;
+}
+
+.student-list-layout {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Sorting and table sizing follow the same controls as the master directory. */
+.student-sort-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: inherit; }
+.student-sort-indicator { display: inline-flex; color: var(--app-muted); }
+.student-sort-indicator .icon { width: 14px; height: 14px; }
+.student-sort-link:hover, .student-sortable-heading.is-sorted .student-sort-indicator { color: var(--app-primary); }
+.class-movement-table-wrap, .identity-cleanup-table-wrap { min-width: 0; max-width: 100%; overflow-x: auto; }
+.class-movement-student-table { min-width: 680px; }
+.identity-cleanup-table { min-width: 880px; }
+.class-movement-student-table :is(.movement-cell-check, .movement-cell-nis, .movement-cell-support), .identity-cleanup-table :is(.identity-cell-no, .identity-cell-center, .identity-cell-action) { text-align: center; }
+.class-movement-student-table :is(.movement-col-check, .movement-col-nis) { width: 64px; }
+.class-movement-student-table .movement-col-name { width: 32%; }
+.identity-cleanup-table :is(.identity-col-no, .identity-col-action) { width: 64px; }
+.class-movement-pagination, .identity-reset-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--app-muted); }
+.student-page-ellipsis { display: inline-grid; min-height: var(--app-pagination-size); min-width: 24px; place-items: center; color: var(--app-muted); }
+
+/* Page heading and filter surface. */
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) .student-list-filter-card {
+    display: grid;
+    gap: 16px;
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .identity-cleanup-page, .student-alumni-page, .student-class-alumni-page) .student-flat-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .identity-cleanup-page, .student-alumni-page, .student-class-alumni-page) .student-master-heading h1 {
+    margin: 0;
+    color: var(--app-text);
+    font-size: var(--app-text-page-size);
+    font-weight: 700;
+    line-height: var(--app-text-page-leading);
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .identity-cleanup-page, .student-alumni-page, .student-class-alumni-page) .student-master-heading p {
+    margin: 4px 0 0;
+    color: var(--app-muted);
+    font-size: var(--app-text-body-size);
+    font-weight: 400;
+    line-height: var(--app-text-body-leading);
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-filter-panel, .class-movement-filter-panel) {
+    display: grid;
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-reference-filter-grid, .class-movement-filter-grid) {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.class-movement-standard-page .class-movement-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .identity-cleanup-page, .student-alumni-page, .student-class-alumni-page) label {
+    color: var(--app-label);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-filter-actions, .class-movement-filter-actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Toolbar and table surface: only the scrollable table receives the card treatment. */
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) .student-list-layout {
+    display: grid;
+    gap: 12px;
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) .student-data-table-surface {
+    min-width: 0;
+    padding: 0;
+    overflow-x: auto;
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-table-toolbar-v2, .student-management-table-toolbar) {
+    padding: 0;
+    background: transparent;
+    border: 0;
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) .table-wrap {
+    min-width: 0;
+    overflow-x: auto;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-panel);
+    box-shadow: var(--shadow-admin);
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) .student-data-table-surface .table-wrap {
+    overflow: visible;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-flat-table, .student-hybrid-table, .alumni-table, .class-movement-student-table, .identity-cleanup-table) {
+    margin: 0;
+    border: 0;
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-col-nis, .movement-cell-nis, .alumni-cell-center) {
+    font-variant-numeric: tabular-nums;
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-report-pagination, .pagination-wrap) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    color: var(--app-muted);
+    font-size: var(--app-text-body-size);
+    font-weight: 500;
+    line-height: var(--app-text-body-leading);
+}
+
+:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) .student-report-pagination p {
+    margin: 0;
+}
+
+/* Class transfer and promotion keep the bulk action as its own working surface. */
+#classMovementQueryForm {
+    display: none;
+}
+
+.class-movement-standard-page .class-movement-data-card {
+    gap: 16px;
+}
+
+.class-movement-standard-page .class-movement-v6-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.34fr);
+    align-items: start;
+    gap: 16px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.class-movement-standard-page .class-movement-list-card {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.class-movement-standard-page :is(.class-transfer-list-head, .class-promotion-list-head) strong {
+    display: block;
+    color: var(--app-text);
+    font-size: var(--app-text-section-size);
+    font-weight: 700;
+    line-height: var(--app-text-section-leading);
+}
+
+.class-movement-standard-page :is(.class-transfer-action-panel, .class-promotion-action-panel) {
+    display: grid;
+    gap: 14px;
+    padding: 16px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-panel);
+    box-shadow: var(--shadow-admin);
+}
+
+.class-movement-standard-page :is(.class-transfer-selected-count, .class-promotion-selected-count) {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px;
+    background: var(--app-panel-soft);
+    border-radius: var(--app-radius);
+}
+
+.class-movement-standard-page :is(.class-transfer-selected-count, .class-promotion-selected-count) span {
+    color: var(--app-muted);
+    font-size: var(--app-text-meta-size);
+    font-weight: 500;
+    line-height: var(--app-text-meta-leading);
+}
+
+.class-movement-standard-page :is(.class-transfer-selected-count, .class-promotion-selected-count) output {
+    color: var(--app-text);
+    font-size: var(--app-text-section-size);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: var(--app-text-section-leading);
+}
+
+.class-movement-standard-page :is(input[type="checkbox"], select):focus-visible,
+.identity-standard-page input[type="checkbox"]:focus-visible,
+.identity-cleanup-page input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--app-focus-ring);
+    outline-offset: 2px;
+}
+
+.class-movement-standard-page input[type="checkbox"],
+.identity-standard-page input[type="checkbox"],
+.identity-cleanup-page input[type="checkbox"] {
+    accent-color: var(--app-primary);
+}
+
+/* Identity cleanup and review. */
+.identity-standard-page .identity-cleanup-table-wrap,
+.identity-cleanup-page .identity-review-table-wrap {
+    min-width: 0;
+}
+
+.identity-standard-page .identity-reset-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    color: var(--app-primary);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+}
+
+.identity-standard-page .identity-reset-action.danger {
+    color: var(--app-danger);
+}
+
+.identity-standard-page .identity-reset-action:hover {
+    background: var(--app-panel-soft);
+}
+
+.identity-standard-page .identity-reset-badge,
+.identity-cleanup-page .status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    color: var(--app-muted);
+    background: var(--app-neutral-soft);
+    border-radius: 999px;
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
+}
+.identity-standard-page .identity-reset-badge.strong, .identity-cleanup-page .status-pill.active { color: var(--app-success); background: var(--app-success-soft); }
+.identity-standard-page .identity-reset-badge.medium { color: var(--app-warning); background: var(--app-warning-soft); }
+.identity-standard-page .identity-reset-badge.check { color: var(--app-info); background: var(--app-info-soft); }
+
+.identity-cleanup-page .identity-cleanup-header {
+    margin: 0;
+}
+
+.identity-cleanup-page .identity-review-canvas {
+    padding: 16px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-panel);
+    box-shadow: var(--shadow-admin);
+}
+
+.identity-cleanup-page .identity-review-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.32fr);
+    align-items: start;
+    gap: 20px;
+}
+
+.identity-cleanup-page .identity-review-main {
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+}
+
+.identity-cleanup-page .identity-review-title {
+    display: grid;
+    gap: 2px;
+}
+
+.identity-cleanup-page .identity-review-title span,
+.identity-cleanup-page .identity-review-summary > span,
+.identity-cleanup-page .identity-review-summary dt {
+    color: var(--app-muted);
+    font-size: var(--app-text-meta-size);
+    font-weight: 500;
+    line-height: var(--app-text-meta-leading);
+}
+
+.identity-cleanup-page .identity-review-title strong,
+.identity-cleanup-page .identity-review-summary > strong {
+    color: var(--app-text);
+    font-size: var(--app-text-section-size);
+    font-weight: 700;
+    line-height: var(--app-text-section-leading);
+}
+
+.identity-cleanup-page .identity-review-summary {
+    display: grid;
+    gap: 14px;
+    padding-left: 20px;
+    border-left: 1px solid var(--app-border);
+}
+
+.identity-cleanup-page .identity-review-summary dl {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+}
+
+.identity-cleanup-page .identity-review-summary dl div {
+    display: grid;
+    gap: 3px;
+}
+
+.identity-cleanup-page .identity-review-summary dd {
+    margin: 0;
+    color: var(--app-text);
+    font-size: var(--app-text-body-size);
+    font-weight: 400;
+    line-height: var(--app-text-body-leading);
+}
+
+.identity-cleanup-page .identity-review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Alumni confirmation has one operational surface and readable context. */
+.student-class-alumni-page .student-class-alumni-canvas {
+    padding: 20px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-panel);
+    box-shadow: var(--shadow-admin);
+}
+
+.student-class-alumni-page .student-class-alumni-page-form {
+    display: grid;
+    gap: 18px;
+}
+
+.student-class-alumni-page .student-class-alumni-page-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.student-class-alumni-page .student-class-alumni-page-summary > div {
+    display: grid;
+    gap: 4px;
+    padding: 12px;
+    background: var(--app-panel-soft);
+    border-radius: var(--app-radius);
+}
+
+.student-class-alumni-page .student-class-alumni-page-summary span {
+    color: var(--app-muted);
+    font-size: var(--app-text-meta-size);
+    font-weight: 500;
+    line-height: var(--app-text-meta-leading);
+}
+
+.student-class-alumni-page .student-class-alumni-page-summary strong {
+    color: var(--app-text);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: var(--app-text-body-leading);
+}
+
+.student-class-alumni-page .student-class-alumni-page-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.student-class-alumni-page .student-class-alumni-page-fields label {
+    display: grid;
+    gap: 6px;
+}
+
+.student-class-alumni-page .student-class-alumni-page-warning {
+    margin: 0;
+    padding: 12px;
+    color: var(--app-warning);
+    background: var(--app-warning-soft);
+    border: 1px solid var(--app-warning-border);
+    border-radius: var(--app-radius);
+    font-size: var(--app-text-body-size);
+    font-weight: 400;
+    line-height: var(--app-text-body-leading);
+}
+
+.student-class-alumni-page .student-class-alumni-page-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.alumni-restore-button {
+    min-height: 32px;
+    padding-inline: 10px;
+    color: var(--app-primary);
+    background: var(--app-success-subtle);
+    border-color: var(--app-primary-border);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
+}
+
+.alumni-empty-cell,
+.identity-cleanup-empty,
+.class-movement-standard-page .empty-state {
+    padding: 34px;
+    color: var(--app-muted);
+    text-align: center;
+}
+
+.alumni-empty-cell strong,
+.alumni-empty-cell span,
+.identity-cleanup-empty strong,
+.identity-cleanup-empty span,
+.class-movement-standard-page .empty-state strong,
+.class-movement-standard-page .empty-state span {
+    display: block;
+}
+
+.alumni-empty-cell span,
+.identity-cleanup-empty span,
+.class-movement-standard-page .empty-state span {
+    margin-top: 4px;
+    font-size: var(--app-text-body-size);
+    font-weight: 400;
+    line-height: var(--app-text-body-leading);
+}
+
+@media (max-width: 900px) {
+    .class-movement-standard-page .class-movement-v6-card,
+    .identity-cleanup-page .identity-review-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .identity-cleanup-page .identity-review-summary {
+        padding-top: 16px;
+        padding-left: 0;
+        border-top: 1px solid var(--app-border);
+        border-left: 0;
+    }
+}
 
 @media (max-width: 760px) {
-    :is(main.student-management-page, main.class-movement-standard-page, main.identity-standard-page, main.identity-cleanup-page, main.student-alumni-page, main.student-class-alumni-page) { padding: 16px; }
-    .student-alumni-page .student-reference-filter-grid, .student-class-alumni-page-summary, .student-class-alumni-page-fields, .class-movement-standard-page :is(.master-form, .class-movement-form), .identity-standard-page :is(.master-form, .identity-form), .identity-cleanup-page :is(.master-form, .identity-form) { grid-template-columns: 1fr; }
-    .student-management-table-toolbar, .student-report-pagination { align-items: stretch; flex-direction: column; }
-    .student-class-alumni-page-actions, .student-class-alumni-page-actions .button { width: 100%; }
-    .class-movement-standard-page .span-2, .identity-standard-page .span-2, .identity-cleanup-page .span-2 { grid-column: auto; }
+    .class-movement-pagination, .identity-reset-pagination { align-items: stretch; flex-direction: column; }
+    .identity-standard-page .identity-reset-action { width: 40px; height: 40px; }
+    :is(body.student-data-body main.student-page, main.student-management-page, main.class-movement-standard-page, main.identity-standard-page, main.identity-cleanup-page, main.student-alumni-page, main.student-class-alumni-page) {
+        padding: 16px;
+    }
+
+    :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .identity-cleanup-page, .student-alumni-page, .student-class-alumni-page) .student-flat-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-reference-filter-grid, .class-movement-filter-grid),
+    .student-class-alumni-page .student-class-alumni-page-summary,
+    .student-class-alumni-page .student-class-alumni-page-fields {
+        grid-template-columns: 1fr;
+    }
+
+    :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-report-pagination, .pagination-wrap) {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .student-class-alumni-page .student-class-alumni-page-actions,
+    .student-class-alumni-page .student-class-alumni-page-actions .button,
+    .class-movement-standard-page .class-movement-submit {
+        width: 100%;
+    }
 }

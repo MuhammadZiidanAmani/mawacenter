@@ -1,17 +1,17 @@
-<form method="GET" action="{{ $action }}" class="list-toolbar">
+<form method="GET" action="{{ $action }}" class="list-toolbar app-data-toolbar">
     @foreach (request()->except(array_merge(['per_page', 'search', 'page'], isset($unitFilter) ? ['unit_id'] : [])) as $key => $value)
         @if (is_scalar($value))
             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
         @endif
     @endforeach
-    <label>Show
+    <label class="app-page-size-control">Tampilkan
         <select name="per_page" aria-label="Jumlah data per halaman" onchange="this.form.submit()">
             @foreach ([10, 25, 50, 100, 500] as $size)
                 <option value="{{ $size }}" @selected(request('per_page', 10) == $size)>{{ $size }}</option>
             @endforeach
-            <option value="all" @selected(request('per_page') === 'all')>All</option>
+            <option value="all" @selected(request('per_page') === 'all')>Semua</option>
         </select>
-        entries
+        data
     </label>
     @isset($unitFilter)
         <label class="list-toolbar-filter">Unit Pendidikan:
@@ -30,7 +30,9 @@
             @endforeach
         </div>
     @endisset
-    <label>Search:
-        <input name="search" value="{{ request('search') }}" aria-label="{{ $searchLabel ?? 'Cari data' }}">
+    <label class="app-data-search"><span>Cari data</span>
+        <span class="app-field-shell app-data-search-field">
+            <input type="search" name="search" value="{{ request('search') }}" aria-label="{{ $searchLabel ?? 'Cari data' }}" placeholder="{{ $searchLabel ?? 'Cari data' }}">
+        </span>
     </label>
 </form>

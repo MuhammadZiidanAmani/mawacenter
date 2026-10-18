@@ -98,8 +98,8 @@ class ReportController extends Controller
     private function reportData(Request $request, string $report, bool $allRows = false): array
     {
         $definition = $this->definition($report);
-        $filters = $this->reports->filters($request, $report);
-        $options = $this->reports->options();
+        $options = $this->reports->options($report);
+        $filters = $this->reports->filters($request, $report, $options['activeAcademicYear']);
         $unitIds = $request->user()?->accessibleUnitIds();
         if (is_array($unitIds)) {
             $filters['unit_ids'] = $unitIds;
@@ -110,11 +110,24 @@ class ReportController extends Controller
             $options['classes'] = $options['classes']->whereIn('education_unit_id', $unitIds)->values();
             $options['feeTypes'] = $options['feeTypes']->whereIn('education_unit_id', $unitIds)->values();
         }
-        $result = $this->result($report, $filters);
+        $pageOptions = $allRows ? null : [
+            'per_page' => $this->reportPerPage($request),
+            'page' => LengthAwarePaginator::resolveCurrentPage(),
+            'sort' => $request->string('sort')->value(),
+            'direction' => $request->string('direction')->value() === 'desc' ? 'desc' : 'asc',
+            'path' => $request->url(),
+            'query' => $request->query(),
+        ];
+        $result = $this->result($report, $filters, $pageOptions);
         $columns = $this->columns($report, $result);
-        $rows = $this->searchRows($result['rows'], $filters['search'] ?? null);
-        $rows = $this->sortRows($rows, $request, $report, $columns);
-        $paginatedRows = $allRows ? null : $this->paginateRows($rows, $request);
+        if (isset($result['rowsPaginator']) && $result['rowsPaginator'] instanceof LengthAwarePaginator) {
+            $paginatedRows = $result['rowsPaginator'];
+            $rows = collect($paginatedRows->items());
+        } else {
+            $rows = $this->searchRows($result['rows'], $filters['search'] ?? null);
+            $rows = $this->sortRows($rows, $request, $report, $columns);
+            $paginatedRows = $allRows ? null : $this->paginateRows($rows, $request);
+        }
         $canExport = $request->user()?->hasPermission('reports.export') ?? false;
         $studentSearchEnabled = in_array($report, ['transactions', 'monthly-spp', 'yearly-spp'], true);
 
@@ -145,11 +158,11 @@ class ReportController extends Controller
         ];
     }
 
-    private function result(string $report, array $filters): array
+    private function result(string $report, array $filters, ?array $pageOptions = null): array
     {
         return match ($report) {
-            'monthly-spp' => $this->reports->monthlySpp($filters),
-            'yearly-spp' => $this->reports->yearlySpp($filters),
+            'monthly-spp' => $this->reports->monthlySpp($filters, $pageOptions),
+            'yearly-spp' => $this->reports->yearlySpp($filters, $pageOptions),
             'unit-recap' => $this->reports->unitRecap($filters),
             default => $this->reports->transactions($filters),
         };

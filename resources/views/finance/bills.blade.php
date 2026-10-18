@@ -426,8 +426,8 @@
                     </div>
                 </form>
 
-                <div class="bill-table-toolbar">
-                    <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-page-size-form">
+                <div class="bill-table-toolbar app-data-toolbar">
+                    <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-page-size-form app-page-size-form">
                         @foreach(request()->except(['per_page', 'page']) as $key => $value)
                             @if(is_scalar($value))
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -443,13 +443,13 @@
                             data
                         </label>
                     </form>
-                    <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-toolbar-search-form">
+                    <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-toolbar-search-form app-data-search">
                         @foreach(request()->except(['student_search', 'student_id', 'page']) as $key => $value)
                             @if(is_scalar($value))
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                             @endif
                         @endforeach
-                        <label class="bill-search-field"><span>Cari Siswa</span><span class="bill-search-input">{!! $icon('search') !!}<input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Nama, NIS, atau NISN..."></span></label>
+                        <label class="bill-search-field"><span>Cari Siswa</span><span class="bill-search-input app-data-search-field">{!! $icon('search') !!}<input type="search" name="student_search" value="{{ request('student_search') }}" placeholder="Nama, NIS, atau NISN..."></span></label>
                     </form>
                 </div>
 

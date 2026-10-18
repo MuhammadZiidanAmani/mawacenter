@@ -4,16 +4,43 @@ namespace Tests\Feature;
 
 use App\Models\AcademicYear;
 use App\Models\EducationUnit;
+use App\Models\Role;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_repeated_permission_checks_load_the_role_once_per_user_instance(): void
+    {
+        Role::create([
+            'key' => 'auditor',
+            'name' => 'Auditor',
+            'permissions' => ['dashboard.view', 'reports'],
+            'is_active' => true,
+        ]);
+        $user = User::factory()->create(['role' => 'auditor']);
+        $roleQueries = [];
+
+        DB::listen(function ($query) use (&$roleQueries): void {
+            if (str_contains($query->sql, 'from "roles"')) {
+                $roleQueries[] = $query->sql;
+            }
+        });
+
+        $this->assertTrue($user->hasPermission('dashboard.view'));
+        $this->assertTrue($user->hasPermission('reports.view'));
+        $this->assertTrue($user->hasPermission('reports.export'));
+        $this->assertFalse($user->hasPermission('users.manage'));
+
+        $this->assertCount(1, $roleQueries);
+    }
 
     public function test_guest_is_redirected_to_login(): void
     {
@@ -43,6 +70,7 @@ class AuthTest extends TestCase
             ->assertOk()
             ->assertSee('method="POST"', false)
             ->assertSee('action="'.route('logout').'"', false)
+            ->assertSee('data-account-menu-logout', false)
             ->assertSee('name="_token"', false);
 
         $this->get('/logout')->assertStatus(405);

@@ -7,6 +7,7 @@ use App\Models\EducationUnit;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Services\AuditLogService;
+use App\Support\PerformanceCache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -20,23 +21,16 @@ class StudentIdentityCleanupController extends Controller
     public function index(Request $request): View
     {
         $filters = $this->filtersFromRequest($request);
-
-        $students = $this->studentsForCleanup($request);
-        $candidates = $this->duplicateCandidates($students, $filters);
-        $linkedGroups = $this->linkedIdentityGroups($students, $filters);
-
         $rows = $this->sortIdentityRows(
-            $this->identityRows($candidates, $linkedGroups),
+            $this->filterIdentityDefinitions($this->identityRowDefinitions($request), $filters),
             $filters
         );
+        $candidates = $this->paginateCandidates($rows, $request, $filters['per_page']);
+        $candidates->setCollection($this->hydrateIdentityDefinitions($candidates->getCollection()));
 
         return view('student-management.identity-cleanup', [
             ...$this->sharedViewData(),
-            'candidates' => $this->paginateCandidates(
-                $rows,
-                $request,
-                $filters['per_page']
-            ),
+            'candidates' => $candidates,
             'filters' => $filters,
         ]);
     }
@@ -44,11 +38,12 @@ class StudentIdentityCleanupController extends Controller
     public function show(Request $request, string $candidateKey): View
     {
         $filters = $this->filtersFromRequest($request);
-        $students = $this->studentsForCleanup($request);
-        $candidate = $this->duplicateCandidates($students, $filters)
+        $candidate = $this->filterIdentityDefinitions($this->identityRowDefinitions($request), $filters)
+            ->where('row_type', 'candidate')
             ->firstWhere('key', $candidateKey);
 
         abort_if(! $candidate, 404);
+        $candidate = $this->hydrateIdentityDefinitions(collect([$candidate]))->first();
 
         return view('student-management.identity-cleanup-show', [
             ...$this->sharedViewData(),
@@ -214,6 +209,116 @@ class StudentIdentityCleanupController extends Controller
             ->values();
     }
 
+    private function identityRowDefinitions(Request $request): Collection
+    {
+        $unitIds = $request->user()?->accessibleUnitIds();
+        $rows = PerformanceCache::remember(
+            'identity-cleanup-row-definitions-v3',
+            ['unit_ids' => $unitIds],
+            300,
+            function () use ($request) {
+                $students = $this->studentsForCleanup($request);
+                $unfiltered = [
+                    'unit_id' => null,
+                    'class_id' => null,
+                    'year_id' => null,
+                    'search' => '',
+                ];
+
+                return $this->identityRows(
+                    $this->duplicateCandidates($students, $unfiltered),
+                    $this->linkedIdentityGroups($students, $unfiltered),
+                )->map(function (array $row) {
+                    $studentRows = $row['students']->map(fn (Student $student) => [
+                        'id' => (int) $student->id,
+                        'nis' => $student->nis,
+                        'nisn' => $student->nisn,
+                        'name' => $student->name,
+                        'unit_id' => $student->schoolClass?->education_unit_id,
+                        'unit' => $student->schoolClass?->educationUnit?->code,
+                        'class_id' => $student->school_class_id,
+                        'class' => $student->schoolClass?->name,
+                        'year_id' => $student->academic_year_id,
+                        'year' => $student->academicYear?->name,
+                    ]);
+                    $row['student_ids'] = $studentRows->pluck('id')->all();
+                    $row['unit_ids'] = $studentRows->pluck('unit_id')->filter()->unique()->values()->all();
+                    $row['class_ids'] = $studentRows->pluck('class_id')->filter()->unique()->values()->all();
+                    $row['year_ids'] = $studentRows->pluck('year_id')->filter()->unique()->values()->all();
+                    $row['search_text'] = $this->normalize(collect([
+                        $row['name'],
+                        $row['reason'],
+                        $row['confidence'],
+                        ...$studentRows->flatMap(fn (array $student) => [
+                            $student['nis'],
+                            $student['nisn'],
+                            $student['name'],
+                            $student['unit'],
+                            $student['class'],
+                            $student['year'],
+                        ])->filter()->all(),
+                    ])->filter()->implode(' '));
+                    unset($row['students']);
+
+                    return $row;
+                })->all();
+            },
+        );
+
+        return collect($rows);
+    }
+
+    private function filterIdentityDefinitions(Collection $rows, array $filters): Collection
+    {
+        $needle = ($filters['search'] ?? '') !== '' ? $this->normalize($filters['search']) : null;
+
+        return $rows
+            ->filter(function (array $row) use ($needle) {
+                if (! $needle) {
+                    return true;
+                }
+
+                return Str::of($row['search_text'])->contains($needle);
+            })
+            ->filter(function (array $row) use ($filters) {
+                return (! filled($filters['unit_id'] ?? null) || in_array((int) $filters['unit_id'], $row['unit_ids'], true))
+                    && (! filled($filters['class_id'] ?? null) || in_array((int) $filters['class_id'], $row['class_ids'], true))
+                    && (! filled($filters['year_id'] ?? null) || in_array((int) $filters['year_id'], $row['year_ids'], true));
+            })
+            ->values();
+    }
+
+    private function hydrateIdentityDefinitions(Collection $rows): Collection
+    {
+        $studentIds = $rows
+            ->flatMap(fn (array $row) => $row['student_ids'])
+            ->unique()
+            ->values();
+
+        $students = Student::query()
+            ->select([
+                'id', 'identity_student_id', 'nis', 'nisn', 'name', 'birth_date',
+                'father_name', 'mother_name', 'school_class_id', 'academic_year_id', 'is_active',
+            ])
+            ->with([
+                'schoolClass:id,education_unit_id,name',
+                'schoolClass.educationUnit:id,code,name',
+                'academicYear:id,name',
+            ])
+            ->whereIn('id', $studentIds)
+            ->get()
+            ->keyBy('id');
+
+        return $rows->map(function (array $row) use ($students) {
+            $row['students'] = collect($row['student_ids'])
+                ->map(fn (int $studentId) => $students->get($studentId))
+                ->filter()
+                ->values();
+
+            return $row;
+        })->values();
+    }
+
     private function filtersFromRequest(Request $request): array
     {
         return [
@@ -233,17 +338,72 @@ class StudentIdentityCleanupController extends Controller
     {
         $unitIds = $request->user()?->accessibleUnitIds();
 
+        $candidateIds = PerformanceCache::remember(
+            'identity-cleanup-candidate-ids',
+            ['unit_ids' => $unitIds],
+            300,
+            fn () => $this->candidateStudentIds($unitIds),
+        );
+
+        if ($candidateIds === []) {
+            return collect();
+        }
+
         return Student::query()
-            ->with(['schoolClass.educationUnit', 'academicYear'])
+            ->select([
+                'id', 'identity_student_id', 'nis', 'nisn', 'name', 'birth_date',
+                'father_name', 'mother_name', 'school_class_id', 'academic_year_id', 'is_active',
+            ])
+            ->with([
+                'schoolClass:id,education_unit_id,name',
+                'schoolClass.educationUnit:id,code,name',
+                'academicYear:id,name',
+            ])
+            ->where('is_active', true)
+            ->whereIn('id', $candidateIds)
+            ->orderBy('name')
+            ->orderBy('nis')
+            ->get();
+    }
+
+    private function candidateStudentIds(?array $unitIds): array
+    {
+        $students = Student::query()
+            ->select(['id', 'identity_student_id', 'nisn', 'name'])
             ->where('is_active', true)
             ->when(is_array($unitIds), function ($query) use ($unitIds) {
                 $unitIds === []
                     ? $query->whereRaw('1 = 0')
                     : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds));
             })
-            ->orderBy('name')
-            ->orderBy('nis')
             ->get();
+
+        $duplicateNisnIds = $students
+            ->filter(fn (Student $student) => filled($student->nisn))
+            ->groupBy(fn (Student $student) => $this->normalize($student->nisn))
+            ->filter(fn (Collection $group) => $group->count() > 1)
+            ->flatten(1)
+            ->pluck('id');
+
+        $duplicateNameIds = $students
+            ->groupBy(fn (Student $student) => $this->normalize($student->name))
+            ->filter(fn (Collection $group) => $group->count() > 1)
+            ->flatten(1)
+            ->pluck('id');
+
+        $linkedIdentityIds = $students
+            ->groupBy(fn (Student $student) => $student->identity_student_id ?: $student->id)
+            ->filter(fn (Collection $group) => $group->count() > 1)
+            ->flatten(1)
+            ->pluck('id');
+
+        return $duplicateNisnIds
+            ->concat($duplicateNameIds)
+            ->concat($linkedIdentityIds)
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
     }
 
     private function sharedViewData(): array
@@ -359,7 +519,7 @@ class StudentIdentityCleanupController extends Controller
             'name' => Str::lower($row['name'] ?? ''),
             'reason' => Str::lower($row['reason'] ?? ''),
             'confidence' => $this->confidenceRank($row['confidence'] ?? ''),
-            'count' => $row['students']->count(),
+            'count' => count($row['student_ids'] ?? $row['students'] ?? []),
             default => Str::lower($row['name'] ?? ''),
         };
     }

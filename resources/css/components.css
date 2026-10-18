@@ -1,0 +1,463 @@
+/*
+ * Shared application component contracts.
+ *
+ * This file is imported after page modules so component appearance has one
+ * owner. Page modules may control page placement and exceptional states, but
+ * should not redefine the shared field, data-toolbar, filter, table, or
+ * pagination appearance below.
+ */
+
+/* Every native field inherits the same geometry, including per-page selects. */
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), select, textarea) {
+    min-height: var(--app-field-height);
+    padding-inline: var(--app-field-padding-x);
+    border-radius: var(--app-radius-field);
+}
+
+/* Compound controls draw their border on the wrapper instead of the inner input. */
+:is(
+    .app-field-shell,
+    .login-input,
+    .bill-search-input,
+    .report-search-input,
+    .report-student-search-input,
+    .master-table-search-input,
+    .payment-overview-search,
+    .payment-one-stop-search-field,
+    .payment-prd-bill-money-input,
+    .payment-prd-money-input
+) {
+    min-height: var(--app-field-height);
+    color: var(--app-text);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-field);
+    box-shadow: var(--app-shadow-input);
+}
+
+:is(
+    .app-field-shell,
+    .login-input,
+    .bill-search-input,
+    .report-search-input,
+    .report-student-search-input,
+    .master-table-search-input,
+    .payment-overview-search,
+    .payment-one-stop-search-field
+) {
+    padding-inline: var(--app-field-padding-x);
+    color: var(--app-muted);
+}
+
+:is(
+    .app-field-shell,
+    .login-input,
+    .bill-search-input,
+    .report-search-input,
+    .report-student-search-input,
+    .master-table-search-input,
+    .payment-overview-search,
+    .payment-one-stop-search-field,
+    .payment-prd-bill-money-input,
+    .payment-prd-money-input
+):focus-within {
+    border-color: var(--app-primary);
+    outline: 2px solid var(--app-focus-ring);
+    outline-offset: 0;
+    box-shadow: none;
+}
+
+/*
+ * Shared list toolbar. Add the canonical app-* classes to new views; the
+ * existing aliases keep every migrated menu on the same layout contract.
+ */
+:is(
+    .app-data-toolbar,
+    .payment-overview-table-toolbar,
+    .bill-table-toolbar,
+    .report-table-toolbar-v2,
+    .report-data-card .student-table-toolbar,
+    .master-table-toolbar,
+    .student-table-toolbar-v2,
+    .student-management-table-toolbar,
+    .spp-history .list-toolbar
+) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--app-data-toolbar-gap);
+}
+
+:is(
+    .app-page-size-form,
+    .bill-page-size-form,
+    .report-page-size-form,
+    .student-table-length,
+    .student-reference-card-length,
+    .student-page-size-form,
+    .master-data-length,
+    .class-card-length,
+    .fee-type-card-length,
+    .fee-discount-card-length,
+    .data-role-card-length,
+    .data-user-card-length
+) {
+    flex: 0 0 auto;
+    min-width: 0;
+    color: var(--app-muted);
+}
+
+:is(
+    .app-page-size-control,
+    .payment-overview-per-page-control,
+    .app-page-size-form > label,
+    .bill-page-size-form > label,
+    .report-page-size-form > label,
+    .student-table-length > label,
+    .student-reference-card-length > label,
+    .student-page-size-form > label,
+    .master-data-length > label,
+    .class-card-length > label,
+    .fee-type-card-length > label,
+    .fee-discount-card-length > label,
+    .data-role-card-length > label,
+    .data-user-card-length > label
+) {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--app-data-toolbar-label-gap);
+    margin: 0;
+    color: var(--app-muted);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
+    white-space: nowrap;
+}
+
+select[name="per_page"] {
+    width: var(--app-page-size-width);
+    min-width: var(--app-page-size-width);
+    flex: 0 0 var(--app-page-size-width);
+}
+
+:is(
+    .app-data-search,
+    .payment-overview-search-control,
+    .bill-toolbar-search-form,
+    .report-student-search-card,
+    .student-table-search,
+    .master-table-search,
+    .student-management-search-card
+) {
+    width: min(100%, var(--app-data-search-width));
+    max-width: var(--app-data-search-width);
+    flex: 1 1 420px;
+    min-width: 0;
+    margin-left: auto;
+}
+
+:is(
+    label.app-data-search,
+    .app-data-search > label,
+    .payment-overview-search-control,
+    .bill-toolbar-search-form > label,
+    .report-student-search-card > label,
+    .student-table-search > label,
+    .master-table-search > label,
+    .student-management-search-card > label
+) {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--app-data-toolbar-label-gap);
+    margin: 0;
+    color: var(--app-label);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
+}
+
+:is(
+    label.app-data-search,
+    .app-data-search > label,
+    .payment-overview-search-control,
+    .bill-toolbar-search-form > label,
+    .report-student-search-card > label,
+    .student-table-search > label,
+    .master-table-search > label,
+    .student-management-search-card > label
+) > :first-child {
+    flex: 0 0 auto;
+}
+
+:is(
+    .app-data-search-field,
+    .payment-overview-search,
+    .bill-search-input,
+    .report-student-search-input,
+    .master-table-search-input
+) {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+:is(
+    .app-data-search-field,
+    .payment-overview-search,
+    .bill-search-input,
+    .report-student-search-input,
+    .master-table-search-input
+) input {
+    width: 100%;
+    min-width: 0;
+    min-height: calc(var(--app-field-height) - 2px);
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.app-data-search.is-selected {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--app-data-toolbar-label-gap);
+}
+
+@media (max-width: 760px) {
+    :is(
+        .app-data-toolbar,
+        .payment-overview-table-toolbar,
+        .bill-table-toolbar,
+        .report-table-toolbar-v2,
+        .report-data-card .student-table-toolbar,
+        .master-table-toolbar,
+        .student-table-toolbar-v2,
+        .student-management-table-toolbar,
+        .spp-history .list-toolbar
+    ) {
+        align-items: stretch;
+        flex-direction: column;
+        flex-wrap: nowrap;
+    }
+
+    :is(
+        .app-data-search,
+        .payment-overview-search-control,
+        .bill-toolbar-search-form,
+        .report-student-search-card,
+        .student-table-search,
+        .master-table-search,
+        .student-management-search-card
+    ) {
+        width: 100%;
+        max-width: none;
+        flex-basis: auto;
+        margin-left: 0;
+    }
+
+    :is(
+        label.app-data-search,
+        .app-data-search > label,
+        .payment-overview-search-control,
+        .bill-toolbar-search-form > label,
+        .report-student-search-card > label,
+        .student-table-search > label,
+        .master-table-search > label,
+        .student-management-search-card > label
+    ) {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 7px;
+    }
+}
+
+/* Existing page names map to the canonical filter panel contract. */
+:is(
+    .app-filter-panel,
+    .payment-overview-filter,
+    .report-filter-card-v2,
+    .report-filter-panel,
+    .master-data-filter-panel,
+    .student-filter-panel,
+    .class-movement-filter-panel,
+    .transfer-filter,
+    .bill-workspace .student-reference-filter,
+    .bill-workspace .bill-filter,
+    .bill-workspace .bills-filter-panel
+) {
+    gap: var(--app-filter-gap);
+    padding: var(--app-filter-padding);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-panel);
+    box-shadow: var(--shadow-admin);
+}
+
+/* One frame contract for every application data table surface. */
+:is(
+    .app-table-surface,
+    .payment-overview-table-frame,
+    .payment-data-card,
+    .student-data-table-surface,
+    .master-card,
+    .student-data-card,
+    .bills-data-card,
+    .bill-unit-table-wrap,
+    .bill-detail-web-table-wrap,
+    .report-summary-table-section,
+    .report-table-section-v2,
+    .report-data-card,
+    .spp-import-table-wrap
+) {
+    background: var(--app-table-frame-surface);
+    border: 1px solid var(--app-table-frame-border);
+    border-radius: var(--app-table-frame-radius);
+    box-shadow: var(--app-table-frame-shadow);
+}
+
+/*
+ * All tables inside the authenticated application shell are data tables by
+ * default. Standalone receipts, notices, PDFs, and print views sit outside the
+ * shell and keep their document-specific styling.
+ */
+.app-shell main table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--app-text);
+}
+
+.app-shell main table > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+    padding: var(--app-table-cell-padding-y) var(--app-table-cell-padding-x);
+    color: var(--app-text);
+    border-bottom: 1px solid var(--app-table-divider);
+    font-size: var(--app-text-body-size);
+    line-height: var(--app-text-body-leading);
+    vertical-align: middle;
+}
+
+.app-shell main table > thead > tr > th {
+    color: var(--app-label);
+    background: var(--app-table-head-surface);
+    font-weight: 600;
+    text-align: center;
+}
+
+.app-shell main table > tbody > tr:not(.spp-expanded-row):not(.report-detail-row-v2):hover > :is(th, td) {
+    background: var(--app-table-row-hover);
+}
+
+.app-shell main table > tbody > tr:last-child > td { border-bottom: 0; }
+.app-shell main table > tfoot > tr > :is(th, td) { font-weight: 700; }
+
+.app-shell main table > tbody > :is(.spp-expanded-row, .report-detail-row-v2) > td {
+    padding: 0;
+    background: var(--app-panel-soft);
+}
+
+/* Shared pagination geometry; modules only decide placement. */
+.pagination { display: flex; flex-wrap: wrap; gap: 8px; }
+
+:is(
+    .pagination a,
+    .pagination span,
+    .bill-page-link,
+    .report-page-button,
+    .student-page-button,
+    .master-page-button,
+    .master-page-link
+) {
+    display: inline-grid;
+    min-width: var(--app-pagination-size);
+    min-height: var(--app-pagination-size);
+    place-items: center;
+    padding-inline: 10px;
+    color: var(--app-label);
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
+}
+
+:is(
+    .pagination a,
+    .bill-page-link,
+    .report-page-button,
+    .student-page-button,
+    .master-page-button,
+    .master-page-link
+):hover {
+    color: var(--app-primary);
+    background: var(--app-primary-soft);
+    border-color: var(--app-primary-border);
+}
+
+:is(
+    .pagination .active span,
+    .bill-page-link.is-active,
+    .report-page-button.is-active,
+    .student-page-button.is-active,
+    .master-page-button.is-active,
+    .master-page-link.is-active
+) {
+    color: var(--app-on-primary);
+    background: var(--app-primary);
+    border-color: var(--app-primary);
+}
+
+:is(
+    .bill-page-link.is-disabled,
+    .report-page-button.is-disabled,
+    .student-page-button.is-disabled,
+    .master-page-button.is-disabled,
+    .master-page-link.is-disabled
+) {
+    color: var(--app-muted);
+    background: var(--app-panel-soft);
+    pointer-events: none;
+}
+
+/* Status geometry is shared even when a module owns the semantic color. */
+:is(
+    .app-status,
+    .status,
+    .compact-badge,
+    .badge,
+    .bill-unit-chip,
+    .bill-status,
+    .payment-overview-status,
+    .report-status,
+    .report-type,
+    .report-yearly-spp-badge,
+    .identity-reset-badge,
+    .status-pill
+) {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
+}
+
+@media print {
+    .app-shell main table > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+        color: #000000;
+        background: #ffffff;
+        border-color: #cbd5e1;
+    }
+}

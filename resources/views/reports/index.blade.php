@@ -95,8 +95,8 @@
                 </form>
 
                 <section class="card student-data-card report-data-card">
-                <div class="student-table-toolbar">
-                    <form method="GET" action="{{ route('reports.index') }}" class="student-table-length">
+                <div class="student-table-toolbar app-data-toolbar">
+                    <form method="GET" action="{{ route('reports.index') }}" class="student-table-length app-page-size-form">
                         @foreach($reportQuery(['per_page']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
@@ -108,11 +108,11 @@
                             data
                         </label>
                     </form>
-                    <form method="GET" action="{{ route('reports.index') }}" class="student-table-search">
+                    <form method="GET" action="{{ route('reports.index') }}" class="student-table-search app-data-search">
                         @foreach($reportQuery(['search']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
-                        <label>Cari data <input name="search" value="{{ request('search') }}" aria-label="Cari laporan berdasarkan nama atau NIS" placeholder="Nama, NIS, kategori..."></label>
+                        <label><span>Cari data</span><span class="report-student-search-input app-data-search-field">{!! $icon('search') !!}<input type="search" name="search" value="{{ request('search') }}" aria-label="Cari laporan berdasarkan nama atau NIS" placeholder="Nama, NIS, kategori..."></span></label>
                     </form>
                 </div>
 

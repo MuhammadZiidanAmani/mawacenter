@@ -92,9 +92,9 @@
                 </form>
             </section>
 
-            <section class="card master-card student-data-card student-list-table-card">
-                <div class="student-reference-card-count student-management-table-toolbar">
-                    <form method="GET" action="{{ route('student-management.alumni.index') }}" class="student-reference-card-length">
+            <section class="student-list-layout">
+                <div class="student-reference-card-count student-management-table-toolbar app-data-toolbar">
+                    <form method="GET" action="{{ route('student-management.alumni.index') }}" class="student-reference-card-length app-page-size-form">
                     @foreach(request()->except(['per_page', 'page', 'search']) as $key => $value)
                             @if(is_scalar($value))
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -110,7 +110,7 @@
                             alumni
                         </label>
                     </form>
-                    <form method="GET" action="{{ route('student-management.alumni.index') }}" class="report-student-search-card student-management-search-card" role="search">
+                    <form method="GET" action="{{ route('student-management.alumni.index') }}" class="report-student-search-card student-management-search-card app-data-search" role="search">
                         @foreach(request()->except(['search', 'page']) as $key => $value)
                             @if(is_scalar($value))
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -118,7 +118,7 @@
                         @endforeach
                         <label>
                             <span>Cari alumni</span>
-                            <span class="master-table-search-input">
+                            <span class="master-table-search-input app-data-search-field">
                                 {!! $icon('search') !!}
                                 <input type="search" name="search" value="{{ $filters['search'] }}" placeholder="Nama, NIS, unit..." aria-label="Cari alumni">
                             </span>
@@ -126,6 +126,7 @@
                     </form>
                 </div>
 
+                <section class="card student-data-table-surface">
                 <div class="table-wrap alumni-table-wrap">
                     <table class="data-table student-flat-table alumni-table">
                         <colgroup>
@@ -175,6 +176,7 @@
                         </tbody>
                     </table>
                 </div>
+                </section>
 
                 @php
                     $alumniCurrentPage = $alumni->currentPage();
