@@ -82,7 +82,7 @@ class EnsureRolePermission
             str_starts_with($routeName, 'reports.') => ['reports.view', 'reports.view_unit'],
             $routeName === 'master.index' => $this->permissionsForMasterType((string) $request->query('tab', 'academic-years')),
             $routeName === 'master.create' => $this->permissionsForMasterType((string) $request->query('tab', 'academic-years')),
-            in_array($routeName, ['master.data-roles.store', 'master.data-roles.update', 'master.data-users.store', 'master.data-users.update'], true) => ['users.manage'],
+            in_array($routeName, ['master.data-roles.store', 'master.data-roles.update', 'master.data-users.store', 'master.data-users.update', 'master.data-users.students.search'], true) => ['users.manage'],
             $routeName === 'master.destroy' => $this->permissionsForMasterType((string) $request->route('type')),
             str_starts_with($routeName, 'master.') => ['master.manage'],
             str_starts_with($routeName, 'settings.') => ['settings.view'],

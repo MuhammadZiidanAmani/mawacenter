@@ -26,6 +26,7 @@ Route::prefix('master-data')->name('master.')->controller(MasterDataController::
     Route::post('/data-roles', 'storeRole')->name('data-roles.store');
     Route::put('/data-roles/{role}', 'updateRole')->name('data-roles.update');
     Route::post('/data-users', 'storeUser')->name('data-users.store');
+    Route::get('/data-users/students/search', 'searchUserStudents')->name('data-users.students.search');
     Route::put('/data-users/{user}', 'updateUser')->name('data-users.update');
     Route::delete('/{type}/{id}', 'destroy')->name('destroy');
 });

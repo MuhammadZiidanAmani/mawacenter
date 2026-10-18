@@ -24,6 +24,7 @@ use App\Services\BillService;
 use App\Services\ChargeCalculator;
 use App\Services\StudentImportService;
 use App\Support\ClassLevel;
+use App\Support\PerformanceCache;
 use App\Support\StudentXlsx;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
@@ -281,14 +282,17 @@ class MasterDataController extends Controller
             || $request->routeIs('student-management.students.edit');
         $showStudentImport = $request->routeIs('student-management.students.import');
         $studentImportPreview = $this->studentImportPreview($request);
+        $needsClasses = in_array($tab, ['students', 'fee-discounts'], true);
+        $needsEducationUnits = in_array($tab, ['students', 'classes', 'fee-types', 'fee-discounts', 'data-users'], true);
+        $needsAcademicYears = in_array($tab, ['students', 'academic-years', 'classes', 'fee-types', 'fee-discounts'], true);
 
         return view('master.index', [
             'tab' => $tab,
             'data' => $data,
-            'classes' => $this->classOptions(),
-            'classLevels' => $this->classLevelOptions(),
-            'educationUnits' => $this->educationUnitOptions(),
-            'academicYears' => $this->academicYearOptions(),
+            'classes' => $needsClasses ? $this->classOptions() : collect(),
+            'classLevels' => $tab === 'fee-types' ? $this->classLevelOptions() : collect(),
+            'educationUnits' => $needsEducationUnits ? $this->educationUnitOptions() : collect(),
+            'academicYears' => $needsAcademicYears ? $this->academicYearOptions() : collect(),
             'activeAcademicYear' => $activeAcademicYear,
             'studentYearId' => $studentYearId,
             'studentStatus' => $studentStatus,
@@ -303,8 +307,8 @@ class MasterDataController extends Controller
             'studentOptions' => $this->studentOptions($tab, $showCreate),
             'existingStudentOptions' => $this->existingStudentOptions($tab, $showCreate),
             'feeTypeOptions' => $this->feeTypeOptions($tab, $showCreate),
-            'roleOptions' => Role::options(),
-            'permissionOptions' => Role::PERMISSIONS,
+            'roleOptions' => $tab === 'data-users' ? Role::options() : [],
+            'permissionOptions' => $tab === 'data-roles' ? Role::PERMISSIONS : [],
             'stats' => $this->masterStats(),
             'showCreate' => $showCreate,
             'editingStudent' => $editingStudent,
@@ -320,6 +324,40 @@ class MasterDataController extends Controller
     public function create(Request $request)
     {
         return $this->index($request);
+    }
+
+    public function searchUserStudents(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'q' => ['required', 'string', 'min:2', 'max:100'],
+        ]);
+        $search = trim($validated['q']);
+        $unitIds = $request->user()?->accessibleUnitIds();
+
+        $students = Student::query()
+            ->select(['id', 'nis', 'nisn', 'name', 'school_class_id'])
+            ->with('schoolClass.educationUnit:id,code')
+            ->where('is_active', true)
+            ->when(is_array($unitIds), function ($query) use ($unitIds) {
+                $unitIds === []
+                    ? $query->whereRaw('1 = 0')
+                    : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds));
+            })
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('nis', 'like', "%{$search}%")
+                    ->orWhere('nisn', 'like', "%{$search}%");
+            })
+            ->orderBy('name')
+            ->orderBy('nis')
+            ->limit(20)
+            ->get()
+            ->map(fn (Student $student) => [
+                'id' => $student->id,
+                'text' => $this->studentOptionLabel($student),
+            ]);
+
+        return response()->json(['data' => $students]);
     }
 
     public function studentIndex(Request $request)
@@ -1401,7 +1439,7 @@ class MasterDataController extends Controller
 
     private function validateUser(Request $request, ?User $user = null): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'name' => ['required', 'max:150'],
             'username' => ['required', 'max:100', Rule::unique('users', 'username')->ignore($user)],
             'email' => ['required', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user)],
@@ -1412,6 +1450,22 @@ class MasterDataController extends Controller
             'guardian_student_ids' => [Rule::requiredIf(fn () => $request->input('role') === 'orang_tua'), 'array'],
             'guardian_student_ids.*' => ['integer', 'exists:students,id'],
         ]);
+
+        $unitIds = $request->user()?->accessibleUnitIds();
+        if (is_array($unitIds) && ! empty($validated['guardian_student_ids'])) {
+            $accessibleStudentCount = Student::query()
+                ->whereIn('id', $validated['guardian_student_ids'])
+                ->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds))
+                ->count();
+
+            if ($accessibleStudentCount !== count(array_unique($validated['guardian_student_ids']))) {
+                throw ValidationException::withMessages([
+                    'guardian_student_ids' => 'Terdapat siswa yang berada di luar akses unit Anda.',
+                ]);
+            }
+        }
+
+        return $validated;
     }
 
     private function syncUserAccess(User $user, Request $request): void
@@ -1678,7 +1732,31 @@ class MasterDataController extends Controller
             return collect();
         }
 
-        return Student::select(['id', 'nis', 'name', 'school_class_id'])
+        if ($tab === 'data-users') {
+            $selectedIds = collect(request()->old('guardian_student_ids', []))
+                ->filter()
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values();
+
+            if ($selectedIds->isEmpty()) {
+                return collect();
+            }
+
+            return $this->studentOptionQuery()
+                ->whereIn('id', $selectedIds)
+                ->orderBy('name')
+                ->get();
+        }
+
+        return $this->studentOptionQuery()
+            ->orderBy('name')
+            ->get();
+    }
+
+    private function studentOptionQuery()
+    {
+        return Student::select(['id', 'nis', 'nisn', 'name', 'school_class_id'])
             ->with('schoolClass.educationUnit:id,code')
             ->where('is_active', true)
             ->when(is_array($this->accessibleUnitIds()), function ($query) {
@@ -1687,9 +1765,16 @@ class MasterDataController extends Controller
                 $unitIds === []
                     ? $query->whereRaw('1 = 0')
                     : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds));
-            })
-            ->orderBy('name')
-            ->get();
+            });
+    }
+
+    private function studentOptionLabel(Student $student): string
+    {
+        return implode(' - ', [
+            $student->schoolClass?->educationUnit?->code ?? '-',
+            $student->nis ?: ($student->nisn ?: '-'),
+            $student->name,
+        ]);
     }
 
     private function existingStudentOptions(string $tab, bool $showCreate)
@@ -1744,15 +1829,21 @@ class MasterDataController extends Controller
     {
         $unitIds = $this->accessibleUnitIds();
 
-        return [
-            'students' => Student::when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))->count(),
-            'active_students' => Student::where('is_active', true)->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))->count(),
-            'classes' => SchoolClass::when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereIn('education_unit_id', $unitIds))->count(),
-            'education_units' => EducationUnit::where('is_active', true)->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereIn('id', $unitIds))->count(),
-            'fee_types' => FeeType::where('is_active', true)->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereIn('education_unit_id', $unitIds))->count(),
-            'roles' => Role::where('is_active', true)->count(),
-            'users' => User::count(),
-        ];
+        return PerformanceCache::remember(
+            'master-stats-v1',
+            ['unit_ids' => $unitIds],
+            config('performance.query_cache.master_options_ttl', 120),
+            fn () => [
+                'academic_years' => AcademicYear::count(),
+                'students' => Student::when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))->count(),
+                'active_students' => Student::where('is_active', true)->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereHas('schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds)))->count(),
+                'classes' => SchoolClass::when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereIn('education_unit_id', $unitIds))->count(),
+                'education_units' => EducationUnit::where('is_active', true)->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereIn('id', $unitIds))->count(),
+                'fee_types' => FeeType::where('is_active', true)->when(is_array($unitIds), fn ($query) => $unitIds === [] ? $query->whereRaw('1 = 0') : $query->whereIn('education_unit_id', $unitIds))->count(),
+                'roles' => Role::where('is_active', true)->count(),
+                'users' => User::count(),
+            ],
+        );
     }
 
     private function deferredFeeTypeSyncResult($feeTypes): array

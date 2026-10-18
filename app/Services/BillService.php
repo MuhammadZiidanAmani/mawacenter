@@ -66,7 +66,7 @@ class BillService
                 }
             }
         });
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
 
         return $result;
     }
@@ -123,7 +123,7 @@ class BillService
                 }
             }
         });
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
 
         return $result;
     }
@@ -169,7 +169,7 @@ class BillService
 
         $this->mergeResult($result, $this->generateFeeTypes($academicYear, $feeTypes, $endYear, $endMonth, $filters));
         $result['refreshed'] += $this->refreshBillsForStudents($studentIds)->get('updated', 0);
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
 
         return $result;
     }
@@ -414,7 +414,7 @@ class BillService
                 }
             }
         });
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
 
         return $result;
     }
@@ -454,7 +454,7 @@ class BillService
                 }
             }
         });
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
 
         return $result;
     }
@@ -480,7 +480,7 @@ class BillService
             'unit_name' => $student->schoolClass?->educationUnit?->name,
             'class_name' => $student->schoolClass?->name,
         ]);
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
 
         return $bill;
     }
@@ -503,7 +503,7 @@ class BillService
             $bill->allocations()->create(['payment_type' => 'manual', 'payment_id' => $payment->id, 'amount' => $payment->paid_amount]);
             $this->refresh($bill);
         });
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
 
         return $bill->refresh();
     }
@@ -537,7 +537,7 @@ class BillService
                 $this->refresh($bill);
             }
         });
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
     }
 
     public function syncOtherPayment(OtherPayment $payment): void
@@ -562,7 +562,7 @@ class BillService
                 ->delete();
         }
         $this->refresh($bill);
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
     }
 
     public function removePayment(string $type, int $paymentId): void
@@ -572,7 +572,7 @@ class BillService
             $bill->allocations()->where('payment_type', $type)->where('payment_id', $paymentId)->delete();
             $this->refresh($bill);
         }
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
     }
 
     public function refreshDiscountBills(FeeDiscount $discount): array
@@ -612,7 +612,7 @@ class BillService
                 }
             });
 
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
 
         return $result;
     }
@@ -646,7 +646,7 @@ class BillService
             throw ValidationException::withMessages(['bill' => 'Tagihan yang sudah memiliki pembayaran tidak dapat dibatalkan.']);
         }
         $bill->update(['status' => 'Dibatalkan', 'cancel_reason' => $reason]);
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
 
         return $bill->refresh();
     }
@@ -866,7 +866,7 @@ class BillService
             'finished_at' => now(),
         ])->save();
 
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
     }
 
     private function syncFeeTypes(array $filters): Collection
@@ -1039,7 +1039,7 @@ class BillService
                 }
             });
 
-        PerformanceCache::bust();
+        PerformanceCache::invalidate(['dashboard', 'bills', 'reports']);
 
         return collect($result);
     }

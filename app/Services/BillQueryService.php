@@ -74,6 +74,7 @@ class BillQueryService
                 'query' => request()->query(),
             ],
         );
+        $students->withQueryString();
         $studentIds = $students->getCollection()->pluck('student_id')->all();
         $studentModels = Student::with([
             'schoolClass:id,name,education_unit_id',
@@ -130,6 +131,7 @@ class BillQueryService
                     ->selectRaw("COALESCE(SUM(CASE WHEN {$billableCondition} THEN bills.paid_amount ELSE 0 END), 0) as paid")
                     ->selectRaw("COALESCE(SUM(CASE WHEN {$billableCondition} THEN bills.remaining_amount ELSE 0 END), 0) as remaining")
                     ->selectRaw('COUNT(DISTINCT CASE WHEN bills.remaining_amount > 0 AND bills.due_date IS NOT NULL AND bills.due_date < ? THEN bills.student_id END) as overdue_students', [now()->toDateString()])
+                    ->selectRaw('COALESCE(SUM(CASE WHEN bills.remaining_amount > 0 AND bills.due_date IS NOT NULL AND bills.due_date < ? THEN bills.remaining_amount ELSE 0 END), 0) as overdue', [now()->toDateString()])
                     ->groupBy('education_units.id', 'education_units.code', 'education_units.name')
                     ->havingRaw("COALESCE(SUM(CASE WHEN {$billableCondition} THEN bills.remaining_amount ELSE 0 END), 0) > 0")
                     ->orderByRaw("CASE education_units.code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
@@ -148,6 +150,7 @@ class BillQueryService
                         'paid' => (int) ($row->paid ?? 0),
                         'remaining' => (int) ($row->remaining ?? 0),
                         'overdue_students' => (int) ($row->overdue_students ?? 0),
+                        'overdue' => (int) ($row->overdue ?? 0),
                     ])
                     ->values()
                     ->all();

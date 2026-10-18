@@ -115,6 +115,70 @@ class MasterDataTest extends TestCase
         $this->assertTrue(Hash::check('password-baru', $guardian->password));
     }
 
+    public function test_data_user_student_search_is_async_limited_and_unit_scoped(): void
+    {
+        Role::create([
+            'key' => 'user_operator',
+            'name' => 'User Operator',
+            'permissions' => ['users.manage'],
+            'is_active' => true,
+        ]);
+        Role::updateOrCreate(['key' => 'orang_tua'], [
+            'name' => Role::DEFAULTS['orang_tua'],
+            'permissions' => Role::defaultPermissionsFor('orang_tua'),
+            'is_active' => true,
+        ]);
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $allowedUnit = EducationUnit::create(['code' => 'MI', 'name' => 'MI', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'MTs', 'name' => 'MTs', 'is_active' => true]);
+        $allowedClass = SchoolClass::create(['education_unit_id' => $allowedUnit->id, 'name' => '1A', 'level' => 1]);
+        $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => '7A', 'level' => 7]);
+
+        $allowedStudents = collect(range(1, 25))->map(fn (int $number) => Student::create([
+            'nis' => 'ASYNC-'.str_pad((string) $number, 3, '0', STR_PAD_LEFT),
+            'name' => 'Target Siswa '.str_pad((string) $number, 2, '0', STR_PAD_LEFT),
+            'gender' => 'L',
+            'school_class_id' => $allowedClass->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]));
+        $outsideStudent = Student::create([
+            'nis' => 'ASYNC-OUTSIDE',
+            'name' => 'Target Siswa Luar',
+            'gender' => 'P',
+            'school_class_id' => $otherClass->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        $operator = User::factory()->create(['role' => 'user_operator']);
+        $operator->educationUnits()->attach($allowedUnit->id);
+
+        $this->actingAs($operator)
+            ->getJson(route('master.data-users.students.search', ['q' => 'Target']))
+            ->assertOk()
+            ->assertJsonCount(20, 'data')
+            ->assertJsonMissing(['id' => $outsideStudent->id])
+            ->assertJsonFragment(['id' => $allowedStudents->first()->id]);
+
+        $this->actingAs($operator)
+            ->get(route('master.index', ['tab' => 'data-users']))
+            ->assertOk()
+            ->assertSee('data-guardian-student-picker', false)
+            ->assertSee(route('master.data-users.students.search'), false)
+            ->assertDontSee($allowedStudents->last()->name);
+
+        $this->actingAs($operator)
+            ->post(route('master.data-users.store'), [
+                'name' => 'Wali Di Luar Scope',
+                'username' => 'wali-luar-scope',
+                'email' => 'wali-luar-scope@example.test',
+                'role' => 'orang_tua',
+                'password' => 'password123',
+                'guardian_student_ids' => [$outsideStudent->id],
+            ])
+            ->assertSessionHasErrors('guardian_student_ids');
+    }
+
     public function test_master_data_page_can_be_opened(): void
     {
         $this->get('/manajemen-siswa/data-siswa?per_page=25')

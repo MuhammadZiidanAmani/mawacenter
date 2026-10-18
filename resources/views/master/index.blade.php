@@ -46,7 +46,7 @@
     ];
     $icon = fn ($name, $class = '') => $svg($icons[$name], $class);
     $tabs = [
-        'academic-years' => ['Tahun Pelajaran', 'calendar', $academicYears->count()],
+        'academic-years' => ['Tahun Pelajaran', 'calendar', $stats['academic_years'] ?? 0],
         'education-units' => ['Unit Pendidikan', 'database', $stats['education_units']],
         'classes' => ['Kelas', 'database', $stats['classes']],
         'fee-types' => ['Kategori Pembayaran', 'receipt', $stats['fee_types']],
@@ -95,7 +95,7 @@
     <div class="main-panel">
         <header class="topbar">
             <button class="icon-button menu-toggle always-visible" type="button" data-sidebar-toggle aria-label="Buka atau tutup sidebar" title="Buka atau tutup sidebar">{!! $icon('menu') !!}</button>
-            <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ optional($academicYears->firstWhere('is_active', true))->name ?? 'Belum diatur' }}</strong></div>
+            <div class="active-year-pill"><span></span><small>Tahun Pelajaran Aktif:</small><strong>{{ $activeAcademicYear?->name ?? 'Belum diatur' }}</strong></div>
             <div class="topbar-spacer"></div>
             @include('partials.theme-toggle')
             <button class="icon-button notification-button" type="button" aria-label="Notifikasi" title="Notifikasi">{!! $icon('bell') !!}<span></span></button>

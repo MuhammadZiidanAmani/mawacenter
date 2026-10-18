@@ -201,12 +201,15 @@
             @endforeach
         </select>
     </label>
-    <label class="span-2">Akses Wali Santri
-        <select name="guardian_student_ids[]" multiple size="7">
+    <label class="span-2" data-guardian-student-picker data-search-url="{{ route('master.data-users.students.search') }}">Akses Wali Santri
+        <input type="search" placeholder="Cari nama, NIS, atau NISN siswa..." autocomplete="off" data-guardian-student-search>
+        <span class="student-search-results" data-guardian-student-results hidden></span>
+        <select name="guardian_student_ids[]" multiple size="7" data-guardian-student-selected>
             @foreach($studentOptions as $student)
                 <option value="{{ $student->id }}" @selected(in_array($student->id, old('guardian_student_ids', [])))>{{ $student->schoolClass?->educationUnit?->code ?? '-' }} - {{ $student->nis }} - {{ $student->name }}</option>
             @endforeach
         </select>
+        <small>Ketik minimal 2 karakter lalu pilih siswa. Gunakan Ctrl/Cmd untuk menghapus pilihan dari daftar.</small>
     </label>
     <label class="span-2">Password <input type="password" name="password" autocomplete="new-password" placeholder="Wajib saat tambah, kosongkan saat edit jika tidak diganti"></label>
 @else
