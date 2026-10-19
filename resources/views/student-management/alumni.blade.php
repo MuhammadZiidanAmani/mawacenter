@@ -199,13 +199,13 @@
                     @if($alumni->hasPages())
                         <div class="student-pagination-links">
                             @if($alumni->onFirstPage())
-                                <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                                <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
                             @else
-                                <a class="student-page-button" href="{{ $alumniPageUrl($alumniCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
+                                <a class="app-page-button student-page-button" href="{{ $alumniPageUrl($alumniCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
                             @endif
 
                             @if($alumniStartPage > 1)
-                                <a class="student-page-button is-number" href="{{ $alumniPageUrl(1) }}" aria-label="Halaman 1">1</a>
+                                <a class="app-page-button student-page-button is-number" href="{{ $alumniPageUrl(1) }}" aria-label="Halaman 1">1</a>
                                 @if($alumniStartPage > 2)
                                     <span class="student-page-ellipsis" aria-hidden="true">...</span>
                                 @endif
@@ -213,9 +213,9 @@
 
                             @for($page = $alumniStartPage; $page <= $alumniEndPage; $page++)
                                 @if($page === $alumniCurrentPage)
-                                    <span class="student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
+                                    <span class="app-page-button student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
                                 @else
-                                    <a class="student-page-button is-number" href="{{ $alumniPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                    <a class="app-page-button student-page-button is-number" href="{{ $alumniPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
                                 @endif
                             @endfor
 
@@ -223,13 +223,13 @@
                                 @if($alumniEndPage < $alumniLastPage - 1)
                                     <span class="student-page-ellipsis" aria-hidden="true">...</span>
                                 @endif
-                                <a class="student-page-button is-number" href="{{ $alumniPageUrl($alumniLastPage) }}" aria-label="Halaman {{ $alumniLastPage }}">{{ $alumniLastPage }}</a>
+                                <a class="app-page-button student-page-button is-number" href="{{ $alumniPageUrl($alumniLastPage) }}" aria-label="Halaman {{ $alumniLastPage }}">{{ $alumniLastPage }}</a>
                             @endif
 
                             @if($alumni->hasMorePages())
-                                <a class="student-page-button" href="{{ $alumniPageUrl($alumniCurrentPage + 1) }}" rel="next">Berikutnya</a>
+                                <a class="app-page-button student-page-button" href="{{ $alumniPageUrl($alumniCurrentPage + 1) }}" rel="next">Berikutnya</a>
                             @else
-                                <span class="student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
+                                <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
                             @endif
                         </div>
                     @endif

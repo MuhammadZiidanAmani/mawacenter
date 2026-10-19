@@ -160,6 +160,7 @@ Sidebar/topbar putih dengan border. Normal teks label; hover dan aktif memakai t
 
 - Input/select 40px, padding horizontal 12px, radius field 12px, border token, font 14px. Textarea minimal 96px dan resize vertikal.
 - Geometri field native dimiliki `resources/css/components.css`; perubahan tinggi, padding, dan radius dilakukan melalui token `--app-field-*`/`--app-radius-field`, bukan selector halaman. Field gabungan memakai `.app-field-shell`; alias class lama dipetakan pada kontrak yang sama selama migrasi.
+- Label field memakai `.app-field`. Upload import memakai `.app-upload-dropzone`, `.app-upload-input`, `.app-upload-icon`, `.app-upload-copy`, dan `.app-upload-actions`; modul halaman hanya mengatur penempatan atau state bisnisnya.
 - Label terhubung ke field, jarak 6-8px. Field wajib memiliki penanda yang jelas tanpa membuat seluruh label merah.
 - Focus ring/outline 2px primer dengan offset yang sesuai. Error di bawah field, 14px danger, `aria-invalid` dan `aria-describedby` bila diperlukan; fokus ke error pertama.
 - Readonly tetap terbaca dan dapat disalin; disabled opacity sekitar 0.55 tanpa hover aktif. Nominal Lunas memakai readonly bila nilainya perlu dikirim.
@@ -181,6 +182,8 @@ Sidebar/topbar putih dengan border. Normal teks label; hover dan aktif memakai t
 | CTA pembayaran | 40px atau 44px bila diperlukan, full width pada mobile |
 
 Gunakan `.button`, `.button-primary`, `.button-secondary`, `.icon-button`, `.icon` yang ada sebelum membuat sistem komponen kedua. Ikon aplikasi sekarang memakai helper SVG Blade; gunakan ikon existing. Lucide hanya bila sudah diintegrasikan, jangan mengasumsikan ada dependency atau komponen `<x-icon>`.
+
+Tombol pagination aplikasi memakai `.app-page-button`; class lama per modul boleh tetap menjadi alias sementara, tetapi tidak boleh memiliki ulang warna, border, radius, atau state hover/aktif sendiri.
 
 Untuk aksi tool gunakan ikon yang umum: printer, download, edit, trash, receipt/detail. Teks/icon+teks untuk perintah jelas seperti Simpan/Terapkan/Bayar. Tipe pembayaran memakai segmented radio, seleksi memakai checkbox, mode biner toggle/checkbox, opsi memakai select/menu, angka memakai input/stepper. Ikon dekoratif `aria-hidden=true`.
 
@@ -386,7 +389,6 @@ Nama class contoh disesuaikan dengan view yang dikerjakan; ukuran dokumen tetap 
 | `modules/dashboard.css` | Dashboard |
 | `modules/student-management.css` | Siswa, alumni, perubahan kelas, identitas |
 | `modules/master.css` | Master data dan form bersama sesuai scope |
-| `modules/user-role.css` | User/role sesuai struktur existing |
 | `modules/payments.css` | Kasir, pilihan siswa/tagihan, import/riwayat pembayaran |
 | `modules/bills.css` | Tagihan dan portal tagihan sesuai scope |
 | `modules/reports.css` | Laporan |

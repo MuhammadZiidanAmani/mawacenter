@@ -99,15 +99,6 @@ class SppPaymentImportService
 
                     continue;
                 }
-                if ($message = $this->sequentialImportWarning($student, $row)) {
-                    $row['status'] = 'Gagal';
-                    $row['message'] = $message;
-                    $result['failures'][] = $row;
-                    $result['rows'][] = $row;
-
-                    continue;
-                }
-
                 try {
                     $data = [
                         'transaction_date' => substr($row['transaction_at'], 0, 10),
@@ -337,30 +328,6 @@ class SppPaymentImportService
         }
 
         return null;
-    }
-
-    private function sequentialImportWarning(Student $student, array $row): ?string
-    {
-        $oldest = $this->payments->oldestOutstandingPeriod($student);
-        if (! $oldest) {
-            return null;
-        }
-
-        $expectedPeriod = ((int) $oldest['year'] * 100) + (int) $oldest['month'];
-        $importPeriod = ((int) $row['year'] * 100) + (int) $row['month'];
-        if ($importPeriod <= $expectedPeriod) {
-            return null;
-        }
-
-        return 'Import SPP harus berurutan. Siswa ini harus diimpor bulan '
-            .$oldest['month_name'].' '.$oldest['year']
-            .' terlebih dahulu sebelum '.$this->monthLabel((int) $row['month']).' '.$row['year']
-            .'. Untuk MTs dan MA, Juli 2025 dilewati karena termasuk Daftar Ulang.';
-    }
-
-    private function monthLabel(int $month): string
-    {
-        return self::MONTH_LABELS[$month] ?? 'Bulan';
     }
 
     private function normalizeLookup(string $value): string

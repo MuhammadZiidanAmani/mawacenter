@@ -189,7 +189,7 @@ const indonesianDateToIso = (value) => {
 passwordToggle?.addEventListener('click', () => {
     const revealing = passwordInput.type === 'password';
     passwordInput.type = revealing ? 'text' : 'password';
-    passwordToggle.classList.toggle('active', revealing);
+    passwordToggle.classList.toggle('is-visible', revealing);
     passwordToggle.setAttribute('aria-label', revealing ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
     passwordToggle.setAttribute('title', revealing ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
 });
@@ -839,7 +839,7 @@ if (paymentImportPreview) {
         const appendPageButton = (label, page, disabled = false, current = false) => {
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = 'payment-import-preview-page-button';
+            button.className = 'app-page-button payment-import-preview-page-button';
             button.textContent = label;
             button.disabled = disabled;
             if (current) button.classList.add('is-current');

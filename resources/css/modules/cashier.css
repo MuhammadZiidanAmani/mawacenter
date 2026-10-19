@@ -296,14 +296,6 @@ main.payment-flat-page:has(.spp-history) {
 .spp-import-info strong { display: block; font-weight: 600; }
 .spp-import-info p { margin: 3px 0 0; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 .spp-import-modal-form { display: grid; gap: 14px; margin-top: 16px; }
-.spp-import-dropzone { display: grid; min-height: 178px; place-content: center; gap: 7px; padding: 20px; color: var(--app-muted); border: 1px dashed var(--app-border-strong); border-radius: var(--app-radius); text-align: center; cursor: pointer; }
-.spp-import-dropzone:hover { background: var(--app-success-subtle); border-color: var(--app-primary); }
-.spp-import-dropzone:focus-within { outline: 2px solid var(--app-primary); outline-offset: 2px; }
-.spp-import-dropzone input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
-.spp-import-drop-icon { justify-self: center; color: var(--app-primary); }
-.spp-import-drop-icon .icon { width: 28px; height: 28px; }
-.spp-import-dropzone strong { color: var(--app-text); }
-.spp-import-dropzone small { font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 .spp-import-browse { justify-self: center; margin-top: 4px; color: var(--app-primary); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
 .spp-import-modal-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
 

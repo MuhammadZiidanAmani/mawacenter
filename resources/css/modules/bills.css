@@ -74,14 +74,11 @@ main.bill-flat-page {
 .bill-student-name { color: var(--app-text); font-weight: 600; }
 .bill-money, .bill-money-pair, .bill-money-number { color: var(--app-text); font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
 .bill-money-pair { display: inline-flex; gap: 4px; justify-content: flex-end; }
-.bill-unit-chip { display: inline-flex; padding: 4px 8px; color: var(--app-primary); background: var(--app-success-subtle); border-radius: 999px; font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); }
-.bill-status { display: inline-flex; min-height: 28px; align-items: center; padding: 4px 10px; color: var(--app-danger); background: var(--app-danger-soft); border-radius: 999px; font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
+.bill-unit-chip { color: var(--app-primary); background: var(--app-success-subtle); }
+.bill-status { color: var(--app-danger); background: var(--app-danger-soft); }
 .bill-status.is-paid { color: var(--app-success); background: var(--app-success-soft); }
 .bill-pay-short { color: var(--app-primary); font-weight: 600; }
-.bill-page-link { display: inline-grid; min-width: var(--app-pagination-size); min-height: var(--app-pagination-size); place-items: center; padding: 0 10px; color: var(--app-label); background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius); font-weight: 600; }
-.bill-page-link:hover { color: var(--app-primary); background: var(--app-primary-soft); border-color: var(--app-primary-border); }
-.bill-page-link.is-active { color: var(--app-on-primary); background: var(--app-primary); border-color: var(--app-primary); }
-.bill-page-link:is(.is-disabled, .is-ellipsis) { color: var(--app-muted); background: var(--app-panel-soft); pointer-events: none; }
+.bill-page-link.is-ellipsis { color: var(--app-muted); pointer-events: none; }
 .bill-sort-link { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .bill-sort-indicator { width: 14px; height: 14px; color: var(--app-muted); }
 

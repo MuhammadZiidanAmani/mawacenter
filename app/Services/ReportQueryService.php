@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\AcademicYear;
 use App\Models\Bill;
 use App\Models\EducationUnit;
-use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\SchoolClass;
 use App\Models\SppPayment;
@@ -14,7 +13,6 @@ use App\Models\Student;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
 class ReportQueryService

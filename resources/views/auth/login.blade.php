@@ -14,9 +14,13 @@
 @endphp
 <main class="login-page">
     <section class="login-card">
+        <div class="login-theme-control">
+            @include('partials.theme-toggle')
+        </div>
+
         <div class="login-brand">
             <div class="login-brand-mark">
-                <img src="{{ asset('images/mawa-center-mark-transparent.png') }}" alt="">
+                <img src="{{ asset('images/mawa-center-mark-transparent.webp') }}" alt="" width="128" height="128">
             </div>
             <h1>MA'WA <span>CENTER</span></h1>
         </div>
@@ -38,8 +42,7 @@
 
             {{-- Field Unit Pendidikan: hanya tampil di mode Wali Santri --}}
             <label class="login-guardian-field" data-login-guardian-field>
-                <span>Unit Pendidikan</span>
-                <span class="login-input">
+                <span class="login-input login-floating-field login-floating-select">
                     {!! $icon('<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 9h8M8 13h8M10 19v-4h4v4"/>') !!}
                     <select name="guardian_unit_id" data-guardian-unit{{ $isWaliMode ? '' : ' disabled' }}>
                         <option value="">Pilih unit pendidikan</option>
@@ -47,27 +50,28 @@
                             <option value="{{ $unit->id }}" @selected(old('guardian_unit_id') == $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>
                         @endforeach
                     </select>
+                    <span class="login-floating-label">Unit Pendidikan</span>
                 </span>
             </label>
 
             {{-- Field Username / NIS --}}
-            <label>
-                <span data-login-username-label>{{ $isWaliMode ? 'NIS Santri' : 'Username' }}</span>
+            <label class="login-floating-field">
                 <span class="login-input">
                     {!! $icon('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.6-4 2.9-6 7-6s6.4 2 7 6"/>') !!}
                     <input type="text" name="username" value="{{ old('username') }}"
                         placeholder="{{ $isWaliMode ? 'Masukkan NIS santri' : 'Masukkan username' }}"
                         autocomplete="username" autofocus required
                         data-login-username-input>
+                    <span class="login-floating-label" data-login-username-label>{{ $isWaliMode ? 'NIS Santri' : 'Username' }}</span>
                 </span>
             </label>
 
             {{-- Field Kata Sandi --}}
-            <label class="login-password-field">
-                <span>Kata Sandi</span>
+            <label class="login-floating-field login-password-field">
                 <span class="login-input">
                     {!! $icon('<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>') !!}
                     <input type="password" name="password" placeholder="Masukkan kata sandi" autocomplete="current-password" required data-password>
+                    <span class="login-floating-label">Kata Sandi</span>
                     <button type="button" class="password-toggle" data-password-toggle aria-label="Tampilkan kata sandi" title="Tampilkan kata sandi">
                         {!! $icon('<path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 5.2A11.8 11.8 0 0 1 12 5c6.5 0 10 7 10 7a16 16 0 0 1-2.1 3.2M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.8-.8"/>', 'password-icon-hidden') !!}
                         {!! $icon('<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>', 'password-icon-visible') !!}
@@ -94,7 +98,6 @@
             </div>
         </form>
     </section>
-    @include('partials.app-footer')
 </main>
 </body>
 </html>

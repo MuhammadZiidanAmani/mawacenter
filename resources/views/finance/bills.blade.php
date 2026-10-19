@@ -359,7 +359,7 @@
                                         <strong>{{ number_format($transfer->amount, 0, ',', '.') }}</strong>
                                     </span>
                                     <span class="payment-one-stop-history-actions">
-                                        <span class="bill-status {{ $transfer->status === 'Diterima' ? 'is-paid' : '' }}">{{ $transfer->status }}</span>
+                                        <span class="app-status bill-status {{ $transfer->status === 'Diterima' ? 'is-paid' : '' }}">{{ $transfer->status }}</span>
                                     </span>
                                 </div>
                             @endforeach
@@ -499,7 +499,7 @@
                                         <td>
                                             <span class="bill-student-name">{{ $student?->name }}</span>
                                         </td>
-                                        <td><span class="bill-unit-chip">{{ $student?->schoolClass?->educationUnit?->code ?? '-' }}</span></td>
+                                        <td><span class="app-status bill-unit-chip">{{ $student?->schoolClass?->educationUnit?->code ?? '-' }}</span></td>
                                         <td>{{ $student?->schoolClass?->name ?? '-' }}</td>
                                         <td><span class="bill-money remaining">{{ $rupiah($summary['total_remaining']) }}</span></td>
                                         <td>
@@ -552,25 +552,25 @@
                                 @endphp
 
                                 @if($studentsWithBills->onFirstPage())
-                                    <span class="bill-page-link is-disabled" aria-disabled="true">Sebelumnya</span>
+                                    <span class="app-page-button bill-page-link is-disabled" aria-disabled="true">Sebelumnya</span>
                                 @else
-                                    <a class="bill-page-link" href="{{ $studentsWithBills->previousPageUrl() }}" rel="prev">Sebelumnya</a>
+                                    <a class="app-page-button bill-page-link" href="{{ $studentsWithBills->previousPageUrl() }}" rel="prev">Sebelumnya</a>
                                 @endif
 
                                 @foreach($pageItems as $page => $url)
                                     @if($url === null)
-                                        <span class="bill-page-link is-ellipsis" aria-hidden="true">...</span>
+                                        <span class="app-page-button bill-page-link is-ellipsis" aria-hidden="true">...</span>
                                     @elseif((int) $page === $currentPage)
-                                        <span class="bill-page-link is-active" aria-current="page">{{ $page }}</span>
+                                        <span class="app-page-button bill-page-link is-active" aria-current="page">{{ $page }}</span>
                                     @else
-                                        <a class="bill-page-link" href="{{ $url }}">{{ $page }}</a>
+                                        <a class="app-page-button bill-page-link" href="{{ $url }}">{{ $page }}</a>
                                     @endif
                                 @endforeach
 
                                 @if($studentsWithBills->hasMorePages())
-                                    <a class="bill-page-link" href="{{ $studentsWithBills->nextPageUrl() }}" rel="next">Berikutnya</a>
+                                    <a class="app-page-button bill-page-link" href="{{ $studentsWithBills->nextPageUrl() }}" rel="next">Berikutnya</a>
                                 @else
-                                    <span class="bill-page-link is-disabled" aria-disabled="true">Berikutnya</span>
+                                    <span class="app-page-button bill-page-link is-disabled" aria-disabled="true">Berikutnya</span>
                                 @endif
                             </nav>
                         @endif

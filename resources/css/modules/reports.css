@@ -11,8 +11,6 @@
 
 .report-filter-card-v2, .report-filter-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); align-items: end; }
 .report-filter-card-v2 label, .report-filter-panel label { display: grid; gap: 6px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
-.report-search-input, .report-student-search-input { display: flex; align-items: center; gap: 8px; }
-.report-search-input input, .report-student-search-input input { min-height: 38px; padding: 0; border: 0; outline: 0; box-shadow: none; }
 .report-student-selected { display: flex; min-width: 0; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--app-primary-border); border-radius: var(--app-radius); background: var(--app-primary-soft); }
 .report-student-selected strong { min-width: 0; overflow-wrap: anywhere; }
 .report-student-selected a { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; color: var(--app-primary); }
@@ -84,12 +82,11 @@
 .report-money-cell { text-align: right; }
 .report-number-cell, .report-action-cell { text-align: center; font-variant-numeric: tabular-nums; }
 .report-name-cell { min-width: 200px; }
-.report-status, .report-type { display: inline-flex; min-height: 28px; align-items: center; padding: 4px 9px; color: var(--app-primary); background: var(--app-success-subtle); border-radius: 999px; font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
+.report-status, .report-type { color: var(--app-primary); background: var(--app-success-subtle); }
 .report-status.success { color: var(--app-success); background: var(--app-success-soft); }
 .report-status.warning { color: var(--app-warning); background: var(--app-warning-soft); }
 .report-status.danger { color: var(--app-danger); background: var(--app-danger-soft); }
 .report-status.neutral, .report-yearly-spp-badge { color: var(--app-muted); background: var(--app-neutral-soft); }
-.report-yearly-spp-badge { display: inline-flex; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
 .report-yearly-spp-badge.is-danger { color: var(--app-danger); background: var(--app-danger-soft); }
 .report-row-actions { display: flex; justify-content: center; gap: 6px; }
 .report-row-actions :is(button, a) { display: inline-grid; width: 32px; height: 32px; place-items: center; color: var(--app-primary); background: var(--app-success-subtle); border: 1px solid var(--app-primary-border); border-radius: var(--app-radius); cursor: pointer; }
@@ -97,10 +94,6 @@
 .report-detail-table-v2 { width: 100%; }
 .report-pagination, .report-pagination-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .report-pagination { justify-content: space-between; padding: 14px 16px; color: var(--app-muted); font-size: var(--app-text-body-size); font-weight: 500; line-height: var(--app-text-body-leading); }
-.report-page-button { display: inline-grid; min-width: var(--app-pagination-size); min-height: var(--app-pagination-size); place-items: center; padding: 0 10px; color: var(--app-label); background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
-.report-page-button:hover { color: var(--app-primary); background: var(--app-primary-soft); border-color: var(--app-primary-border); }
-.report-page-button.is-active { color: var(--app-on-primary); background: var(--app-primary); border-color: var(--app-primary); }
-.report-page-button.is-disabled { color: var(--app-muted); background: var(--app-panel-soft); }
 .report-payment-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 20px; }
 .report-payment-form label { display: grid; gap: 6px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
 .report-payment-form .span-2 { grid-column: 1 / -1; }

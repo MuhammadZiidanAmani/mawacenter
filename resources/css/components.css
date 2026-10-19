@@ -14,6 +14,17 @@
     border-radius: var(--app-radius-field);
 }
 
+/* Canonical label contract for forms and filter fields. */
+.app-field {
+    display: grid;
+    min-width: 0;
+    gap: 6px;
+    color: var(--app-label);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
+}
+
 /* Compound controls draw their border on the wrapper instead of the inner input. */
 :is(
     .app-field-shell,
@@ -27,6 +38,10 @@
     .payment-prd-bill-money-input,
     .payment-prd-money-input
 ) {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
     min-height: var(--app-field-height);
     color: var(--app-text);
     background: var(--app-surface);
@@ -66,6 +81,94 @@
     outline-offset: 0;
     box-shadow: none;
 }
+
+:is(
+    .app-field-shell,
+    .login-input,
+    .bill-search-input,
+    .report-search-input,
+    .report-student-search-input,
+    .master-table-search-input,
+    .payment-overview-search,
+    .payment-one-stop-search-field,
+    .payment-prd-bill-money-input,
+    .payment-prd-money-input
+) > :is(input, select, textarea) {
+    min-width: 0;
+    min-height: calc(var(--app-field-height) - 2px);
+    flex: 1 1 auto;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+/* Shared upload/dropzone contract for every import workflow. */
+.app-upload-dropzone {
+    position: relative;
+    display: grid;
+    min-height: 170px;
+    place-content: center;
+    justify-items: center;
+    gap: 8px;
+    padding: 20px;
+    color: var(--app-muted);
+    background: transparent;
+    border: 1px dashed var(--app-border-strong);
+    border-radius: var(--app-radius-field);
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.app-upload-dropzone:hover {
+    background: var(--app-primary-soft);
+    border-color: var(--app-primary);
+}
+
+.app-upload-dropzone:is(.is-dragging, .has-file) {
+    background: var(--app-primary-soft);
+    border-color: var(--app-primary);
+}
+
+.app-upload-dropzone.has-file { border-style: solid; }
+.app-upload-dropzone[aria-busy="true"] { cursor: progress; }
+
+.app-upload-dropzone:focus-within {
+    border-color: var(--app-primary);
+    outline: 2px solid var(--app-focus-ring);
+    outline-offset: 0;
+}
+
+.app-upload-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    opacity: 0;
+    border: 0;
+}
+
+.app-upload-icon {
+    display: inline-grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    color: var(--app-primary);
+    background: var(--app-primary-soft);
+    border-radius: 50%;
+}
+
+.app-upload-icon .icon { width: 24px; height: 24px; }
+.app-upload-copy { display: grid; justify-items: center; gap: 4px; }
+.app-upload-dropzone strong { color: var(--app-text); font-weight: 600; }
+.app-upload-dropzone small { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.app-upload-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 
 /*
  * Shared list toolbar. Add the canonical app-* classes to new views; the
@@ -207,24 +310,6 @@ select[name="per_page"] {
     min-width: 0;
 }
 
-:is(
-    .app-data-search-field,
-    .payment-overview-search,
-    .bill-search-input,
-    .report-student-search-input,
-    .master-table-search-input
-) input {
-    width: 100%;
-    min-width: 0;
-    min-height: calc(var(--app-field-height) - 2px);
-    padding: 0;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    outline: 0;
-    box-shadow: none;
-}
-
 .app-data-search.is-selected {
     display: flex;
     align-items: center;
@@ -351,14 +436,14 @@ select[name="per_page"] {
     text-align: center;
 }
 
-.app-shell main table > tbody > tr:not(.spp-expanded-row):not(.report-detail-row-v2):hover > :is(th, td) {
+.app-shell main table > tbody > tr:not(.spp-expanded-row):not(.report-detail-row-v2):not(.payment-import-preview-detail-row):hover > :is(th, td) {
     background: var(--app-table-row-hover);
 }
 
 .app-shell main table > tbody > tr:last-child > td { border-bottom: 0; }
 .app-shell main table > tfoot > tr > :is(th, td) { font-weight: 700; }
 
-.app-shell main table > tbody > :is(.spp-expanded-row, .report-detail-row-v2) > td {
+.app-shell main table > tbody > :is(.spp-expanded-row, .report-detail-row-v2, .payment-import-preview-detail-row) > td {
     padding: 0;
     background: var(--app-panel-soft);
 }
@@ -369,6 +454,7 @@ select[name="per_page"] {
 :is(
     .pagination a,
     .pagination span,
+    .app-page-button,
     .bill-page-link,
     .report-page-button,
     .student-page-button,
@@ -391,6 +477,7 @@ select[name="per_page"] {
 
 :is(
     .pagination a,
+    .app-page-button,
     .bill-page-link,
     .report-page-button,
     .student-page-button,
@@ -404,6 +491,7 @@ select[name="per_page"] {
 
 :is(
     .pagination .active span,
+    .app-page-button:is(.is-active, .is-current),
     .bill-page-link.is-active,
     .report-page-button.is-active,
     .student-page-button.is-active,
@@ -416,6 +504,7 @@ select[name="per_page"] {
 }
 
 :is(
+    .app-page-button:is(.is-disabled, :disabled),
     .bill-page-link.is-disabled,
     .report-page-button.is-disabled,
     .student-page-button.is-disabled,
@@ -425,6 +514,12 @@ select[name="per_page"] {
     color: var(--app-muted);
     background: var(--app-panel-soft);
     pointer-events: none;
+}
+
+.app-page-button:is(.is-disabled, :disabled) { opacity: .55; }
+
+@media (prefers-reduced-motion: reduce) {
+    .app-upload-dropzone { transition: none; }
 }
 
 /* Status geometry is shared even when a module owns the semantic color. */

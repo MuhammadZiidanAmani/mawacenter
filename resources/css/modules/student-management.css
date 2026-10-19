@@ -281,15 +281,8 @@
 
 .identity-standard-page .identity-reset-badge,
 .identity-cleanup-page .status-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
     color: var(--app-muted);
     background: var(--app-neutral-soft);
-    border-radius: 999px;
-    font-size: var(--app-text-body-size);
-    font-weight: 600;
-    line-height: var(--app-text-body-leading);
 }
 .identity-standard-page .identity-reset-badge.strong, .identity-cleanup-page .status-pill.active { color: var(--app-success); background: var(--app-success-soft); }
 .identity-standard-page .identity-reset-badge.medium { color: var(--app-warning); background: var(--app-warning-soft); }

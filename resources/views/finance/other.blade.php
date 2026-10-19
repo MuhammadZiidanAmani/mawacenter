@@ -130,9 +130,9 @@
                             <div><strong>Validasi Sistem</strong><p>Sistem akan memeriksa <b>NIS, kategori, nominal, dan duplikasi</b> sebelum data disimpan.</p></div>
                         </div>
                         <form method="POST" action="{{ route('finance.other.import.preview', ['category' => $paymentSection['key']]) }}" enctype="multipart/form-data" class="spp-import-modal-form">@csrf
-                            <label class="spp-import-dropzone">
-                                <input type="file" name="file" accept=".xlsx" required data-spp-import-file>
-                                <span class="spp-import-drop-icon">{!! $icon('upload') !!}</span>
+                            <label class="app-upload-dropzone spp-import-dropzone">
+                                <input class="app-upload-input" type="file" name="file" accept=".xlsx" required data-spp-import-file>
+                                <span class="app-upload-icon spp-import-drop-icon">{!! $icon('upload') !!}</span>
                                 <strong data-spp-import-filename>Ketuk untuk pilih berkas</strong>
                                 <small>Format XLSX · Maksimal 10 MB</small>
                                 <span class="spp-import-browse">Cari di Dokumen Saya</span>

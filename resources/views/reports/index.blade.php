@@ -155,7 +155,7 @@
                                     <td><span class="report-student-name">{{ $item['student'] }}</span></td>
                                     <td><span class="education-code">{{ $item['unit'] }}</span></td>
                                     <td>{{ $item['class'] }}</td>
-                                    <td><span class="report-type {{ $item['group'] }}">{{ $item['type'] }}</span></td>
+                                    <td><span class="app-status report-type {{ $item['group'] }}">{{ $item['type'] }}</span></td>
                                     <td>{{ $item['method'] }}</td>
                                     <td><span class="status {{ $item['status'] === 'Diterima' ? 'success' : 'warning' }}">{{ $item['status'] }}</span></td>
                                     <td><span class="report-amount">{{ $rupiah($item['amount']) }}</span></td>

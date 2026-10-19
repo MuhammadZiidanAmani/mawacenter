@@ -184,9 +184,9 @@
 
                     <form method="POST" action="{{ route('master.students.import.preview') }}" enctype="multipart/form-data" class="student-import-page-form">
                         @csrf
-                        <label class="student-import-page-upload" data-student-import-upload>
-                            <input type="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required data-spp-import-file>
-                            <span class="student-import-upload-icon">{!! $icon('upload') !!}</span>
+                        <label class="app-upload-dropzone student-import-page-upload" data-student-import-upload>
+                            <input class="app-upload-input" type="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required data-spp-import-file>
+                            <span class="app-upload-icon student-import-upload-icon">{!! $icon('upload') !!}</span>
                             <strong data-spp-import-filename>Pilih file Excel data siswa</strong>
                             <small>Format XLSX, maksimal 5 MB. Gunakan template agar kolom sesuai.</small>
                         </label>
@@ -1127,13 +1127,13 @@
                             <p>{{ $studentResultSummary }}</p>
                             <div class="student-pagination-links">
                                 @if($data->onFirstPage())
-                                    <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                                    <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
                                 @else
-                                    <a class="student-page-button" href="{{ $studentPageUrl($studentCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
+                                    <a class="app-page-button student-page-button" href="{{ $studentPageUrl($studentCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
                                 @endif
 
                                 @if($studentStartPage > 1)
-                                    <a class="student-page-button is-number" href="{{ $studentPageUrl(1) }}" aria-label="Halaman 1">1</a>
+                                    <a class="app-page-button student-page-button is-number" href="{{ $studentPageUrl(1) }}" aria-label="Halaman 1">1</a>
                                     @if($studentStartPage > 2)
                                         <span class="student-page-ellipsis" aria-hidden="true">...</span>
                                     @endif
@@ -1141,9 +1141,9 @@
 
                                 @for($page = $studentStartPage; $page <= $studentEndPage; $page++)
                                     @if($page === $studentCurrentPage)
-                                        <span class="student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
+                                        <span class="app-page-button student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
                                     @else
-                                        <a class="student-page-button is-number" href="{{ $studentPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                        <a class="app-page-button student-page-button is-number" href="{{ $studentPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
                                     @endif
                                 @endfor
 
@@ -1151,13 +1151,13 @@
                                     @if($studentEndPage < $studentLastPage - 1)
                                         <span class="student-page-ellipsis" aria-hidden="true">...</span>
                                     @endif
-                                    <a class="student-page-button is-number" href="{{ $studentPageUrl($studentLastPage) }}" aria-label="Halaman {{ $studentLastPage }}">{{ $studentLastPage }}</a>
+                                    <a class="app-page-button student-page-button is-number" href="{{ $studentPageUrl($studentLastPage) }}" aria-label="Halaman {{ $studentLastPage }}">{{ $studentLastPage }}</a>
                                 @endif
 
                                 @if($data->hasMorePages())
-                                    <a class="student-page-button" href="{{ $studentPageUrl($studentCurrentPage + 1) }}" rel="next">Berikutnya</a>
+                                    <a class="app-page-button student-page-button" href="{{ $studentPageUrl($studentCurrentPage + 1) }}" rel="next">Berikutnya</a>
                                 @else
-                                    <span class="student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
+                                    <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
                                 @endif
                             </div>
                         </nav>
@@ -1186,37 +1186,37 @@
                             @endphp
                             <nav class="master-pagination" aria-label="Navigasi halaman {{ $labels[$tab][0] }}">
                                 @if($data->onFirstPage())
-                                    <span class="master-page-link is-disabled" aria-disabled="true">Sebelumnya</span>
+                                    <span class="app-page-button master-page-link is-disabled" aria-disabled="true">Sebelumnya</span>
                                 @else
-                                    <a class="master-page-link" href="{{ $data->previousPageUrl() }}" rel="prev">Sebelumnya</a>
+                                    <a class="app-page-button master-page-link" href="{{ $data->previousPageUrl() }}" rel="prev">Sebelumnya</a>
                                 @endif
 
                                 @if($masterStartPage > 1)
-                                    <a class="master-page-link is-number" href="{{ $data->url(1) }}" aria-label="Halaman 1">1</a>
+                                    <a class="app-page-button master-page-link is-number" href="{{ $data->url(1) }}" aria-label="Halaman 1">1</a>
                                     @if($masterStartPage > 2)
-                                        <span class="master-page-link is-ellipsis" aria-hidden="true">...</span>
+                                        <span class="app-page-button master-page-link is-ellipsis" aria-hidden="true">...</span>
                                     @endif
                                 @endif
 
                                 @for($page = $masterStartPage; $page <= $masterEndPage; $page++)
                                     @if($page === $masterCurrentPage)
-                                        <span class="master-page-link is-number is-active" aria-current="page">{{ $page }}</span>
+                                        <span class="app-page-button master-page-link is-number is-active" aria-current="page">{{ $page }}</span>
                                     @else
-                                        <a class="master-page-link is-number" href="{{ $data->url($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                        <a class="app-page-button master-page-link is-number" href="{{ $data->url($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
                                     @endif
                                 @endfor
 
                                 @if($masterEndPage < $masterLastPage)
                                     @if($masterEndPage < $masterLastPage - 1)
-                                        <span class="master-page-link is-ellipsis" aria-hidden="true">...</span>
+                                        <span class="app-page-button master-page-link is-ellipsis" aria-hidden="true">...</span>
                                     @endif
-                                    <a class="master-page-link is-number" href="{{ $data->url($masterLastPage) }}" aria-label="Halaman {{ $masterLastPage }}">{{ $masterLastPage }}</a>
+                                    <a class="app-page-button master-page-link is-number" href="{{ $data->url($masterLastPage) }}" aria-label="Halaman {{ $masterLastPage }}">{{ $masterLastPage }}</a>
                                 @endif
 
                                 @if($data->hasMorePages())
-                                    <a class="master-page-link" href="{{ $data->nextPageUrl() }}" rel="next">Berikutnya</a>
+                                    <a class="app-page-button master-page-link" href="{{ $data->nextPageUrl() }}" rel="next">Berikutnya</a>
                                 @else
-                                    <span class="master-page-link is-disabled" aria-disabled="true">Berikutnya</span>
+                                    <span class="app-page-button master-page-link is-disabled" aria-disabled="true">Berikutnya</span>
                                 @endif
                             </nav>
                         @endif

@@ -41,7 +41,7 @@
     $visibleMasterMenuItems = collect($masterMenuItems)->filter(fn ($item) => $canAccess($item[2]));
 @endphp
 <aside class="sidebar" data-sidebar>
-    <div class="brand"><div class="brand-mark"><img src="{{ asset('images/mawa-center-mark.png') }}" alt="Logo Ma'wa Center"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
+    <div class="brand"><div class="brand-mark"><img src="{{ asset('images/mawa-center-mark.webp') }}" alt="Logo Ma'wa Center" width="128" height="128"></div><div><strong>MA'WA <span>CENTER</span></strong><small>Manajemen Keuangan</small></div><button class="icon-button sidebar-close" data-sidebar-close>×</button></div>
     <nav class="sidebar-nav" data-sidebar-nav>
         @if($canAccess('dashboard.view'))
         <p class="nav-section-label">UTAMA</p>

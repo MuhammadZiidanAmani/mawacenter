@@ -97,7 +97,7 @@
                                             <td class="identity-cell-center">{{ $student->schoolClass?->name ?? '-' }}</td>
                                             <td class="identity-cell-center">{{ $student->academicYear?->name ?? '-' }}</td>
                                             <td class="identity-cell-center">
-                                                <span class="status-pill {{ $student->is_active ? 'active' : 'inactive' }}">
+                                                <span class="app-status status-pill {{ $student->is_active ? 'active' : 'inactive' }}">
                                                     {{ $student->is_active ? 'Aktif' : 'Nonaktif' }}
                                                 </span>
                                             </td>

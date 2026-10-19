@@ -200,7 +200,7 @@
                                         <span>{{ $unitSummary ?: '-' }}</span>
                                         <small>{{ $classSummary ?: '-' }}</small>
                                     </td>
-                                    <td class="identity-cell-center" data-label="Keyakinan"><span class="identity-reset-badge {{ $confidenceClass }}">{{ $candidate['confidence'] }}</span></td>
+                                    <td class="identity-cell-center" data-label="Keyakinan"><span class="app-status identity-reset-badge {{ $confidenceClass }}">{{ $candidate['confidence'] }}</span></td>
                                     <td class="identity-cell-center" data-label="Jumlah Data"><span class="identity-reset-mini">{{ $candidate['students']->count() }} data</span></td>
                                     <td class="identity-cell-action" data-label="Aksi">
                                         @if ($isLinkedRow)
@@ -248,13 +248,13 @@
                     @if($candidates->hasPages())
                         <div class="student-pagination-links">
                             @if($candidates->onFirstPage())
-                                <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                                <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
                             @else
-                                <a class="student-page-button" href="{{ $identityPageUrl($identityCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
+                                <a class="app-page-button student-page-button" href="{{ $identityPageUrl($identityCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
                             @endif
 
                             @if($identityStartPage > 1)
-                                <a class="student-page-button is-number" href="{{ $identityPageUrl(1) }}" aria-label="Halaman 1">1</a>
+                                <a class="app-page-button student-page-button is-number" href="{{ $identityPageUrl(1) }}" aria-label="Halaman 1">1</a>
                                 @if($identityStartPage > 2)
                                     <span class="student-page-ellipsis" aria-hidden="true">...</span>
                                 @endif
@@ -262,9 +262,9 @@
 
                             @for($page = $identityStartPage; $page <= $identityEndPage; $page++)
                                 @if($page === $identityCurrentPage)
-                                    <span class="student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
+                                    <span class="app-page-button student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
                                 @else
-                                    <a class="student-page-button is-number" href="{{ $identityPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                    <a class="app-page-button student-page-button is-number" href="{{ $identityPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
                                 @endif
                             @endfor
 
@@ -272,13 +272,13 @@
                                 @if($identityEndPage < $identityLastPage - 1)
                                     <span class="student-page-ellipsis" aria-hidden="true">...</span>
                                 @endif
-                                <a class="student-page-button is-number" href="{{ $identityPageUrl($identityLastPage) }}" aria-label="Halaman {{ $identityLastPage }}">{{ $identityLastPage }}</a>
+                                <a class="app-page-button student-page-button is-number" href="{{ $identityPageUrl($identityLastPage) }}" aria-label="Halaman {{ $identityLastPage }}">{{ $identityLastPage }}</a>
                             @endif
 
                             @if($candidates->hasMorePages())
-                                <a class="student-page-button" href="{{ $identityPageUrl($identityCurrentPage + 1) }}" rel="next">Berikutnya</a>
+                                <a class="app-page-button student-page-button" href="{{ $identityPageUrl($identityCurrentPage + 1) }}" rel="next">Berikutnya</a>
                             @else
-                                <span class="student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
+                                <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
                             @endif
                         </div>
                     @endif

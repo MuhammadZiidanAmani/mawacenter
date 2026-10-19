@@ -282,7 +282,7 @@ class MasterDataController extends Controller
             || $request->routeIs('student-management.students.edit');
         $showStudentImport = $request->routeIs('student-management.students.import');
         $studentImportPreview = $this->studentImportPreview($request);
-        $needsClasses = in_array($tab, ['students', 'fee-discounts'], true);
+        $needsClasses = in_array($tab, ['students', 'fee-types', 'fee-discounts'], true);
         $needsEducationUnits = in_array($tab, ['students', 'classes', 'fee-types', 'fee-discounts', 'data-users'], true);
         $needsAcademicYears = in_array($tab, ['students', 'academic-years', 'classes', 'fee-types', 'fee-discounts'], true);
 

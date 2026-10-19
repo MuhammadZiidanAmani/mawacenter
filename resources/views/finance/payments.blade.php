@@ -274,7 +274,7 @@
                                                         <td>{{ $row['class'] }}</td>
                                                         <td>Rp {{ number_format($row['total'], 0, ',', '.') }}</td>
                                                         <td>
-                                                            <span @class(['payment-overview-status', 'is-paid' => $row['status'] === 'Lunas', 'is-running' => $row['status'] === 'Berjalan', 'is-overdue' => $row['status'] === 'Jatuh Tempo'])>{{ $row['status'] }}</span>
+                                                            <span @class(['app-status', 'payment-overview-status', 'is-paid' => $row['status'] === 'Lunas', 'is-running' => $row['status'] === 'Berjalan', 'is-overdue' => $row['status'] === 'Jatuh Tempo'])>{{ $row['status'] }}</span>
                                                         </td>
                                                         <td>
                                                             <a class="payment-overview-action" href="{{ route('finance.payments.index', array_filter(['search' => $row['name'], 'student_id' => $row['identity_id'], 'unit_id' => ($selectedUnitId ?? 0) ?: null, 'class_id' => ($selectedClassId ?? 0) ?: null, 'per_page' => $paymentOverviewPerPage ?? 10, 'page' => ($paymentOverviewRows ?? null)?->currentPage() > 1 ? $paymentOverviewRows->currentPage() : null])) }}" aria-label="Lihat detail tagihan {{ $row['name'] }}" title="Detail Tagihan">
@@ -324,25 +324,25 @@
                                             @endphp
                                             <div class="payment-overview-pagination-links">
                                                 @if($paymentOverviewRows->onFirstPage())
-                                                    <span class="payment-overview-page-button is-disabled" aria-disabled="true" title="Halaman sebelumnya">{!! $icon('arrow-left') !!}</span>
+                                                    <span class="app-page-button payment-overview-page-button is-disabled" aria-disabled="true" title="Halaman sebelumnya">{!! $icon('arrow-left') !!}</span>
                                                 @else
-                                                    <a class="payment-overview-page-button" href="{{ $paymentOverviewRows->previousPageUrl() }}" rel="prev" aria-label="Halaman sebelumnya" title="Halaman sebelumnya">{!! $icon('arrow-left') !!}</a>
+                                                    <a class="app-page-button payment-overview-page-button" href="{{ $paymentOverviewRows->previousPageUrl() }}" rel="prev" aria-label="Halaman sebelumnya" title="Halaman sebelumnya">{!! $icon('arrow-left') !!}</a>
                                                 @endif
 
                                                 @foreach($pageItems as $page => $url)
                                                     @if($url === null)
-                                                        <span class="payment-overview-page-button is-ellipsis" aria-hidden="true">...</span>
+                                                        <span class="app-page-button payment-overview-page-button is-ellipsis" aria-hidden="true">...</span>
                                                     @elseif((int) $page === $currentPage)
-                                                        <span class="payment-overview-page-button is-active" aria-current="page">{{ $page }}</span>
+                                                        <span class="app-page-button payment-overview-page-button is-active" aria-current="page">{{ $page }}</span>
                                                     @else
-                                                        <a class="payment-overview-page-button" href="{{ $url }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                                        <a class="app-page-button payment-overview-page-button" href="{{ $url }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
                                                     @endif
                                                 @endforeach
 
                                                 @if($paymentOverviewRows->hasMorePages())
-                                                    <a class="payment-overview-page-button" href="{{ $paymentOverviewRows->nextPageUrl() }}" rel="next" aria-label="Halaman berikutnya" title="Halaman berikutnya">{!! $icon('arrow-right') !!}</a>
+                                                    <a class="app-page-button payment-overview-page-button" href="{{ $paymentOverviewRows->nextPageUrl() }}" rel="next" aria-label="Halaman berikutnya" title="Halaman berikutnya">{!! $icon('arrow-right') !!}</a>
                                                 @else
-                                                    <span class="payment-overview-page-button is-disabled" aria-disabled="true" title="Halaman berikutnya">{!! $icon('arrow-right') !!}</span>
+                                                    <span class="app-page-button payment-overview-page-button is-disabled" aria-disabled="true" title="Halaman berikutnya">{!! $icon('arrow-right') !!}</span>
                                                 @endif
                                             </div>
                                         @endif
@@ -875,7 +875,7 @@
                     @csrf
                     <section class="payment-import-card payment-import-context-card">
                         <div class="payment-import-context-grid">
-                            <label class="payment-import-simple-field">
+                            <label class="app-field payment-import-simple-field">
                                 <span>Jenis Pembayaran</span>
                                 <select data-payment-import-category>
                                     @foreach($importTypes as [$key, $code, $title, $description, $action])
@@ -885,7 +885,7 @@
                             </label>
 
                             <div class="payment-import-spp-context" data-payment-import-spp-context>
-                                <label class="payment-import-simple-field">
+                                <label class="app-field payment-import-simple-field">
                                     <span>Unit Pendidikan</span>
                                     <select name="unit_id" required data-payment-import-spp-field>
                                         <option value="">Pilih unit</option>
@@ -895,7 +895,7 @@
                                     </select>
                                 </label>
 
-                                <label class="payment-import-simple-field">
+                                <label class="app-field payment-import-simple-field">
                                     <span>Bulan</span>
                                     <select name="month" required data-payment-import-spp-field>
                                         @foreach($importMonths as $monthNumber => $monthName)
@@ -904,7 +904,7 @@
                                     </select>
                                 </label>
 
-                                <label class="payment-import-simple-field">
+                                <label class="app-field payment-import-simple-field">
                                     <span>Tahun</span>
                                     <select name="year" required data-payment-import-spp-field>
                                         @foreach($importYears as $year)
@@ -925,17 +925,17 @@
                             </div>
                         </div>
 
-                        <div class="payment-import-dropzone" data-payment-import-dropzone>
-                            <span class="payment-import-dropzone-icon" aria-hidden="true">{!! $icon('file') !!}</span>
-                            <label class="payment-import-dropzone-copy" for="payment-import-file-input" data-payment-import-file-empty>
+                        <div class="app-upload-dropzone payment-import-dropzone" data-payment-import-dropzone>
+                            <span class="app-upload-icon payment-import-dropzone-icon" aria-hidden="true">{!! $icon('file') !!}</span>
+                            <label class="app-upload-copy payment-import-dropzone-copy" for="payment-import-file-input" data-payment-import-file-empty>
                                 <strong>Pilih file Excel</strong>
                                 <small>Tarik file ke sini atau klik untuk memilih. Format XLSX, maksimal 10 MB.</small>
                             </label>
-                            <span class="payment-import-dropzone-copy" data-payment-import-file-selected hidden>
+                            <span class="app-upload-copy payment-import-dropzone-copy" data-payment-import-file-selected hidden>
                                 <strong data-payment-import-filename></strong>
                                 <small data-payment-import-filesize></small>
                             </span>
-                            <span class="payment-import-dropzone-actions">
+                            <span class="app-upload-actions payment-import-dropzone-actions">
                                 <button type="button" class="button button-secondary" data-payment-import-file-change hidden>Ganti</button>
                                 <button type="button" class="button button-secondary" data-payment-import-file-remove hidden>Hapus</button>
                             </span>
@@ -945,6 +945,7 @@
                                 name="file"
                                 accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                                 required
+                                class="app-upload-input"
                                 data-payment-import-file
                             >
                         </div>
@@ -1090,7 +1091,7 @@
                             </div>
                             <div class="payment-import-mapping-fields">
                                 @foreach($unresolvedSources as $source)
-                                    <label>
+                                    <label class="app-field">
                                         <span>{{ $source['category'] }} · {{ $source['unit'] }}{{ $source['class_level'] ? ' · '.\App\Support\ClassLevel::label($source['class_level']) : '' }}</span>
                                         <select name="mappings[{{ $source['key'] }}]" required>
                                             <option value="">Pilih kategori</option>
@@ -1174,7 +1175,7 @@
 
                             @if($previewFailureRows->isNotEmpty())
                                 <div class="payment-import-preview-controls">
-                                    <label class="payment-import-preview-search">
+                                    <label class="app-field-shell payment-import-preview-search">
                                         <span class="sr-only">Cari NIS atau nama siswa</span>
                                         <span class="payment-import-preview-search-icon" aria-hidden="true">{!! $icon('search') !!}</span>
                                         <input type="search" placeholder="Cari NIS atau nama siswa" data-import-preview-search>
@@ -1183,7 +1184,7 @@
                             @endif
 
                             @if($previewFailureRows->isNotEmpty())
-                                <div class="table-wrap payment-import-preview-table-wrap">
+                                <div class="app-table-surface table-wrap payment-import-preview-table-wrap">
                                     <table class="data-table payment-import-preview-table">
                                         <thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>{{ $previewType === 'spp' ? 'Periode' : 'Kategori' }}</th><th>Nominal</th><th>Masalah</th></tr></thead>
                                         <tbody data-import-preview-rows>
@@ -1235,7 +1236,7 @@
                                 </div>
                                 <div class="payment-import-preview-pagination" data-import-preview-pagination>
                                     <span data-import-preview-range></span>
-                                    <div data-import-preview-pages></div>
+                                    <div class="pagination" data-import-preview-pages></div>
                                 </div>
                             @else
                                 <div class="payment-import-preview-empty is-success">

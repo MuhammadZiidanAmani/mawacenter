@@ -307,13 +307,13 @@
                 @if(method_exists($students, 'hasPages') && $students->hasPages())
                     <div class="student-pagination-links">
                         @if($students->onFirstPage())
-                            <span class="student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                            <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
                         @else
-                            <a class="student-page-button" href="{{ $movementPageUrl($movementCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
+                            <a class="app-page-button student-page-button" href="{{ $movementPageUrl($movementCurrentPage - 1) }}" rel="prev">Sebelumnya</a>
                         @endif
 
                         @if($movementStartPage > 1)
-                            <a class="student-page-button is-number" href="{{ $movementPageUrl(1) }}" aria-label="Halaman 1">1</a>
+                            <a class="app-page-button student-page-button is-number" href="{{ $movementPageUrl(1) }}" aria-label="Halaman 1">1</a>
                             @if($movementStartPage > 2)
                                 <span class="student-page-ellipsis" aria-hidden="true">...</span>
                             @endif
@@ -321,9 +321,9 @@
 
                         @for($page = $movementStartPage; $page <= $movementEndPage; $page++)
                             @if($page === $movementCurrentPage)
-                                <span class="student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
+                                <span class="app-page-button student-page-button is-number is-active" aria-current="page">{{ $page }}</span>
                             @else
-                                <a class="student-page-button is-number" href="{{ $movementPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                <a class="app-page-button student-page-button is-number" href="{{ $movementPageUrl($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
                             @endif
                         @endfor
 
@@ -331,13 +331,13 @@
                             @if($movementEndPage < $movementLastPage - 1)
                                 <span class="student-page-ellipsis" aria-hidden="true">...</span>
                             @endif
-                            <a class="student-page-button is-number" href="{{ $movementPageUrl($movementLastPage) }}" aria-label="Halaman {{ $movementLastPage }}">{{ $movementLastPage }}</a>
+                            <a class="app-page-button student-page-button is-number" href="{{ $movementPageUrl($movementLastPage) }}" aria-label="Halaman {{ $movementLastPage }}">{{ $movementLastPage }}</a>
                         @endif
 
                         @if($students->hasMorePages())
-                            <a class="student-page-button" href="{{ $movementPageUrl($movementCurrentPage + 1) }}" rel="next">Berikutnya</a>
+                            <a class="app-page-button student-page-button" href="{{ $movementPageUrl($movementCurrentPage + 1) }}" rel="next">Berikutnya</a>
                         @else
-                            <span class="student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
+                            <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Berikutnya</span>
                         @endif
                     </div>
                 @endif

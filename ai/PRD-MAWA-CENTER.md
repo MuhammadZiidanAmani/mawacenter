@@ -279,6 +279,8 @@ Riwayat menggabungkan SPP/Other, maksimal 5-10 item; kode/test saat ini memakai 
 
 Jenis: SPP, Daftar Ulang, Laundry, Lain-lain. Pilih konteks/file, Preview Data, validasi valid/gagal/duplikat, lalu konfirmasi jika ada baris valid. SPP mewajibkan unit, bulan, tahun dari form sebagai konteks utama; kolom Excel yang berbeda harus ditolak. Jika kolom unit/bulan/tahun tidak ada, gunakan konteks form.
 
+Khusus import Excel SPP, bulan boleh diproses tanpa mengikuti tunggakan paling lama siswa. Pembayaran SPP manual tetap berurutan. Import tetap wajib menolak periode di luar masa tagihan, bulan yang sudah lunas, nominal melebihi sisa tagihan, unit/siswa yang tidak sesuai scope, serta transaksi duplikat.
+
 Kolom minimal SPP: NIS, Nama, Cara bayar, Waktu, Nominal; Petugas opsional. Jangan menambah izin import bendahara berdasarkan sebutan generik pada PRD lama. Kode saat ini memproteksi import dengan `payments.verify_transfer`.
 
 Empty/error penting: siswa tidak ditemukan, belum ada siswa dipilih, tidak ada tagihan aktif/wajib, opsional tersedia ketika wajib lunas, belum ada riwayat, belum memilih tagihan, nominal kosong/melebihi total, bukti belum diunggah, scope unit ditolak, atau tagihan sudah lunas. Error dekat konteks; empty bukan error.

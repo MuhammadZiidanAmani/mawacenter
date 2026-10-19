@@ -2122,6 +2122,54 @@ class MasterDataTest extends TestCase
         $this->assertDatabaseCount('spp_payments', 0);
     }
 
+    public function test_spp_import_can_pay_a_later_month_while_older_months_are_outstanding(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PAUD', 'name' => 'PAUD MAMBAUL HIKMAH', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'PAUD A', 'level' => 'PAUD']);
+        $student = Student::create([
+            'nis' => '260314',
+            'name' => 'SISWA IMPORT TIDAK BERURUTAN',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'billing_start_date' => '2025-07-01',
+            'is_active' => true,
+        ]);
+        $this->createSppCategory($unit, 50000);
+
+        $path = tempnam(sys_get_temp_dir(), 'spp-import-nonsequential-');
+        StudentXlsx::write($path, [
+            ['Data Laporan SPP'],
+            ['No', 'NIS', 'Nama', 'Jenis Pendidikan', 'Cara bayar', 'Bulan', 'Tahun', 'Waktu', 'Nominal'],
+            [1, '260314', 'SISWA IMPORT TIDAK BERURUTAN', 'PAUD MAMBAUL HIKMAH', 'cash', 'maret', 2026, '2026-03-10 08:30:00', 50000],
+        ]);
+
+        try {
+            $context = ['unit_id' => $unit->id, 'month' => 3, 'year' => 2026];
+            $preview = app(SppPaymentImportService::class)->preview($path, 'spp-maret.xlsx', $context);
+            $result = app(SppPaymentImportService::class)->import($path, 'spp-maret.xlsx', $context);
+        } finally {
+            @unlink($path);
+        }
+
+        $this->assertSame(1, $preview['valid']);
+        $this->assertSame([], $preview['failures']);
+        $this->assertSame(1, $result['imported']);
+        $this->assertDatabaseHas('spp_payment_items', [
+            'student_id' => $student->id,
+            'year' => 2026,
+            'month' => 3,
+            'paid_amount' => 50000,
+            'payment_status' => 'Lunas',
+        ]);
+        $this->assertDatabaseMissing('spp_payment_items', [
+            'student_id' => $student->id,
+            'year' => 2025,
+            'month' => 7,
+        ]);
+    }
+
     public function test_spp_import_uses_entry_date_as_first_billing_month_when_billing_start_is_empty(): void
     {
         $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);

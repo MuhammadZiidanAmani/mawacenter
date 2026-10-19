@@ -574,7 +574,7 @@
                                                 @if($column['key'] === 'no')
                                                     {{ ($rowsPaginator?->firstItem() ?? 1) + $loop->parent->index }}
                                                 @elseif(($column['type'] ?? '') === 'status')
-                                                    <span class="report-status {{ $statusClass($row[$column['key']] ?? '') }}">{{ $row[$column['key']] ?? '-' }}</span>
+                                                    <span class="app-status report-status {{ $statusClass($row[$column['key']] ?? '') }}">{{ $row[$column['key']] ?? '-' }}</span>
                                                 @elseif(($column['type'] ?? '') === 'actions')
                                                     <div class="report-row-actions{{ $rowActionClass }}">
                                                         <button type="button" data-report-row-toggle="{{ $rowDetailId }}" aria-expanded="false" aria-controls="{{ $rowDetailId }}" aria-label="Detail transaksi" title="Detail transaksi">{!! $icon('eye') !!}</button>
@@ -597,7 +597,7 @@
                                                         $yearlyBadgeClass = $reportKey === 'yearly-spp' ? $yearlySppBadgeClass($cellValue) : null;
                                                     @endphp
                                                     @if($yearlyBadgeClass)
-                                                        <span class="report-yearly-spp-badge is-{{ $yearlyBadgeClass }}">{{ $cellValue }}</span>
+                                                        <span class="app-status report-yearly-spp-badge is-{{ $yearlyBadgeClass }}">{{ $cellValue }}</span>
                                                     @else
                                                         {{ $cellValue }}
                                                     @endif
@@ -698,13 +698,13 @@
                             <p>{{ $reportResultSummary }}</p>
                             <div class="report-pagination-links">
                                 @if($rowsPaginator->onFirstPage())
-                                    <span class="report-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
+                                    <span class="app-page-button report-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
                                 @else
-                                    <a class="report-page-button" href="{{ $rowsPaginator->previousPageUrl() }}" rel="prev">Sebelumnya</a>
+                                    <a class="app-page-button report-page-button" href="{{ $rowsPaginator->previousPageUrl() }}" rel="prev">Sebelumnya</a>
                                 @endif
 
                                 @if($startPage > 1)
-                                    <a class="report-page-button is-number" href="{{ $rowsPaginator->url(1) }}" aria-label="Halaman 1">1</a>
+                                    <a class="app-page-button report-page-button is-number" href="{{ $rowsPaginator->url(1) }}" aria-label="Halaman 1">1</a>
                                     @if($startPage > 2)
                                         <span class="report-page-ellipsis" aria-hidden="true">...</span>
                                     @endif
@@ -712,9 +712,9 @@
 
                                 @for($page = $startPage; $page <= $endPage; $page++)
                                     @if($page === $currentPage)
-                                        <span class="report-page-button is-number is-active" aria-current="page">{{ $page }}</span>
+                                        <span class="app-page-button report-page-button is-number is-active" aria-current="page">{{ $page }}</span>
                                     @else
-                                        <a class="report-page-button is-number" href="{{ $rowsPaginator->url($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
+                                        <a class="app-page-button report-page-button is-number" href="{{ $rowsPaginator->url($page) }}" aria-label="Halaman {{ $page }}">{{ $page }}</a>
                                     @endif
                                 @endfor
 
@@ -722,13 +722,13 @@
                                     @if($endPage < $lastPage - 1)
                                         <span class="report-page-ellipsis" aria-hidden="true">...</span>
                                     @endif
-                                    <a class="report-page-button is-number" href="{{ $rowsPaginator->url($lastPage) }}" aria-label="Halaman {{ $lastPage }}">{{ $lastPage }}</a>
+                                    <a class="app-page-button report-page-button is-number" href="{{ $rowsPaginator->url($lastPage) }}" aria-label="Halaman {{ $lastPage }}">{{ $lastPage }}</a>
                                 @endif
 
                                 @if($rowsPaginator->hasMorePages())
-                                    <a class="report-page-button" href="{{ $rowsPaginator->nextPageUrl() }}" rel="next">Berikutnya</a>
+                                    <a class="app-page-button report-page-button" href="{{ $rowsPaginator->nextPageUrl() }}" rel="next">Berikutnya</a>
                                 @else
-                                    <span class="report-page-button is-disabled" aria-disabled="true">Berikutnya</span>
+                                    <span class="app-page-button report-page-button is-disabled" aria-disabled="true">Berikutnya</span>
                                 @endif
                             </div>
                         </nav>
