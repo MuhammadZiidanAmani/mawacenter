@@ -183,6 +183,8 @@ Sidebar/topbar putih dengan border. Normal teks label; hover dan aktif memakai t
 
 Gunakan `.button`, `.button-primary`, `.button-secondary`, `.icon-button`, `.icon` yang ada sebelum membuat sistem komponen kedua. Ikon aplikasi sekarang memakai helper SVG Blade; gunakan ikon existing. Lucide hanya bila sudah diintegrasikan, jangan mengasumsikan ada dependency atau komponen `<x-icon>`.
 
+Aksi detail di dalam tabel memakai `.app-table-action`. Komponen global ini memiliki tinggi 36px, border dan radius token, ikon 18px, hover `--app-primary-soft`, focus ring primer, serta state disabled. Gunakan `.is-icon-only` untuk aksi yang selalu hanya menampilkan ikon, atau `.is-compact-mobile` bila label hanya disembunyikan pada layar kecil; `aria-label` dan `title` tetap wajib. Alias view lama boleh dipetakan ke kontrak ini, sedangkan CSS modul hanya mengatur posisi atau lebar kolomnya.
+
 Tombol pagination aplikasi memakai `.app-page-button`; class lama per modul boleh tetap menjadi alias sementara, tetapi tidak boleh memiliki ulang warna, border, radius, atau state hover/aktif sendiri.
 
 Untuk aksi tool gunakan ikon yang umum: printer, download, edit, trash, receipt/detail. Teks/icon+teks untuk perintah jelas seperti Simpan/Terapkan/Bayar. Tipe pembayaran memakai segmented radio, seleksi memakai checkbox, mode biner toggle/checkbox, opsi memakai select/menu, angka memakai input/stepper. Ikon dekoratif `aria-hidden=true`.

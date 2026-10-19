@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $mode === 'import-preview' ? 'Preview Import Pembayaran' : ($mode === 'import-result' ? 'Import Pembayaran Selesai' : ($mode === 'import' ? 'Import Pembayaran' : ($mode === 'history' ? 'Riwayat Pembayaran' : 'Pembayaran'))) }} - MA'WA CENTER</title>
+    @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
@@ -41,6 +42,7 @@
                             'file' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l4 4v16H6z"></path><path d="M14 2v5h5"></path><path d="M9 13h6"></path><path d="M9 17h6"></path></svg>',
                             'arrow-left' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path><path d="M9 12h10"></path></svg>',
                             'arrow-right' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path><path d="M5 12h10"></path></svg>',
+                            'eye' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>',
                             'copy' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>',
                             'receipt' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2v20l3-2 3 2 3-2 3 2 4-2V2z"></path><path d="M8 7h8"></path><path d="M8 11h8"></path><path d="M8 15h5"></path></svg>',
                             'printer' => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v8H6z"></path><path d="M18 13h.01"></path></svg>',
@@ -254,7 +256,7 @@
                                                     <th>No</th>
                                                     <th>Nama Siswa</th>
                                                     <th>Kelas</th>
-                                                    <th>Total Tagihan</th>
+                                                    <th>Sisa Tagihan</th>
                                                     <th>Status Pembayaran</th>
                                                     <th>Aksi</th>
                                                 </tr>
@@ -272,13 +274,13 @@
                                                             </span>
                                                         </td>
                                                         <td>{{ $row['class'] }}</td>
-                                                        <td>Rp {{ number_format($row['total'], 0, ',', '.') }}</td>
+                                                        <td>Rp {{ number_format($row['remaining'], 0, ',', '.') }}</td>
                                                         <td>
-                                                            <span @class(['app-status', 'payment-overview-status', 'is-paid' => $row['status'] === 'Lunas', 'is-running' => $row['status'] === 'Berjalan', 'is-overdue' => $row['status'] === 'Jatuh Tempo'])>{{ $row['status'] }}</span>
+                                                            <span @class(['app-status', 'payment-overview-status', 'is-paid' => $row['status'] === 'Lunas', 'is-running' => $row['status'] === 'Belum Lunas', 'is-overdue' => $row['status'] === 'Jatuh Tempo', 'is-empty' => $row['status'] === 'Belum Ada Tagihan'])>{{ $row['status'] }}</span>
                                                         </td>
                                                         <td>
-                                                            <a class="payment-overview-action" href="{{ route('finance.payments.index', array_filter(['search' => $row['name'], 'student_id' => $row['identity_id'], 'unit_id' => ($selectedUnitId ?? 0) ?: null, 'class_id' => ($selectedClassId ?? 0) ?: null, 'per_page' => $paymentOverviewPerPage ?? 10, 'page' => ($paymentOverviewRows ?? null)?->currentPage() > 1 ? $paymentOverviewRows->currentPage() : null])) }}" aria-label="Lihat detail tagihan {{ $row['name'] }}" title="Detail Tagihan">
-                                                                {!! $icon('arrow-right') !!}
+                                                            <a class="app-table-action payment-overview-action is-icon-only" href="{{ route('finance.payments.index', array_filter(['search' => $row['name'], 'student_id' => $row['identity_id'], 'unit_id' => ($selectedUnitId ?? 0) ?: null, 'class_id' => ($selectedClassId ?? 0) ?: null, 'per_page' => $paymentOverviewPerPage ?? 10, 'page' => ($paymentOverviewRows ?? null)?->currentPage() > 1 ? $paymentOverviewRows->currentPage() : null])) }}" aria-label="Lihat detail tagihan {{ $row['name'] }}" title="Lihat detail tagihan">
+                                                                {!! $icon('eye') !!}
                                                             </a>
                                                         </td>
                                                     </tr>
@@ -501,6 +503,7 @@
                                         $statTotalObligation = (int) ($paymentSummary['total_obligation'] ?? 0);
                                         $statTotalPaid = (int) ($paymentSummary['total_paid'] ?? 0);
                                         $statRemainingAmount = (int) ($paymentSummary['remaining'] ?? 0);
+                                        $statPaymentStatus = $paymentSummary['status'] ?? 'Belum Ada Tagihan';
                                         $statPaidPercent = $statTotalObligation > 0 ? min(100, (int) round(($statTotalPaid / $statTotalObligation) * 100)) : 0;
                                         $statBillCount = (int) ($paymentSummary['bill_count'] ?? 0);
                                         $paymentFormAction = $isEditingSppPayment ? route('finance.spp.update', $editSppPayment) : route('finance.payments.store');
@@ -523,7 +526,7 @@
                                         <article class="payment-reference-stat is-remaining">
                                             <span>SISA TAGIHAN</span>
                                             <strong>Rp <span>{{ number_format($statRemainingAmount, 0, ',', '.') }}</span></strong>
-                                            <small>{{ $statRemainingAmount > 0 ? 'Masih ada nominal yang belum dibayar' : 'Seluruh kewajiban lunas' }}</small>
+                                            <small>Status: {{ $statPaymentStatus }}</small>
                                         </article>
                                     </section>
 

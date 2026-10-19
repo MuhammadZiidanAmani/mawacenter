@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Bill;
 use App\Models\Student;
 use App\Support\PerformanceCache;
+use Carbon\CarbonInterface;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +26,83 @@ class BillQueryService
         11 => 'November',
         12 => 'Desember',
     ];
+
+    public function studentBalances(iterable $studentIds, ?CarbonInterface $asOf = null): Collection
+    {
+        $studentIds = collect($studentIds)
+            ->map(fn ($studentId) => (int) $studentId)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($studentIds->isEmpty()) {
+            return collect();
+        }
+
+        $date = ($asOf ?? now())->toDateString();
+
+        return Bill::query()
+            ->select('student_id')
+            ->selectRaw('COALESCE(SUM(total_amount), 0) as total_obligation')
+            ->selectRaw('COALESCE(SUM(paid_amount), 0) as total_paid')
+            ->selectRaw('COALESCE(SUM(remaining_amount), 0) as remaining')
+            ->selectRaw('COUNT(*) as bill_count')
+            ->selectRaw('MAX(CASE WHEN remaining_amount > 0 AND due_date IS NOT NULL AND due_date < ? THEN 1 ELSE 0 END) as has_overdue_amount', [$date])
+            ->whereIn('student_id', $studentIds)
+            ->where('status', '!=', 'Dibatalkan')
+            ->where(fn ($query) => $query
+                ->whereNull('issue_date')
+                ->orWhereDate('issue_date', '<=', $date))
+            ->groupBy('student_id')
+            ->get()
+            ->mapWithKeys(function ($balance) {
+                $summary = $this->combineStudentBalances([$balance]);
+
+                return [(int) $balance->student_id => $summary];
+            });
+    }
+
+    public function studentBalance(int $studentId, ?CarbonInterface $asOf = null): array
+    {
+        return $this->studentBalances([$studentId], $asOf)->get($studentId, $this->emptyStudentBalance());
+    }
+
+    public function combineStudentBalances(iterable $balances): array
+    {
+        $balances = collect($balances);
+        $totalObligation = (int) $balances->sum(fn ($balance) => (int) data_get($balance, 'total_obligation', 0));
+        $totalPaid = min($totalObligation, (int) $balances->sum(fn ($balance) => (int) data_get($balance, 'total_paid', 0)));
+        $remaining = (int) $balances->sum(fn ($balance) => (int) data_get($balance, 'remaining', 0));
+        $billCount = (int) $balances->sum(fn ($balance) => (int) data_get($balance, 'bill_count', 0));
+        $hasOverdueAmount = $balances->contains(fn ($balance) => (bool) data_get($balance, 'has_overdue_amount', false));
+
+        return [
+            'total_obligation' => $totalObligation,
+            'total_paid' => $totalPaid,
+            'remaining' => $remaining,
+            'bill_count' => $billCount,
+            'has_overdue_amount' => $hasOverdueAmount,
+            'status' => match (true) {
+                $billCount < 1 => 'Belum Ada Tagihan',
+                $remaining < 1 => 'Lunas',
+                $hasOverdueAmount => 'Jatuh Tempo',
+                $totalPaid > 0 => 'Sebagian',
+                default => 'Belum Lunas',
+            },
+        ];
+    }
+
+    private function emptyStudentBalance(): array
+    {
+        return [
+            'total_obligation' => 0,
+            'total_paid' => 0,
+            'remaining' => 0,
+            'bill_count' => 0,
+            'has_overdue_amount' => false,
+            'status' => 'Belum Ada Tagihan',
+        ];
+    }
 
     public function summaries(
         int $year,

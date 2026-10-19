@@ -47,13 +47,13 @@
         <p class="nav-section-label">UTAMA</p>
         @endif
         @if($canAccess('dashboard.view'))
-        <a href="{{ route('dashboard') }}" class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}">{!! $sidebarIcon('grid') !!}<span>Dashboard</span></a>
+        <a href="{{ route('dashboard') }}" class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}" @if($activeMenu === 'dashboard') aria-current="page" @endif>{!! $sidebarIcon('grid') !!}<span>Dashboard</span></a>
         @endif
         @if($canAccessPaymentMenu || $canAccess('payments.verify_transfer') || $canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))
         <p class="nav-section-label">KEUANGAN</p>
         @endif
         @if($canAccessPaymentMenu)
-        <a href="{{ $paymentMenuUrl }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}">{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
+        <a href="{{ $paymentMenuUrl }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}" @if($activeMenu === 'payment') aria-current="page" @endif>{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
         @endif
         @if($canAccess('payments.verify_transfer'))
         <a href="{{ route('finance.transfer-verifications.index') }}" class="nav-item {{ $activeMenu === 'transfer-verification' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>Verifikasi Transfer</span></a>

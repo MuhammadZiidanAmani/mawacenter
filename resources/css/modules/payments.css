@@ -412,7 +412,7 @@ main.payment-hub-page {
 }
 
 .payment-overview-table-frame {
-    min-width: 900px;
+    min-width: 960px;
     overflow: hidden;
 }
 
@@ -435,17 +435,18 @@ main.payment-hub-page {
 }
 
 .payment-overview-table th:nth-child(1) { width: 56px; }
-.payment-overview-table th:nth-child(2) { width: 300px; }
-.payment-overview-table th:nth-child(3) { width: 200px; }
-.payment-overview-table th:nth-child(4) { width: 170px; }
-.payment-overview-table th:nth-child(5) { width: 150px; }
-.payment-overview-table th:nth-child(6) { width: 68px; }
+.payment-overview-table th:nth-child(2) { width: 260px; }
+.payment-overview-table th:nth-child(3) { width: 230px; }
+.payment-overview-table th:nth-child(4) { width: 160px; }
+.payment-overview-table th:nth-child(5) { width: 154px; }
+.payment-overview-table th:nth-child(6) { width: 72px; }
 
 .payment-overview-table :is(th, td):nth-child(1),
+.payment-overview-table :is(th, td):nth-child(3),
 .payment-overview-table :is(th, td):nth-child(5),
 .payment-overview-table :is(th, td):nth-child(6) { text-align: center; }
 
-.payment-overview-table :is(td):nth-child(4) { text-align: right; }
+.payment-overview-table :is(th, td):nth-child(4) { text-align: right; }
 
 .payment-overview-student {
     display: flex;
@@ -509,29 +510,9 @@ main.payment-hub-page {
     background: var(--app-danger-soft);
 }
 
-.payment-overview-action {
-    display: inline-flex;
-    width: 34px;
-    height: 34px;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    color: var(--app-primary);
-    background: var(--app-surface);
-    border: 1px solid var(--app-border);
-    border-radius: var(--app-radius);
-}
-
-.payment-overview-action .icon { width: 16px; height: 16px; }
-
-.payment-overview-action:hover {
-    color: var(--app-on-primary);
-    background: var(--app-primary);
-}
-
-.payment-overview-action:focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--app-primary) 28%, transparent);
-    outline-offset: 2px;
+.payment-overview-status.is-empty {
+    color: var(--app-muted);
+    background: var(--app-panel-soft);
 }
 
 .payment-overview-empty,
@@ -940,7 +921,7 @@ main.payment-hub-page {
 }
 
 @media (max-width: 760px) {
-    .payment-overview-action, .payment-one-stop-history-action { width: 40px; height: 40px; }
+    .payment-one-stop-history-action { width: 40px; height: 40px; }
     .payment-prd-bill-heading, .payment-one-stop-history-item { grid-template-columns: minmax(0, 1fr); }
     .payment-prd-bill-heading { display: grid; }
     .payment-prd-bill-amount, .payment-one-stop-history-amount { white-space: normal; overflow-wrap: anywhere; }

@@ -12,6 +12,7 @@ use App\Models\SchoolClass;
 use App\Models\SppPayment;
 use App\Models\Student;
 use App\Services\AuditLogService;
+use App\Services\BillQueryService;
 use App\Services\GoogleDriveStorageException;
 use App\Services\GoogleDriveStorageService;
 use App\Services\LaundryPaymentService;
@@ -29,7 +30,7 @@ use Throwable;
 
 class PaymentController extends Controller
 {
-    public function index(Request $request, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): View
+    public function index(Request $request, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments, BillQueryService $billQueries): View
     {
         $search = trim($request->string('search')->value());
         $paymentOverviewPerPage = $this->paymentOverviewPerPage($request->query('per_page'));
@@ -58,6 +59,7 @@ class PaymentController extends Controller
             'total_paid' => 0,
             'remaining' => 0,
             'bill_count' => 0,
+            'status' => 'Belum Ada Tagihan',
         ];
         $accessibleUnitIds = $request->user()?->accessibleUnitIds();
         $unitIds = $accessibleUnitIds;
@@ -178,29 +180,7 @@ class PaymentController extends Controller
                         $student->setAttribute('optional_payment_options', $this->optionalPaymentOptions($student, $feeTypes, $otherPayments, $laundryPayments));
                     });
 
-                    $cashierDate = now()->toDateString();
-                    $billSummary = Bill::query()
-                        ->where('student_id', $activeRegistration->id)
-                        ->where('status', '!=', 'Dibatalkan')
-                        ->where(fn ($query) => $query
-                            ->whereNull('issue_date')
-                            ->orWhereDate('issue_date', '<=', $cashierDate))
-                        ->where(fn ($query) => $query
-                            ->whereNull('due_date')
-                            ->orWhereDate('due_date', '<=', $cashierDate))
-                        ->selectRaw('COALESCE(SUM(total_amount), 0) as total_obligation')
-                        ->selectRaw('COALESCE(SUM(paid_amount), 0) as total_paid')
-                        ->selectRaw('COUNT(*) as bill_count')
-                        ->first();
-
-                    $totalObligation = (int) ($billSummary?->total_obligation ?? 0);
-                    $totalPaid = min($totalObligation, (int) ($billSummary?->total_paid ?? 0));
-                    $paymentSummary = [
-                        'total_obligation' => $totalObligation,
-                        'total_paid' => $totalPaid,
-                        'remaining' => $totalObligation - $totalPaid,
-                        'bill_count' => (int) ($billSummary?->bill_count ?? 0),
-                    ];
+                    $paymentSummary = $billQueries->studentBalance((int) $activeRegistration->id);
                 }
 
                 $sppHistory = SppPayment::with(['student.schoolClass.educationUnit', 'items'])
@@ -266,7 +246,7 @@ class PaymentController extends Controller
             'selectedRegistrationId' => $selectedRegistrationId,
             'activeRegistration' => $activeRegistration,
             'people' => $people,
-            'paymentOverviewRows' => $this->paymentOverviewRows($unitIds, $selectedClassId, $search, $paymentOverviewPerPage),
+            'paymentOverviewRows' => $this->paymentOverviewRows($unitIds, $selectedClassId, $search, $paymentOverviewPerPage, $billQueries),
             'paymentOverviewPerPage' => $paymentOverviewPerPage,
             'paymentSummary' => $paymentSummary,
             'paymentHistory' => $paymentHistory,
@@ -903,7 +883,7 @@ class PaymentController extends Controller
             });
     }
 
-    private function paymentOverviewRows(?array $unitIds, int $classId = 0, string $search = '', int|string $perPage = 10): LengthAwarePaginator
+    private function paymentOverviewRows(?array $unitIds, int $classId, string $search, int|string $perPage, BillQueryService $billQueries): LengthAwarePaginator
     {
         $needle = $search !== '' ? $this->escapeLike($search) : '';
         $studentQuery = $this->paymentStudentBaseQuery($unitIds, $classId)
@@ -935,27 +915,14 @@ class PaymentController extends Controller
                 ->get();
         $groups = $registrations->groupBy(fn (Student $student) => $student->identity_student_id ?: $student->id);
         $registrationIds = $registrations->pluck('id')->values();
-        $billSums = $registrationIds->isEmpty()
-            ? collect()
-            : Bill::query()
-                ->select('student_id')
-                ->selectRaw('SUM(total_amount) as total_amount')
-                ->selectRaw('SUM(remaining_amount) as remaining_amount')
-                ->selectRaw('MAX(CASE WHEN remaining_amount > 0 AND due_date IS NOT NULL AND due_date < ? THEN 1 ELSE 0 END) as has_overdue_amount', [now()->toDateString()])
-                ->whereIn('student_id', $registrationIds)
-                ->where('status', '!=', 'Dibatalkan')
-                ->groupBy('student_id')
-                ->get()
-                ->keyBy('student_id');
+        $billSums = $billQueries->studentBalances($registrationIds);
 
-        $rows = $identityPages->getCollection()->map(function (Student $pageIdentity) use ($groups, $billSums) {
+        $rows = $identityPages->getCollection()->map(function (Student $pageIdentity) use ($groups, $billSums, $billQueries) {
             $identityId = (int) $pageIdentity->payment_identity_id;
             $studentRegistrations = $groups->get($identityId, collect());
             $identity = $studentRegistrations->firstWhere('identity_student_id', null) ?? $studentRegistrations->first();
-            $total = $studentRegistrations->sum(fn (Student $student) => (int) ($billSums->get($student->id)?->total_amount ?? 0));
-            $remaining = $studentRegistrations->sum(fn (Student $student) => (int) ($billSums->get($student->id)?->remaining_amount ?? 0));
-            $hasOverdueAmount = $studentRegistrations->contains(
-                fn (Student $student) => (bool) ($billSums->get($student->id)?->has_overdue_amount ?? false)
+            $balance = $billQueries->combineStudentBalances(
+                collect([$identity ? $billSums->get($identity->id) : null])->filter()
             );
             $unitCode = $identity?->schoolClass?->educationUnit?->code ?? $identity?->schoolClass?->educationUnit?->name;
             $nis = $identity?->nis ?? '-';
@@ -966,8 +933,8 @@ class PaymentController extends Controller
                 'nis_unit' => $unitCode ? $nis.'/'.$unitCode : $nis,
                 'academic_year' => $identity?->academicYear?->name ?? '-',
                 'class' => $identity?->schoolClass?->name ?? '-',
-                'total' => $total,
-                'status' => $remaining < 1 ? 'Lunas' : ($hasOverdueAmount ? 'Jatuh Tempo' : 'Berjalan'),
+                'remaining' => $balance['remaining'],
+                'status' => $balance['status'],
             ];
         });
 

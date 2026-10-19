@@ -2355,6 +2355,9 @@ class MasterDataTest extends TestCase
         $this->assertStringContainsString('20.000', $html);
         $this->assertStringContainsString('Total Bayar (Rp)', $html);
         $this->assertStringContainsString('760.000', $html);
+        $this->assertStringContainsString('@page { size: A4 portrait; margin: 5mm; }', $html);
+        $this->assertStringContainsString('display: table-header-group', $html);
+        $this->assertStringContainsString('.signature-space { height: 40px; }', $html);
 
         $receipt = $this->get('/keuangan/pembayaran/spp/'.$payment->id.'/receipt');
         $receipt->assertOk()

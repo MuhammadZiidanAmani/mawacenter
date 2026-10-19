@@ -68,6 +68,7 @@ class PaymentMenuTest extends TestCase
             'creates_bill' => true,
             'is_active' => true,
         ]);
+        app(BillService::class)->generateSpp($year, 2026, [7], ['student_ids' => [$student->id]]);
         $this->actingAs(User::factory()->create(['role' => 'admin']));
 
         $this->post(route('finance.spp.store'), [
@@ -100,6 +101,10 @@ class PaymentMenuTest extends TestCase
         $this->getJson(route('finance.spp.quote', ['student_id' => $student->id, 'month_count' => 1]))
             ->assertOk()
             ->assertJson(['paid_amount' => 0, 'remaining_amount' => 100000]);
+        $this->get(route('finance.payments.index', ['unit_id' => $unit->id]))
+            ->assertOk()
+            ->assertSeeText('Rp 100.000')
+            ->assertSeeText('Jatuh Tempo');
 
         $this->put(route('finance.spp.update', $payment), [
             'transaction_date' => '2026-07-15',
@@ -112,6 +117,10 @@ class PaymentMenuTest extends TestCase
         $bill = Bill::where('student_id', $student->id)->where('source_type', 'spp')->firstOrFail();
         $this->assertDatabaseHas('spp_payment_items', ['spp_payment_id' => $payment->id, 'paid_amount' => 100000]);
         $this->assertDatabaseHas('bills', ['id' => $bill->id, 'paid_amount' => 100000, 'remaining_amount' => 0, 'status' => 'Lunas']);
+        $this->get(route('finance.payments.index', ['unit_id' => $unit->id]))
+            ->assertOk()
+            ->assertSeeText('Rp 0')
+            ->assertSeeText('Lunas');
 
         $this->put(route('finance.spp.update', $payment), [
             'transaction_date' => '2026-07-15',
@@ -123,6 +132,10 @@ class PaymentMenuTest extends TestCase
 
         $this->assertDatabaseHas('spp_payment_items', ['spp_payment_id' => $payment->id, 'paid_amount' => 0, 'payment_status' => 'Pending']);
         $this->assertDatabaseHas('bills', ['id' => $bill->id, 'paid_amount' => 0, 'remaining_amount' => 100000, 'status' => 'Belum Dibayar']);
+        $this->get(route('finance.payments.index', ['unit_id' => $unit->id]))
+            ->assertOk()
+            ->assertSeeText('Rp 100.000')
+            ->assertSeeText('Jatuh Tempo');
     }
 
     public function test_pending_laundry_does_not_reduce_the_next_payable_amount(): void
@@ -289,7 +302,7 @@ class PaymentMenuTest extends TestCase
     {
         $this->actingAs(User::factory()->create(['role' => 'admin']))->get('/')
             ->assertOk()
-            ->assertSee('<a href="'.route('finance.payments.index').'" class="nav-item ">', false)
+            ->assertSee('href="'.route('finance.payments.index').'" class="nav-item "', false)
             ->assertDontSee('<span>Transaksi Baru</span>', false)
             ->assertDontSee('<span>Import Pembayaran</span>', false)
             ->assertSee('<span>Transaksi Pembayaran</span>', false)
@@ -530,6 +543,7 @@ class PaymentMenuTest extends TestCase
             Student::create(['nis' => 'STATUS-LUNAS', 'name' => 'Siswa Lunas', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]),
             Student::create(['nis' => 'STATUS-BERJALAN', 'name' => 'Siswa Berjalan', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]),
             Student::create(['nis' => 'STATUS-JATUH-TEMPO', 'name' => 'Siswa Jatuh Tempo', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]),
+            Student::create(['nis' => 'STATUS-SEBAGIAN', 'name' => 'Siswa Sebagian', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true]),
         ]);
 
         $createBill = function (Student $student, string $dueDate, int $paidAmount, int $remainingAmount): void {
@@ -555,6 +569,7 @@ class PaymentMenuTest extends TestCase
         $createBill($students[0], '2026-07-10', 100000, 0);
         $createBill($students[1], '2026-07-10', 0, 100000);
         $createBill($students[2], '2026-07-09', 0, 100000);
+        $createBill($students[3], '2026-07-11', 50000, 50000);
 
         $response = $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get(route('finance.payments.index', ['unit_id' => $unit->id, 'class_id' => $class->id]))
@@ -562,20 +577,50 @@ class PaymentMenuTest extends TestCase
             ->assertSee('<th>No</th>', false)
             ->assertSee('<th>Nama Siswa</th>', false)
             ->assertSee('<th>Kelas</th>', false)
-            ->assertSee('<th>Total Tagihan</th>', false)
+            ->assertSee('<th>Sisa Tagihan</th>', false)
+            ->assertDontSee('<th>Total Tagihan</th>', false)
             ->assertDontSee('<th>Telah Dibayar</th>', false)
-            ->assertDontSee('<th>Sisa Tagihan</th>', false)
             ->assertDontSee('NIS:', false)
             ->assertSeeText('STATUS-LUNAS/RA')
             ->assertSeeText('Lunas')
-            ->assertSeeText('Berjalan')
+            ->assertSeeText('Belum Lunas')
+            ->assertSeeText('Sebagian')
             ->assertSeeText('Jatuh Tempo');
 
         $dom = new \DOMDocument;
         @$dom->loadHTML($response->getContent());
-        $classCell = (new \DOMXPath($dom))->query('//table[contains(concat(" ", normalize-space(@class), " "), " payment-overview-table ")]/tbody/tr[1]/td[3]')->item(0);
+        $xpath = new \DOMXPath($dom);
+        $classCell = $xpath->query('//table[contains(concat(" ", normalize-space(@class), " "), " payment-overview-table ")]/tbody/tr[1]/td[3]')->item(0);
         $this->assertNotNull($classCell);
         $this->assertSame('A1', trim($classCell->textContent));
+        $this->assertSame('Rp 0', trim($xpath->query('//tr[td//small[contains(., "STATUS-LUNAS/RA")]]/td[4]')->item(0)?->textContent ?? ''));
+        $this->assertSame('Rp 100.000', trim($xpath->query('//tr[td//small[contains(., "STATUS-BERJALAN/RA")]]/td[4]')->item(0)?->textContent ?? ''));
+        $this->assertSame('Rp 50.000', trim($xpath->query('//tr[td//small[contains(., "STATUS-SEBAGIAN/RA")]]/td[4]')->item(0)?->textContent ?? ''));
+
+        $detailAction = $xpath->query('//table[contains(concat(" ", normalize-space(@class), " "), " payment-overview-table ")]//a[contains(concat(" ", normalize-space(@class), " "), " app-table-action ")]')->item(0);
+        $this->assertNotNull($detailAction);
+        $this->assertStringContainsString('payment-overview-action', $detailAction->getAttribute('class'));
+        $this->assertStringContainsString('is-icon-only', $detailAction->getAttribute('class'));
+        $this->assertSame('Lihat detail tagihan', $detailAction->getAttribute('title'));
+        $this->assertStringStartsWith('Lihat detail tagihan Siswa ', $detailAction->getAttribute('aria-label'));
+        $this->assertCount(1, $xpath->query('.//*[name()="svg" and contains(concat(" ", normalize-space(@class), " "), " icon ")]', $detailAction));
+        $this->assertCount(0, $xpath->query('.//span[contains(concat(" ", normalize-space(@class), " "), " app-table-action-label ")]', $detailAction));
+
+        $html = $response->getContent();
+        $themeBootstrapPosition = strpos($html, 'data-theme-bootstrap');
+        $stylesheetPosition = strpos($html, 'rel="stylesheet"');
+        $this->assertNotFalse($themeBootstrapPosition);
+        $this->assertNotFalse($stylesheetPosition);
+        $this->assertLessThan($stylesheetPosition, $themeBootstrapPosition);
+
+        $activeSidebarLinks = $xpath->query('//aside[contains(concat(" ", normalize-space(@class), " "), " sidebar ")]//a[contains(concat(" ", normalize-space(@class), " "), " active ")]');
+        $this->assertCount(1, $activeSidebarLinks);
+        $this->assertSame('Pembayaran', trim($activeSidebarLinks->item(0)?->textContent ?? ''));
+        $this->assertSame('page', $activeSidebarLinks->item(0)?->getAttribute('aria-current'));
+        $dashboardLink = $xpath->query('//aside[contains(concat(" ", normalize-space(@class), " "), " sidebar ")]//a[span[normalize-space(.)="Dashboard"]]')->item(0);
+        $this->assertNotNull($dashboardLink);
+        $this->assertStringNotContainsString(' active ', ' '.$dashboardLink->getAttribute('class').' ');
+        $this->assertFalse($dashboardLink->hasAttribute('aria-current'));
     }
 
     public function test_payment_overview_paginates_ten_students_per_page(): void
@@ -603,7 +648,7 @@ class PaymentMenuTest extends TestCase
             ->assertSeeText('Siswa Halaman 01')
             ->assertSeeText('Siswa Halaman 10')
             ->assertDontSeeText('Siswa Halaman 11')
-            ->assertSeeText('Lunas')
+            ->assertSeeText('Belum Ada Tagihan')
             ->assertSeeText('Menampilkan 1-10 dari 11 siswa')
             ->assertSee('page=2', false);
 
@@ -613,6 +658,63 @@ class PaymentMenuTest extends TestCase
             ->assertDontSeeText('Siswa Halaman 01')
             ->assertSeeText('Siswa Halaman 11')
             ->assertSeeText('Menampilkan 11-11 dari 11 siswa');
+    }
+
+    public function test_payment_overview_balance_matches_the_registration_shown_in_detail(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-09-20 10:00:00'));
+        $context = $this->multiUnitPaymentContext();
+
+        foreach ([
+            [$context['identity'], 'overview-balance-mts', 100000, 40000, 60000],
+            [$context['pondokRegistration'], 'overview-balance-pondok', 200000, 50000, 150000],
+        ] as [$student, $key, $total, $paid, $remaining]) {
+            Bill::create([
+                'student_id' => $student->id,
+                'academic_year_id' => $context['year']->id,
+                'source_type' => 'manual',
+                'generation_key' => $key,
+                'title' => 'Tagihan Uji Konsistensi',
+                'issue_date' => '2026-09-01',
+                'due_date' => '2026-09-30',
+                'original_amount' => $total,
+                'discount_amount' => 0,
+                'total_amount' => $total,
+                'paid_amount' => $paid,
+                'remaining_amount' => $remaining,
+                'status' => 'Sebagian',
+            ]);
+        }
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $overview = $this->actingAs($admin)->get(route('finance.payments.index'))->assertOk();
+        $overviewDom = new \DOMDocument;
+        @$overviewDom->loadHTML($overview->getContent());
+        $overviewXpath = new \DOMXPath($overviewDom);
+        $overviewAmount = $overviewXpath->query('//tr[td//small[contains(., "'.$context['identity']->nis.'/")]]/td[4]')->item(0);
+        $this->assertNotNull($overviewAmount);
+        $this->assertSame('Rp 60.000', trim($overviewAmount->textContent));
+
+        $defaultDetail = $this->actingAs($admin)->get(route('finance.payments.index', [
+            'search' => $context['identity']->name,
+            'student_id' => $context['identity']->id,
+        ]))->assertOk();
+        $defaultDom = new \DOMDocument;
+        @$defaultDom->loadHTML($defaultDetail->getContent());
+        $defaultRemaining = (new \DOMXPath($defaultDom))->query('//section[contains(concat(" ", normalize-space(@class), " "), " payment-reference-stats ")]/article[3]/strong')->item(0);
+        $this->assertNotNull($defaultRemaining);
+        $this->assertSame('Rp 60.000', trim(preg_replace('/\s+/', ' ', $defaultRemaining->textContent)));
+
+        $pondokDetail = $this->actingAs($admin)->get(route('finance.payments.index', [
+            'search' => $context['identity']->name,
+            'student_id' => $context['identity']->id,
+            'registration_id' => $context['pondokRegistration']->id,
+        ]))->assertOk();
+        $pondokDom = new \DOMDocument;
+        @$pondokDom->loadHTML($pondokDetail->getContent());
+        $pondokRemaining = (new \DOMXPath($pondokDom))->query('//section[contains(concat(" ", normalize-space(@class), " "), " payment-reference-stats ")]/article[3]/strong')->item(0);
+        $this->assertNotNull($pondokRemaining);
+        $this->assertSame('Rp 150.000', trim(preg_replace('/\s+/', ' ', $pondokRemaining->textContent)));
     }
 
     public function test_payment_overview_supports_approved_page_sizes_and_preserves_filters(): void
@@ -656,6 +758,8 @@ class PaymentMenuTest extends TestCase
         $this->assertCount(1, $toolbarXpath->query($tableToolbar.'//select[@name="per_page"]'));
         $this->assertCount(1, $toolbarXpath->query($tableToolbar.'//select[@data-payment-overview-per-page]'));
         $this->assertCount(1, $toolbarXpath->query($tableToolbar.'//input[@name="search"]'));
+        $this->assertCount(1, $toolbarXpath->query($tableToolbar.'/*[1][contains(concat(" ", normalize-space(@class), " "), " app-page-size-control ")]'));
+        $this->assertCount(1, $toolbarXpath->query($tableToolbar.'/*[2][contains(concat(" ", normalize-space(@class), " "), " app-data-search ")]'));
         $this->assertCount(0, $toolbarXpath->query($filterCard.'//select[@name="per_page"]'));
         $this->assertCount(0, $toolbarXpath->query($filterCard.'//input[@name="search"]'));
 
@@ -2381,11 +2485,10 @@ class PaymentMenuTest extends TestCase
             ->assertSee('Kwitansi Pembayaran')
             ->assertSee('DU-20260615-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT))
             ->assertSee('@page { size: A4 portrait; margin: 5mm; }', false)
-            ->assertSee('data-a4-preview-viewport', false)
-            ->assertSee('width: 210mm; height: 297mm;', false)
-            ->assertSee('width: 215.9mm; height: 110mm;', false)
-            ->assertSee('width: 200mm; height: 101.9mm;', false)
-            ->assertSee('transform: scale(.9263557)', false)
+            ->assertSee('data-receipt-preview-viewport', false)
+            ->assertSee('width: 210mm; min-height: 297mm;', false)
+            ->assertSee('.signature-space { height: 14mm; }', false)
+            ->assertDontSee('transform: scale(.9263557)', false)
             ->assertSee('Tahun Pelajaran')
             ->assertSee('Keringanan (Rp)')
             ->assertSee("window.addEventListener('load', () => window.print())", false);

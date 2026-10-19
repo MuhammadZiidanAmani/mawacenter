@@ -64,6 +64,59 @@
     color: var(--app-muted);
 }
 
+/*
+ * Canonical action used inside data tables. Page modules may position this
+ * component, but its geometry and interaction states stay global.
+ */
+:is(.app-table-action, .payment-overview-action) {
+    display: inline-flex;
+    min-width: 36px;
+    height: 36px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 12px;
+    color: var(--app-primary);
+    background: transparent;
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    line-height: var(--app-text-body-leading);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color .16s ease, background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+:is(.app-table-action, .payment-overview-action) .icon {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+}
+
+:is(.app-table-action, .payment-overview-action).is-icon-only {
+    width: 36px;
+    padding-inline: 0;
+}
+
+:is(.app-table-action, .payment-overview-action):hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]) {
+    color: var(--app-primary);
+    background: var(--app-primary-soft);
+    border-color: var(--app-primary-border);
+}
+
+:is(.app-table-action, .payment-overview-action):focus-visible {
+    outline: 2px solid var(--app-primary);
+    outline-offset: 2px;
+}
+
+:is(.app-table-action, .payment-overview-action):is(:disabled, .is-disabled, [aria-disabled="true"]) {
+    opacity: .55;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
 :is(
     .app-field-shell,
     .login-input,
@@ -208,7 +261,7 @@
 ) {
     flex: 0 0 auto;
     min-width: 0;
-    color: var(--app-muted);
+    color: var(--app-label);
 }
 
 :is(
@@ -231,7 +284,7 @@
     align-items: center;
     gap: var(--app-data-toolbar-label-gap);
     margin: 0;
-    color: var(--app-muted);
+    color: var(--app-label);
     font-size: var(--app-text-body-size);
     font-weight: 600;
     line-height: var(--app-text-body-leading);
@@ -318,6 +371,23 @@ select[name="per_page"] {
 }
 
 @media (max-width: 760px) {
+    :is(.app-table-action, .payment-overview-action).is-icon-only {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+    }
+
+    :is(.app-table-action, .payment-overview-action).is-compact-mobile {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        padding-inline: 0;
+    }
+
+    :is(.app-table-action, .payment-overview-action).is-compact-mobile .app-table-action-label {
+        display: none;
+    }
+
     :is(
         .app-data-toolbar,
         .payment-overview-table-toolbar,

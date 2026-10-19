@@ -4,62 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kwitansi {{ $receiptNumber }}</title>
+    @include('finance.partials.receipt-screen-styles')
     <style>
-        * { box-sizing: border-box; }
-        body { margin: 0; color: #111; background: #eef1f5; font-family: Arial, sans-serif; font-size: 13px; line-height: 1.25; }
-        .receipt-actions { width: min(215.9mm, calc(100% - 24px)); margin: 18px auto 10px; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
-        .receipt-actions button, .receipt-actions a { min-height: 40px; padding: 0 16px; display: inline-flex; align-items: center; color: #0d5f36; background: #f3fbf6; border: 1px solid #b9dcc7; border-radius: 8px; cursor: pointer; font: inherit; font-weight: 700; text-decoration: none; }
-        .receipt-actions .print { color: #fff; background: #157144; border-color: #157144; }
-        .receipt-actions .print:hover { background: #0d5f36; border-color: #0d5f36; }
-        .receipt-a4-viewport { width: min(210mm, calc(100% - 24px)); height: 297mm; margin: 0 auto 12mm; overflow: hidden; }
-        .receipt-a4-paper { position: relative; left: 50%; width: 210mm; height: 297mm; margin-left: -105mm; padding: 5mm; background: white; box-shadow: 0 8px 30px #17203314; transform: scale(var(--a4-screen-scale, 1)); transform-origin: top center; }
-        .receipt-print-wrapper { width: 200mm; height: 101.9mm; margin: 0 auto; }
-        .page { width: 215.9mm; height: 110mm; min-height: 0; margin: 0; padding: 2mm 3mm 4mm; background: white; border: 0; box-shadow: none; transform: scale(.9263557); transform-origin: top left; }
-        .receipt-header { padding: 0 1mm 1.3mm; display: grid; grid-template-columns: 14mm 1fr 36mm; align-items: center; gap: 2.5mm; border-bottom: .6mm solid #999; }
-        .receipt-logo { width: 12mm; height: 12mm; display: block; object-fit: contain; }
-        .institution h1 { margin: 0 0 .5mm; font-size: 18.5px; line-height: 1.05; }
-        .institution p { margin: 0; font-size: 12px; line-height: 1.18; }
-        .keep-note { padding: .9mm 3mm; border: 1px solid #333; font-size: 12px; line-height: 1.1; text-align: center; white-space: nowrap; }
-        .receipt-title { margin: 1mm 0 1.5mm; text-align: center; }
-        .receipt-title h2 { width: max-content; margin: 0 auto; border-bottom: 1px solid #333; font-size: 14.5px; line-height: 1.1; }
-        .receipt-title p { margin: .4mm 0 0; font-size: 12px; line-height: 1.15; }
-        .student-info { margin: 0 0 2mm; display: grid; grid-template-columns: .88fr 1.12fr; gap: .7mm 7mm; }
-        .info-line { display: grid; grid-template-columns: 30mm 3mm 1fr; align-items: start; font-size: 13px; line-height: 1.25; }
-        .student-info .info-line:nth-child(odd) { grid-template-columns: 15mm 3mm 1fr; }
-        .info-line strong { white-space: nowrap; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { height: 6.2mm; padding: .9mm 1.4mm; border: 1px solid #555; text-align: left; font-size: 13px; line-height: 1.22; vertical-align: middle; }
-        th { height: 5.2mm; font-size: 13px; font-weight: 700; text-align: center; }
-        th.number { text-align: center; }
-        .transaction-time { width: 20%; white-space: nowrap; }
+        .transaction-time { width: 20%; }
         .payment-name { width: 48%; }
         .academic-year { width: 8%; text-align: center; }
-        .payment-method { width: 9%; text-align: center; }
+        .payment-method { width: 9%; }
         .amount { width: 15%; }
-        .number { text-align: right; white-space: nowrap; }
-        .totals td { height: 4.8mm; border-top: 0; }
-        .totals-label { text-align: right; }
-        .grand-total { font-weight: 700; }
-        .receipt-notes { margin: 2mm 2mm 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; font-size: 13px; line-height: 1.22; }
-        .receipt-notes div:last-child { text-align: right; }
-        .signatures { margin: 2.2mm 2mm 0; display: grid; grid-template-columns: 1fr 1fr; gap: 18mm; text-align: center; font-size: 13px; line-height: 1.22; }
-        .signatures p { margin: 0; }
-        .signature-space { height: 9mm; }
-        .signature-name { font-weight: 700; }
-        .receipt-footer { margin: 3mm 2mm 0; border-bottom: 1px dashed #333; }
-        @media (max-width: 820px) {
-            .receipt-actions { justify-content: flex-start; }
-            .receipt-a4-viewport { width: calc(100% - 16px); }
-        }
-        @media print {
-            @page { size: A4 portrait; margin: 5mm; }
-            body { background: white; }
-            .receipt-actions { display: none; }
-            .receipt-a4-viewport { width: 200mm; height: 101.9mm !important; margin: 0 auto; overflow: visible; }
-            .receipt-a4-paper { left: auto; width: 200mm; height: 101.9mm; margin-left: 0; padding: 0; box-shadow: none; transform: none; }
-            .receipt-print-wrapper { width: 200mm; height: 101.9mm; margin: 0 auto; }
-            .page { width: 215.9mm; height: 110mm; min-height: 0; margin: 0; padding: 2mm 3mm 4mm; border: 0; box-shadow: none; transform: scale(.9263557); transform-origin: top left; }
-        }
     </style>
 </head>
 <body>
@@ -67,8 +18,8 @@
     <a href="{{ route('finance.other.index', $backParams ?? []) }}">Kembali</a>
     <button type="button" class="print" onclick="window.print()">Cetak Struk</button>
 </div>
-<div class="receipt-a4-viewport" data-a4-preview-viewport>
-<div class="receipt-a4-paper" data-a4-paper>
+<div class="receipt-sheet-viewport" data-receipt-preview-viewport>
+<div class="receipt-sheet-paper" data-receipt-paper>
 <div class="receipt-print-wrapper">
 <main class="page">
     <header class="receipt-header">
@@ -123,16 +74,16 @@
 </div>
 </div>
 <script>
-const resizeA4Preview = () => {
-    const viewport = document.querySelector('[data-a4-preview-viewport]');
-    const paper = viewport?.querySelector('[data-a4-paper]');
+const resizeReceiptPreview = () => {
+    const viewport = document.querySelector('[data-receipt-preview-viewport]');
+    const paper = viewport?.querySelector('[data-receipt-paper]');
     if (!viewport || !paper || window.matchMedia('print').matches) return;
     const scale = Math.min(1, viewport.clientWidth / paper.offsetWidth);
-    paper.style.setProperty('--a4-screen-scale', String(scale));
+    paper.style.setProperty('--receipt-screen-scale', String(scale));
     viewport.style.height = `${paper.offsetHeight * scale}px`;
 };
-window.addEventListener('resize', resizeA4Preview);
-resizeA4Preview();
+window.addEventListener('resize', resizeReceiptPreview);
+resizeReceiptPreview();
 window.addEventListener('load', () => window.print());
 </script>
 </body>
