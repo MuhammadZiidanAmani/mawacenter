@@ -34,6 +34,10 @@ class PaymentController extends Controller
     {
         $search = trim($request->string('search')->value());
         $paymentOverviewPerPage = $this->paymentOverviewPerPage($request->query('per_page'));
+        $paymentOverviewSort = in_array($request->string('sort')->value(), ['name', 'class'], true)
+            ? $request->string('sort')->value()
+            : 'name';
+        $paymentOverviewDirection = $request->string('direction')->value() === 'desc' ? 'desc' : 'asc';
         $selectedStudentId = (int) $request->integer('student_id');
         $selectedRegistrationId = (int) $request->integer('registration_id');
         $activeRegistration = null;
@@ -246,7 +250,7 @@ class PaymentController extends Controller
             'selectedRegistrationId' => $selectedRegistrationId,
             'activeRegistration' => $activeRegistration,
             'people' => $people,
-            'paymentOverviewRows' => $this->paymentOverviewRows($unitIds, $selectedClassId, $search, $paymentOverviewPerPage, $billQueries),
+            'paymentOverviewRows' => $this->paymentOverviewRows($unitIds, $selectedClassId, $search, $paymentOverviewPerPage, $billQueries, $paymentOverviewSort, $paymentOverviewDirection),
             'paymentOverviewPerPage' => $paymentOverviewPerPage,
             'paymentSummary' => $paymentSummary,
             'paymentHistory' => $paymentHistory,
@@ -883,7 +887,15 @@ class PaymentController extends Controller
             });
     }
 
-    private function paymentOverviewRows(?array $unitIds, int $classId, string $search, int|string $perPage, BillQueryService $billQueries): LengthAwarePaginator
+    private function paymentOverviewRows(
+        ?array $unitIds,
+        int $classId,
+        string $search,
+        int|string $perPage,
+        BillQueryService $billQueries,
+        string $sort,
+        string $direction,
+    ): LengthAwarePaginator
     {
         $needle = $search !== '' ? $this->escapeLike($search) : '';
         $studentQuery = $this->paymentStudentBaseQuery($unitIds, $classId)
@@ -894,10 +906,14 @@ class PaymentController extends Controller
         $pageSize = $perPage === 'all'
             ? max(1, (clone $studentQuery)->count())
             : $perPage;
+        $sortExpression = $sort === 'class'
+            ? 'MIN((SELECT name FROM school_classes WHERE school_classes.id = students.school_class_id))'
+            : 'MIN(students.name)';
         $identityPages = (clone $studentQuery)
             ->selectRaw('COALESCE(identity_student_id, id) as payment_identity_id')
             ->groupByRaw('COALESCE(identity_student_id, id)')
-            ->orderByRaw('MIN(name)')
+            ->orderByRaw($sortExpression.' '.$direction)
+            ->orderByRaw('MIN(students.id) asc')
             ->paginate($pageSize, ['payment_identity_id'], 'page', $perPage === 'all' ? 1 : null)
             ->withQueryString();
         $identityIds = $identityPages->getCollection()

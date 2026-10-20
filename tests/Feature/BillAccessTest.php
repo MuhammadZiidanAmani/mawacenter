@@ -395,8 +395,11 @@ class BillAccessTest extends TestCase
 
         $admin = User::factory()->create(['role' => 'admin']);
         $this->actingAs($admin)
-            ->get(route('finance.transfer-verifications.index'))
+            ->get(route('finance.transfer-verifications.index', ['per_page' => 25, 'sort' => 'amount', 'direction' => 'asc']))
             ->assertOk()
+            ->assertSee('app-table-toolbar', false)
+            ->assertSee('app-table-search', false)
+            ->assertSee('sort=amount&amp;direction=desc', false)
             ->assertSee(route('finance.transfer-verifications.proof', $transfer), false)
             ->assertDontSee('/storage/'.$transfer->proof_path, false);
 

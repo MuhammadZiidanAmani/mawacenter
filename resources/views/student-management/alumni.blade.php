@@ -87,15 +87,15 @@
                     @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}">@endif
                     @if(request('direction'))<input type="hidden" name="direction" value="{{ request('direction') }}">@endif
                     <div class="student-filter-actions student-fee-card-filter-actions fee-type-card-filter-actions">
-                        <button class="button student-fee-card-search-button fee-type-card-search-button" type="submit" aria-label="Tampilkan data alumni">Terapkan</button>
-                        <a href="{{ route('student-management.alumni.index') }}" class="button student-fee-card-reset-button fee-type-card-reset-button">Reset</a>
+                        <button class="button button-primary student-fee-card-search-button fee-type-card-search-button" type="submit" aria-label="Tampilkan data alumni">Filter</button>
+                        <a href="{{ route('student-management.alumni.index') }}" class="button button-secondary student-fee-card-reset-button fee-type-card-reset-button">Reset</a>
                     </div>
                 </form>
             </section>
 
             <section class="student-list-layout">
-                <div class="student-reference-card-count student-management-table-toolbar app-data-toolbar">
-                    <form method="GET" action="{{ route('student-management.alumni.index') }}" class="student-reference-card-length app-page-size-form">
+                <div class="student-reference-card-count student-management-table-toolbar app-table-toolbar app-data-toolbar">
+                    <form method="GET" action="{{ route('student-management.alumni.index') }}" class="student-reference-card-length app-table-per-page app-page-size-form">
                     @foreach(request()->except(['per_page', 'page', 'search']) as $key => $value)
                             @if(is_scalar($value))
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -111,7 +111,7 @@
                             alumni
                         </label>
                     </form>
-                    <form method="GET" action="{{ route('student-management.alumni.index') }}" class="report-student-search-card student-management-search-card app-data-search" role="search">
+                    <form method="GET" action="{{ route('student-management.alumni.index') }}" class="report-student-search-card student-management-search-card app-table-search app-data-search" role="search">
                         @foreach(request()->except(['search', 'page']) as $key => $value)
                             @if(is_scalar($value))
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -127,9 +127,9 @@
                     </form>
                 </div>
 
-                <section class="card student-data-table-surface">
-                <div class="table-wrap alumni-table-wrap">
-                    <table class="data-table student-flat-table alumni-table">
+                <section class="card app-table-surface student-data-table-surface">
+                <div class="app-table-scroll table-wrap alumni-table-wrap">
+                    <table class="app-data-table data-table student-flat-table alumni-table">
                         <colgroup>
                             <col class="alumni-col-no">
                             <col class="alumni-col-nis">
@@ -163,7 +163,7 @@
                                     <td class="alumni-cell-center">{{ $student->exit_date?->format('d/m/Y') ?? '-' }}</td>
                                     <td class="alumni-cell-center">{{ $student->inactive_reason ?: '-' }}</td>
                                     <td class="alumni-actions-cell">
-                                        <a class="button alumni-restore-button" href="{{ route('student-management.students.edit', array_merge([$student], request()->query())) }}" title="Aktifkan siswa lagi" aria-label="Aktifkan siswa {{ $student->name }} lagi">Aktifkan Lagi</a>
+                                        <a class="app-table-action is-success alumni-restore-button" href="{{ route('student-management.students.edit', array_merge([$student], request()->query())) }}" title="Aktifkan siswa lagi" aria-label="Aktifkan siswa {{ $student->name }} lagi">Aktifkan Lagi</a>
                                     </td>
                                 </tr>
                             @empty
@@ -195,10 +195,10 @@
                         ? 'Menampilkan '.number_format($alumni->firstItem(), 0, ',', '.').'-'.number_format($alumni->lastItem(), 0, ',', '.').' dari '.number_format($alumni->total(), 0, ',', '.').' alumni'
                         : 'Menampilkan 0 dari 0 alumni';
                 @endphp
-                <nav class="pagination-wrap alumni-pagination student-report-pagination" aria-label="Navigasi halaman alumni">
+                <nav class="app-table-summary pagination-wrap alumni-pagination student-report-pagination" aria-label="Navigasi halaman alumni">
                     <p>{{ $alumniResultSummary }}</p>
                     @if($alumni->hasPages())
-                        <div class="student-pagination-links">
+                        <div class="app-pagination student-pagination-links">
                             @if($alumni->onFirstPage())
                                 <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
                             @else

@@ -108,15 +108,15 @@
                     @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}">@endif
                     @if(request('direction'))<input type="hidden" name="direction" value="{{ request('direction') }}">@endif
                     <div class="student-filter-actions student-fee-card-filter-actions fee-type-card-filter-actions">
-                        <button class="button student-fee-card-search-button fee-type-card-search-button" type="submit">Terapkan</button>
-                        <a class="button student-fee-card-reset-button fee-type-card-reset-button" href="{{ route('student-management.identity-cleanup.index') }}">Reset</a>
+                        <button class="button button-primary student-fee-card-search-button fee-type-card-search-button" type="submit">Filter</button>
+                        <a class="button button-secondary student-fee-card-reset-button fee-type-card-reset-button" href="{{ route('student-management.identity-cleanup.index') }}">Reset</a>
                     </div>
                 </form>
             </section>
 
             <section class="student-list-layout identity-cleanup-table-card">
-                <div class="student-reference-card-count student-management-table-toolbar app-data-toolbar">
-                <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="student-reference-card-length app-page-size-form">
+                <div class="student-reference-card-count student-management-table-toolbar app-table-toolbar app-data-toolbar">
+                <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="student-reference-card-length app-table-per-page app-page-size-form">
                     @foreach(request()->except(['per_page', 'page', 'status', 'search']) as $key => $value)
                         @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                     @endforeach
@@ -130,7 +130,7 @@
                         kandidat
                     </label>
                 </form>
-                <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="report-student-search-card student-management-search-card app-data-search" role="search">
+                <form method="GET" action="{{ route('student-management.identity-cleanup.index') }}" class="report-student-search-card student-management-search-card app-table-search app-data-search" role="search">
                     @foreach(request()->except(['search', 'page']) as $key => $value)
                         @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                     @endforeach
@@ -144,9 +144,9 @@
                 </form>
                 </div>
 
-                <section class="card student-data-table-surface">
-                <div class="table-wrap identity-cleanup-table-wrap">
-                    <table class="student-hybrid-table identity-cleanup-table">
+                <section class="card app-table-surface student-data-table-surface">
+                <div class="app-table-scroll table-wrap identity-cleanup-table-wrap">
+                    <table class="app-data-table student-hybrid-table identity-cleanup-table">
                         <colgroup>
                             <col class="identity-col-no">
                             <col class="identity-col-name">
@@ -208,10 +208,10 @@
                                             <form method="POST" action="{{ route('student-management.identity-cleanup.split') }}" data-identity-split-form>
                                                 @csrf
                                                 <input type="hidden" name="identity_root_id" value="{{ $candidate['identity_root_id'] }}">
-                                                <button class="identity-reset-action danger" type="submit" aria-label="Pisahkan identitas" title="Pisahkan identitas">{!! $icon('split') !!}</button>
+                                                <button class="app-table-action is-danger is-icon-only identity-reset-action danger" type="submit" aria-label="Pisahkan identitas" title="Pisahkan identitas">{!! $icon('split') !!}</button>
                                             </form>
                                         @else
-                                            <a class="identity-reset-action" href="{{ $detailUrl }}" aria-label="Tinjau kandidat identitas" title="Tinjau kandidat">{!! $icon('merge') !!}</a>
+                                            <a class="app-table-action is-icon-only identity-reset-action" href="{{ $detailUrl }}" aria-label="Tinjau kandidat identitas" title="Tinjau kandidat identitas">{!! $icon('merge') !!}</a>
                                         @endif
                                     </td>
                                 </tr>
@@ -244,10 +244,10 @@
                         ? 'Menampilkan '.number_format($firstRow, 0, ',', '.').'-'.number_format($lastRow, 0, ',', '.').' dari '.number_format($totalRows, 0, ',', '.').' kandidat'
                         : 'Menampilkan 0 dari 0 kandidat';
                 @endphp
-                <nav class="identity-reset-pagination student-report-pagination" aria-label="Navigasi halaman kandidat identitas">
+                <nav class="app-table-summary identity-reset-pagination student-report-pagination" aria-label="Navigasi halaman kandidat identitas">
                     <p>{{ $identityResultSummary }}</p>
                     @if($candidates->hasPages())
-                        <div class="student-pagination-links">
+                        <div class="app-pagination student-pagination-links">
                             @if($candidates->onFirstPage())
                                 <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
                             @else

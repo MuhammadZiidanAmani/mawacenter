@@ -57,6 +57,7 @@
     --app-danger-border: #fecaca;
     --app-danger-border-soft: #f2cfd2;
     --app-warning-border: #fde68a;
+    --app-success-border: color-mix(in oklab, var(--app-success) 34%, var(--app-border));
     --app-success-hover: #0f9079;
     --app-scrollbar: #cbd5e1;
     --app-scrollbar-hover: #94a3b8;
@@ -142,6 +143,7 @@ html[data-theme="dark"] {
     --app-danger-border: color-mix(in oklab, var(--app-danger) 42%, var(--app-border));
     --app-danger-border-soft: color-mix(in oklab, var(--app-danger) 28%, var(--app-border));
     --app-warning-border: color-mix(in oklab, var(--app-warning) 42%, var(--app-border));
+    --app-success-border: color-mix(in oklab, var(--app-success) 42%, var(--app-border));
     --app-success-hover: color-mix(in oklab, var(--app-success) 80%, black);
     --app-scrollbar: #46536b;
     --app-scrollbar-hover: #7c8fac;
@@ -505,8 +507,7 @@ html[data-theme="dark"] .theme-icon-sun { display: block; }
 .table-wrap, .data-table-wrap { width: 100%; max-width: 100%; overflow-x: auto; }
 
 /* Shared sortable headings used by data and class-movement tables. */
-.list-sort-heading-v6, .cm-v6-sort-heading { position: relative; display: block; width: 100%; min-height: 20px; padding-inline: 12px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); text-align: center; }
-.cm-v6-sort-heading { padding-inline: 10px; }
+.list-sort-heading-v6, .cm-v6-sort-heading { position: relative; display: block; width: 100%; min-height: 20px; padding-inline: 0; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); text-align: center; }
 .list-sort-label, .cm-v6-sort-label { display: block; width: 100%; white-space: normal; }
 .list-sort-arrows, .cm-v6-sort-arrows { position: absolute; top: 50%; right: 0; display: inline-flex; align-items: center; justify-content: center; gap: 2px; transform: translateY(-50%); }
 .list-sort-arrows a, .cm-v6-sort-link { display: inline-flex; width: 10px; height: 20px; align-items: center; justify-content: center; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: 1; }

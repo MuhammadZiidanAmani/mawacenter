@@ -68,7 +68,7 @@
         <strong>Hasil Validasi</strong>
         <span>Status Baru akan ditambahkan, Update akan memperbarui data yang sudah ada, Gagal perlu diperiksa.</span>
     </div>
-    <div class="table-wrap spp-import-table-wrap"><table class="data-table student-flat-table spp-import-table student-import-preview-table student-import-preview-table-v3">
+    <div class="app-table-scroll table-wrap spp-import-table-wrap"><table class="app-data-table data-table student-flat-table spp-import-table student-import-preview-table student-import-preview-table-v3">
         <colgroup>
             <col class="student-col-no">
             <col class="student-col-nis">
@@ -103,7 +103,7 @@
             </td>
             <td><span class="education-code">{{ $row['unit'] ?: '-' }}</span></td>
             <td><span class="student-import-class">{{ $row['class'] ?: '-' }}</span></td>
-            <td><span class="student-import-status-badge {{ strtolower($row['status']) }}">{{ $row['status'] }}</span></td>
+            <td><span @class(['app-status', 'student-import-status-badge', strtolower($row['status']), 'is-success' => $row['status'] === 'Baru', 'is-primary' => $row['status'] === 'Update', 'is-danger' => ! in_array($row['status'], ['Baru', 'Update'], true)])>{{ $row['status'] }}</span></td>
             <td><span class="student-import-message">{{ $studentImportMessage }}</span></td>
         </tr>
         @endforeach

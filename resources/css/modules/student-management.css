@@ -24,10 +24,6 @@
 }
 
 /* Sorting and table sizing follow the same controls as the master directory. */
-.student-sort-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: inherit; }
-.student-sort-indicator { display: inline-flex; color: var(--app-muted); }
-.student-sort-indicator .icon { width: 14px; height: 14px; }
-.student-sort-link:hover, .student-sortable-heading.is-sorted .student-sort-indicator { color: var(--app-primary); }
 .class-movement-table-wrap, .identity-cleanup-table-wrap { min-width: 0; max-width: 100%; overflow-x: auto; }
 .class-movement-student-table { min-width: 680px; }
 .identity-cleanup-table { min-width: 880px; }
@@ -35,7 +31,7 @@
 .class-movement-student-table :is(.movement-col-check, .movement-col-nis) { width: 64px; }
 .class-movement-student-table .movement-col-name { width: 32%; }
 .identity-cleanup-table :is(.identity-col-no, .identity-col-action) { width: 64px; }
-.class-movement-pagination, .identity-reset-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--app-muted); }
+.class-movement-pagination, .identity-reset-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
 .student-page-ellipsis { display: inline-grid; min-height: var(--app-pagination-size); min-width: 24px; place-items: center; color: var(--app-muted); }
 
 /* Page heading and filter surface. */
@@ -109,7 +105,6 @@
 :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) .student-data-table-surface {
     min-width: 0;
     padding: 0;
-    overflow-x: auto;
 }
 
 :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-table-toolbar-v2, .student-management-table-toolbar) {
@@ -118,26 +113,8 @@
     border: 0;
 }
 
-:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) .table-wrap {
-    min-width: 0;
-    overflow-x: auto;
-    background: var(--app-surface);
-    border: 1px solid var(--app-border);
-    border-radius: var(--app-radius-panel);
-    box-shadow: var(--shadow-admin);
-}
-
-:is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) .student-data-table-surface .table-wrap {
-    overflow: visible;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-}
-
 :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-flat-table, .student-hybrid-table, .alumni-table, .class-movement-student-table, .identity-cleanup-table) {
     margin: 0;
-    border: 0;
 }
 
 :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-col-nis, .movement-cell-nis, .alumni-cell-center) {
@@ -151,13 +128,6 @@
     gap: 12px;
     margin: 0;
     padding: 0;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    color: var(--app-muted);
-    font-size: var(--app-text-body-size);
-    font-weight: 500;
-    line-height: var(--app-text-body-leading);
 }
 
 :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) .student-report-pagination p {
@@ -258,26 +228,6 @@
     min-width: 0;
 }
 
-.identity-standard-page .identity-reset-action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    color: var(--app-primary);
-    background: var(--app-surface);
-    border: 1px solid var(--app-border);
-    border-radius: var(--app-radius);
-}
-
-.identity-standard-page .identity-reset-action.danger {
-    color: var(--app-danger);
-}
-
-.identity-standard-page .identity-reset-action:hover {
-    background: var(--app-panel-soft);
-}
 
 .identity-standard-page .identity-reset-badge,
 .identity-cleanup-page .status-pill {
@@ -493,7 +443,6 @@
 
 @media (max-width: 760px) {
     .class-movement-pagination, .identity-reset-pagination { align-items: stretch; flex-direction: column; }
-    .identity-standard-page .identity-reset-action { width: 40px; height: 40px; }
     :is(body.student-data-body main.student-page, main.student-management-page, main.class-movement-standard-page, main.identity-standard-page, main.identity-cleanup-page, main.student-alumni-page, main.student-class-alumni-page) {
         padding: 16px;
     }

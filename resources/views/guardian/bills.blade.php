@@ -55,9 +55,9 @@
             <form method="POST" action="{{ route('guardian.transfers.store') }}" enctype="multipart/form-data" class="guardian-transfer-form">
                 @csrf
                 <input type="hidden" name="student_id" value="{{ $selectedStudentId }}">
-                <section class="bills-data-card">
-                    <div class="table-wrap">
-                        <table class="data-table student-flat-table guardian-bill-table">
+                <section class="app-table-surface bills-data-card">
+                    <div class="app-table-scroll table-wrap">
+                        <table class="app-data-table data-table student-flat-table guardian-bill-table">
                             <thead><tr><th>Pilih</th><th>Tagihan</th><th>Periode</th><th>Sisa</th><th>Status</th></tr></thead>
                             <tbody>
                                 @forelse($bills as $bill)
@@ -69,7 +69,7 @@
                                         <td><span class="status neutral">{{ $bill->displayStatus() }}</span></td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="5" class="empty-state">Tidak ada tagihan aktif untuk siswa ini.</td></tr>
+                                    <tr><td colspan="5" class="app-table-empty empty-state">Tidak ada tagihan aktif untuk siswa ini.</td></tr>
                                 @endforelse
                             </tbody>
                             <tfoot><tr><td colspan="3">Total Dipilih</td><td colspan="2"><strong>{{ $rupiah($total) }}</strong></td></tr></tfoot>
@@ -83,9 +83,9 @@
                 </section>
             </form>
 
-            <section class="bills-data-card guardian-history-card">
-                <div class="table-wrap">
-                    <table class="data-table student-flat-table guardian-history-table">
+            <section class="app-table-surface bills-data-card guardian-history-card">
+                <div class="app-table-scroll table-wrap">
+                    <table class="app-data-table data-table student-flat-table guardian-history-table">
                         <thead><tr><th>Tanggal</th><th>Siswa</th><th>Jumlah</th><th>Status</th><th>Catatan</th></tr></thead>
                         <tbody>
                             @forelse($transfers as $transfer)
@@ -97,7 +97,7 @@
                                     <td>{{ $transfer->rejected_reason ?: '-' }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="empty-state">Belum ada riwayat transfer.</td></tr>
+                                <tr><td colspan="5" class="app-table-empty empty-state">Belum ada riwayat transfer.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

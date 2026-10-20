@@ -360,7 +360,7 @@
                                         <strong>{{ number_format($transfer->amount, 0, ',', '.') }}</strong>
                                     </span>
                                     <span class="payment-one-stop-history-actions">
-                                        <span class="app-status bill-status {{ $transfer->status === 'Diterima' ? 'is-paid' : '' }}">{{ $transfer->status }}</span>
+                                        <span @class(['app-status', 'bill-status', 'is-accepted' => $transfer->status === 'Diterima', 'is-pending' => $transfer->status === 'Pending', 'is-rejected' => $transfer->status === 'Ditolak', 'is-cancelled' => $transfer->status === 'Dibatalkan'])>{{ $transfer->status }}</span>
                                     </span>
                                 </div>
                             @endforeach
@@ -376,8 +376,8 @@
                 @endphp
 
                 <section class="bill-unit-summary bill-unit-summary-card" aria-label="Ringkasan tagihan per unit">
-                    <div class="bill-unit-table-wrap">
-                        <table class="bill-unit-table">
+                    <div class="app-table-surface app-table-scroll bill-unit-table-wrap">
+                        <table class="app-data-table bill-unit-table">
                             <colgroup>
                                 <col class="bill-unit-col-no">
                                 <col class="bill-unit-col-unit">
@@ -401,7 +401,7 @@
                                         <td><span class="bill-money remaining">{{ $rupiah((int) $unitSummary['remaining']) }}</span></td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="4" class="empty-state">Belum ada tagihan pada filter ini.</td></tr>
+                                    <tr><td colspan="4" class="app-table-empty empty-state">Belum ada tagihan pada filter ini.</td></tr>
                                 @endforelse
                             </tbody>
                             <tfoot>
@@ -422,13 +422,13 @@
                     <input type="hidden" name="sort" value="{{ request('sort') }}">
                     <input type="hidden" name="direction" value="{{ request('direction') }}">
                     <div class="bill-filter-actions">
-                        <button class="button bill-filter-apply">Terapkan</button>
-                        <a href="{{ route('finance.bills.index') }}" class="button bill-filter-reset">Reset</a>
+                        <button class="button button-primary bill-filter-apply">Filter</button>
+                        <a href="{{ route('finance.bills.index') }}" class="button button-secondary bill-filter-reset">Reset</a>
                     </div>
                 </form>
 
-                <div class="bill-table-toolbar app-data-toolbar">
-                    <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-page-size-form app-page-size-form">
+                <div class="bill-table-toolbar app-table-toolbar app-data-toolbar">
+                    <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-page-size-form app-table-per-page app-page-size-form">
                         @foreach(request()->except(['per_page', 'page']) as $key => $value)
                             @if(is_scalar($value))
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -444,7 +444,7 @@
                             data
                         </label>
                     </form>
-                    <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-toolbar-search-form app-data-search">
+                    <form method="GET" action="{{ route('finance.bills.index') }}" class="bill-toolbar-search-form app-table-search app-data-search">
                         @foreach(request()->except(['student_search', 'student_id', 'page']) as $key => $value)
                             @if(is_scalar($value))
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
@@ -454,9 +454,9 @@
                     </form>
                 </div>
 
-                <section class="bills-data-card">
-                    <div class="table-wrap">
-                        <table class="bill-flat-table bill-stitch-table">
+                <section class="app-table-surface bills-data-card">
+                    <div class="app-table-scroll table-wrap">
+                        <table class="app-data-table bill-flat-table bill-stitch-table">
                             <colgroup>
                                 <col class="bill-stitch-col-no">
                                 <col class="bill-stitch-col-nis">
@@ -472,18 +472,12 @@
                                     @foreach(['nis' => 'NIS', 'name' => 'Nama Siswa', 'unit' => 'Unit', 'class' => 'Kelas', 'total' => 'Total Tagihan'] as $sortKey => $sortLabel)
                                         @php
                                             $isCurrentSort = $currentSort === $sortKey;
-                                            $nextSortDirection = $isCurrentSort && $currentDirection === 'asc' ? 'desc' : 'asc';
-                                            $sortDirectionLabel = $nextSortDirection === 'asc' ? 'naik' : 'turun';
-                                            $sortIcon = $isCurrentSort ? ($currentDirection === 'asc' ? 'sort-up' : 'sort-down') : 'sort';
                                         @endphp
-                                        <th @class(['bill-sortable-heading', 'is-sorted' => $isCurrentSort])>
-                                            <a class="bill-sort-link" href="{{ $billSortUrl($sortKey) }}" aria-label="Urutkan {{ $sortLabel }} {{ $sortDirectionLabel }}" title="Urutkan {{ $sortLabel }} {{ $sortDirectionLabel }}">
-                                                <span>{{ $sortLabel }}</span>
-                                                <span class="bill-sort-indicator" aria-hidden="true">{!! $icon($sortIcon) !!}</span>
-                                                @if($isCurrentSort)
-                                                    <span class="bill-sr-only">Sedang diurutkan {{ $currentDirection === 'asc' ? 'naik' : 'turun' }}</span>
-                                                @endif
-                                            </a>
+                                        <th
+                                            @class(['bill-sortable-heading', 'is-sorted' => $isCurrentSort])
+                                            aria-sort="{{ $isCurrentSort ? ($currentDirection === 'asc' ? 'ascending' : 'descending') : 'none' }}"
+                                        >
+                                            @include('partials.app-sort-heading', ['column' => $sortKey, 'label' => $sortLabel, 'sortClass' => 'bill-sort-link'])
                                         </th>
                                     @endforeach
                                     <th>Aksi</th>
@@ -505,22 +499,22 @@
                                         <td><span class="bill-money remaining">{{ $rupiah($summary['total_remaining']) }}</span></td>
                                         <td>
                                             <div class="bill-table-actions">
-                                                <a href="{{ $student ? route('finance.bills.show', array_merge(request()->only(['unit_id', 'class_id', 'student_id', 'student_search', 'per_page', 'sort', 'direction']), ['student' => $student->id, 'year' => $year, 'until_month' => $untilMonth])) : '#' }}" class="button bill-detail-trigger" aria-label="Detail tagihan" title="Detail" target="_blank" rel="noopener">{!! $icon('eye') !!}</a>
+                                                <a href="{{ $student ? route('finance.bills.show', array_merge(request()->only(['unit_id', 'class_id', 'student_id', 'student_search', 'per_page', 'sort', 'direction']), ['student' => $student->id, 'year' => $year, 'until_month' => $untilMonth])) : '#' }}" class="app-table-action is-icon-only bill-detail-trigger" aria-label="Lihat detail tagihan" title="Lihat detail tagihan" target="_blank" rel="noopener">{!! $icon('eye') !!}</a>
                                                 @if($canCreateCashPayment)
-                                                <a href="{{ route('finance.payments.index', ['student_id' => $student?->id, 'search' => $student?->nis]) }}" class="bill-pay-short" aria-label="Bayar tagihan" title="Bayar">{!! $icon('wallet') !!}</a>
+                                                <a href="{{ route('finance.payments.index', ['student_id' => $student?->id, 'search' => $student?->nis]) }}" class="app-table-action is-icon-only bill-pay-short" aria-label="Bayar tagihan" title="Bayar tagihan">{!! $icon('wallet') !!}</a>
                                                 @endif
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="7" class="empty-state">Belum ada tagihan pada filter ini.</td></tr>
+                                    <tr><td colspan="7" class="app-table-empty empty-state">Belum ada tagihan pada filter ini.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
                 </section>
                 @if($studentsWithBills->total() > 0)
-                    <div class="bill-pagination-footer">
+                    <div class="app-table-summary bill-pagination-footer">
                         <span>Menampilkan {{ number_format($showingFrom, 0, ',', '.') }}-{{ number_format($showingTo, 0, ',', '.') }} dari {{ number_format($studentsWithBills->total(), 0, ',', '.') }} siswa</span>
                         @if($studentsWithBills->hasPages())
                             <nav class="bill-pagination" aria-label="Navigasi halaman tagihan">

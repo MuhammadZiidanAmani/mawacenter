@@ -89,6 +89,14 @@
     transition: color .16s ease, background-color .16s ease, border-color .16s ease, box-shadow .16s ease;
 }
 
+.app-table-action.is-primary { color: var(--app-primary); }
+.app-table-action.is-success { color: var(--app-success); }
+.app-table-action.is-warning { color: var(--app-warning); }
+.app-table-action.is-danger { color: var(--app-danger); }
+.app-table-action.is-success:hover:not(:disabled):not(.is-disabled) { background: var(--app-success-soft); border-color: var(--app-success-border); }
+.app-table-action.is-warning:hover:not(:disabled):not(.is-disabled) { background: var(--app-warning-soft); border-color: var(--app-warning-border); }
+.app-table-action.is-danger:hover:not(:disabled):not(.is-disabled) { background: var(--app-danger-soft); border-color: var(--app-danger-border); }
+
 :is(.app-table-action, .payment-overview-action) .icon {
     width: 18px;
     height: 18px;
@@ -100,7 +108,7 @@
     padding-inline: 0;
 }
 
-:is(.app-table-action, .payment-overview-action):hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]) {
+:is(.app-table-action, .payment-overview-action):hover:not(:disabled):not(.is-disabled):not([aria-disabled="true"]):not(.is-success):not(.is-warning):not(.is-danger) {
     color: var(--app-primary);
     background: var(--app-primary-soft);
     border-color: var(--app-primary-border);
@@ -228,6 +236,7 @@
  * existing aliases keep every migrated menu on the same layout contract.
  */
 :is(
+    .app-table-toolbar,
     .app-data-toolbar,
     .payment-overview-table-toolbar,
     .bill-table-toolbar,
@@ -245,7 +254,18 @@
     gap: var(--app-data-toolbar-gap);
 }
 
+.app-table-toolbar-start,
+.app-table-toolbar-end {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: var(--app-data-toolbar-gap);
+}
+
+.app-table-toolbar-end { margin-left: auto; }
+
 :is(
+    .app-table-per-page,
     .app-page-size-form,
     .bill-page-size-form,
     .report-page-size-form,
@@ -265,6 +285,7 @@
 }
 
 :is(
+    .app-table-per-page .app-page-size-control,
     .app-page-size-control,
     .payment-overview-per-page-control,
     .app-page-size-form > label,
@@ -298,6 +319,7 @@ select[name="per_page"] {
 }
 
 :is(
+    .app-table-search,
     .app-data-search,
     .payment-overview-search-control,
     .bill-toolbar-search-form,
@@ -314,6 +336,8 @@ select[name="per_page"] {
 }
 
 :is(
+    label.app-table-search,
+    .app-table-search > label,
     label.app-data-search,
     .app-data-search > label,
     .payment-overview-search-control,
@@ -337,6 +361,8 @@ select[name="per_page"] {
 }
 
 :is(
+    label.app-table-search,
+    .app-table-search > label,
     label.app-data-search,
     .app-data-search > label,
     .payment-overview-search-control,
@@ -350,6 +376,7 @@ select[name="per_page"] {
 }
 
 :is(
+    .app-table-search .app-data-search-field,
     .app-data-search-field,
     .payment-overview-search,
     .bill-search-input,
@@ -389,6 +416,7 @@ select[name="per_page"] {
     }
 
     :is(
+        .app-table-toolbar,
         .app-data-toolbar,
         .payment-overview-table-toolbar,
         .bill-table-toolbar,
@@ -404,7 +432,16 @@ select[name="per_page"] {
         flex-wrap: nowrap;
     }
 
+    .app-table-toolbar-start,
+    .app-table-toolbar-end {
+        width: 100%;
+        align-items: stretch;
+        flex-direction: column;
+        margin-left: 0;
+    }
+
     :is(
+        .app-table-search,
         .app-data-search,
         .payment-overview-search-control,
         .bill-toolbar-search-form,
@@ -420,6 +457,8 @@ select[name="per_page"] {
     }
 
     :is(
+        label.app-table-search,
+        .app-table-search > label,
         label.app-data-search,
         .app-data-search > label,
         .payment-overview-search-control,
@@ -457,6 +496,15 @@ select[name="per_page"] {
     box-shadow: var(--shadow-admin);
 }
 
+.app-table-scroll {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
 /* One frame contract for every application data table surface. */
 :is(
     .app-table-surface,
@@ -473,10 +521,34 @@ select[name="per_page"] {
     .report-data-card,
     .spp-import-table-wrap
 ) {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
     background: var(--app-table-frame-surface);
     border: 1px solid var(--app-table-frame-border);
     border-radius: var(--app-table-frame-radius);
     box-shadow: var(--app-table-frame-shadow);
+}
+
+.app-table-surface > .app-table-scroll {
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Some legacy wrappers are both the frame and the scroll container. */
+.app-table-surface.app-table-scroll {
+    overflow-x: auto;
+}
+
+.app-table-surface > .app-table-toolbar {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--app-table-divider);
+}
+
+.app-table-surface > .app-table-summary {
+    padding: 14px 16px;
+    border-top: 1px solid var(--app-table-divider);
 }
 
 /*
@@ -484,13 +556,13 @@ select[name="per_page"] {
  * default. Standalone receipts, notices, PDFs, and print views sit outside the
  * shell and keep their document-specific styling.
  */
-.app-shell main table {
+.app-shell main :is(.app-data-table, table) {
     width: 100%;
     border-collapse: collapse;
     color: var(--app-text);
 }
 
-.app-shell main table > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+.app-shell main :is(.app-data-table, table) > :is(thead, tbody, tfoot) > tr > :is(th, td) {
     padding: var(--app-table-cell-padding-y) var(--app-table-cell-padding-x);
     color: var(--app-text);
     border-bottom: 1px solid var(--app-table-divider);
@@ -499,31 +571,88 @@ select[name="per_page"] {
     vertical-align: middle;
 }
 
-.app-shell main table > thead > tr > th {
+.app-shell main :is(.app-data-table, table) > thead > tr > th {
     color: var(--app-label);
     background: var(--app-table-head-surface);
     font-weight: 600;
     text-align: center;
 }
 
-.app-shell main table > tbody > tr:not(.spp-expanded-row):not(.report-detail-row-v2):not(.payment-import-preview-detail-row):hover > :is(th, td) {
+.app-shell main :is(.app-data-table, table) > tbody > tr:not(.spp-expanded-row):not(.report-detail-row-v2):not(.payment-import-preview-detail-row):hover > :is(th, td) {
     background: var(--app-table-row-hover);
 }
 
-.app-shell main table > tbody > tr:last-child > td { border-bottom: 0; }
-.app-shell main table > tfoot > tr > :is(th, td) { font-weight: 700; }
+.app-shell main :is(.app-data-table, table) > tbody > tr:last-child > td { border-bottom: 0; }
+.app-shell main :is(.app-data-table, table) > tfoot > tr > :is(th, td) { font-weight: 700; }
 
-.app-shell main table > tbody > :is(.spp-expanded-row, .report-detail-row-v2, .payment-import-preview-detail-row) > td {
+.app-shell main :is(.app-data-table, table) > tbody > :is(.spp-expanded-row, .report-detail-row-v2, .payment-import-preview-detail-row) > td {
     padding: 0;
     background: var(--app-panel-soft);
 }
 
+/* Tailwind Admin DataTable sorting: transparent 40px trigger with Lucide icons. */
+.app-shell main :is(.app-data-table, table) th:has(.app-sort-heading) {
+    padding: 0;
+}
+
+.app-sort-heading {
+    display: inline-flex;
+    width: 100%;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding-inline: var(--app-table-cell-padding-x);
+    color: var(--app-text);
+    background: transparent;
+    border: 0;
+    border-radius: calc(var(--app-radius) - 3px);
+    font-size: var(--app-text-body-size);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color .16s ease, background-color .16s ease, box-shadow .16s ease;
+}
+
+.app-sort-heading:hover { color: var(--app-text); background: transparent; }
+.app-sort-heading:focus-visible { outline: 2px solid var(--app-primary); outline-offset: -2px; box-shadow: 0 0 0 3px var(--app-focus-ring); }
+.app-sort-indicator { display: inline-grid; width: 16px; height: 16px; flex: 0 0 16px; place-items: center; color: currentColor; }
+.app-sort-indicator.is-neutral { width: 12px; height: 12px; flex-basis: 12px; }
+.app-sort-icon { display: block; width: 16px; height: 16px; }
+.app-sort-indicator.is-neutral .app-sort-icon { width: 12px; height: 12px; }
+.list-sort-heading-v6,
+.cm-v6-sort-heading { padding-inline: 0; }
+
+.app-table-empty {
+    padding: 36px 20px !important;
+    color: var(--app-muted) !important;
+    text-align: center !important;
+}
+
+.app-table-col-no { width: 64px; text-align: center !important; }
+.app-table-col-class { text-align: center !important; }
+.app-table-col-money { text-align: right !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.app-table-col-status,
+.app-table-col-actions { text-align: center !important; }
+.app-table-col-actions { width: 76px; }
+
+.app-table-summary {
+    color: var(--app-muted);
+    font-size: var(--app-text-body-size);
+    font-weight: 500;
+    line-height: var(--app-text-body-leading);
+}
+
 /* Shared pagination geometry; modules only decide placement. */
-.pagination { display: flex; flex-wrap: wrap; gap: 8px; }
+:is(.app-pagination, .pagination) { display: flex; flex-wrap: wrap; gap: 8px; }
 
 :is(
     .pagination a,
     .pagination span,
+    .app-pagination a,
+    .app-pagination span,
     .app-page-button,
     .bill-page-link,
     .report-page-button,
@@ -547,6 +676,7 @@ select[name="per_page"] {
 
 :is(
     .pagination a,
+    .app-pagination a,
     .app-page-button,
     .bill-page-link,
     .report-page-button,
@@ -561,6 +691,7 @@ select[name="per_page"] {
 
 :is(
     .pagination .active span,
+    .app-pagination .active span,
     .app-page-button:is(.is-active, .is-current),
     .bill-page-link.is-active,
     .report-page-button.is-active,
@@ -619,8 +750,37 @@ select[name="per_page"] {
     line-height: var(--app-text-body-leading);
 }
 
+:is(.app-status, .status, .compact-badge).success,
+.app-status:is(.is-success, .is-paid, .is-accepted, .is-active) {
+    color: var(--app-success);
+    background: var(--app-success-soft);
+}
+
+:is(.app-status, .status, .compact-badge).warning,
+.app-status:is(.is-warning, .is-partial, .is-pending) {
+    color: var(--app-warning);
+    background: var(--app-warning-soft);
+}
+
+:is(.app-status, .status, .compact-badge).danger,
+.app-status:is(.is-danger, .is-overdue, .is-cancelled, .is-rejected) {
+    color: var(--app-danger);
+    background: var(--app-danger-soft);
+}
+
+:is(.app-status, .status, .compact-badge).neutral,
+.app-status:is(.is-neutral, .is-empty, .is-inactive) {
+    color: var(--app-muted);
+    background: var(--app-neutral-soft);
+}
+
+.app-status:is(.is-running, .is-primary) {
+    color: var(--app-primary);
+    background: var(--app-primary-soft);
+}
+
 @media print {
-    .app-shell main table > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+    .app-shell main :is(.app-data-table, table) > :is(thead, tbody, tfoot) > tr > :is(th, td) {
         color: #000000;
         background: #ffffff;
         border-color: #cbd5e1;

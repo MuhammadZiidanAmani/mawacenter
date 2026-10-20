@@ -53,14 +53,24 @@
                 </div>
             </section>
 
-            <form method="GET" action="{{ route('finance.transfer-verifications.index') }}" class="transfer-filter student-filter-panel student-reference-filter">
-                <label><span>Status</span><select name="status" onchange="this.form.submit()"><option value="Pending" @selected($status === 'Pending')>Pending</option><option value="Diterima" @selected($status === 'Diterima')>Diterima</option><option value="Ditolak" @selected($status === 'Ditolak')>Ditolak</option></select></label>
+            <form method="GET" action="{{ route('finance.transfer-verifications.index') }}" class="app-filter-panel transfer-filter student-filter-panel student-reference-filter">
+                @if(request('search'))<input type="hidden" name="search" value="{{ request('search') }}">@endif
+                @if(request('per_page'))<input type="hidden" name="per_page" value="{{ request('per_page') }}">@endif
+                @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}"><input type="hidden" name="direction" value="{{ request('direction', 'desc') }}">@endif
+                <label><span>Status</span><select name="status"><option value="Pending" @selected($status === 'Pending')>Pending</option><option value="Diterima" @selected($status === 'Diterima')>Diterima</option><option value="Ditolak" @selected($status === 'Ditolak')>Ditolak</option></select></label>
+                <div class="transfer-filter-actions"><button class="button button-primary" type="submit">Filter</button><a class="button button-secondary" href="{{ route('finance.transfer-verifications.index') }}">Reset</a></div>
             </form>
 
-            <section class="bills-data-card">
-                <div class="table-wrap">
-                    <table class="data-table student-flat-table transfer-verification-table">
-                        <thead><tr><th>No</th><th>Tanggal</th><th>Wali</th><th>Siswa</th><th>Jumlah</th><th>Bukti</th><th>Status</th><th>Aksi</th></tr></thead>
+            <section class="app-table-surface bills-data-card">
+                <form method="GET" action="{{ route('finance.transfer-verifications.index') }}" class="app-table-toolbar transfer-table-toolbar" role="search">
+                    <input type="hidden" name="status" value="{{ $status }}">
+                    @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}"><input type="hidden" name="direction" value="{{ request('direction', 'desc') }}">@endif
+                    <label class="app-table-per-page app-page-size-control"><span>Tampilkan</span><select name="per_page" aria-label="Jumlah transfer per halaman" onchange="this.form.submit()">@foreach([10, 25, 50, 100, 500] as $size)<option value="{{ $size }}" @selected((string) request('per_page', 10) === (string) $size)>{{ $size }}</option>@endforeach<option value="all" @selected(request('per_page') === 'all')>Semua</option></select><span>data</span></label>
+                    <label class="app-table-search app-data-search"><span>Cari Transfer</span><span class="app-field-shell app-data-search-field"><input type="search" name="search" value="{{ $search }}" placeholder="Nama, NIS, NISN, atau wali"></span></label>
+                </form>
+                <div class="app-table-scroll table-wrap">
+                    <table class="app-data-table data-table student-flat-table transfer-verification-table">
+                        <thead><tr><th>No</th><th aria-sort="{{ request('sort') === 'date' ? (request('direction') === 'asc' ? 'ascending' : 'descending') : 'none' }}">@include('partials.app-sort-heading', ['column' => 'date', 'label' => 'Tanggal'])</th><th>Wali</th><th>Siswa</th><th aria-sort="{{ request('sort') === 'amount' ? (request('direction') === 'asc' ? 'ascending' : 'descending') : 'none' }}">@include('partials.app-sort-heading', ['column' => 'amount', 'label' => 'Jumlah'])</th><th>Bukti</th><th aria-sort="{{ request('sort') === 'status' ? (request('direction') === 'asc' ? 'ascending' : 'descending') : 'none' }}">@include('partials.app-sort-heading', ['column' => 'status', 'label' => 'Status'])</th><th>Aksi</th></tr></thead>
                         <tbody>
                             @forelse($requests as $transfer)
                                 <tr>
@@ -69,13 +79,13 @@
                                     <td><strong>{{ $transfer->user?->name }}</strong><small>{{ $transfer->user?->username }}</small></td>
                                     <td><strong>{{ $transfer->student?->name }}</strong><small>{{ $transfer->student?->schoolClass?->educationUnit?->code ?? '-' }} - {{ $transfer->student?->nis }}</small></td>
                                     <td><strong class="bill-money remaining">{{ $rupiah($transfer->amount) }}</strong></td>
-                                    <td><a href="{{ route('finance.transfer-verifications.proof', $transfer) }}" target="_blank" class="button transfer-proof-link" title="Lihat Bukti" aria-label="Lihat Bukti">{!! $icon('file') !!}</a></td>
-                                    <td><span class="status {{ $transfer->status === 'Diterima' ? 'success' : ($transfer->status === 'Ditolak' ? 'danger' : 'neutral') }}">{{ $transfer->status }}</span></td>
+                                    <td><a href="{{ route('finance.transfer-verifications.proof', $transfer) }}" target="_blank" class="app-table-action is-icon-only transfer-proof-link" title="Lihat bukti transfer" aria-label="Lihat bukti transfer">{!! $icon('file') !!}</a></td>
+                                    <td><span @class(['app-status', 'status', 'success' => $transfer->status === 'Diterima', 'warning' => $transfer->status === 'Pending', 'danger' => in_array($transfer->status, ['Ditolak', 'Dibatalkan'], true), 'is-accepted' => $transfer->status === 'Diterima', 'is-pending' => $transfer->status === 'Pending', 'is-rejected' => $transfer->status === 'Ditolak', 'is-cancelled' => $transfer->status === 'Dibatalkan'])>{{ $transfer->status }}</span></td>
                                     <td>
                                         @if($transfer->status === 'Pending')
                                             <div class="transfer-actions">
-                                                <form method="POST" action="{{ route('finance.transfer-verifications.accept', $transfer) }}">@csrf<button class="button transfer-accept-button" title="Terima" aria-label="Terima">{!! $icon('check') !!}</button></form>
-                                                <form method="POST" action="{{ route('finance.transfer-verifications.reject', $transfer) }}">@csrf<input type="hidden" name="rejected_reason" value="Bukti transfer tidak valid"><button class="button transfer-reject-button" title="Tolak" aria-label="Tolak">{!! $icon('x') !!}</button></form>
+                                                <form method="POST" action="{{ route('finance.transfer-verifications.accept', $transfer) }}">@csrf<button class="app-table-action is-success is-icon-only transfer-accept-button" title="Terima transfer" aria-label="Terima transfer">{!! $icon('check') !!}</button></form>
+                                                <form method="POST" action="{{ route('finance.transfer-verifications.reject', $transfer) }}">@csrf<input type="hidden" name="rejected_reason" value="Bukti transfer tidak valid"><button class="app-table-action is-danger is-icon-only transfer-reject-button" title="Tolak transfer" aria-label="Tolak transfer">{!! $icon('x') !!}</button></form>
                                             </div>
                                         @else
                                             {{ $transfer->verifier?->name ?? '-' }}
@@ -83,14 +93,14 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="8" class="empty-state">Tidak ada transfer dengan status ini.</td></tr>
+                                <tr><td colspan="8" class="app-table-empty empty-state">Tidak ada transfer dengan status ini.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-                <nav class="transfer-pagination-footer" aria-label="Navigasi halaman transfer">
+                <nav class="app-table-summary transfer-pagination-footer" aria-label="Navigasi halaman transfer">
                     <p>{{ $transferSummary }}</p>
-                    <div class="transfer-pagination-links">
+                    <div class="app-pagination transfer-pagination-links">
                         {{ $requests->links() }}
                     </div>
                 </nav>

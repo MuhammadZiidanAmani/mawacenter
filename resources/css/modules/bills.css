@@ -79,10 +79,8 @@ main.bill-flat-page {
 .bill-status.is-paid { color: var(--app-success); background: var(--app-success-soft); }
 .bill-pay-short { color: var(--app-primary); font-weight: 600; }
 .bill-page-link.is-ellipsis { color: var(--app-muted); pointer-events: none; }
-.bill-sort-link { display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
-.bill-sort-indicator { width: 14px; height: 14px; color: var(--app-muted); }
 
-.bill-pagination-footer { align-items: center; color: var(--app-muted); }
+.bill-pagination-footer { align-items: center; }
 .bill-pagination { display: flex; flex-wrap: wrap; gap: 8px; }
 .bill-flat-table :is(th, td):is(:first-child, :nth-child(2), :nth-child(4), :nth-child(5), :last-child) { text-align: center; }
 .bill-flat-table td:nth-child(6), .bill-unit-table td:last-child { text-align: right; }

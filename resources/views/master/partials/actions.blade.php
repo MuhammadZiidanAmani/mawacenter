@@ -18,16 +18,16 @@
 <div @class(['table-actions', 'student-ghost-actions' => $isStudentAction, 'student-card-actions' => $isStudentCardAction])>
     @if($isStudentAction)
     @if($canEditStudent)
-    <a class="icon-button edit-button" href="{{ route('student-management.students.edit', array_merge([$row], request()->query())) }}" title="Edit" aria-label="Edit data">
+    <a class="app-table-action is-icon-only icon-button edit-button" href="{{ route('student-management.students.edit', array_merge([$row], request()->query())) }}" title="Edit" aria-label="Edit data">
         {!! $icon('edit') !!}
     </a>
     @endif
     @elseif($canManageMasterRow)
-    <button class="icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='@json($editRecord)' data-update-action="{{ route('master.'.$type.'.update', $actionParameters) }}">
+    <button class="app-table-action is-icon-only icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='@json($editRecord)' data-update-action="{{ route('master.'.$type.'.update', $actionParameters) }}">
         {!! $icon('edit') !!}
     </button>
     @endif
     @if(($isStudentAction && $canDeleteStudent) || (! $isStudentAction && $canManageMasterRow))
-    <form method="POST" action="{{ route('master.destroy', $deleteParameters) }}" data-master-delete-form>@csrf @method('DELETE')<button class="icon-button delete-button" title="Hapus" aria-label="Hapus data">{!! $icon('trash') !!}</button></form>
+    <form method="POST" action="{{ route('master.destroy', $deleteParameters) }}" data-master-delete-form>@csrf @method('DELETE')<button class="app-table-action is-danger is-icon-only icon-button delete-button" title="Hapus" aria-label="Hapus data">{!! $icon('trash') !!}</button></form>
     @endif
 </div>

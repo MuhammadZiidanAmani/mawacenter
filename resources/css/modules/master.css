@@ -35,29 +35,18 @@
 .student-filter-actions .button, .master-data-filter-actions .button { min-width: 88px; }
 
 .master-card { overflow: hidden; }
-.master-card > .table-wrap { border: 0; border-radius: 0; box-shadow: none; }
 .master-data-surface { display: grid; align-content: start; }
-.student-table-toolbar-v2, .student-reference-card-count { padding: 14px 16px; border-bottom: 1px solid var(--app-border-soft); }
-.master-table-toolbar { padding: 14px 16px; border-bottom: 1px solid var(--app-border-soft); }
+.student-table-toolbar-v2, .student-reference-card-count { padding: 14px 16px; }
 .student-reference-card-count form, .master-table-toolbar form { min-width: 0; }
 .master-data-filter-panel .master-data-filter-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .master-data-filter-panel .master-data-filter-actions .button { min-height: 40px; }
-.master-table-toolbar { padding: 4px 0; background: transparent; border: 0; }
+.master-table-toolbar { padding: 4px 0; }
 .master-data-table, .student-standard-table-v2 { min-width: 720px; }
 .master-data-table th { white-space: nowrap; }
 .master-data-table :is(th, td):last-child { text-align: right; }
 .master-data-table td strong { color: var(--app-text); font-weight: 600; }
-.master-sort-link { display: inline-flex; align-items: center; gap: 6px; color: inherit; text-decoration: none; }
-.master-sort-link:hover { color: var(--app-primary); }
-.master-sort-indicator { display: inline-flex; color: var(--app-muted); }
-.master-sortable-heading.is-sorted .master-sort-indicator { color: var(--app-primary); }
 .master-data-table .table-actions, .master-data-table .fee-discount-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .master-data-table .table-actions form { display: inline-flex; margin: 0; }
-.master-data-table .icon-button { width: 32px; min-width: 32px; min-height: 32px; height: 32px; padding: 0; color: var(--app-label); background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius); }
-.master-data-table .icon-button:hover { color: var(--app-primary); background: var(--app-hover-surface); border-color: var(--app-primary-border); }
-.master-data-table .delete-button { color: var(--app-danger); }
-.master-data-table .delete-button:hover { color: var(--app-danger); background: var(--app-danger-soft); border-color: var(--app-danger-border); }
-.master-data-table .empty-state { padding: 36px 20px; }
 
 .academic-year-card-section, .education-unit-card-section { width: min(100%, var(--app-content-width)); margin-inline: auto; }
 .academic-year-card, .education-unit-card { background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
@@ -81,7 +70,7 @@
 .student-import-progress-track [data-student-import-progress-bar] { display: block; width: 0; height: 100%; background: var(--app-primary); border-radius: inherit; transition: width .2s ease; }
 
 .master-pagination, .student-pagination-links { display: flex; flex-wrap: wrap; gap: 8px; }
-.master-data-pagination-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0; color: var(--app-muted); font-size: var(--app-text-body-size); font-weight: 500; line-height: var(--app-text-body-leading); }
+.master-data-pagination-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0; }
 
 .master-edit-modal .form-modal { width: min(100%, 640px); }
 .master-edit-modal .master-form { padding: 20px; }
@@ -96,7 +85,6 @@
 }
 
 @media (max-width: 760px) {
-    .master-data-table .icon-button { width: 40px; min-width: 40px; min-height: 40px; height: 40px; }
     :is(main.master-flat-page, main.master-create-page, body.master-data-body main.student-page) { padding: 16px; }
     .master-flat-workspace > .student-flat-header, .student-workspace > .student-flat-header { align-items: stretch; flex-direction: column; }
     .student-title-actions, .student-title-actions .button { width: 100%; }

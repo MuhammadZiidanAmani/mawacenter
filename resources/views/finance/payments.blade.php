@@ -227,8 +227,8 @@
                                     </div>
                                     </div>
 
-                                    <div class="payment-overview-table-toolbar app-data-toolbar">
-                                        <label class="payment-overview-per-page-control app-page-size-control">
+                                    <div class="payment-overview-table-toolbar app-table-toolbar app-data-toolbar">
+                                        <label class="payment-overview-per-page-control app-table-per-page app-page-size-control">
                                             <span>Tampilkan</span>
                                             <select name="per_page" aria-label="Jumlah siswa per halaman" data-payment-overview-per-page>
                                                 @foreach([10, 25, 50, 100, 500] as $perPage)
@@ -238,7 +238,7 @@
                                             </select>
                                             <span>data</span>
                                         </label>
-                                        <label class="payment-overview-search-control app-data-search">
+                                        <label class="payment-overview-search-control app-table-search app-data-search">
                                             <span>Cari Siswa</span>
                                             <span class="payment-overview-search app-data-search-field">
                                                 <span aria-hidden="true">{!! $icon('search') !!}</span>
@@ -248,14 +248,14 @@
                                     </div>
 
                                 <section aria-label="Data pembayaran siswa">
-                                    <div class="payment-overview-table-wrap">
-                                        <div class="payment-overview-table-frame">
-                                            <table class="payment-overview-table">
+                                    <div class="app-table-scroll payment-overview-table-wrap">
+                                        <div class="app-table-surface payment-overview-table-frame">
+                                            <table class="app-data-table payment-overview-table">
                                             <thead>
                                                 <tr>
                                                     <th>No</th>
-                                                    <th>Nama Siswa</th>
-                                                    <th>Kelas</th>
+                                                    <th aria-sort="{{ request('sort') === 'name' ? (request('direction') === 'desc' ? 'descending' : 'ascending') : 'none' }}">@include('partials.app-sort-heading', ['column' => 'name', 'label' => 'Nama Siswa'])</th>
+                                                    <th aria-sort="{{ request('sort') === 'class' ? (request('direction') === 'desc' ? 'descending' : 'ascending') : 'none' }}">@include('partials.app-sort-heading', ['column' => 'class', 'label' => 'Kelas'])</th>
                                                     <th>Sisa Tagihan</th>
                                                     <th>Status Pembayaran</th>
                                                     <th>Aksi</th>
@@ -276,7 +276,7 @@
                                                         <td>{{ $row['class'] }}</td>
                                                         <td>Rp {{ number_format($row['remaining'], 0, ',', '.') }}</td>
                                                         <td>
-                                                            <span @class(['app-status', 'payment-overview-status', 'is-paid' => $row['status'] === 'Lunas', 'is-running' => $row['status'] === 'Belum Lunas', 'is-overdue' => $row['status'] === 'Jatuh Tempo', 'is-empty' => $row['status'] === 'Belum Ada Tagihan'])>{{ $row['status'] }}</span>
+                                                            <span @class(['app-status', 'payment-overview-status', 'is-paid' => $row['status'] === 'Lunas', 'is-partial' => $row['status'] === 'Sebagian', 'is-running' => $row['status'] === 'Belum Lunas', 'is-overdue' => $row['status'] === 'Jatuh Tempo', 'is-empty' => $row['status'] === 'Belum Ada Tagihan'])>{{ $row['status'] }}</span>
                                                         </td>
                                                         <td>
                                                             <a class="app-table-action payment-overview-action is-icon-only" href="{{ route('finance.payments.index', array_filter(['search' => $row['name'], 'student_id' => $row['identity_id'], 'unit_id' => ($selectedUnitId ?? 0) ?: null, 'class_id' => ($selectedClassId ?? 0) ?: null, 'per_page' => $paymentOverviewPerPage ?? 10, 'page' => ($paymentOverviewRows ?? null)?->currentPage() > 1 ? $paymentOverviewRows->currentPage() : null])) }}" aria-label="Lihat detail tagihan {{ $row['name'] }}" title="Lihat detail tagihan">
@@ -300,7 +300,7 @@
                                     </div>
                                 </section>
                                 @if(($paymentOverviewRows ?? collect())->total() > 0)
-                                    <nav class="payment-overview-pagination" aria-label="Navigasi halaman pembayaran">
+                                    <nav class="app-table-summary payment-overview-pagination" aria-label="Navigasi halaman pembayaran">
                                         <p>Menampilkan {{ number_format($paymentOverviewRows->firstItem(), 0, ',', '.') }}-{{ number_format($paymentOverviewRows->lastItem(), 0, ',', '.') }} dari {{ number_format($paymentOverviewRows->total(), 0, ',', '.') }} siswa</p>
                                         @if($paymentOverviewRows->hasPages())
                                             @php
@@ -324,7 +324,7 @@
                                                     $pageItems[$lastPage] = $paymentOverviewRows->url($lastPage);
                                                 }
                                             @endphp
-                                            <div class="payment-overview-pagination-links">
+                                            <div class="app-pagination payment-overview-pagination-links">
                                                 @if($paymentOverviewRows->onFirstPage())
                                                     <span class="app-page-button payment-overview-page-button is-disabled" aria-disabled="true" title="Halaman sebelumnya">{!! $icon('arrow-left') !!}</span>
                                                 @else
@@ -1188,7 +1188,7 @@
 
                             @if($previewFailureRows->isNotEmpty())
                                 <div class="app-table-surface table-wrap payment-import-preview-table-wrap">
-                                    <table class="data-table payment-import-preview-table">
+                                    <table class="app-data-table data-table payment-import-preview-table">
                                         <thead><tr><th>Baris</th><th>NIS</th><th>Nama Siswa</th><th>{{ $previewType === 'spp' ? 'Periode' : 'Kategori' }}</th><th>Nominal</th><th>Masalah</th></tr></thead>
                                         <tbody data-import-preview-rows>
                                             @foreach($previewFailureRows as $row)
@@ -1237,7 +1237,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="payment-import-preview-pagination" data-import-preview-pagination>
+                                <div class="app-table-summary payment-import-preview-pagination" data-import-preview-pagination>
                                     <span data-import-preview-range></span>
                                     <div class="pagination" data-import-preview-pages></div>
                                 </div>

@@ -4,4 +4,4 @@
         default => 6,
     };
 @endphp
-<tr><td colspan="{{ $emptyColspan }}"><div class="empty-state"><strong>Belum ada data</strong><span>Tambahkan data baru untuk mulai mengelola master data.</span></div></td></tr>
+<tr><td colspan="{{ $emptyColspan }}"><div class="app-table-empty empty-state"><strong>Belum ada data</strong><span>Tambahkan data baru untuk mulai mengelola master data.</span></div></td></tr>

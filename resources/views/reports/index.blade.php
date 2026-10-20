@@ -96,8 +96,8 @@
                 </form>
 
                 <section class="card student-data-card report-data-card">
-                <div class="student-table-toolbar app-data-toolbar">
-                    <form method="GET" action="{{ route('reports.index') }}" class="student-table-length app-page-size-form">
+                <div class="student-table-toolbar app-table-toolbar app-data-toolbar">
+                    <form method="GET" action="{{ route('reports.index') }}" class="student-table-length app-table-per-page app-page-size-form">
                         @foreach($reportQuery(['per_page']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
@@ -109,7 +109,7 @@
                             data
                         </label>
                     </form>
-                    <form method="GET" action="{{ route('reports.index') }}" class="student-table-search app-data-search">
+                    <form method="GET" action="{{ route('reports.index') }}" class="student-table-search app-table-search app-data-search">
                         @foreach($reportQuery(['search']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
@@ -117,8 +117,8 @@
                     </form>
                 </div>
 
-                <div class="table-wrap">
-                    <table class="data-table student-flat-table report-flat-table">
+                <div class="app-table-scroll table-wrap">
+                    <table class="app-data-table data-table student-flat-table report-flat-table">
                         <colgroup>
                             <col class="report-col-no">
                             <col class="report-col-date">
@@ -173,7 +173,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="11" class="empty-state">Belum ada transaksi pada filter ini.</td></tr>
+                                <tr><td colspan="11" class="app-table-empty empty-state">Belum ada transaksi pada filter ini.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

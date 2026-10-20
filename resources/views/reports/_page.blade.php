@@ -124,8 +124,8 @@
                     @endforeach
 
                     <div class="report-filter-actions-v2">
-                        <button class="button report-apply-button">Terapkan</button>
-                        <a class="button report-reset-button" href="{{ $resetRoute }}">Reset</a>
+                        <button class="button button-primary report-apply-button">Filter</button>
+                        <a class="button button-secondary report-reset-button" href="{{ $resetRoute }}">Reset</a>
                     </div>
                 </form>
 
@@ -349,9 +349,9 @@
                 @endif
 
                 @if($summaryColumns)
-                    <section class="report-summary-table-section">
-                        <div class="table-wrap">
-                            <table @class(['report-table-v2', 'report-summary-table-v2', 'is-empty' => $summaryRows->isEmpty()])>
+                    <section class="app-table-surface report-summary-table-section">
+                        <div class="app-table-scroll table-wrap">
+                            <table @class(['app-data-table', 'report-table-v2', 'report-summary-table-v2', 'is-empty' => $summaryRows->isEmpty()])>
                                 <thead>
                                     <tr>
                                         @foreach($summaryColumns as $column)
@@ -382,7 +382,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="{{ count($summaryColumns) }}" class="empty-state">
+                                            <td colspan="{{ count($summaryColumns) }}" class="app-table-empty empty-state">
                                                 {{ $reportKey === 'monthly-spp' ? 'Belum ada pembayaran SPP pada periode ini.' : 'Belum ada data pada filter ini.' }}
                                             </td>
                                         </tr>
@@ -439,8 +439,8 @@
                         $selectedStudentLabel = trim($selectedReportStudent->name.' · '.$selectedReportStudent->nis);
                     }
                 @endphp
-                <div class="report-table-toolbar-v2 app-data-toolbar">
-                    <form method="GET" action="{{ route($definition['route']) }}" class="report-page-size-form app-page-size-form">
+                <div class="report-table-toolbar-v2 app-table-toolbar app-data-toolbar">
+                    <form method="GET" action="{{ route($definition['route']) }}" class="report-page-size-form app-table-per-page app-page-size-form">
                         @foreach($query(['per_page']) as $key => $value)
                             <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                         @endforeach
@@ -456,7 +456,7 @@
                     </form>
                     @if($studentSearchEnabled)
                         @if($studentSearchValue !== '')
-                            <div class="report-student-search-card is-selected app-data-search">
+                            <div class="report-student-search-card is-selected app-table-search app-data-search">
                                 <span>Cari Siswa</span>
                                 <div class="report-student-selected">
                                     <strong>{{ $selectedStudentLabel }}</strong>
@@ -464,7 +464,7 @@
                                 </div>
                             </div>
                         @else
-                            <form method="GET" action="{{ route($definition['route']) }}" class="report-student-search-card app-data-search">
+                            <form method="GET" action="{{ route($definition['route']) }}" class="report-student-search-card app-table-search app-data-search">
                                 @foreach($query(['student_search', 'page']) as $key => $value)
                                     <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                                 @endforeach
@@ -482,28 +482,22 @@
                     @endif
                 </div>
 
-                <section class="report-table-section-v2">
-                    <div class="table-wrap">
-                        <table @class(['report-table-v2', 'report-main-table-v2', 'is-empty' => $rows->isEmpty()])>
+                <section class="app-table-surface report-table-section-v2">
+                    <div class="app-table-scroll table-wrap">
+                        <table @class(['app-data-table', 'report-table-v2', 'report-main-table-v2', 'is-empty' => $rows->isEmpty()])>
                             <thead>
                                 <tr>
                                     @foreach($columns as $column)
                                         @php
                                             $isSortable = in_array($column['key'], $sortableColumns ?? [], true);
                                             $isCurrentSort = $currentSort === $column['key'];
-                                            $nextSortDirection = $isCurrentSort && $currentDirection === 'asc' ? 'desc' : 'asc';
-                                            $sortDirectionLabel = $nextSortDirection === 'asc' ? 'naik' : 'turun';
-                                            $sortIcon = $isCurrentSort ? ($currentDirection === 'asc' ? 'sort-up' : 'sort-down') : 'sort';
                                         @endphp
-                                        <th @class(['report-sortable-heading' => $isSortable, 'is-sorted' => $isCurrentSort])>
+                                        <th
+                                            @class(['report-sortable-heading' => $isSortable, 'is-sorted' => $isCurrentSort])
+                                            @if($isSortable) aria-sort="{{ $isCurrentSort ? ($currentDirection === 'asc' ? 'ascending' : 'descending') : 'none' }}" @endif
+                                        >
                                             @if($isSortable)
-                                                <a class="report-sort-link" href="{{ $sortUrl($column['key']) }}" aria-label="Urutkan {{ $column['label'] }} {{ $sortDirectionLabel }}" title="Urutkan {{ $column['label'] }} {{ $sortDirectionLabel }}">
-                                                    <span>{{ $column['label'] }}</span>
-                                                    <span class="report-sort-indicator" aria-hidden="true">{!! $icon($sortIcon) !!}</span>
-                                                    @if($isCurrentSort)
-                                                        <span class="report-sr-only">Sedang diurutkan {{ $currentDirection === 'asc' ? 'naik' : 'turun' }}</span>
-                                                    @endif
-                                                </a>
+                                                @include('partials.app-sort-heading', ['column' => $column['key'], 'label' => $column['label'], 'sortClass' => 'report-sort-link'])
                                             @else
                                                 {{ $column['label'] }}
                                             @endif
@@ -578,13 +572,13 @@
                                                     <span class="app-status report-status {{ $statusClass($row[$column['key']] ?? '') }}">{{ $row[$column['key']] ?? '-' }}</span>
                                                 @elseif(($column['type'] ?? '') === 'actions')
                                                     <div class="report-row-actions{{ $rowActionClass }}">
-                                                        <button type="button" data-report-row-toggle="{{ $rowDetailId }}" aria-expanded="false" aria-controls="{{ $rowDetailId }}" aria-label="Detail transaksi" title="Detail transaksi">{!! $icon('eye') !!}</button>
+                                                        <button class="app-table-action is-icon-only" type="button" data-report-row-toggle="{{ $rowDetailId }}" aria-expanded="false" aria-controls="{{ $rowDetailId }}" aria-label="Detail transaksi" title="Detail transaksi">{!! $icon('eye') !!}</button>
                                                         @if($allowPaymentMutation)
-                                                            <button type="button" {!! $correctionActionAttributes !!} aria-label="{{ $correctionTitleText }} {{ $actionAriaName }}" title="{{ $correctionTitleText }}">{!! $icon('edit') !!}</button>
-                                                            <button type="button" {!! $cancelActionAttributes !!} aria-label="{{ $cancelTitleText }} {{ $actionAriaName }}" title="{{ $cancelTitleText }}">{!! $icon('trash') !!}</button>
+                                                            <button class="app-table-action is-icon-only" type="button" {!! $correctionActionAttributes !!} aria-label="{{ $correctionTitleText }} {{ $actionAriaName }}" title="{{ $correctionTitleText }}">{!! $icon('edit') !!}</button>
+                                                            <button class="app-table-action is-danger is-icon-only" type="button" {!! $cancelActionAttributes !!} aria-label="{{ $cancelTitleText }} {{ $actionAriaName }}" title="{{ $cancelTitleText }}">{!! $icon('trash') !!}</button>
                                                         @endif
                                                         @if($allowReceiptPrint)
-                                                            <a href="{{ $receiptHref }}" target="_blank" rel="noopener" aria-label="{{ $receiptTitleText }} {{ $actionAriaName }}" title="{{ $receiptTitleText }}">{!! $icon('printer') !!}</a>
+                                                            <a class="app-table-action is-icon-only" href="{{ $receiptHref }}" target="_blank" rel="noopener" aria-label="{{ $receiptTitleText }} {{ $actionAriaName }}" title="{{ $receiptTitleText }}">{!! $icon('printer') !!}</a>
                                                         @endif
                                                         @if($mutedActionMarkup)
                                                             {!! $mutedActionMarkup !!}
@@ -609,7 +603,7 @@
                                     @if($reportKey === 'transactions')
                                         <tr id="{{ $rowDetailId }}" class="report-detail-row-v2" hidden>
                                             <td colspan="{{ count($columns) }}">
-                                                <table class="report-detail-table-v2">
+                                                <table class="app-data-table report-detail-table-v2">
                                                     <tbody>
                                                         <tr>
                                                             <th>Waktu Transaksi</th>
@@ -646,7 +640,7 @@
                                     @endif
                                 @empty
                                     <tr>
-                                        <td colspan="{{ count($columns) }}" class="empty-state">
+                                        <td colspan="{{ count($columns) }}" class="app-table-empty empty-state">
                                             {{ $reportKey === 'monthly-spp' ? 'Belum ada pembayaran SPP pada periode ini.' : 'Belum ada data pada filter ini.' }}
                                         </td>
                                     </tr>
@@ -695,9 +689,9 @@
                         }
                     @endphp
                     @if($rowsPaginator->hasPages())
-                        <nav class="pagination-wrap report-pagination" aria-label="Navigasi halaman laporan">
+                        <nav class="app-table-summary pagination-wrap report-pagination" aria-label="Navigasi halaman laporan">
                             <p>{{ $reportResultSummary }}</p>
-                            <div class="report-pagination-links">
+                            <div class="app-pagination report-pagination-links">
                                 @if($rowsPaginator->onFirstPage())
                                     <span class="app-page-button report-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
                                 @else
@@ -734,7 +728,7 @@
                             </div>
                         </nav>
                     @else
-                        <div class="report-pagination report-pagination-summary-only">
+                        <div class="app-table-summary report-pagination report-pagination-summary-only">
                             <p>{{ $reportResultSummary }}</p>
                         </div>
                     @endif

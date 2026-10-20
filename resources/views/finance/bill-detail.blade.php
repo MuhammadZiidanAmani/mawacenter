@@ -71,8 +71,8 @@
 
             <section class="bill-detail-web-panel">
                 <h2>Rincian Tagihan</h2>
-                <div class="bill-detail-web-table-wrap">
-                    <table class="bill-detail-web-table">
+                <div class="app-table-surface app-table-scroll bill-detail-web-table-wrap">
+                    <table class="app-data-table bill-detail-web-table">
                         <colgroup>
                             <col class="bill-detail-col-number">
                             <col>

@@ -327,7 +327,7 @@ main.payment-hub-page {
 .payment-import-preview-detail-content { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 14px 16px; }
 .payment-import-preview-detail-content p { margin: 3px 0 0; color: var(--app-muted); }
 
-.payment-import-preview-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--app-muted); }
+.payment-import-preview-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .payment-import-preview-pagination .pagination { justify-content: flex-end; }
 .payment-import-preview-empty { display: flex; align-items: center; gap: 12px; padding: 16px; color: var(--app-label); background: var(--app-success-soft); border: 1px solid var(--app-success); border-radius: var(--app-radius); }
 .payment-import-preview-empty > div { display: grid; gap: 2px; }
@@ -489,31 +489,7 @@ main.payment-hub-page {
     border-radius: inherit;
 }
 
-.payment-overview-status {
-    color: var(--app-warning);
-    background: var(--app-warning-soft);
-    white-space: nowrap;
-}
-
-.payment-overview-status.is-paid {
-    color: var(--app-success);
-    background: var(--app-success-soft);
-}
-
-.payment-overview-status.is-running {
-    color: var(--app-primary);
-    background: var(--app-primary-soft);
-}
-
-.payment-overview-status.is-overdue {
-    color: var(--app-danger);
-    background: var(--app-danger-soft);
-}
-
-.payment-overview-status.is-empty {
-    color: var(--app-muted);
-    background: var(--app-panel-soft);
-}
+.payment-overview-status { white-space: nowrap; }
 
 .payment-overview-empty,
 .payment-one-stop-empty-state,

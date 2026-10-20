@@ -44,7 +44,7 @@
                 <a href="{{ $backUrl }}" class="button student-filter-reset identity-back-button">Kembali</a>
             </section>
 
-            <section class="card master-card student-data-card identity-review-canvas">
+            <section class="card app-table-surface master-card student-data-card identity-review-canvas">
                 <form method="POST" action="{{ route('student-management.identity-cleanup.merge') }}" class="identity-review-layout">
                     @csrf
                     <div class="identity-review-main">
@@ -53,8 +53,8 @@
                             <strong>{{ $candidate['name'] }}</strong>
                         </div>
 
-                        <div class="table-wrap identity-review-table-wrap">
-                            <table class="data-table student-flat-table identity-review-table">
+                        <div class="app-table-scroll table-wrap identity-review-table-wrap">
+                            <table class="app-data-table data-table student-flat-table identity-review-table">
                                 <colgroup>
                                     <col class="identity-review-col-check">
                                     <col class="identity-review-col-nis">

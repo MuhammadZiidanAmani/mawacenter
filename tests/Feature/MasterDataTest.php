@@ -2389,7 +2389,7 @@ class MasterDataTest extends TestCase
         $this->get('/keuangan/pembayaran/lain-lain?category=daftar-ulang')
             ->assertOk()
             ->assertSee('Pembayaran Daftar Ulang')
-            ->assertSee('sort=total&amp;direction=desc', false)
+            ->assertSee('sort=total&amp;direction=asc', false)
             ->assertDontSee('Data Transaksi')
             ->assertSee('/keuangan/pembayaran/lain-lain/create');
         $this->get('/keuangan/pembayaran/lain-lain?category=daftar-ulang&sort=unit&direction=asc')->assertOk();
@@ -2732,7 +2732,7 @@ class MasterDataTest extends TestCase
             ->assertDontSee('Tagihan per Unit')
             ->assertDontSee('Daftar Ulang')
             ->assertDontSee('Daftar Tagihan Siswa')
-            ->assertSee('Detail tagihan')
+            ->assertSee('Lihat detail tagihan')
             ->assertSee('Rp 7.100.000');
 
         $this->get('/keuangan/tagihan/siswa/'.$student->id.'?year=2026&until_month=6')

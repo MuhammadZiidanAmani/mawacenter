@@ -575,8 +575,10 @@ class PaymentMenuTest extends TestCase
             ->get(route('finance.payments.index', ['unit_id' => $unit->id, 'class_id' => $class->id]))
             ->assertOk()
             ->assertSee('<th>No</th>', false)
-            ->assertSee('<th>Nama Siswa</th>', false)
-            ->assertSee('<th>Kelas</th>', false)
+            ->assertSeeText('Nama Siswa')
+            ->assertSeeText('Kelas')
+            ->assertSee('sort=name&amp;direction=asc', false)
+            ->assertSee('sort=class&amp;direction=asc', false)
             ->assertSee('<th>Sisa Tagihan</th>', false)
             ->assertDontSee('<th>Total Tagihan</th>', false)
             ->assertDontSee('<th>Telah Dibayar</th>', false)
@@ -621,6 +623,18 @@ class PaymentMenuTest extends TestCase
         $this->assertNotNull($dashboardLink);
         $this->assertStringNotContainsString(' active ', ' '.$dashboardLink->getAttribute('class').' ');
         $this->assertFalse($dashboardLink->hasAttribute('aria-current'));
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.index', [
+                'unit_id' => $unit->id,
+                'class_id' => $class->id,
+                'per_page' => 25,
+                'sort' => 'name',
+                'direction' => 'desc',
+            ]))
+            ->assertOk()
+            ->assertSeeInOrder(['Siswa Sebagian', 'Siswa Lunas', 'Siswa Jatuh Tempo', 'Siswa Berjalan'])
+            ->assertSee('per_page=25&amp;sort=name&amp;direction=asc', false);
     }
 
     public function test_payment_overview_paginates_ten_students_per_page(): void

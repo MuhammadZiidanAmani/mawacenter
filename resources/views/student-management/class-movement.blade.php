@@ -86,8 +86,8 @@
                     @if(request('sort'))<input type="hidden" name="sort" value="{{ request('sort') }}">@endif
                     @if(request('direction'))<input type="hidden" name="direction" value="{{ request('direction') }}">@endif
                     <div class="class-movement-filter-actions">
-                        <button class="button class-movement-apply-button">Terapkan</button>
-                        <a href="{{ $indexRoute }}" class="button class-movement-reset-button">Reset</a>
+                        <button class="button button-primary class-movement-apply-button">Filter</button>
+                        <a href="{{ $indexRoute }}" class="button button-secondary class-movement-reset-button">Reset</a>
                     </div>
                 </form>
             </section>
@@ -101,8 +101,8 @@
             </form>
 
             <section class="student-list-layout class-movement-data-card">
-            <div class="student-reference-card-count student-management-table-toolbar app-data-toolbar">
-                <form method="GET" action="{{ $indexRoute }}" class="student-reference-card-length app-page-size-form">
+            <div class="student-reference-card-count student-management-table-toolbar app-table-toolbar app-data-toolbar">
+                <form method="GET" action="{{ $indexRoute }}" class="student-reference-card-length app-table-per-page app-page-size-form">
                     @foreach(request()->except(['per_page', 'page', 'status', 'search']) as $key => $value)
                         @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                     @endforeach
@@ -116,7 +116,7 @@
                         siswa
                     </label>
                 </form>
-                <form method="GET" action="{{ $indexRoute }}" class="report-student-search-card student-management-search-card app-data-search" role="search">
+                <form method="GET" action="{{ $indexRoute }}" class="report-student-search-card student-management-search-card app-table-search app-data-search" role="search">
                     @foreach(request()->except(['search', 'page']) as $key => $value)
                         @if(is_scalar($value))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endif
                     @endforeach
@@ -142,8 +142,8 @@
                         <strong>Daftar Siswa</strong>
                     </div>
 
-                    <div class="table-wrap class-movement-table-wrap class-movement-table-surface">
-                        <table class="student-hybrid-table class-movement-student-table class-transfer-table">
+                    <div class="app-table-scroll table-wrap class-movement-table-wrap class-movement-table-surface">
+                        <table class="app-data-table student-hybrid-table class-movement-student-table class-transfer-table">
                             <colgroup>
                                 <col class="movement-col-check">
                                 <col class="movement-col-nis">
@@ -176,12 +176,12 @@
                                     </tr>
                                 @empty
                                     <tr data-class-movement-empty>
-                                        <td colspan="5" class="empty-state class-transfer-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
+                                        <td colspan="5" class="app-table-empty empty-state class-transfer-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
                                     </tr>
                                 @endforelse
                                 @if($students->isNotEmpty())
                                     <tr data-class-movement-empty hidden>
-                                        <td colspan="5" class="empty-state class-transfer-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
+                                        <td colspan="5" class="app-table-empty empty-state class-transfer-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
                                     </tr>
                                 @endif
                             </tbody>
@@ -212,8 +212,8 @@
                         <strong>Daftar Siswa</strong>
                     </div>
 
-                    <div class="table-wrap class-movement-table-wrap class-movement-table-surface">
-                        <table class="student-hybrid-table class-movement-student-table class-promotion-table">
+                    <div class="app-table-scroll table-wrap class-movement-table-wrap class-movement-table-surface">
+                        <table class="app-data-table student-hybrid-table class-movement-student-table class-promotion-table">
                             <colgroup>
                                 <col class="movement-col-check">
                                 <col class="movement-col-nis">
@@ -249,12 +249,12 @@
                                     </tr>
                                 @empty
                                     <tr data-class-movement-empty>
-                                        <td colspan="6" class="empty-state class-promotion-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
+                                        <td colspan="6" class="app-table-empty empty-state class-promotion-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
                                     </tr>
                                 @endforelse
                                 @if($students->isNotEmpty())
                                     <tr data-class-movement-empty hidden>
-                                        <td colspan="6" class="empty-state class-promotion-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
+                                        <td colspan="6" class="app-table-empty empty-state class-promotion-empty"><strong>Tidak ada siswa</strong><span>Sesuaikan filter sumber untuk menampilkan siswa yang akan diproses.</span></td>
                                     </tr>
                                 @endif
                             </tbody>
@@ -303,10 +303,10 @@
                     ? 'Menampilkan '.number_format($studentFirst, 0, ',', '.').'-'.number_format($studentLast, 0, ',', '.').' dari '.number_format($studentTotal, 0, ',', '.').' siswa'
                     : 'Menampilkan 0 dari 0 siswa';
             @endphp
-            <nav class="class-movement-pagination student-report-pagination" aria-label="Navigasi halaman {{ strtolower($title) }}">
+            <nav class="app-table-summary class-movement-pagination student-report-pagination" aria-label="Navigasi halaman {{ strtolower($title) }}">
                 <p>{{ $movementResultSummary }}</p>
                 @if(method_exists($students, 'hasPages') && $students->hasPages())
-                    <div class="student-pagination-links">
+                    <div class="app-pagination student-pagination-links">
                         @if($students->onFirstPage())
                             <span class="app-page-button student-page-button is-disabled" aria-disabled="true">Sebelumnya</span>
                         @else

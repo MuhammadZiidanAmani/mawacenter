@@ -21,22 +21,53 @@ class TransferVerificationController extends Controller
         $status = in_array($request->string('status')->value(), ['Pending', 'Diterima', 'Ditolak'], true)
             ? $request->string('status')->value()
             : 'Pending';
+        $search = trim($request->string('search')->value());
+        $sort = in_array($request->string('sort')->value(), ['date', 'amount', 'status'], true)
+            ? $request->string('sort')->value()
+            : 'date';
+        $direction = $request->string('direction')->value() === 'asc' ? 'asc' : 'desc';
+        $perPage = $this->perPage($request);
 
-        $requests = GuardianTransferRequest::with(['student.schoolClass.educationUnit', 'user:id,name,username', 'verifier:id,name'])
+        $transfers = GuardianTransferRequest::with(['student.schoolClass.educationUnit', 'user:id,name,username', 'verifier:id,name'])
             ->where('status', $status)
+            ->when($search !== '', fn ($query) => $query->where(function ($searchQuery) use ($search) {
+                $needle = $this->escapeLike($search);
+                $searchQuery
+                    ->whereHas('student', fn ($student) => $student
+                        ->where('name', 'like', "%{$needle}%")
+                        ->orWhere('nis', 'like', "{$needle}%")
+                        ->orWhere('nisn', 'like', "{$needle}%"))
+                    ->orWhereHas('user', fn ($user) => $user
+                        ->where('name', 'like', "%{$needle}%")
+                        ->orWhere('username', 'like', "{$needle}%"));
+            }))
             ->when(is_array($unitIds), function ($query) use ($unitIds) {
                 $unitIds === []
                     ? $query->whereRaw('1 = 0')
                     : $query->whereHas('student.schoolClass', fn ($class) => $class->whereIn('education_unit_id', $unitIds));
-            })
-            ->latest()
-            ->paginate(15)
+            });
+
+        $sortColumn = match ($sort) {
+            'amount' => 'amount',
+            'status' => 'status',
+            default => 'created_at',
+        };
+        $requests = $transfers
+            ->orderBy($sortColumn, $direction)
+            ->orderBy('id', $direction)
+            ->paginate($perPage)
             ->withQueryString();
 
         return view('finance.transfer-verifications', [
             'requests' => $requests,
             'status' => $status,
+            'search' => $search,
         ]);
+    }
+
+    private function escapeLike(string $value): string
+    {
+        return str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value);
     }
 
     public function proof(Request $request, GuardianTransferRequest $transfer): StreamedResponse
