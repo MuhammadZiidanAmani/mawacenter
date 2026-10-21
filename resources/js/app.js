@@ -275,6 +275,7 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         const bill = row?.querySelector('[data-payment-bill]');
         const allocation = row?.querySelector('[data-payment-bill-allocation]');
         const fullButton = row?.querySelector('[data-payment-bill-full]');
+        const periodSelect = row?.querySelector('[data-payment-bill-period-select]');
         const error = row?.querySelector('[data-payment-bill-error]');
         const amount = Number(digitsOnly(input.value || '0'));
         const balance = Number(input.dataset.paymentBillBalance || 0);
@@ -282,7 +283,9 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
         const message = amount > balance ? `Nominal tidak boleh melebihi sisa tagihan Rp ${formatter.format(balance)}.` : '';
 
         input.disabled = !isEnabled;
+        row?.classList.toggle('is-allocated', isEnabled && amount > 0);
         if (fullButton) fullButton.disabled = !isEnabled;
+        if (periodSelect) periodSelect.disabled = !isEnabled;
         if (allocation) {
             allocation.disabled = !isEnabled || amount < 1;
             allocation.value = String(amount);
@@ -491,6 +494,35 @@ document.querySelectorAll('[data-payment-one-stop-form]').forEach((form) => {
             bill.checked = true;
             input.value = formatter.format(Number(input.dataset.paymentBillBalance || 0));
             validationAttempted = true;
+            renderTotal(true);
+        });
+    });
+
+    form.querySelectorAll('[data-payment-bill-period-select]').forEach((select) => {
+        select.addEventListener('change', () => {
+            const row = select.closest('[data-payment-bill-row]');
+            const option = select.selectedOptions[0];
+            const bill = row?.querySelector('[data-payment-bill]');
+            const periodCount = row?.querySelector('[data-payment-bill-period-count]');
+            const input = row?.querySelector('[data-payment-bill-input]');
+            const amountOutput = row?.querySelector('[data-payment-bill-amount]');
+            const detailOutput = row?.querySelector('[data-payment-bill-detail]');
+            const amount = Number(option?.dataset.amount || 0);
+            const detail = option?.dataset.detail || '';
+
+            if (!row || !bill || !input || !option || amount < 1) return;
+
+            bill.checked = true;
+            bill.dataset.amount = String(amount);
+            row.dataset.amount = String(amount);
+            row.dataset.paymentBillDetail = detail;
+            input.dataset.paymentBillBalance = String(amount);
+            input.value = formatter.format(amount);
+            if (periodCount) periodCount.value = select.value;
+            if (amountOutput) amountOutput.textContent = formatter.format(amount);
+            if (detailOutput) detailOutput.textContent = detail;
+            validationAttempted = true;
+            renderMandatoryDisplayTotal();
             renderTotal(true);
         });
     });

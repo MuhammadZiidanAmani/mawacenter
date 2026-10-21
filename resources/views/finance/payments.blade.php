@@ -588,12 +588,13 @@
                                                                         $oldAllocation = (int) $oldAllocationAmounts->get($row['key'], 0);
                                                                         $allocationAmount = $isEditingSppPayment ? (int) $oldPaidDigits : $oldAllocation;
                                                                         $cardId = 'payment-bill-'.$section['suffix'].'-'.$loop->iteration;
-                                                                        $cardTitle = str_ends_with($row['key'], ':spp') ? 'BIAYA BULANAN' : $row['title'];
+                                                                        $isSppBill = str_ends_with($row['key'], ':spp');
+                                                                        $cardTitle = $isSppBill ? 'BIAYA BULANAN' : $row['title'];
                                                                     @endphp
-                                                                    <div @class(['payment-one-stop-bill-modern-row', 'payment-prd-bill-row', 'is-optional' => $section['optional']]) data-payment-source-url="{{ $row['url'] }}" data-payment-display-row="{{ $row['key'] }}" data-payment-bill-row data-payment-summary-bill-key="{{ $row['key'] }}" data-payment-bill-title="{{ $cardTitle }}" data-payment-bill-detail="{{ $displayDetail }}" data-payment-bill-period-options="{{ $cardPeriodOptions->toJson() }}" data-amount="{{ $remainingAmount }}">
+                                                                    <div @class(['payment-one-stop-bill-modern-row', 'payment-prd-bill-row', 'is-optional' => $section['optional'], 'is-allocated' => $allocationAmount > 0]) data-payment-source-url="{{ $row['url'] }}" data-payment-display-row="{{ $row['key'] }}" data-payment-bill-row data-payment-summary-bill-key="{{ $row['key'] }}" data-payment-bill-title="{{ $cardTitle }}" data-payment-bill-detail="{{ $displayDetail }}" data-payment-bill-period-options="{{ $cardPeriodOptions->toJson() }}" data-amount="{{ $remainingAmount }}">
                                                                         <input id="{{ $cardId }}" type="checkbox" name="{{ $row['name'] }}" value="{{ $row['key'] }}" data-payment-bill data-amount="{{ $remainingAmount }}" @checked($checked)>
                                                                         @if($row['period_options'] !== [])
-                                                                            <input type="hidden" name="{{ $isEditingSppPayment && $row['key'] === $editSppBillKey ? 'month_count' : 'payment_month_counts['.$row['mode_key'].']' }}" value="{{ $selectedMonthCount }}">
+                                                                            <input type="hidden" name="{{ $isEditingSppPayment && $row['key'] === $editSppBillKey ? 'month_count' : 'payment_month_counts['.$row['mode_key'].']' }}" value="{{ $selectedMonthCount }}" data-payment-bill-period-count>
                                                                         @endif
                                                                         @unless($isEditingSppPayment)
                                                                             <input type="hidden" name="allocation_amounts[{{ $row['key'] }}]" value="{{ $allocationAmount }}" data-payment-bill-allocation @disabled($allocationAmount < 1)>
@@ -609,6 +610,22 @@
                                                                                 @endif
                                                                             </span>
                                                                         </label>
+                                                                        @if($isSppBill && $row['period_options'] !== [])
+                                                                            <label class="app-field payment-prd-bill-period-control" for="{{ $cardId }}-period">
+                                                                                <span>Bayar sampai</span>
+                                                                                <select id="{{ $cardId }}-period" data-payment-bill-period-select aria-describedby="{{ $cardId }}-period-help" @disabled(! $checked)>
+                                                                                    @foreach($row['period_options'] as $periodOption)
+                                                                                        <option
+                                                                                            value="{{ $periodOption['count'] }}"
+                                                                                            data-amount="{{ (int) $periodOption['amount'] }}"
+                                                                                            data-detail="{{ $periodOption['card_detail'] ?? $periodOption['detail'] }}"
+                                                                                            @selected((int) $periodOption['count'] === $selectedMonthCount)
+                                                                                        >{{ $periodOption['detail'] }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                                <small id="{{ $cardId }}-period-help">Dimulai dari bulan tertua yang belum lunas.</small>
+                                                                            </label>
+                                                                        @endif
                                                                         <div class="payment-prd-bill-payment-control">
                                                                             <label for="{{ $cardId }}-amount">NOMINAL PEMBAYARAN</label>
                                                                             <div class="payment-prd-bill-money-input">

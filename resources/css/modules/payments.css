@@ -742,7 +742,7 @@ main.payment-hub-page {
     transition: border-color .16s ease, box-shadow .16s ease;
 }
 
-.payment-prd-bill-row:has(input:checked) {
+.payment-prd-bill-row.is-allocated {
     border-color: var(--app-primary-border);
     box-shadow: 0 0 0 1px var(--app-primary-border);
 }
@@ -768,6 +768,8 @@ main.payment-hub-page {
 .payment-prd-bill-copy small { display: block; margin-top: 4px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 .payment-prd-bill-amount { display: grid; justify-items: end; gap: 2px; color: var(--app-text); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .payment-prd-bill-amount strong { font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.payment-prd-bill-period-control { max-width: 360px; }
+.payment-prd-bill-period-control small { color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 400; line-height: var(--app-text-meta-leading); }
 .payment-prd-bill-payment-control { display: grid; gap: 8px; padding-top: 14px; border-top: 1px solid var(--app-border-soft); }
 .payment-prd-bill-payment-control > label { color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); }
 .payment-prd-bill-money-input { display: flex; width: min(100%, 360px); min-height: 42px; overflow: hidden; color: var(--app-label); }

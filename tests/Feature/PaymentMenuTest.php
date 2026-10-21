@@ -2022,7 +2022,8 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create());
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
-            ->assertDontSee('Bayar sampai')
+            ->assertSee('Bayar sampai')
+            ->assertSee('data-payment-bill-period-select', false)
             ->assertSee('NOMINAL PEMBAYARAN')
             ->assertSee('data-payment-bill-full', false)
             ->assertSee('Total Pembayaran')
@@ -2035,7 +2036,7 @@ class PaymentMenuTest extends TestCase
             ->assertDontSee('payment-prd-history-link', false)
             ->assertSee('Bayar &amp; Cetak Struk', false)
             ->assertSee('Juli 2026')
-            ->assertDontSeeText('Desember 2026');
+            ->assertSee('Desember 2026');
 
         $this->post('/keuangan/pembayaran', [
             'student_id' => $student->id,
@@ -2053,7 +2054,7 @@ class PaymentMenuTest extends TestCase
         $this->assertDatabaseHas('spp_payment_items', ['year' => 2026, 'month' => 12, 'paid_amount' => 300000]);
     }
 
-    public function test_payment_bill_cards_expose_per_card_input_and_full_control_without_period_selector(): void
+    public function test_payment_bill_cards_expose_spp_period_selector_per_card_input_and_full_control(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-07-05 10:00:00'));
         $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
@@ -2080,7 +2081,10 @@ class PaymentMenuTest extends TestCase
             ->assertSee('data-payment-bill-input', false)
             ->assertSee('data-payment-bill-full', false)
             ->assertSee('name="allocation_amounts['.$student->id.':spp]"', false)
-            ->assertDontSee('Bayar sampai')
+            ->assertSee('Bayar sampai')
+            ->assertSee('name="payment_month_counts['.$student->id.'_spp]"', false)
+            ->assertSee('data-payment-bill-period-select', false)
+            ->assertDontSee('payment-prd-bill-row is-allocated', false)
             ->assertDontSee('data-payment-bill-locked', false);
     }
 
@@ -2236,7 +2240,7 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']));
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
-            ->assertDontSee('Bayar sampai')
+            ->assertSee('Bayar sampai')
             ->assertSee('NOMINAL PEMBAYARAN')
             ->assertSee('Oktober 2026');
 
@@ -2341,7 +2345,7 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create());
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
-            ->assertDontSee('Bayar sampai')
+            ->assertSee('Bayar sampai')
             ->assertSee('September 2025 - Juni 2026')
             ->assertSee('NOMINAL PEMBAYARAN')
             ->assertSee('name="payment_month_counts['.$student->id.'_spp]" value="10"', false);
