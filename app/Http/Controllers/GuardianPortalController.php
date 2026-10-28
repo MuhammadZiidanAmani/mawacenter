@@ -19,6 +19,8 @@ class GuardianPortalController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        abort_unless(config('payments.guardian_transfer_enabled'), 404);
+
         $studentIds = $request->user()->accessibleStudentIds() ?? [];
 
         $validated = $request->validate([

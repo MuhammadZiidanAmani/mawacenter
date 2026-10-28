@@ -56,11 +56,11 @@ Kode saat ini memakai Laravel 13, PHP sesuai batas `composer.json`, Blade, Eloqu
 | Alumni | `/manajemen-siswa/alumni` | Siswa nonaktif dan reaktivasi |
 | Pembayaran | `/keuangan/pembayaran` | Transaksi baru, struk, riwayat singkat |
 | Tagihan | `/keuangan/tagihan` | Kewajiban belum selesai dan surat tagihan |
-| Verifikasi | `/keuangan/verifikasi-transfer` | Pemeriksaan transfer wali oleh Super Admin |
+| Verifikasi | `/keuangan/verifikasi-transfer` | Dinonaktifkan sementara; route historis menolak akses sampai transfer wali diaktifkan kembali |
 | Laporan | `/laporan/transaksi`, `/laporan/spp-perbulan`, `/laporan/spp-tahun-pelajaran`, `/laporan/rekap-unit` | Arsip, rekap, audit, XLSX/PDF |
 | Data Master | `/master-data?tab=...` | Tahun, unit, kelas, kategori, keringanan, role, user |
-| Pengaturan | `/pengaturan` | Akun dan konfigurasi rekening transfer |
-| Portal wali | `/wali-santri/tagihan` dan tampilan wali pada Tagihan | Tagihan anak serta pengajuan transfer |
+| Pengaturan | `/pengaturan` | Profil akun dan perubahan password |
+| Portal wali | `/wali-santri/tagihan` dan tampilan wali pada Tagihan | Tagihan anak; pengajuan transfer manual dinonaktifkan sementara |
 
 Sidebar hanya menampilkan menu yang diizinkan. Topbar memuat konteks Tahun Pelajaran Aktif. Halaman `/manajemen-siswa` mengarah ke Data Siswa. Import Siswa, Jadikan Alumni, dan Import Pembayaran adalah aksi dalam konteks modul, bukan submenu/tab utama tambahan. Riwayat pembayaran lengkap berada di Laporan; route riwayat lama boleh dipertahankan untuk kompatibilitas dan kebutuhan riwayat petugas.
 
@@ -84,9 +84,10 @@ Instruksi pengguna terbaru mengarahkan perubahan. Untuk dokumen yang bertentanga
 | Tahun pelajaran di setiap filter | Tahun aktif dari topbar untuk operasional. Pilihan tahun eksplisit untuk arsip/laporan, input akademik, serta target Naik Kelas; konteks sumber tetap dikirim dan divalidasi server. |
 | Export data kosong | Khusus laporan tetap menghasilkan dokumen berheader dan keterangan kosong. Modul lain mengikuti perilaku terdokumentasi; jangan error mentah. |
 | Mode terang dan gelap | Light memakai canvas putih `#ffffff`; dark memakai token `html[data-theme="dark"]` lengkap. Tombol topbar menyimpan preferensi pada `localStorage` (`mawa-center-theme`) dan memakai preferensi sistem bila belum ada pilihan. Alur keuangan tidak terpengaruh; PDF/struk tetap putih. Lihat [aturan mode gelap](DESIGN-SYSTEM-TAILWIND.md#mode-gelap). |
-| Scope Dashboard Unit | `DashboardController` saat ini membangun agregat/cache global; scope pengguna/unit belum terlihat di query tersebut. Kebutuhan scope bendahara masih perlu audit, termasuk cache key. |
+| Scope Dashboard Unit | Agregat, aktivitas terbaru, rekap unit, dan cache Dashboard dibatasi memakai `accessibleUnitIds()`/`accessibleStudentIds()`. Cache key wajib tetap memuat scope akses agar hasil global tidak bocor ke pengguna unit. |
+| Transfer manual sementara | Arahan 28 Oktober 2026: pengajuan transfer Portal Wali, rekening global yang dapat diedit, dan Verifikasi Transfer dinonaktifkan sambil menunggu integrasi payment gateway. Transfer manual tetap dapat dicatat dari Kasir hanya oleh Super Admin setelah dana dikonfirmasi; Petugas tetap Cash. Data dan riwayat transfer lama dipertahankan. |
 
-Catatan akses lain: permission `payments.verify_transfer` saat ini juga dipakai untuk sejumlah aksi import/edit/hapus/sinkron. Jangan menebak permission baru seperti `payments.import` tanpa mendefinisikan dan memigrasikannya. Verifikasi pembatasan peran tetap mencakup middleware, controller, service, dan URL langsung.
+Permission operasional keuangan dipisahkan: `payments.verify_transfer` khusus verifikasi transfer wali dan hanya Super Admin, `payments.import` untuk import, `payments.manage` untuk koreksi/pembatalan/edit/hapus transaksi, serta `bills.sync` untuk sinkronisasi tagihan. Penambahan izin harus melalui role eksplisit; nama role tidak otomatis memberi akses. Verifikasi pembatasan tetap mencakup middleware, controller, service, UI, dan URL langsung.
 
 ## 4. Role dan Autentikasi
 
@@ -109,8 +110,8 @@ Pengguna tanpa penugasan yang diperlukan tidak memperoleh akses global secara ot
 | --- | --- |
 | Dashboard | `dashboard.view` |
 | Siswa | `students.view`, `students.create`, `students.update`, `students.import`, `students.export`, `students.movement`, `students.alumni`, `students.identity_cleanup` |
-| Pembayaran | `payments.cash.create`, `payments.transfer.submit_guardian`, `payments.verify_transfer`, `payments.view_own`, `payments.view_unit` |
-| Tagihan | `bills.view`, `bills.view_unit`, `bills.view_guardian` |
+| Pembayaran | `payments.cash.create`, `payments.transfer.submit_guardian`, `payments.verify_transfer`, `payments.import`, `payments.manage`, `payments.view_own`, `payments.view_unit` |
+| Tagihan | `bills.view`, `bills.view_unit`, `bills.view_guardian`, `bills.sync` |
 | Laporan | `reports.view`, `reports.view_unit`, `reports.export` |
 | Administrasi | `master.manage`, `users.manage`, `settings.view` |
 
@@ -182,6 +183,8 @@ Urutan: heading dan aksi, filter, toolbar jumlah data/pencarian, tabel, paginati
 Filter mendukung unit, kelas, konteks tahun aktif/arsip, status, dan nama/NIS/NISN. Unit menentukan pilihan kelas; reset mengembalikan konteks aktif. Pertahankan filter, sort/direction, dan `per_page` saat pagination, export, edit, dan kembali dari form.
 
 Kolom minimum: No, NIS, Nama, JK, Unit, Kelas, Aksi. NISN/tahun/status opsional sesuai pekerjaan. Nama rata kiri, JK L/P, kode unit resmi, aksi ikon. Empty state: `Belum ada data siswa pada filter ini.`
+
+Data siswa tidak dapat dihapus permanen dari UI maupun endpoint operasional. Gunakan alur Alumni/nonaktif agar tagihan, pembayaran, audit, dan relasi identitas historis tetap utuh.
 
 ### 6.2 Tambah/Edit (`STU-02`)
 
@@ -281,7 +284,7 @@ Jenis: SPP, Daftar Ulang, Laundry, Lain-lain. Pilih konteks/file, Preview Data, 
 
 Khusus import Excel SPP, bulan boleh diproses tanpa mengikuti tunggakan paling lama siswa. Pembayaran SPP manual tetap berurutan. Import tetap wajib menolak periode di luar masa tagihan, bulan yang sudah lunas, nominal melebihi sisa tagihan, unit/siswa yang tidak sesuai scope, serta transaksi duplikat.
 
-Kolom minimal SPP: NIS, Nama, Cara bayar, Waktu, Nominal; Petugas opsional. Jangan menambah izin import bendahara berdasarkan sebutan generik pada PRD lama. Kode saat ini memproteksi import dengan `payments.verify_transfer`.
+Kolom minimal SPP: NIS, Nama, Cara bayar, Waktu, Nominal; Petugas opsional. Import memerlukan `payments.import`; izin tersebut tidak diberikan kepada Bendahara secara default.
 
 Empty/error penting: siswa tidak ditemukan, belum ada siswa dipilih, tidak ada tagihan aktif/wajib, opsional tersedia ketika wajib lunas, belum ada riwayat, belum memilih tagihan, nominal kosong/melebihi total, bukti belum diunggah, scope unit ditolak, atau tagihan sudah lunas. Error dekat konteks; empty bukan error.
 
@@ -317,6 +320,8 @@ Kertas setengah F4 portrait 165 x 215mm. Toolbar Kembali, Bayar bila berizin, Un
 ## 9. Portal Wali dan Verifikasi
 
 Sumber: S01; implementasi `GuardianPortalController`/`TransferVerificationController`. ID: `TRF-*`.
+
+**Status sementara sejak 28 Oktober 2026:** wali tetap dapat melihat tagihan dan riwayat, tetapi tidak dapat mengirim pengajuan/bukti transfer baru. Menu dan endpoint verifikasi menolak akses ketika `PAYMENTS_GUARDIAN_TRANSFER_ENABLED=false`. Alur di bawah dipertahankan sebagai kontrak historis yang harus berlaku kembali bila transfer wali diaktifkan atau digantikan integrasi payment gateway. Jangan mengaktifkan flag sebelum akses verifier legacy dibatasi hanya untuk Super Admin.
 
 1. Wali masuk dengan unit/NIS/password dan memilih anak bila lebih dari satu.
 2. Sistem menampilkan hanya kewajiban identitas yang terhubung, termasuk unit tambahan yang sah.
@@ -374,13 +379,13 @@ Export mencakup seluruh hasil filter, bukan hanya halaman pagination, tetap dala
 
 Bagian ini melengkapi PRD dari S06 dan pembacaan kode; belum ada PRD modul terpisah untuk ketiga area.
 
-- **Dashboard:** ringkasan penerimaan hari/bulan, tren, siswa aktif, tagihan/sisa/jatuh tempo, persentase pelunasan, aktivitas terbaru, rekap unit. Statistik dan chart ringan; tidak menggantikan laporan. Kebutuhan Dashboard Unit harus membatasi query dan cache berdasarkan akses (gap bagian 3).
+- **Dashboard:** ringkasan penerimaan hari/bulan, tren, siswa aktif, tagihan/sisa/jatuh tempo, persentase pelunasan, aktivitas terbaru, rekap unit. Statistik dan chart ringan; tidak menggantikan laporan. Query dan cache wajib dibatasi berdasarkan unit/siswa yang dapat diakses pengguna.
 - **Tahun Pelajaran:** konteks aktif operasional serta periode arsip/laporan; validasi perubahan konteks dengan data terikat.
 - **Unit/Kelas:** unit pendidikan, kelas/tingkat, tahun dan status; pilihan kelas mengikuti unit. Penonaktifan tidak menghapus riwayat siswa/pembayaran.
 - **Kategori Pembayaran:** tarif/scope unit, kelas/tingkat, tahun, kelompok pembayaran, scope siswa dan `creates_bill`; gunakan `FeeType`/`ChargeCalculator`. Filter unit+nama/kode; aktif/nonaktif tampil bersama, status dikelola di form.
 - **Keringanan Biaya:** relasi siswa dan pembayaran/tarif sesuai `FeeDiscount`. Filter unit+kelas+nama siswa; status bukan filter utama. Perubahan tarif/keringanan memperhatikan tagihan dan transaksi existing.
 - **Data User/Role:** `users.manage`, role aktif/permission, penugasan unit dan wali-anak. Jangan membuka hak penuh karena nama role terlihat seperti admin.
-- **Pengaturan:** nama, username, email, perubahan password dengan password saat ini dan konfirmasi, konfigurasi bank/rekening/nama pemilik. Kebutuhan: bedakan hak mengubah akun sendiri dari konfigurasi global. `SettingController` saat ini menyimpan keduanya pada endpoint yang sama; jangan menganggap pembatasan rekening per role sudah diaudit.
+- **Pengaturan:** nama, username, email, serta perubahan password dengan password saat ini dan konfirmasi. Konfigurasi bank/rekening global dinonaktifkan dan tidak boleh diproses oleh endpoint profil. Jika diaktifkan kembali, wajib memakai endpoint serta permission khusus Super Admin.
 
 ## 12. Kontrak Teknis dan Nonfungsional
 
@@ -447,7 +452,7 @@ Checklist berikut menyatukan skenario sumber; pilih test yang terkait perubahan.
 | PAY-04/05 | SPP/Other/Laundry sesuai service, struk tersedia, lima terbaru, import konteks form dan preview tetap benar | `PaymentMenuTest` |
 | BILL-01 | Lunas/Dibatalkan/laundry tidak masuk; ringkasan dan tabel filter/search/scope sama | `BillAccessTest`, test pembayaran/tagihan relevan |
 | BILL-02/03 | Sort dan pagination mempertahankan konteks, Detail surat, Bayar hanya berizin, rincian/terbilang/print sesuai | Feature terkait + QA print |
-| TRF-01 | Pengajuan Pending tidak mengurangi sisa; hanya admin menerima/menolak, alasan tolak tersimpan, verifikasi ulang tidak menggandakan | `BillAccessTest`/test transfer terkait |
+| TRF-01 | Saat fitur dinonaktifkan, form/menu tidak tampil dan endpoint pengajuan/verifikasi menolak akses; bila diaktifkan, Pending tidak mengurangi sisa, hanya admin menerima/menolak, alasan tolak tersimpan, dan verifikasi ulang tidak menggandakan | `BillAccessTest`/test transfer terkait |
 | RPT-01 | Detail semua jenis, filter tanggal/unit/kelas/petugas/siswa dan aggregate konsisten | `ReportMenuTest` |
 | RPT-02 | Kolom bulanan final, tahun kalender, tanpa filter status, hanya Lunas/Sebagian, periode beda tanggal tetap benar | `ReportMenuTest` |
 | RPT-03 | Juli-Juni, tanggal lunas/terakhir cicil, Tidak Ditagih tepat, tahun siswa kini tidak menyembunyikan pembayaran lama | `ReportMenuTest` |

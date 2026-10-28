@@ -25,6 +25,7 @@
     $studentPermissions = ['students.view', 'students.create', 'students.update', 'students.import', 'students.export', 'students.movement', 'students.alumni', 'students.identity_cleanup'];
     $canAccessStudentsMenu = collect($studentPermissions)->contains(fn ($permission) => $canAccess($permission));
     $canAccessPaymentMenu = $canAccess('payments.cash.create') || $canAccess('payments.view_unit');
+    $guardianTransfersEnabled = (bool) config('payments.guardian_transfer_enabled');
     $paymentMenuUrl = $canAccess('payments.cash.create') ? route('finance.payments.index') : route('finance.payments.history');
     $masterMenuItems = [
         'academic-years' => ['Tahun Pelajaran', 'calendar', 'master.manage'],
@@ -49,13 +50,13 @@
         @if($canAccess('dashboard.view'))
         <a href="{{ route('dashboard') }}" class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}" @if($activeMenu === 'dashboard') aria-current="page" @endif>{!! $sidebarIcon('grid') !!}<span>Dashboard</span></a>
         @endif
-        @if($canAccessPaymentMenu || $canAccess('payments.verify_transfer') || $canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))
+        @if($canAccessPaymentMenu || ($guardianTransfersEnabled && auth()->user()?->isSuperAdmin()) || $canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))
         <p class="nav-section-label">KEUANGAN</p>
         @endif
         @if($canAccessPaymentMenu)
         <a href="{{ $paymentMenuUrl }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}" @if($activeMenu === 'payment') aria-current="page" @endif>{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
         @endif
-        @if($canAccess('payments.verify_transfer'))
+        @if($guardianTransfersEnabled && auth()->user()?->isSuperAdmin())
         <a href="{{ route('finance.transfer-verifications.index') }}" class="nav-item {{ $activeMenu === 'transfer-verification' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>Verifikasi Transfer</span></a>
         @endif
         @if($canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))

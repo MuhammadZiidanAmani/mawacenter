@@ -255,9 +255,9 @@ class PaymentController extends Controller
             'paymentSummary' => $paymentSummary,
             'paymentHistory' => $paymentHistory,
             'transferAccount' => $this->transferAccount(),
-            'transferPaymentsEnabled' => config('payments.transfer_enabled'),
+            'transferPaymentsEnabled' => config('payments.transfer_enabled') && ($request->user()?->isSuperAdmin() ?? false),
             'transferProofUploadsEnabled' => config('payments.transfer_proof_upload_enabled'),
-            'cashOnly' => $request->user()?->isPetugas() ?? false,
+            'cashOnly' => ! ($request->user()?->isSuperAdmin() ?? false),
             'editSppPayment' => $editSppPayment,
             'returnUrl' => trim($request->string('return_url')->value()),
             'mode' => 'payment',
@@ -292,9 +292,9 @@ class PaymentController extends Controller
             'transfer_proof.required_if' => 'Bukti transfer wajib diunggah untuk metode pembayaran Transfer.',
         ]);
 
-        if (($request->user()?->isPetugas() ?? false) && $validated['payment_method'] !== 'Cash') {
+        if (! ($request->user()?->isSuperAdmin() ?? false) && $validated['payment_method'] !== 'Cash') {
             throw ValidationException::withMessages([
-                'payment_method' => 'Petugas hanya dapat menerima transaksi cash di kantor.',
+                'payment_method' => 'Pembayaran transfer manual hanya dapat dicatat oleh Super Admin.',
             ]);
         }
 
@@ -895,8 +895,7 @@ class PaymentController extends Controller
         BillQueryService $billQueries,
         string $sort,
         string $direction,
-    ): LengthAwarePaginator
-    {
+    ): LengthAwarePaginator {
         $needle = $search !== '' ? $this->escapeLike($search) : '';
         $studentQuery = $this->paymentStudentBaseQuery($unitIds, $classId)
             ->when($needle !== '', fn ($query) => $query->where(fn ($student) => $student

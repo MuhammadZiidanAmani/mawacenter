@@ -25,10 +25,12 @@ class CorrectOtherPaymentRequest extends FormRequest
 
     public function rules(): array
     {
+        $paymentMethods = ($this->user()?->isSuperAdmin() ?? false) ? ['Cash', 'Transfer'] : ['Cash'];
+
         return [
             'transaction_date' => ['required', 'date'],
             'transaction_time' => ['required', 'date_format:H:i:s'],
-            'payment_method' => ['required', Rule::in(['Cash', 'Transfer'])],
+            'payment_method' => ['required', Rule::in($paymentMethods)],
             'status' => ['required', Rule::in(['Diterima', 'Pending'])],
             'new_paid_amount' => ['required', 'integer', 'min:0'],
             'reason' => ['required', 'string', 'max:255'],

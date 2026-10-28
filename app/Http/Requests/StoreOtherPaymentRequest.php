@@ -34,7 +34,7 @@ class StoreOtherPaymentRequest extends FormRequest
 
     public function rules(): array
     {
-        $cashOnly = $this->user()?->isPetugas() ?? false;
+        $cashOnly = ! ($this->user()?->isSuperAdmin() ?? false);
 
         $rules = [
             'transaction_date' => ['required', 'date'],

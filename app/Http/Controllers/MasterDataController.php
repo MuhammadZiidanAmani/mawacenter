@@ -4,19 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ImportStudentsRequest;
 use App\Models\AcademicYear;
-use App\Models\Bill;
-use App\Models\BillManualPayment;
-use App\Models\BillPaymentAllocation;
 use App\Models\EducationUnit;
 use App\Models\FeeDiscount;
 use App\Models\FeeType;
-use App\Models\GuardianTransferRequest;
-use App\Models\OtherPayment;
 use App\Models\Role;
 use App\Models\SchoolClass;
-use App\Models\SppPayment;
-use App\Models\SppPaymentCorrection;
-use App\Models\SppPaymentItem;
 use App\Models\Student;
 use App\Models\User;
 use App\Services\AuditLogService;
@@ -1252,21 +1244,13 @@ class MasterDataController extends Controller
 
         if ($model instanceof Student) {
             $this->authorizeStudentAccess(request(), $model);
-            $before = $this->studentAuditSnapshot($model);
-            $studentId = $model->id;
-            DB::transaction(fn () => $this->deleteStudentWithRelatedData($model));
-            app(AuditLogService::class)->recordStudentOperation(
-                'students.delete',
-                [$studentId],
-                ['type' => $type],
-                $before,
-                [],
-                request(),
-                Student::class,
-                $studentId,
-            );
+            $parameters = request()->only([
+                'unit_id', 'class_id', 'year_id', 'status', 'search',
+                'per_page', 'sort', 'direction', 'page',
+            ]);
 
-            return $this->done($type, 'Data siswa beserta seluruh data contoh terkait berhasil dihapus.');
+            return redirect()->route('student-management.students.index', $parameters)
+                ->with('error', 'Data siswa tidak dapat dihapus permanen. Gunakan Jadikan Alumni untuk menonaktifkan siswa.');
         }
 
         if ($model instanceof SchoolClass) {
@@ -1311,32 +1295,6 @@ class MasterDataController extends Controller
         );
 
         return $this->done($type, 'Data berhasil dihapus.');
-    }
-
-    private function deleteStudentWithRelatedData(Student $student): void
-    {
-        $billIds = Bill::where('student_id', $student->id)->pluck('id');
-        $sppPaymentIds = SppPayment::where('student_id', $student->id)->pluck('id');
-        $otherPaymentIds = OtherPayment::where('student_id', $student->id)->pluck('id');
-
-        BillManualPayment::whereIn('bill_id', $billIds)->delete();
-        BillPaymentAllocation::whereIn('bill_id', $billIds)
-            ->orWhere(fn ($query) => $query
-                ->where('payment_type', 'spp')
-                ->whereIn('payment_id', $sppPaymentIds))
-            ->orWhere(fn ($query) => $query
-                ->where('payment_type', 'other')
-                ->whereIn('payment_id', $otherPaymentIds))
-            ->delete();
-        Bill::whereIn('id', $billIds)->delete();
-
-        GuardianTransferRequest::where('student_id', $student->id)->delete();
-        SppPaymentCorrection::whereIn('spp_payment_id', $sppPaymentIds)->delete();
-        SppPaymentItem::where('student_id', $student->id)->delete();
-        SppPayment::whereIn('id', $sppPaymentIds)->delete();
-        OtherPayment::whereIn('id', $otherPaymentIds)->delete();
-        FeeDiscount::where('student_id', $student->id)->delete();
-        $student->delete();
     }
 
     private function validateClass(Request $request, ?SchoolClass $schoolClass = null): array

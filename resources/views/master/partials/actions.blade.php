@@ -4,7 +4,6 @@
     $isStudentAction = $type === 'students';
     $isStudentCardAction = $isStudentAction && ($studentCardAction ?? false);
     $canEditStudent = auth()->user()?->hasPermission('students.update') ?? false;
-    $canDeleteStudent = auth()->user()?->hasPermission('master.manage') ?? false;
     $requiredPermission = in_array($type, ['data-roles', 'data-users'], true) ? 'users.manage' : 'master.manage';
     $canManageMasterRow = auth()->user()?->hasPermission($requiredPermission) ?? false;
     $editRecord = $row->toArray();
@@ -27,7 +26,7 @@
         {!! $icon('edit') !!}
     </button>
     @endif
-    @if(($isStudentAction && $canDeleteStudent) || (! $isStudentAction && $canManageMasterRow))
+    @if(! $isStudentAction && $canManageMasterRow)
     <form method="POST" action="{{ route('master.destroy', $deleteParameters) }}" data-master-delete-form>@csrf @method('DELETE')<button class="app-table-action is-danger is-icon-only icon-button delete-button" title="Hapus" aria-label="Hapus data">{!! $icon('trash') !!}</button></form>
     @endif
 </div>

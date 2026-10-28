@@ -53,7 +53,7 @@
     $showingTo = $studentsWithBills->total() > 0 ? $studentsWithBills->lastItem() : 0;
     $isGuardianView = $isGuardianView ?? false;
     $guardianTotal = $isGuardianView ? (int) $guardianBills->sum('remaining_amount') : 0;
-    $canSyncBills = auth()->user()?->isSuperAdmin() || (auth()->user()?->hasPermission('payments.verify_transfer') ?? false);
+    $canSyncBills = auth()->user()?->hasPermission('bills.sync') ?? false;
     $canCreateCashPayment = auth()->user()?->hasPermission('payments.cash.create') ?? false;
     $billSyncRun = $billSyncRun ?? null;
     $billSyncActive = $billSyncRun?->isActive() ?? false;
@@ -83,7 +83,7 @@
                 <div class="bill-page-heading">
                     <div>
                         <h1>{{ $isGuardianView ? 'Tagihan' : 'Tagihan Siswa' }}</h1>
-                        <p>{{ $isGuardianView ? 'Lihat tagihan siswa yang terhubung dan kirim bukti pembayaran transfer.' : 'Pantau kewajiban siswa yang belum selesai dan lanjutkan ke pembayaran.' }}</p>
+                        <p>{{ $isGuardianView ? ($guardianTransfersEnabled ? 'Lihat tagihan siswa yang terhubung dan kirim bukti pembayaran transfer.' : 'Lihat tagihan siswa yang terhubung. Pembayaran dilayani melalui kantor.') : 'Pantau kewajiban siswa yang belum selesai dan lanjutkan ke pembayaran.' }}</p>
                     </div>
                     @if(! $isGuardianView && $canSyncBills)
                         <form method="POST" action="{{ route('finance.bills.sync') }}" class="bill-sync-form">
@@ -213,10 +213,14 @@
                             </div>
                         </div>
 
+                        @if($guardianTransfersEnabled)
                         <form method="POST" action="{{ route('finance.bills.transfer') }}" enctype="multipart/form-data" class="payment-one-stop-pay-form guardian-transfer-form" data-payment-one-stop-form>
                             @csrf
                             <input type="hidden" name="student_id" value="{{ $selectedGuardianStudent->id }}">
                             <input type="hidden" name="payment_method" value="Transfer" data-payment-method>
+                        @else
+                        <div class="payment-one-stop-pay-form guardian-transfer-form">
+                        @endif
 
                             <section class="payment-one-stop-bills-card">
                                 <div class="payment-one-stop-bills-head">
@@ -242,11 +246,14 @@
                                                     data-amount="{{ (int) $row['amount'] }}"
                                                     data-bill-ids='@json($row['bill_ids'])'
                                                     checked
+                                                    @disabled(! $guardianTransfersEnabled)
                                                 >
                                                 <span data-payment-bill-ids>
+                                                    @if($guardianTransfersEnabled)
                                                     @foreach($row['bill_ids'] as $billId)
                                                         <input type="hidden" name="bill_ids[]" value="{{ $billId }}">
                                                     @endforeach
+                                                    @endif
                                                 </span>
                                                 <span class="payment-one-stop-bill-top">
                                                     <strong>{{ $row['title'] }}</strong>
@@ -254,7 +261,7 @@
                                                     @if($row['period_options'] !== [])
                                                         <label class="payment-one-stop-period-select">
                                                             <span>Bayar sampai</span>
-                                                            <select name="guardian_period_counts[{{ $loop->index }}]" data-payment-period-select>
+                                                            <select name="guardian_period_counts[{{ $loop->index }}]" data-payment-period-select @disabled(! $guardianTransfersEnabled)>
                                                                 @foreach($row['period_options'] as $periodOption)
                                                                     <option value="{{ $periodOption['count'] }}" data-amount="{{ $periodOption['amount'] }}" data-detail="{{ $periodOption['detail'] }}" data-bill-ids='@json($periodOption['bill_ids'])' @selected($row['default_count'] === $periodOption['count'])>{{ $periodOption['label'] }}</option>
                                                                 @endforeach
@@ -281,6 +288,7 @@
                             </section>
 
                             <section class="payment-one-stop-payment-card">
+                                @if($guardianTransfersEnabled)
                                 @if($errors->has('proof'))
                                     <div class="payment-one-stop-form-error">{{ $errors->first('proof') }}</div>
                                 @endif
@@ -324,8 +332,17 @@
 
                                     <button class="payment-one-stop-pay-button" data-payment-submit @disabled($guardianBillRows->isEmpty())>Kirim Bukti Transfer</button>
                                 </div>
+                                @else
+                                <div class="payment-one-stop-form-controls">
+                                    <div class="guardian-cash-note">Transfer melalui Portal Wali sementara dinonaktifkan. Pembayaran tunai atau konfirmasi transfer manual dilayani melalui kantor.</div>
+                                </div>
+                                @endif
                             </section>
+                        @if($guardianTransfersEnabled)
                         </form>
+                        @else
+                        </div>
+                        @endif
                     </article>
                     @else
                     <section class="payment-one-stop-empty-state">

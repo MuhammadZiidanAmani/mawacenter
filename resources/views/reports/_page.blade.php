@@ -61,7 +61,7 @@
         default => null,
     };
     $user = auth()->user();
-    $canManagePaymentCorrections = ($user?->isSuperAdmin() || $user?->isBendaharaUnit()) ?? false;
+    $canManagePaymentCorrections = $user?->hasPermission('payments.manage') ?? false;
 @endphp
 <div class="app-shell">
     @include('partials.sidebar', ['activeMenu' => 'reports', 'activeReportMenu' => $activeReportMenu])

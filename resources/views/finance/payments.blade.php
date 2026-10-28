@@ -70,7 +70,8 @@
                         $successMessage = (string) session('success', '');
                         $isDeleteSuccess = str_contains(strtolower($successMessage), 'dihapus');
                         $canCreateCashPayment = auth()->user()?->hasPermission('payments.cash.create') ?? false;
-                        $canImportPayments = auth()->user()?->hasPermission('payments.verify_transfer') ?? false;
+                        $canImportPayments = auth()->user()?->hasPermission('payments.import') ?? false;
+                        $canManagePayments = auth()->user()?->hasPermission('payments.manage') ?? false;
                     @endphp
                     @if($isDeleteSuccess)
                         <div class="result-modal-backdrop show payment-delete-success-modal" data-alert data-payment-delete-success-modal role="dialog" aria-modal="true" aria-labelledby="payment-delete-success-title">
@@ -508,8 +509,8 @@
                                         $statBillCount = (int) ($paymentSummary['bill_count'] ?? 0);
                                         $paymentFormAction = $isEditingSppPayment ? route('finance.spp.update', $editSppPayment) : route('finance.payments.store');
                                         $paymentReturnUrl = $returnUrl ?: route('reports.transactions', request()->except(['edit_payment', 'student_id', 'registration_id', 'search', 'history_period', 'return_url']));
-                                        $canDeleteHistory = auth()->user()?->hasPermission('payments.verify_transfer') ?? false;
-                                        $canSavePayment = $isEditingSppPayment ? $canImportPayments : $canCreateCashPayment;
+                                        $canDeleteHistory = $canManagePayments;
+                                        $canSavePayment = $isEditingSppPayment ? $canManagePayments : $canCreateCashPayment;
                                     @endphp
                                     <section class="payment-reference-stats" aria-label="Ringkasan kewajiban siswa">
                                         <article class="payment-reference-stat">
@@ -758,14 +759,14 @@
                                                                     <strong>{{ $history['amount_label'] }}</strong>
                                                                 </span>
                                                                 <span class="payment-one-stop-history-actions">
-                                                                    <a class="payment-one-stop-history-action" href="{{ $history['receipt_url'] }}" target="_blank" rel="noopener" title="Cetak struk" aria-label="Cetak struk">{!! $icon('printer') !!}<span>Struk</span></a>
-                                                                    <a class="payment-one-stop-history-action" href="{{ $history['download_url'] }}" title="Download PDF" aria-label="Download PDF">{!! $icon('download') !!}<span>PDF</span></a>
+                                                                    <a class="app-table-action is-icon-only payment-one-stop-history-action" href="{{ $history['receipt_url'] }}" target="_blank" rel="noopener" title="Cetak struk" aria-label="Cetak struk">{!! $icon('printer') !!}<span>Struk</span></a>
+                                                                    <a class="app-table-action is-icon-only payment-one-stop-history-action" href="{{ $history['download_url'] }}" title="Download PDF" aria-label="Download PDF">{!! $icon('download') !!}<span>PDF</span></a>
                                                                     @if($canDeleteHistory)
                                                                     <form method="POST" action="{{ $history['delete_url'] }}" data-payment-history-delete-form data-payment-delete-title="{{ $history['title'] }}" data-payment-delete-detail="{{ $history['detail'] }}" data-payment-delete-amount="Rp. {{ $history['amount_label'] }}">
                                                                         @csrf
                                                                         @method('DELETE')
                                                                         <input type="hidden" name="return_url" value="{{ route('finance.payments.index', ['search' => $search, 'student_id' => $selectedIdentity->id]) }}">
-                                                                        <button class="payment-one-stop-history-action danger" type="submit" title="Hapus transaksi" aria-label="Hapus transaksi">{!! $icon('trash') !!}</button>
+                                                                        <button class="app-table-action is-danger is-icon-only payment-one-stop-history-action danger" type="submit" title="Hapus transaksi" aria-label="Hapus transaksi">{!! $icon('trash') !!}</button>
                                                                     </form>
                                                                     @endif
                                                                 </span>

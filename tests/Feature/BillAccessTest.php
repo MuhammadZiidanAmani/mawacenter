@@ -45,9 +45,9 @@ class BillAccessTest extends TestCase
             ->assertSee('SPP MTs')
             ->assertSee('1 Tagihan')
             ->assertSee('Bayar sampai')
-            ->assertSee('Transfer Bank')
-            ->assertSee('Pembayaran tunai dilayani langsung di kantor.')
-            ->assertSee('Kirim Bukti')
+            ->assertSee('Transfer melalui Portal Wali sementara dinonaktifkan.')
+            ->assertDontSee('Rekening Tujuan')
+            ->assertDontSee('Kirim Bukti Transfer')
             ->assertSee('Riwayat Pembayaran')
             ->assertSee('Belum ada riwayat pembayaran.')
             ->assertDontSee('Tagihan Anak')
@@ -64,6 +64,18 @@ class BillAccessTest extends TestCase
         $this->actingAs($guardian)
             ->get('/wali-santri/tagihan')
             ->assertRedirect('/keuangan/tagihan');
+
+        $this->actingAs($guardian)
+            ->post(route('finance.bills.transfer'), [
+                'student_id' => $linkedStudent->id,
+                'bill_ids' => [],
+            ])
+            ->assertNotFound();
+
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin)
+            ->get(route('finance.transfer-verifications.index'))
+            ->assertNotFound();
     }
 
     public function test_unit_treasurer_only_sees_assigned_unit_bills(): void
@@ -362,6 +374,7 @@ class BillAccessTest extends TestCase
 
     public function test_guardian_transfer_proof_is_stored_privately_and_served_only_to_verifier(): void
     {
+        config(['payments.guardian_transfer_enabled' => true]);
         Storage::fake('local');
         Storage::fake('public');
         $this->seedRole('admin');
@@ -410,14 +423,16 @@ class BillAccessTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_unit_verifier_can_only_sync_and_verify_assigned_unit(): void
+    public function test_unit_bendahara_can_sync_assigned_unit_but_cannot_verify_guardian_transfers(): void
     {
+        config(['payments.guardian_transfer_enabled' => true]);
         Storage::fake('local');
         $this->seedRole('bendahara');
         Role::where('key', 'bendahara')->update([
             'permissions' => array_values(array_unique([
                 ...Role::defaultPermissionsFor('bendahara'),
                 'payments.verify_transfer',
+                'bills.sync',
             ])),
         ]);
 
@@ -453,26 +468,18 @@ class BillAccessTest extends TestCase
 
         $this->actingAs($verifier)
             ->get(route('finance.transfer-verifications.index'))
-            ->assertOk()
-            ->assertSee('Siswa Unit Sync')
-            ->assertDontSee('Siswa Unit Terlarang');
+            ->assertForbidden();
 
         $this->actingAs($verifier)
             ->get(route('finance.transfer-verifications.proof', $assignedTransfer))
-            ->assertOk();
+            ->assertForbidden();
         $this->actingAs($verifier)
             ->post(route('finance.transfer-verifications.accept', $assignedTransfer))
-            ->assertRedirect(route('finance.transfer-verifications.index'));
+            ->assertForbidden();
         $this->assertDatabaseHas('guardian_transfer_requests', [
             'id' => $assignedTransfer->id,
-            'status' => 'Diterima',
-            'verified_by' => $verifier->id,
-        ]);
-        $this->assertDatabaseHas('audit_logs', [
-            'action' => 'payments.transfer.accept',
-            'subject_type' => GuardianTransferRequest::class,
-            'subject_id' => $assignedTransfer->id,
-            'student_count' => 1,
+            'status' => 'Pending',
+            'verified_by' => null,
         ]);
         $this->actingAs($verifier)
             ->get(route('finance.transfer-verifications.proof', $otherTransfer))
@@ -484,6 +491,7 @@ class BillAccessTest extends TestCase
 
     public function test_accepting_guardian_transfer_is_idempotent(): void
     {
+        config(['payments.guardian_transfer_enabled' => true]);
         $this->seedRole('admin');
         $this->seedRole('orang_tua');
 
@@ -538,6 +546,7 @@ class BillAccessTest extends TestCase
 
     public function test_rejecting_guardian_transfer_removes_stale_allocations_and_refreshes_bill(): void
     {
+        config(['payments.guardian_transfer_enabled' => true]);
         $this->seedRole('admin');
         $this->seedRole('orang_tua');
 

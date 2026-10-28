@@ -25,6 +25,115 @@
     line-height: var(--app-text-body-leading);
 }
 
+/*
+ * One page-heading contract for migrated and legacy menus. Modules may place
+ * the heading in their workspace, while typography, spacing, and responsive
+ * action behavior remain consistent across pages.
+ */
+:is(
+    .app-page-header,
+    .student-flat-header,
+    .report-heading-v2,
+    .bill-page-heading,
+    .payment-hub-heading
+) {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+:is(
+    .app-page-heading,
+    .student-master-heading,
+    .report-heading-v2 > :first-child,
+    .bill-page-heading > :first-child,
+    .settings-heading,
+    .payment-import-heading-copy
+) {
+    min-width: 0;
+}
+
+:is(
+    .app-page-header,
+    .student-flat-header,
+    .report-heading-v2,
+    .bill-page-heading,
+    .settings-heading,
+    .payment-hub-heading
+) h1 {
+    margin: 0;
+    color: var(--app-text);
+    font-size: var(--app-text-page-size);
+    font-weight: 700;
+    line-height: var(--app-text-page-leading);
+    overflow-wrap: anywhere;
+}
+
+:is(
+    .app-page-header,
+    .student-flat-header,
+    .report-heading-v2,
+    .bill-page-heading,
+    .settings-heading,
+    .payment-hub-heading
+) p {
+    margin: 4px 0 0;
+    color: var(--app-muted);
+    font-size: var(--app-text-body-size);
+    font-weight: 400;
+    line-height: var(--app-text-body-leading);
+}
+
+:is(
+    .app-page-actions,
+    .student-title-actions,
+    .student-action-bar,
+    .report-export-actions,
+    .bill-sync-form,
+    .payment-hub-heading-actions
+) {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@media (max-width: 760px) {
+    :is(
+        .app-page-header,
+        .student-flat-header,
+        .report-heading-v2,
+        .bill-page-heading,
+        .payment-hub-heading
+    ) {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    :is(
+        .app-page-actions,
+        .student-title-actions,
+        .student-action-bar,
+        .report-export-actions,
+        .bill-sync-form,
+        .payment-hub-heading-actions
+    ),
+    :is(
+        .app-page-actions,
+        .student-title-actions,
+        .student-action-bar,
+        .report-export-actions,
+        .bill-sync-form,
+        .payment-hub-heading-actions
+    ) > .button {
+        width: 100%;
+    }
+}
+
 /* Compound controls draw their border on the wrapper instead of the inner input. */
 :is(
     .app-field-shell,

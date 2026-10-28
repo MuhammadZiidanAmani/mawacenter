@@ -26,7 +26,7 @@ class StoreSppPaymentRequest extends FormRequest
 
     public function rules(): array
     {
-        $cashOnly = $this->user()?->isPetugas() ?? false;
+        $cashOnly = ! ($this->user()?->isSuperAdmin() ?? false);
 
         return [
             'transaction_date' => ['required', 'date'],

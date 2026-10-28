@@ -107,6 +107,67 @@ class DashboardTest extends TestCase
             ->assertSee('Belum ada transaksi diterima.');
     }
 
+    public function test_dashboard_cache_and_financial_data_are_scoped_to_assigned_units(): void
+    {
+        $this->travelTo('2026-06-14 12:00:00');
+        $year = AcademicYear::create([
+            'name' => '2026/2027',
+            'start_date' => '2026-06-01',
+            'end_date' => '2027-05-31',
+            'is_active' => true,
+        ]);
+        $assignedUnit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Terakses', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'MA', 'name' => 'MA Rahasia', 'is_active' => true]);
+        $assignedClass = SchoolClass::create(['education_unit_id' => $assignedUnit->id, 'name' => 'I A', 'level' => '1', 'is_active' => true]);
+        $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'X A', 'level' => '10', 'is_active' => true]);
+        $assignedStudent = Student::create([
+            'nis' => 'UNIT-001', 'name' => 'Siswa Terakses', 'gender' => 'L',
+            'school_class_id' => $assignedClass->id, 'academic_year_id' => $year->id, 'is_active' => true,
+        ]);
+        $otherStudent = Student::create([
+            'nis' => 'UNIT-002', 'name' => 'Siswa Rahasia', 'gender' => 'P',
+            'school_class_id' => $otherClass->id, 'academic_year_id' => $year->id, 'is_active' => true,
+        ]);
+
+        foreach ([[$assignedStudent, 111111], [$otherStudent, 999999]] as [$student, $amount]) {
+            SppPayment::create([
+                'student_id' => $student->id,
+                'transaction_at' => '2026-06-14 09:00:00',
+                'payment_method' => 'Cash',
+                'status' => 'Diterima',
+                'original_amount' => $amount,
+                'discount_amount' => 0,
+                'total_amount' => $amount,
+                'paid_amount' => $amount,
+                'remaining_amount' => 0,
+                'payment_status' => 'Lunas',
+            ]);
+        }
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get('/')
+            ->assertOk()
+            ->assertSee('Siswa Rahasia');
+
+        Role::updateOrCreate(['key' => 'bendahara'], [
+            'name' => 'Bendahara Unit',
+            'permissions' => ['dashboard.view'],
+            'is_active' => true,
+        ]);
+        $bendahara = User::factory()->create(['role' => 'bendahara']);
+        $bendahara->educationUnits()->attach($assignedUnit->id);
+
+        $this->actingAs($bendahara)
+            ->get('/')
+            ->assertOk()
+            ->assertSee('Siswa Terakses')
+            ->assertSee('MI Terakses')
+            ->assertDontSee('Siswa Rahasia')
+            ->assertDontSee('MA Rahasia')
+            ->assertSee('Rp 111.111')
+            ->assertDontSee('Rp 999.999');
+    }
+
     public function test_sidebar_groups_follow_the_operational_menu_order(): void
     {
         $this->actingAs(User::factory()->create())->get('/')

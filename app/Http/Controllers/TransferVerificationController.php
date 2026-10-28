@@ -17,6 +17,8 @@ class TransferVerificationController extends Controller
 {
     public function index(Request $request): View
     {
+        $this->ensureFeatureEnabled($request);
+
         $unitIds = $request->user()?->accessibleUnitIds();
         $status = in_array($request->string('status')->value(), ['Pending', 'Diterima', 'Ditolak'], true)
             ? $request->string('status')->value()
@@ -72,6 +74,7 @@ class TransferVerificationController extends Controller
 
     public function proof(Request $request, GuardianTransferRequest $transfer): StreamedResponse
     {
+        $this->ensureFeatureEnabled($request);
         $this->authorizeTransferAccess($request, $transfer);
 
         if (! $transfer->proof_path) {
@@ -87,6 +90,7 @@ class TransferVerificationController extends Controller
 
     public function accept(Request $request, GuardianTransferRequest $transfer): RedirectResponse
     {
+        $this->ensureFeatureEnabled($request);
         $this->authorizeTransferAccess($request, $transfer);
         $before = $this->transferAuditSnapshot($transfer->loadMissing('student.schoolClass'));
 
@@ -156,6 +160,7 @@ class TransferVerificationController extends Controller
 
     public function reject(Request $request, GuardianTransferRequest $transfer): RedirectResponse
     {
+        $this->ensureFeatureEnabled($request);
         $this->authorizeTransferAccess($request, $transfer);
         $before = $this->transferAuditSnapshot($transfer->loadMissing('student.schoolClass'));
 
@@ -243,6 +248,12 @@ class TransferVerificationController extends Controller
 
         $transfer->loadMissing('student.schoolClass');
         abort_unless(in_array((int) $transfer->student?->schoolClass?->education_unit_id, $unitIds, true), 403);
+    }
+
+    private function ensureFeatureEnabled(Request $request): void
+    {
+        abort_unless(config('payments.guardian_transfer_enabled'), 404);
+        abort_unless($request->user()?->isSuperAdmin(), 403);
     }
 
     private function transferAuditMetadata(GuardianTransferRequest $transfer): array

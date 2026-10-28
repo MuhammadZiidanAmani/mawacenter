@@ -42,6 +42,20 @@ class MasterDataTest extends TestCase
         $this->actingAs(User::factory()->create());
     }
 
+    public function test_finance_operational_permissions_are_split_safely(): void
+    {
+        $adminPermissions = Role::where('key', 'admin')->firstOrFail()->permissions;
+        $bendaharaPermissions = Role::where('key', 'bendahara')->firstOrFail()->permissions;
+
+        $this->assertContains('payments.import', $adminPermissions);
+        $this->assertContains('payments.manage', $adminPermissions);
+        $this->assertContains('bills.sync', $adminPermissions);
+        $this->assertNotContains('payments.verify_transfer', $bendaharaPermissions);
+        $this->assertNotContains('payments.import', $bendaharaPermissions);
+        $this->assertNotContains('payments.manage', $bendaharaPermissions);
+        $this->assertNotContains('bills.sync', $bendaharaPermissions);
+    }
+
     public function test_cashier_and_treasurer_require_at_least_one_unit(): void
     {
         Role::updateOrCreate(['key' => 'kasir'], [
@@ -644,12 +658,14 @@ class MasterDataTest extends TestCase
         $this->assertSame($unit->id, (int) $audit->metadata['filters']['unit_id']);
         $this->assertStringContainsString('data-siswa-ra-b1-2025-2026-aktif-cari-audit-', $audit->metadata['filename']);
 
-        $this->delete('/master-data/students/'.$student->id)->assertRedirect();
-        $this->assertDatabaseHas('audit_logs', [
+        $this->delete('/master-data/students/'.$student->id)
+            ->assertRedirect('/manajemen-siswa/data-siswa')
+            ->assertSessionHas('error', 'Data siswa tidak dapat dihapus permanen. Gunakan Jadikan Alumni untuk menonaktifkan siswa.');
+        $this->assertDatabaseHas('students', ['id' => $student->id]);
+        $this->assertDatabaseMissing('audit_logs', [
             'action' => 'students.delete',
             'subject_type' => Student::class,
             'subject_id' => $student->id,
-            'student_count' => 1,
         ]);
     }
 
@@ -1230,7 +1246,7 @@ class MasterDataTest extends TestCase
             ->assertDontSee('<th>Dibuat</th>', false);
     }
 
-    public function test_student_with_financial_history_can_be_deleted_with_related_sample_data(): void
+    public function test_student_with_financial_history_cannot_be_deleted(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
@@ -1255,11 +1271,11 @@ class MasterDataTest extends TestCase
 
         $this->delete('/master-data/students/'.$student->id)
             ->assertRedirect('/manajemen-siswa/data-siswa')
-            ->assertSessionHas('success', 'Data siswa beserta seluruh data contoh terkait berhasil dihapus.');
+            ->assertSessionHas('error', 'Data siswa tidak dapat dihapus permanen. Gunakan Jadikan Alumni untuk menonaktifkan siswa.');
 
-        $this->assertDatabaseMissing('students', ['id' => $student->id]);
-        $this->assertDatabaseMissing('bills', ['student_id' => $student->id]);
-        $this->assertDatabaseMissing('bill_manual_payments', ['bill_id' => $bill->id]);
+        $this->assertDatabaseHas('students', ['id' => $student->id]);
+        $this->assertDatabaseHas('bills', ['student_id' => $student->id]);
+        $this->assertDatabaseHas('bill_manual_payments', ['bill_id' => $bill->id]);
     }
 
     public function test_fee_type_uses_matching_education_unit_and_class(): void
@@ -3196,13 +3212,18 @@ class MasterDataTest extends TestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
-    public function test_application_settings_can_be_saved(): void
+    public function test_account_settings_can_be_saved_without_changing_global_transfer_account(): void
     {
+        AppSetting::updateOrCreate(['key' => 'transfer_bank_name'], ['value' => 'Bank Lama']);
+        AppSetting::updateOrCreate(['key' => 'transfer_account_number'], ['value' => '9876543210']);
+
         $this->get('/pengaturan')
             ->assertOk()
             ->assertSee('Pengaturan Akun')
             ->assertSee('Profil Akun')
-            ->assertSee('Rekening Transfer')
+            ->assertDontSee('Rekening Transfer')
+            ->assertDontSee('transfer_bank_name', false)
+            ->assertDontSee('transfer_account_number', false)
             ->assertSee('Ringkasan Akun');
 
         $user = auth()->user();
@@ -3222,8 +3243,12 @@ class MasterDataTest extends TestCase
             'username' => 'adminkeuangan',
             'email' => 'admin.keuangan@example.com',
         ]);
-        $this->assertSame('BSI', AppSetting::where('key', 'transfer_bank_name')->value('value'));
-        $this->assertSame('1234567890', AppSetting::where('key', 'transfer_account_number')->value('value'));
+        $this->assertSame('Bank Lama', AppSetting::where('key', 'transfer_bank_name')->value('value'));
+        $this->assertSame('9876543210', AppSetting::where('key', 'transfer_account_number')->value('value'));
+        $this->assertDatabaseMissing('app_settings', [
+            'key' => 'transfer_account_name',
+            'value' => "MA'WA CENTER",
+        ]);
     }
 
     public function test_spp_payment_nominal_can_be_corrected_with_audit_history(): void
@@ -3265,7 +3290,7 @@ class MasterDataTest extends TestCase
         ])->assertSessionHasErrors('new_paid_amount');
     }
 
-    public function test_student_can_be_updated_and_deleted(): void
+    public function test_student_can_be_updated_but_not_deleted(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
@@ -3281,11 +3306,13 @@ class MasterDataTest extends TestCase
         ])->assertRedirect();
         $this->assertDatabaseHas('students', ['name' => 'Nama Baru']);
 
-        $this->delete("/master-data/students/{$student->id}")->assertRedirect();
-        $this->assertDatabaseMissing('students', ['id' => $student->id]);
+        $this->delete("/master-data/students/{$student->id}")
+            ->assertRedirect('/manajemen-siswa/data-siswa')
+            ->assertSessionHas('error');
+        $this->assertDatabaseHas('students', ['id' => $student->id]);
     }
 
-    public function test_student_update_and_delete_return_to_the_active_filters(): void
+    public function test_student_update_and_rejected_delete_return_to_the_active_filters(): void
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
@@ -3309,8 +3336,8 @@ class MasterDataTest extends TestCase
 
         $this->get('/manajemen-siswa/data-siswa?'.$filters)
             ->assertOk()
-            ->assertSee('/master-data/students/'.$student->id.'?'.str_replace('&', '&amp;', $filters), false)
-            ->assertSee('/master-data/students/'.$student->id.'?'.str_replace('&', '&amp;', $filters), false);
+            ->assertSee('/manajemen-siswa/data-siswa/'.$student->id.'/edit', false)
+            ->assertDontSee('data-master-delete-form', false);
 
         $filteredPageTwo = http_build_query(array_merge($filterParameters, ['page' => 2]));
 
@@ -3321,7 +3348,9 @@ class MasterDataTest extends TestCase
         ])->assertRedirect('/manajemen-siswa/data-siswa?'.$filteredPageTwo);
 
         $this->delete('/master-data/students/'.$student->id.'?'.$filteredPageTwo)
-            ->assertRedirect('/manajemen-siswa/data-siswa?'.$filteredPageTwo);
+            ->assertRedirect('/manajemen-siswa/data-siswa?'.$filteredPageTwo)
+            ->assertSessionHas('error');
+        $this->assertDatabaseHas('students', ['id' => $student->id]);
     }
 
     public function test_education_unit_page_is_empty_without_seeded_data(): void

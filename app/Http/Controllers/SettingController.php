@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
-use App\Models\AppSetting;
 use App\Services\AuditLogService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -17,11 +16,6 @@ class SettingController extends Controller
         return view('settings.index', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'user' => auth()->user(),
-            'transferSettings' => AppSetting::values([
-                'transfer_bank_name' => '',
-                'transfer_account_number' => '',
-                'transfer_account_name' => '',
-            ]),
         ]);
     }
 
@@ -30,7 +24,6 @@ class SettingController extends Controller
         $user = $request->user();
         $before = [
             'user' => $this->userAuditSnapshot($user),
-            'transfer_settings' => $this->transferSettingsSnapshot(),
         ];
         $request->merge([
             'username' => $this->normalizeUsername((string) $request->input('username')),
@@ -52,9 +45,6 @@ class SettingController extends Controller
             ],
             'current_password' => ['nullable', 'required_with:password', 'current_password'],
             'password' => ['nullable', 'string', 'min:8', 'max:100', 'confirmed'],
-            'transfer_bank_name' => ['nullable', 'string', 'max:100'],
-            'transfer_account_number' => ['nullable', 'string', 'max:50'],
-            'transfer_account_name' => ['nullable', 'string', 'max:150'],
         ]);
 
         $user->fill([
@@ -70,19 +60,12 @@ class SettingController extends Controller
 
         $user->save();
 
-        foreach (['transfer_bank_name', 'transfer_account_number', 'transfer_account_name'] as $key) {
-            AppSetting::updateOrCreate(
-                ['key' => $key],
-                ['value' => trim((string) ($validated[$key] ?? ''))],
-            );
-        }
         app(AuditLogService::class)->recordOperation(
             'settings.update',
             ['password_changed' => filled($validated['password'] ?? null)],
             beforeValues: $before,
             afterValues: [
                 'user' => $this->userAuditSnapshot($user->refresh()),
-                'transfer_settings' => $this->transferSettingsSnapshot(),
             ],
             request: $request,
             subjectType: $user::class,
@@ -97,18 +80,6 @@ class SettingController extends Controller
         return collect($user->getAttributes())
             ->except(['password', 'remember_token'])
             ->all();
-    }
-
-    private function transferSettingsSnapshot(): array
-    {
-        return array_merge([
-            'transfer_bank_name' => '',
-            'transfer_account_number' => '',
-            'transfer_account_name' => '',
-        ], AppSetting::query()
-            ->whereIn('key', ['transfer_bank_name', 'transfer_account_number', 'transfer_account_name'])
-            ->pluck('value', 'key')
-            ->all());
     }
 
     private function normalizeUsername(string $username): string

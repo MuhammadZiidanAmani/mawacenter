@@ -982,6 +982,32 @@ class PaymentMenuTest extends TestCase
         $this->assertDatabaseCount('other_payments', 0);
     }
 
+    public function test_non_admin_cannot_record_manual_transfer_from_cashier(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'I A', 'level' => 'Kelas I']);
+        $student = Student::create([
+            'nis' => 'TRANSFER-ROLE-001', 'name' => 'Siswa Transfer Terbatas', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'is_active' => true,
+        ]);
+
+        $this->actingAs($this->scopedCashier($unit))
+            ->from(route('finance.payments.index'))
+            ->post(route('finance.payments.store'), [
+                'student_id' => $student->id,
+                'payment_method' => 'Transfer',
+                'paid_amount' => 100000,
+            ])
+            ->assertRedirect(route('finance.payments.index'))
+            ->assertSessionHasErrors([
+                'payment_method' => 'Pembayaran transfer manual hanya dapat dicatat oleh Super Admin.',
+            ]);
+
+        $this->assertDatabaseCount('spp_payments', 0);
+        $this->assertDatabaseCount('other_payments', 0);
+    }
+
     public function test_transfer_payment_can_be_recorded_without_a_proof_while_uploads_are_disabled(): void
     {
         config(['payments.transfer_proof_upload_enabled' => false]);
@@ -1248,7 +1274,7 @@ class PaymentMenuTest extends TestCase
             ->assertSee('title="Download PDF"', false)
             ->assertSee('>Struk<', false)
             ->assertSee('>PDF<', false)
-            ->assertSee('class="payment-one-stop-history-action danger"', false)
+            ->assertSee('class="app-table-action is-danger is-icon-only payment-one-stop-history-action danger"', false)
             ->assertSee('data-payment-delete-confirm', false)
             ->assertSee('data-payment-delete-cancel', false)
             ->assertSee('Ya, Hapus')
@@ -3238,7 +3264,7 @@ class PaymentMenuTest extends TestCase
     {
         Role::updateOrCreate(['key' => 'kasir'], [
             'name' => 'Kasir',
-            'permissions' => ['payments.cash.create', 'payments.view_unit', 'payments.verify_transfer'],
+            'permissions' => ['payments.cash.create', 'payments.view_unit', 'payments.import', 'payments.manage'],
             'is_active' => true,
         ]);
 

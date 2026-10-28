@@ -491,6 +491,9 @@ class ReportMenuTest extends TestCase
     public function test_transaction_report_shows_safe_correction_actions_for_treasurer(): void
     {
         [$year, $unit, $class] = $this->schoolContext();
+        Role::where('key', 'bendahara')->update([
+            'permissions' => [...Role::defaultPermissionsFor('bendahara'), 'payments.manage'],
+        ]);
         $treasurer = User::factory()->create(['role' => 'bendahara']);
         $treasurer->educationUnits()->attach($unit->id);
         $student = Student::create([

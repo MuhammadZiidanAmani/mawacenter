@@ -430,16 +430,21 @@ main { min-width: 0; flex: 1 1 auto; }
 }
 
 :where(.icon-button) { width: 40px; padding: 0; }
+.icon-button > .icon,
+.button > .icon { width: 18px; height: 18px; }
 .menu-toggle { display: none; }
 .theme-icon-sun { display: none; }
 html[data-theme="dark"] .theme-icon-moon { display: none; }
 html[data-theme="dark"] .theme-icon-sun { display: block; }
 :where(.button) { padding: 0 14px; box-shadow: var(--app-shadow-button); }
 :where(.icon-button, .button):hover { color: var(--app-primary); background: var(--app-primary-soft); border-color: var(--app-primary-border); }
+.button-secondary { color: var(--app-label); background: var(--app-surface); border-color: var(--app-border); box-shadow: var(--app-shadow-button); }
+.button-secondary:hover { color: var(--app-primary); background: var(--app-primary-soft); border-color: var(--app-primary-border); }
 .button-primary { color: var(--app-on-primary); background: var(--app-primary); border-color: var(--app-primary); box-shadow: var(--app-shadow-primary); }
 .button-primary:hover { color: var(--app-on-primary); background: var(--app-primary-hover); border-color: var(--app-primary-hover); }
 .button-danger { color: var(--app-on-primary); background: var(--app-danger); border-color: var(--app-danger); }
 .button-danger:hover { color: var(--app-on-primary); background: var(--app-danger-hover); border-color: var(--app-danger-hover); }
+:where(.button, .icon-button).is-disabled { opacity: .55; pointer-events: none; cursor: not-allowed; }
 .sidebar-close { display: none; margin-left: auto; }
 
 .topbar .theme-toggle,

@@ -14,10 +14,12 @@ class CorrectSppPaymentRequest extends FormRequest
 
     public function rules(): array
     {
+        $paymentMethods = ($this->user()?->isSuperAdmin() ?? false) ? ['Cash', 'Transfer'] : ['Cash'];
+
         return [
             'transaction_date' => ['sometimes', 'required', 'date'],
             'transaction_time' => ['sometimes', 'required', 'date_format:H:i:s'],
-            'payment_method' => ['sometimes', 'required', Rule::in(['Cash', 'Transfer'])],
+            'payment_method' => ['sometimes', 'required', Rule::in($paymentMethods)],
             'status' => ['sometimes', 'required', Rule::in(['Diterima', 'Pending'])],
             'new_paid_amount' => ['required', 'integer', 'min:0'],
             'reason' => ['required', 'string', 'max:255'],

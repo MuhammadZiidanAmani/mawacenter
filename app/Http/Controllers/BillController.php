@@ -102,6 +102,7 @@ class BillController extends Controller
             'selectedGuardianStudentId' => $selectedGuardianStudentId,
             'guardianBills' => $guardianBills,
             'guardianTransfers' => $guardianTransfers,
+            'guardianTransfersEnabled' => (bool) config('payments.guardian_transfer_enabled'),
             'billSyncRun' => $billSyncRun,
             'transferAccount' => $this->transferAccount(),
             'educationUnits' => EducationUnit::where('is_active', true)
