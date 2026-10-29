@@ -175,7 +175,7 @@ class MasterDataTest extends TestCase
             ->assertJsonFragment(['id' => $allowedStudents->first()->id]);
 
         $this->actingAs($operator)
-            ->get(route('master.index', ['tab' => 'data-users']))
+            ->get(route('master.create', ['tab' => 'data-users']))
             ->assertOk()
             ->assertSee('data-guardian-student-picker', false)
             ->assertSee(route('master.data-users.students.search'), false)
@@ -1088,6 +1088,10 @@ class MasterDataTest extends TestCase
             ->get('/master-data?tab=data-users')
             ->assertForbidden();
 
+        $this->actingAs($masterOperator)
+            ->get(route('master.edit', ['type' => 'data-users', 'id' => $userOperator->id]))
+            ->assertForbidden();
+
         foreach (['data-roles', 'data-users'] as $tab) {
             $this->actingAs($userOperator)
                 ->get('/master-data?tab='.$tab)
@@ -1100,6 +1104,141 @@ class MasterDataTest extends TestCase
         $this->actingAs($userOperator)
             ->get('/master-data?tab=academic-years')
             ->assertForbidden();
+
+        $this->actingAs($userOperator)
+            ->get(route('master.edit', ['type' => 'data-users', 'id' => $userOperator->id]))
+            ->assertOk()
+            ->assertSee('Edit Data User');
+    }
+
+    public function test_complex_master_edit_forms_use_full_pages_and_preserve_values(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'I A', 'level' => 'Kelas I']);
+        $student = Student::create([
+            'nis' => 'EDIT-001',
+            'name' => 'Siswa Edit Form',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'is_active' => true,
+        ]);
+        $feeType = FeeType::create([
+            'code' => 'SPP-MI-EDIT',
+            'name' => 'SPP Edit Form',
+            'payment_group' => 'spp',
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'student_scope' => FeeType::STUDENT_SCOPE_ALL,
+            'amount' => 350000,
+            'period' => 'Bulanan',
+            'creates_bill' => true,
+            'is_active' => true,
+        ]);
+        $discount = FeeDiscount::create([
+            'student_id' => $student->id,
+            'source_type' => 'spp',
+            'discount_type' => 'amount',
+            'discount_value' => 50000,
+            'start_date' => '2026-07-01',
+            'reason' => 'Beasiswa edit',
+            'is_active' => true,
+        ]);
+        $role = Role::create([
+            'key' => 'editor_form',
+            'name' => 'Editor Form',
+            'permissions' => ['students.view', 'reports.view_unit'],
+            'is_active' => true,
+        ]);
+        $user = User::factory()->create([
+            'name' => 'Petugas Edit Form',
+            'role' => 'kasir',
+        ]);
+        $user->educationUnits()->attach($unit->id);
+
+        $this->get(route('master.edit', ['type' => 'fee-types', 'id' => $feeType->id]))
+            ->assertOk()
+            ->assertSee('Edit Kategori Pembayaran')
+            ->assertSee('name="_method" value="PUT"', false)
+            ->assertSee('value="SPP Edit Form"', false)
+            ->assertSee('value="350000"', false)
+            ->assertDontSee('master-edit-modal', false);
+
+        $this->get(route('master.edit', ['type' => 'fee-discounts', 'id' => $discount->id]))
+            ->assertOk()
+            ->assertSee('Edit Keringanan Biaya')
+            ->assertSee('Siswa Edit Form')
+            ->assertSee('value="50000"', false)
+            ->assertSee('value="Beasiswa edit"', false);
+
+        $this->get(route('master.edit', ['type' => 'data-roles', 'id' => $role->id]))
+            ->assertOk()
+            ->assertSee('Edit Data Role')
+            ->assertSee('value="editor_form"', false)
+            ->assertSee('value="reports.view_unit" checked', false);
+
+        $this->get(route('master.edit', ['type' => 'data-users', 'id' => $user->id]))
+            ->assertOk()
+            ->assertSee('Edit Data User')
+            ->assertSee('value="Petugas Edit Form"', false)
+            ->assertSee('<option value="'.$unit->id.'" selected>MI - Madrasah Ibtidaiyah</option>', false)
+            ->assertSee('Simpan Perubahan');
+
+        $this->get(route('master.index', ['tab' => 'fee-types']))
+            ->assertOk()
+            ->assertSee(route('master.edit', ['type' => 'fee-types', 'id' => $feeType->id, 'tab' => 'fee-types']), false)
+            ->assertDontSee('data-edit-record', false);
+
+        $this->get(route('master.edit', ['type' => 'academic-years', 'id' => $year->id]))
+            ->assertNotFound();
+    }
+
+    public function test_student_add_and_edit_forms_use_grouped_responsive_layout(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'II A', 'level' => 'Kelas II']);
+        $student = Student::create([
+            'nis' => 'LAYOUT-001',
+            'nisn' => '00990011',
+            'name' => 'Siswa Layout Form',
+            'gender' => 'P',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'entry_date' => '2026-07-13',
+            'intake_status' => Student::INTAKE_RETURNING,
+            'is_active' => true,
+        ]);
+
+        $this->get(route('student-management.students.create'))
+            ->assertOk()
+            ->assertSee('student-create-canvas', false)
+            ->assertSee('student-create-form', false)
+            ->assertSee('student-form-grid', false)
+            ->assertSeeInOrder([
+                'Sumber Data Siswa',
+                'Identitas Siswa',
+                'Data Akademik',
+                'Data Orang Tua',
+                'Alamat',
+                'Status Siswa',
+            ]);
+
+        $this->get(route('student-management.students.edit', $student))
+            ->assertOk()
+            ->assertSee('Edit Data Siswa')
+            ->assertDontSee('Sumber Data Siswa')
+            ->assertSeeInOrder([
+                'Identitas Siswa',
+                'Data Akademik',
+                'Data Orang Tua',
+                'Alamat',
+                'Status Siswa',
+            ])
+            ->assertSee('value="LAYOUT-001"', false)
+            ->assertSee('value="Siswa Layout Form"', false)
+            ->assertSee('Simpan Perubahan');
     }
 
     public function test_all_master_data_can_be_created(): void
@@ -1322,7 +1461,7 @@ class MasterDataTest extends TestCase
         $this->assertNull($feeType->school_class_id);
         $this->assertSame(2000000, app(ChargeCalculator::class)->baseAmount($student, 'fee_type', $feeType));
         $this->assertSame(0, app(ChargeCalculator::class)->baseAmount($otherStudent, 'fee_type', $feeType));
-        $this->get('/master-data?tab=fee-types')
+        $this->get('/master-data/create?tab=fee-types')
             ->assertOk()
             ->assertSee('<option value="'.$year->id.'" selected>'.$year->name.'</option>', false)
             ->assertSee('Semua Tingkat');
@@ -1386,7 +1525,7 @@ class MasterDataTest extends TestCase
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
 
-        $this->get('/master-data?tab=fee-types')
+        $this->get('/master-data/create?tab=fee-types')
             ->assertOk()
             ->assertSee('Dijadikan Tagihan Wajib')
             ->assertSee('Pembayaran Opsional')

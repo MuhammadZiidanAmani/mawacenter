@@ -131,6 +131,7 @@ Pengecualian teknis hanya berlaku untuk glyph ikon pada kontrol berukuran tetap,
 | Konteks | Dimensi |
 | --- | --- |
 | Form/tool sederhana | Maksimum 720px |
+| Form master kompleks | Maksimum 860px |
 | Tabel/data/transaksi standar | Maksimum 1200px |
 | Dashboard padat | Maksimum 1440px |
 | Padding desktop | 24px vertikal, 32px horizontal |
@@ -166,6 +167,8 @@ Sidebar/topbar putih dengan border. Normal teks label; hover dan aktif memakai t
 - Readonly tetap terbaca dan dapat disalin; disabled opacity sekitar 0.55 tanpa hover aktif. Nominal Lunas memakai readonly bila nilainya perlu dikirim.
 - Unit mengendalikan kelas, nilai kelas invalid direset. Reset hanya membersihkan filter, tidak menyentuh data. Per_page/sort/direction tetap terbawa saat aksi yang mempertahankan filter.
 - Panel filter adalah tool mandiri, tidak di dalam kartu lain: memakai surface, border, padding 16px, gap 12px, radius panel 12px. Desktop grid align-end, mobile satu kolom.
+- Kelompok aksi filter memakai gap 8px. Pada layar maksimal 760px, pola Filter/Reset menjadi dua kolom sama lebar melalui kontrak bersama di `components.css`; tombol tunggal tetap memenuhi ruang yang tersedia.
+- Form tambah dan edit yang kompleks memakai halaman penuh dengan heading, kelompok informasi, grid field, divider aksi, serta posisi Batal/Simpan yang sama. Di Master Data, pola ini berlaku untuk Siswa, Kategori Pembayaran, Keringanan Biaya, Role, dan User. Form Siswa membagi field menjadi Identitas, Akademik, Orang Tua, Alamat, dan Status; dua kolom pada desktop dan satu kolom pada layar maksimal 760px. Edit Tahun Pelajaran, Unit Pendidikan, dan Kelas tetap memakai modal karena field-nya pendek.
 - Acuan desktop Siswa: Unit 160px, Kelas 150px, Search 220-300px, aksi max-content. Kategori: Unit+Search; Keringanan: Unit+Kelas+Search. Status tidak ditambahkan sebagai filter utama kategori/keringanan.
 
 ### Tombol dan Ikon
@@ -213,7 +216,7 @@ Sorting hanya kolom yang benar-benar didukung server; ikon tidak membesarkan hea
 
 Status selalu teks+warna: Diterima/sukses, Pending/peringatan, Ditolak/error, netral/nonaktif. Jangan menjadikan badge metadata biasa. Arti status pembayaran berbeda dari status pelunasan Lunas/Sebagian/Belum Bayar; jangan mencampur enum.
 
-Modal untuk konfirmasi/form pendek: radius 7px, padding 24px desktop/16px mobile, lebar 420px kecil, 560px form, maksimal 720px. Backdrop terang `rgba(2,6,23,.38)`. Tabel besar, surat, dan detail resmi memakai halaman sendiri.
+Modal untuk konfirmasi/form pendek: radius mengikuti token modal aktif, padding 24px desktop/16px mobile, lebar 420px untuk hasil/konfirmasi, 560px untuk form, dan 680px untuk import. Gunakan `--app-confirm-modal-width`, `--app-modal-width`, `--app-modal-wide-width`, `--app-modal-padding`, dan `--app-modal-padding-mobile`; jangan menulis ulang ukuran pada setiap modul. Backdrop terang `rgba(2,6,23,.38)`. Tabel besar, surat, dan detail resmi memakai halaman sendiri.
 
 Modal memiliki judul, `aria-modal`, fokus masuk/terkunci/kembali ke pemicu, Batal/close. Escape/backdrop boleh menutup ketika tidak loading. Konfirmasi pembayaran menyebut siswa/periode/metode/nominal; import menyebut konteks/jumlah valid/gagal; alumni/perubahan kelas menyebut jumlah terdampak. Hapus/batal berisiko menyebut objek dan dampak.
 
@@ -230,7 +233,7 @@ Nominal memakai tabular angka, total lebih kuat dari item, `min-w-0` dan wrappin
 | Jenis | Urutan dan Ketentuan |
 | --- | --- |
 | Data Siswa/master/alumni | Heading+aksi -> filter -> toolbar -> tabel -> footer/pagination |
-| Tambah/edit | Heading -> form berkelompok -> error per field -> Batal/Simpan |
+| Tambah/edit | Heading -> form berkelompok -> error per field -> divider aksi -> Batal/Simpan; tambah/edit kompleks berbagi geometri halaman yang sama |
 | Identitas | Filter kandidat -> daftar -> halaman tinjau personal/unit -> konfirmasi gabung/pisah |
 | Pindah/Naik Kelas | Konteks sumber -> target -> seleksi tabel -> tinjau jumlah -> konfirmasi |
 | Pembayaran belum dipilih | Heading/Import Excel -> pencarian ringkas -> empty state siswa |
@@ -386,7 +389,7 @@ Nama class contoh disesuaikan dengan view yang dikerjakan; ukuran dokumen tetap 
 | --- | --- |
 | `resources/css/app.css` | Import, token, reset/foundation, app-shell/sidebar/topbar, modal, dan footer bersama |
 | `resources/css/theme.css` | Adapter utility Tailwind ke token aplikasi dan variant dark berdasarkan `data-theme` |
-| `resources/css/components.css` | Kontrak visual lintas menu untuk field, field gabungan, filter, card dasar, surface/isi tabel, pagination, dan bentuk status |
+| `resources/css/components.css` | Kontrak visual lintas menu untuk field, field gabungan, filter dan aksinya, card dasar, surface/isi tabel, footer data, pagination, dan bentuk status |
 | `modules/login.css` | Login |
 | `modules/dashboard.css` | Dashboard |
 | `modules/student-management.css` | Siswa, alumni, perubahan kelas, identitas |

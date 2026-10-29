@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('master-data')->name('master.')->controller(MasterDataController::class)->group(function () {
     Route::get('/', 'index')->name('index');
     Route::get('/create', 'create')->name('create');
+    Route::get('/{type}/{id}/edit', 'edit')->name('edit');
     Route::post('/academic-years', 'storeAcademicYear')->name('academic-years.store');
     Route::put('/academic-years/{academicYear}', 'updateAcademicYear')->name('academic-years.update');
     Route::post('/classes', 'storeClass')->name('classes.store');

@@ -134,6 +134,71 @@
     }
 }
 
+/* Filter actions use the same two-action rhythm on every data page. */
+:is(
+    .app-filter-actions,
+    .payment-overview-filter-actions,
+    .report-filter-actions-v2,
+    .report-filter-actions,
+    .master-data-filter-actions,
+    .student-filter-actions,
+    .class-movement-filter-actions,
+    .transfer-filter-actions,
+    .bill-filter-actions
+) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 8px;
+}
+
+@media (max-width: 760px) {
+    :is(
+        .app-filter-actions,
+        .payment-overview-filter-actions,
+        .report-filter-actions-v2,
+        .report-filter-actions,
+        .master-data-filter-actions,
+        .student-filter-actions,
+        .class-movement-filter-actions,
+        .transfer-filter-actions,
+        .bill-filter-actions
+    ) {
+        display: grid;
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    :is(
+        .app-filter-actions,
+        .payment-overview-filter-actions,
+        .report-filter-actions-v2,
+        .report-filter-actions,
+        .master-data-filter-actions,
+        .student-filter-actions,
+        .class-movement-filter-actions,
+        .transfer-filter-actions,
+        .bill-filter-actions
+    ) > :is(.button, button, a) {
+        width: 100%;
+        min-width: 0;
+    }
+
+    :is(
+        .app-filter-actions,
+        .payment-overview-filter-actions,
+        .report-filter-actions-v2,
+        .report-filter-actions,
+        .master-data-filter-actions,
+        .student-filter-actions,
+        .class-movement-filter-actions,
+        .transfer-filter-actions,
+        .bill-filter-actions
+    ) > :only-child {
+        grid-column: 1 / -1;
+    }
+}
+
 /* Compound controls draw their border on the wrapper instead of the inner input. */
 :is(
     .app-field-shell,
@@ -752,6 +817,43 @@ select[name="per_page"] {
     font-size: var(--app-text-body-size);
     font-weight: 500;
     line-height: var(--app-text-body-leading);
+}
+
+/* Summary and pagination stay aligned regardless of the module alias. */
+:is(
+    .app-data-footer,
+    .bill-pagination-footer,
+    .report-pagination,
+    .master-data-pagination-footer,
+    .student-report-pagination,
+    .class-movement-pagination,
+    .identity-reset-pagination,
+    .transfer-pagination-footer,
+    .pagination-wrap
+) {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+@media (max-width: 760px) {
+    :is(
+        .app-data-footer,
+        .bill-pagination-footer,
+        .report-pagination,
+        .master-data-pagination-footer,
+        .student-report-pagination,
+        .class-movement-pagination,
+        .identity-reset-pagination,
+        .transfer-pagination-footer,
+        .pagination-wrap
+    ) {
+        align-items: stretch;
+        flex-direction: column;
+    }
 }
 
 /* Shared pagination geometry; modules only decide placement. */

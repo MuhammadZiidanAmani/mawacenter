@@ -56,13 +56,35 @@
 
 .master-create-heading-section { width: min(100%, 860px); margin: 0 auto 16px; }
 .master-create-card { width: min(100%, 860px); margin-inline: auto; }
+.student-create-canvas { width: min(100%, 860px); }
 .master-create-heading { padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--app-border-soft); }
 .master-create-heading strong { display: block; color: var(--app-text); }
 .master-create-heading span { display: block; margin-top: 3px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 .master-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .master-form .span-2, .master-form .form-actions { grid-column: 1 / -1; }
+.master-create-form > .form-actions { padding-top: 16px; margin-top: 4px; border-top: 1px solid var(--app-border-soft); }
 .master-form :is(.checkbox-field, .radio-field) { display: flex; align-items: center; gap: 8px; }
 .master-form input[type="checkbox"], .master-form input[type="radio"] { width: 16px; height: 16px; accent-color: var(--app-primary); }
+
+.student-create-form { gap: 0; }
+.student-create-form > .master-create-heading { margin-bottom: 0; }
+.student-form-section { display: grid; min-width: 0; gap: 14px; padding-block: 20px; }
+.student-form-section + .student-form-section { border-top: 1px solid var(--app-border-soft); }
+.student-form-section-heading h2 { margin: 0; color: var(--app-text); font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.student-form-section-heading p { margin: 4px 0 0; color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 400; line-height: var(--app-text-meta-leading); }
+.student-form-grid { display: grid; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.student-form-grid > .span-2 { grid-column: 1 / -1; }
+.student-form-grid-nested { grid-column: 1 / -1; }
+.student-create-form [data-new-student-fields][hidden], .student-create-form [data-inactive-fields][hidden] { display: none; }
+.student-whatsapp-copy { display: grid; min-width: 0; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.student-whatsapp-copy .button { min-height: var(--app-field-height); white-space: nowrap; }
+.student-create-form .student-status-toggle { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--app-panel-soft); border: 1px solid var(--app-border); border-radius: var(--app-radius-field); cursor: pointer; }
+.student-create-form .student-status-toggle > input { flex: 0 0 auto; }
+.student-create-form .student-status-toggle > span { display: grid; gap: 2px; }
+.student-create-form .student-status-toggle strong { color: var(--app-text); font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
+.student-create-form .student-status-toggle small { color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 400; line-height: var(--app-text-meta-leading); }
+.master-field-error { color: var(--app-danger); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); }
+.student-create-form :is(input, select)[aria-invalid="true"] { border-color: var(--app-danger); }
 
 .student-import-page-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 14px; }
 .student-import-preview { display: grid; gap: 14px; }
@@ -90,6 +112,12 @@
     .student-title-actions, .student-title-actions .button { width: 100%; }
     .student-reference-filter-grid, .master-data-filter-panel, .master-form { grid-template-columns: 1fr; }
     .master-form .span-2 { grid-column: auto; }
+    .master-create-form > .form-actions { grid-column: auto; }
+    .student-form-grid { grid-template-columns: 1fr; }
+    .student-form-grid > .span-2, .student-form-grid-nested { grid-column: auto; }
+    .student-form-section { padding-block: 16px; }
+    .student-whatsapp-copy { grid-template-columns: 1fr; }
+    .student-whatsapp-copy .button { width: 100%; }
     .student-filter-actions, .master-data-filter-actions { display: grid; grid-template-columns: 1fr 1fr; }
     .student-filter-actions .button, .master-data-filter-actions .button { width: 100%; }
     .master-data-pagination-footer { align-items: stretch; flex-direction: column; }

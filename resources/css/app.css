@@ -104,6 +104,11 @@
     --app-form-width: 720px;
     --app-control-size: 40px;
     --app-pagination-size: 36px;
+    --app-modal-width: 560px;
+    --app-modal-wide-width: 680px;
+    --app-confirm-modal-width: 420px;
+    --app-modal-padding: 24px;
+    --app-modal-padding-mobile: 16px;
 }
 
 html[data-theme="dark"] {
@@ -549,9 +554,10 @@ html[data-theme="dark"] .theme-icon-sun { display: block; }
 .modal-backdrop.show, .result-modal-backdrop.show { display: grid; }
 .spp-import-modal-backdrop.show { display: grid; }
 .modal-backdrop[hidden], .result-modal-backdrop[hidden], .spp-import-modal-backdrop[hidden] { display: none; }
-.form-modal, .result-modal, .spp-import-modal { width: min(100%, 560px); max-height: calc(100vh - 48px); overflow: auto; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
-.spp-import-modal { width: min(100%, 680px); }
-.result-modal { display: grid; justify-items: center; gap: 10px; padding: 24px; text-align: center; }
+.form-modal, .result-modal, .spp-import-modal { width: min(100%, var(--app-modal-width)); max-height: calc(100vh - 48px); overflow: auto; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.spp-import-modal { width: min(100%, var(--app-modal-wide-width)); }
+.result-modal, .spp-delete-modal, .payment-delete-card { width: min(100%, var(--app-confirm-modal-width)); }
+.result-modal { display: grid; justify-items: center; gap: 10px; padding: var(--app-modal-padding); text-align: center; }
 .result-modal .result-icon { display: inline-grid; width: 42px; height: 42px; place-items: center; color: var(--app-success); background: var(--app-success-soft); border-radius: 50%; font-size: var(--app-text-total-size); font-weight: 600; line-height: var(--app-text-total-leading); }
 .result-modal.error-result .result-icon { color: var(--app-danger); background: var(--app-danger-soft); }
 .result-modal.confirmation-result .result-icon { color: var(--app-warning); background: var(--app-warning-soft); }
@@ -590,6 +596,8 @@ html[data-theme="dark"] .theme-icon-sun { display: block; }
     .form-actions .button, .form-actions button, .form-actions a { width: 100%; }
     .modal-backdrop.show, .result-modal-backdrop.show, .spp-import-modal-backdrop.show { align-items: start; overflow-y: auto; padding: 16px; }
     .form-modal, .result-modal, .spp-import-modal { max-height: none; }
+    .result-modal { padding: var(--app-modal-padding-mobile); }
+    .form-modal-header { padding: var(--app-modal-padding-mobile); }
     .result-modal .payment-result-actions, .result-modal .payment-success-actions { display: grid; width: 100%; grid-template-columns: 1fr; }
     .result-modal .payment-result-actions .button, .result-modal .payment-success-actions .button { width: 100%; }
 }

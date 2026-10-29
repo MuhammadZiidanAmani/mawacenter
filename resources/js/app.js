@@ -1025,10 +1025,31 @@ document.querySelectorAll('[data-alert]').forEach((alert) => {
 
 const appModalSelector = '.modal-backdrop, .result-modal-backdrop, .spp-import-modal-backdrop';
 const appModalCloseSelector = '[data-alert-close], [data-app-confirm-cancel], [data-payment-success-close], [data-payment-delete-cancel], [data-modal-close], [data-spp-crud-close], [data-report-payment-close], [data-other-crud-close], [data-spp-import-close]';
+const appModalFocusableSelector = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
+const appModalFocusOrigins = new WeakMap();
 const visibleAppModals = () => Array.from(document.querySelectorAll(appModalSelector)).filter((modal) => !modal.hidden && modal.classList.contains('show'));
+const appModalFocusableElements = (modal) => Array.from(modal.querySelectorAll(appModalFocusableSelector)).filter((element) => element.getClientRects().length > 0);
+const rememberAppModalFocus = (modal) => {
+    const activeElement = document.activeElement;
+    if (!appModalFocusOrigins.has(modal) && activeElement instanceof HTMLElement && activeElement !== document.body && !modal.contains(activeElement)) {
+        appModalFocusOrigins.set(modal, activeElement);
+    }
+};
+const restoreAppModalFocus = (modal) => {
+    const focusOrigin = appModalFocusOrigins.get(modal);
+    appModalFocusOrigins.delete(modal);
+    if (focusOrigin instanceof HTMLElement && focusOrigin.isConnected) focusOrigin.focus({ preventScroll: true });
+};
 const focusAppModal = (modal) => {
+    rememberAppModalFocus(modal);
     const preferredControl = modal.querySelector('[data-payment-delete-confirm], [data-alert-close], [data-payment-success-close], [data-modal-close], [data-spp-crud-close], [data-report-payment-close], [data-other-crud-close], [data-spp-import-close], button, a[href], input, select, textarea');
-    preferredControl?.focus();
+    if (preferredControl) {
+        preferredControl.focus();
+        return;
+    }
+
+    modal.setAttribute('tabindex', '-1');
+    modal.focus();
 };
 
 document.querySelectorAll(appModalSelector).forEach((modal) => {
@@ -1038,7 +1059,12 @@ document.querySelectorAll(appModalSelector).forEach((modal) => {
 
 const appModalObserver = new MutationObserver((mutations) => {
     mutations.forEach(({ target }) => {
-        if (target.classList.contains('show') && !target.hidden) focusAppModal(target);
+        if (target.classList.contains('show') && !target.hidden) {
+            focusAppModal(target);
+            return;
+        }
+
+        restoreAppModalFocus(target);
     });
 });
 
@@ -1046,11 +1072,32 @@ document.querySelectorAll(appModalSelector).forEach((modal) => appModalObserver.
 visibleAppModals().forEach(focusAppModal);
 
 document.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape') return;
-
     const openModals = visibleAppModals();
     const modal = openModals[openModals.length - 1];
     if (!modal) return;
+
+    if (event.key === 'Tab') {
+        const focusableElements = appModalFocusableElements(modal);
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (!firstElement || !lastElement) {
+            event.preventDefault();
+            modal.focus();
+            return;
+        }
+
+        if (event.shiftKey && (document.activeElement === firstElement || !modal.contains(document.activeElement))) {
+            event.preventDefault();
+            lastElement.focus();
+        } else if (!event.shiftKey && (document.activeElement === lastElement || !modal.contains(document.activeElement))) {
+            event.preventDefault();
+            firstElement.focus();
+        }
+        return;
+    }
+
+    if (event.key !== 'Escape') return;
 
     event.preventDefault();
     const closeButton = modal.querySelector(appModalCloseSelector);
@@ -1064,6 +1111,7 @@ document.addEventListener('keydown', (event) => {
 });
 
 const showAppAlert = (message, title = 'Perlu Diperiksa') => {
+    const focusOrigin = document.activeElement;
     const backdrop = document.createElement('div');
     backdrop.className = 'result-modal-backdrop show';
     backdrop.dataset.alert = '';
@@ -1087,10 +1135,15 @@ const showAppAlert = (message, title = 'Perlu Diperiksa') => {
     const closeButton = document.createElement('button');
     closeButton.type = 'button';
     closeButton.className = 'button button-primary';
+    closeButton.dataset.alertClose = '';
     closeButton.textContent = 'Tutup';
-    closeButton.addEventListener('click', () => backdrop.remove());
+    const close = () => {
+        backdrop.remove();
+        if (focusOrigin instanceof HTMLElement && focusOrigin.isConnected) focusOrigin.focus({ preventScroll: true });
+    };
+    closeButton.addEventListener('click', close);
     backdrop.addEventListener('click', (event) => {
-        if (event.target === backdrop) backdrop.remove();
+        if (event.target === backdrop) close();
     });
 
     panel.append(icon, heading, description, closeButton);
@@ -1100,6 +1153,7 @@ const showAppAlert = (message, title = 'Perlu Diperiksa') => {
 };
 
 const confirmAppAction = ({ title, message, confirmLabel }) => new Promise((resolve) => {
+    const focusOrigin = document.activeElement;
     const backdrop = document.createElement('div');
     backdrop.className = 'result-modal-backdrop show';
     backdrop.setAttribute('role', 'dialog');
@@ -1133,6 +1187,7 @@ const confirmAppAction = ({ title, message, confirmLabel }) => new Promise((reso
 
     const close = (confirmed) => {
         backdrop.remove();
+        if (focusOrigin instanceof HTMLElement && focusOrigin.isConnected) focusOrigin.focus({ preventScroll: true });
         resolve(confirmed);
     };
 

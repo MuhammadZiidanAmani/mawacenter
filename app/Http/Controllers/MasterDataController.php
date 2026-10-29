@@ -269,7 +269,9 @@ class MasterDataController extends Controller
         }
 
         $editingStudent = $request->attributes->get('editingStudent');
+        $editingMaster = $request->attributes->get('editingMaster');
         $showCreate = $request->routeIs('master.create')
+            || $request->routeIs('master.edit')
             || $request->routeIs('student-management.students.create')
             || $request->routeIs('student-management.students.edit');
         $showStudentImport = $request->routeIs('student-management.students.import');
@@ -304,6 +306,7 @@ class MasterDataController extends Controller
             'stats' => $this->masterStats(),
             'showCreate' => $showCreate,
             'editingStudent' => $editingStudent,
+            'editingMaster' => $editingMaster,
             'showStudentImport' => $showStudentImport,
             'studentImportPreview' => $studentImportPreview,
             'studentImportToken' => $request->string('import_token')->value() ?: null,
@@ -315,6 +318,31 @@ class MasterDataController extends Controller
 
     public function create(Request $request)
     {
+        return $this->index($request);
+    }
+
+    public function edit(Request $request, string $type, int $id)
+    {
+        abort_unless(in_array($type, ['fee-types', 'fee-discounts', 'data-roles', 'data-users'], true), 404);
+
+        $model = match ($type) {
+            'fee-types' => FeeType::findOrFail($id),
+            'fee-discounts' => FeeDiscount::with('student.schoolClass')->findOrFail($id),
+            'data-roles' => Role::findOrFail($id),
+            'data-users' => User::with(['educationUnits:id', 'guardianStudents.schoolClass.educationUnit'])->findOrFail($id),
+        };
+
+        if ($model instanceof FeeType) {
+            $this->authorizeUnitAccess($request, (int) $model->education_unit_id);
+        }
+
+        if ($model instanceof FeeDiscount) {
+            $this->authorizeStudentAccess($request, $model->student);
+        }
+
+        $request->merge(['tab' => $type]);
+        $request->attributes->set('editingMaster', $model);
+
         return $this->index($request);
     }
 
@@ -1696,6 +1724,14 @@ class MasterDataController extends Controller
                 ->map(fn ($id) => (int) $id)
                 ->unique()
                 ->values();
+
+            $editingUser = request()->attributes->get('editingMaster');
+            if ($selectedIds->isEmpty() && $editingUser instanceof User) {
+                $selectedIds = $editingUser->guardianStudents
+                    ->pluck('id')
+                    ->map(fn ($id) => (int) $id)
+                    ->values();
+            }
 
             if ($selectedIds->isEmpty()) {
                 return collect();

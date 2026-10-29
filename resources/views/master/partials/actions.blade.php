@@ -6,6 +6,7 @@
     $canEditStudent = auth()->user()?->hasPermission('students.update') ?? false;
     $requiredPermission = in_array($type, ['data-roles', 'data-users'], true) ? 'users.manage' : 'master.manage';
     $canManageMasterRow = auth()->user()?->hasPermission($requiredPermission) ?? false;
+    $usesPageEdit = in_array($type, ['fee-types', 'fee-discounts', 'data-roles', 'data-users'], true);
     $editRecord = $row->toArray();
     foreach (['birth_date', 'entry_date', 'billing_start_date', 'exit_date', 'start_date', 'end_date'] as $dateField) {
         $dateValue = $row->getAttribute($dateField);
@@ -22,9 +23,15 @@
     </a>
     @endif
     @elseif($canManageMasterRow)
+    @if($usesPageEdit)
+    <a class="app-table-action is-icon-only icon-button edit-button" href="{{ route('master.edit', array_merge(['type' => $type, 'id' => $row->id], request()->query())) }}" title="Edit" aria-label="Edit data">
+        {!! $icon('edit') !!}
+    </a>
+    @else
     <button class="app-table-action is-icon-only icon-button edit-button" type="button" title="Edit" aria-label="Edit data" data-edit-record='@json($editRecord)' data-update-action="{{ route('master.'.$type.'.update', $actionParameters) }}">
         {!! $icon('edit') !!}
     </button>
+    @endif
     @endif
     @if(! $isStudentAction && $canManageMasterRow)
     <form method="POST" action="{{ route('master.destroy', $deleteParameters) }}" data-master-delete-form>@csrf @method('DELETE')<button class="app-table-action is-danger is-icon-only icon-button delete-button" title="Hapus" aria-label="Hapus data">{!! $icon('trash') !!}</button></form>

@@ -68,6 +68,7 @@
         ->filter(fn ($item, $key) => $canAccess($masterTabPermissions[$key] ?? 'master.manage'))
         ->all();
     $masterTableTabs = ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'];
+    $masterPageEditTabs = ['fee-types', 'fee-discounts', 'data-roles', 'data-users'];
     $labels = [
         'students' => ['Data Siswa', 'Kelola identitas, kelas, wali, dan status siswa.', 'Tambah Data Siswa'],
         'education-units' => ['Unit Pendidikan', 'Daftar unit pendidikan yang tersedia.', 'Tambah Unit Pendidikan'],
@@ -140,15 +141,17 @@
                             <p>{{ $isEditingStudent ? 'Perbarui identitas, kelas, wali, dan status siswa.' : 'Lengkapi identitas, kelas, wali, dan status siswa.' }}</p>
                         </div>
                     </div>
-                    <form method="POST" action="{{ $isEditingStudent ? route('master.students.update', array_merge([$editingStudent], request()->query())) : route('master.'.$tab.'.store') }}" class="master-form master-create-form student-create-form">
+                    <form method="POST" action="{{ $isEditingStudent ? route('master.students.update', array_merge([$editingStudent], request()->query())) : route('master.'.$tab.'.store') }}" class="master-form master-create-form master-create-card student-create-form" data-master-form>
                         @csrf
                         @if($isEditingStudent) @method('PUT') @endif
-                        @include('master.partials.form-fields')
+                        <div class="master-create-heading span-2"><div><strong>Informasi Siswa</strong><span>Pastikan identitas, penempatan akademik, data orang tua, dan status siswa sudah sesuai.</span></div></div>
+                        @include('master.partials.form-fields', ['formTab' => $tab])
                         <div class="form-actions span-2"><a href="{{ route('student-management.students.index', request()->query()) }}" class="button button-secondary">Batal</a><button class="button button-primary">{{ $isEditingStudent ? 'Simpan Perubahan' : 'Simpan Data' }}</button></div>
                     </form>
                 </section>
                 @else
                 @php
+                    $isEditingMaster = isset($editingMaster) && $editingMaster;
                     $createDescriptions = [
                         'classes' => 'Pastikan unit pendidikan, nama kelas, dan status aktif sudah sesuai.',
                         'fee-types' => 'Pastikan nama pembayaran, kategori pembayaran, unit, kelas, nominal, dan status aktif sudah sesuai.',
@@ -158,18 +161,20 @@
                     ];
 
                     $createDescription = $createDescriptions[$tab] ?? 'Pastikan data yang dimasukkan sudah benar.';
+                    $masterFormAction = $isEditingMaster
+                        ? route('master.'.$tab.'.update', array_merge([$editingMaster], $masterReturnQuery))
+                        : route('master.'.$tab.'.store', $masterReturnQuery);
                 @endphp
                 <section class="master-create-heading-section">
-                    <div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Pengelolaan Data · Tambah</p>@endif<h1>{{ $labels[$tab][2] }}</h1><p>Lengkapi formulir berikut untuk menambahkan data baru.</p></div>
+                    <div><h1>{{ $isEditingMaster ? 'Edit '.$labels[$tab][0] : $labels[$tab][2] }}</h1><p>{{ $isEditingMaster ? 'Perbarui data pada formulir berikut.' : 'Lengkapi formulir berikut untuk menambahkan data baru.' }}</p></div>
                 </section>
                 <section class="card master-create-card">
-                    @if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))
                     <div class="master-create-heading"><div><strong>Informasi {{ $labels[$tab][0] }}</strong><span>{{ $createDescription }}</span></div></div>
-                    @endif
-                    <form method="POST" action="{{ route('master.'.$tab.'.store', $masterReturnQuery) }}" class="master-form master-create-form">
+                    <form method="POST" action="{{ $masterFormAction }}" class="master-form master-create-form" data-master-form>
                         @csrf
-                        @include('master.partials.form-fields')
-                        <div class="form-actions span-2"><a href="{{ $tab === 'students' ? route('student-management.students.index') : route('master.index', $masterReturnQuery) }}" class="button button-secondary">Batal</a><button class="button button-primary">Simpan Data</button></div>
+                        @if($isEditingMaster) @method('PUT') @endif
+                        @include('master.partials.form-fields', ['formTab' => $tab])
+                        <div class="form-actions span-2"><a href="{{ route('master.index', $masterReturnQuery) }}" class="button button-secondary">Batal</a><button class="button button-primary">{{ $isEditingMaster ? 'Simpan Perubahan' : 'Simpan Data' }}</button></div>
                     </form>
                 </section>
                 @endif
@@ -1220,13 +1225,13 @@
     </div>
 </div>
 
-@unless ($showCreate || $showStudentImport)
+@unless ($showCreate || $showStudentImport || in_array($tab, $masterPageEditTabs, true))
 <div class="modal-backdrop master-edit-modal {{ $errors->any() && ! $errors->has('file') ? 'show' : '' }} {{ $tab === 'academic-years' ? 'academic-year-edit-modal' : '' }} {{ $tab === 'education-units' ? 'education-unit-edit-modal' : '' }} {{ $tab === 'classes' ? 'class-edit-modal' : '' }} {{ $tab === 'fee-types' ? 'fee-type-edit-modal' : '' }} {{ $tab === 'fee-discounts' ? 'fee-discount-edit-modal' : '' }} {{ $tab === 'data-roles' ? 'data-role-edit-modal' : '' }} {{ $tab === 'data-users' ? 'data-user-edit-modal' : '' }}" data-modal role="dialog" aria-modal="true" aria-labelledby="master-modal-title">
     <div class="form-modal">
         <div class="form-modal-header"><div>@if (! in_array($tab, ['academic-years', 'education-units', 'classes', 'fee-types', 'fee-discounts', 'data-roles', 'data-users'], true))<p class="eyebrow">Master Data</p>@endif<h2 id="master-modal-title" data-modal-title>Edit Data</h2></div><button class="icon-button" type="button" data-modal-close title="Tutup modal" aria-label="Tutup modal">×</button></div>
         <form method="POST" action="{{ $tab === 'students' ? route('master.students.store') : route('master.'.$tab.'.store', $masterReturnQuery) }}" data-master-form data-store-action="{{ $tab === 'students' ? route('master.students.store') : route('master.'.$tab.'.store', $masterReturnQuery) }}" class="master-form">
             @csrf <input type="hidden" name="_method" value="POST" data-form-method>
-            @include('master.partials.form-fields')
+            @include('master.partials.form-fields', ['formTab' => $tab])
             <div class="form-actions span-2"><button type="button" class="button button-secondary" data-modal-close>Batal</button><button class="button button-primary">Simpan Data</button></div>
         </form>
     </div>

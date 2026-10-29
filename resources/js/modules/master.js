@@ -400,6 +400,7 @@ discountPayment?.addEventListener('change', syncDiscountPaymentFields);
 syncDiscountPaymentFields();
 discountType?.addEventListener('change', toggleDiscountValueFormat);
 toggleDiscountValueFormat();
+masterForm?.querySelectorAll('[data-currency-input]').forEach(formatCurrencyInput);
 document.querySelector('[data-copy-father-whatsapp]')?.addEventListener('click', () => {
     if (!fatherWhatsapp || !motherWhatsapp) return;
     motherWhatsapp.value = fatherWhatsapp.value;

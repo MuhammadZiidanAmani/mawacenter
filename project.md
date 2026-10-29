@@ -1,6 +1,6 @@
 # Perkembangan Proyek MA'WA CENTER
 
-Terakhir diperbarui: **28 Oktober 2026**  
+Terakhir diperbarui: **29 Oktober 2026**
 Dasar pemeriksaan: repository lokal pada commit `80e4b754` dan dokumentasi induk di `ai/`.
 
 Dokumen ini adalah ringkasan perkembangan teknis aplikasi. PRD tetap menjadi sumber kebutuhan produk, sedangkan status di bawah didasarkan pada route, controller, service, view, migration, dan test yang tersedia di repository.
@@ -24,7 +24,7 @@ Status **Tersedia** tidak otomatis berarti siap produksi. Kesiapan rilis tetap m
 - 104 route aplikasi aktif.
 - 13 controller, 20 model, 14 service, dan 51 migration.
 - 53 Blade view.
-- 194 metode feature test dan 2 metode unit test terdefinisi.
+- 196 metode feature test dan 2 metode unit test terdefinisi.
 - Isolasi test dikonfigurasi menggunakan SQLite `:memory:` dan guard pada `tests/TestCase.php`.
 
 ## Status Modul
@@ -33,17 +33,17 @@ Status **Tersedia** tidak otomatis berarti siap produksi. Kesiapan rilis tetap m
 | --- | --- | --- | --- |
 | Autentikasi dan akses | **Tersedia · Tercakup test** | Login biasa/wali, logout, rate limit, reset akun legacy, middleware permission, scope unit dan siswa | Skenario akses termasuk dalam full suite yang lulus. |
 | Dashboard | **Tersedia · Tercakup test** | Ringkasan penerimaan, tagihan, tren bulanan, aktivitas, dan rekap unit | Query serta cache key sudah mengikuti scope unit/siswa pengguna. |
-| Data siswa | **Tersedia · Tercakup test** | Daftar, tambah, edit, import preview/progress, export XLSX, filter, sort, dan pagination | Hapus permanen diblokir; gunakan Alumni/nonaktif agar histori tetap utuh. |
+| Data siswa | **Tersedia · Tercakup test** | Daftar, tambah, edit, import preview/progress, export XLSX, filter, sort, dan pagination | Form tambah/edit sudah dikelompokkan menjadi Identitas, Akademik, Orang Tua, Alamat, dan Status dengan grid responsif serta error per field. Hapus permanen tetap diblokir. |
 | Pindah/naik kelas dan alumni | **Tersedia · Tercakup test** | Pindah kelas, promosi tahun/kelas, alumni massal, daftar alumni, dan reaktivasi | Jejak audit dan validasi konteks memiliki skenario test. |
 | Rapikan identitas | **Tersedia · Tercakup test** | Kandidat duplikat, tinjau, gabung, dan pisah identitas | Test lulus: transaksi/tagihan tetap pada `student_id` asal. |
 | Kualitas Data | **Gap** | Tidak ditemukan route `/manajemen-siswa/kualitas-data` | Kebutuhannya masih tercatat dalam PRD dan perlu dirancang sebagai fitur terpisah. |
-| Data master | **Tersedia · Tercakup test** | Tahun pelajaran, unit, kelas, kategori pembayaran, keringanan, role, dan user | Permission granular tersedia; perlu pemeriksaan ulang untuk role kustom. |
+| Data master | **Tersedia · Tercakup test** | Tahun pelajaran, unit, kelas, kategori pembayaran, keringanan, role, dan user | Form tambah/edit kompleks sudah diseragamkan sebagai halaman penuh; edit data sederhana tetap modal. Permission halaman edit mengikuti tipe data. |
 | Pembayaran | **Tersedia · Tercakup test** | Kasir terpadu, SPP, daftar ulang/lain-lain/laundry, cicilan, import, koreksi, pembatalan, struk, dan riwayat | Transfer manual hanya dapat dicatat Super Admin; izin import, kelola transaksi, sinkron tagihan, dan verifikasi sudah dipisah. |
 | Tagihan | **Tersedia · Tercakup test** | Daftar tunggakan, detail, surat, PDF, sinkronisasi bertahap, dan progress | Pembukaan menu tidak otomatis membuat tagihan; sinkronisasi tersedia sebagai aksi terpisah. |
 | Portal wali dan transfer | **Dinonaktifkan sementara · Riwayat dipertahankan** | Wali tetap melihat tagihan dan riwayat; controller lama serta test historis dipertahankan | Pengajuan bukti, menu Verifikasi Transfer, dan endpoint terkait ditutup secara default menunggu payment gateway. |
 | Laporan | **Tersedia · Tercakup test** | Transaksi, SPP per bulan, SPP tahun pelajaran, rekap unit, export PDF/XLSX | Skenario laporan termasuk dalam full suite yang lulus. |
 | Pengaturan | **Tersedia · Sesuai keputusan sementara** | Profil, username, email, dan password | Field serta pemrosesan rekening global telah dihapus dari endpoint profil. Data lama tidak dihapus. |
-| UI dan tema | **Tersedia · Build lulus** | Design token, komponen bersama, CSS per modul, dark mode, sidebar responsif, font DM Sans, serta kontrak bersama untuk header halaman dan aksi tabel | Ukuran heading, aksi header, tombol sekunder, ikon tombol, dan aksi tabel lintas menu sudah diseragamkan pada batch pertama; QA visual desktop/mobile/dark/print masih perlu dilakukan. |
+| UI dan tema | **Tersedia · Build dan regresi lulus** | Design token, komponen bersama, CSS per modul, dark mode, sidebar responsif, font DM Sans, kontrak bersama untuk header, filter, toolbar/footer data, form tambah/edit, modal, dan aksi tabel, serta navigasi keyboard dialog | Form kompleks Master Data kini memakai struktur halaman penuh yang sama pada tambah/edit; form sederhana tetap ringkas di modal. QA visual browser belum dapat dijalankan karena koneksi Computer Use lokal tidak tersedia. |
 
 ## Cakupan Test yang Tersedia
 
@@ -52,13 +52,13 @@ Status **Tersedia** tidak otomatis berarti siap produksi. Kesiapan rilis tetap m
 | `AuthTest` | 10 | Login, wali, rate limit, permission default-deny |
 | `BillAccessTest` | 14 | Scope tagihan, portal wali, transfer, sinkronisasi |
 | `DashboardTest` | 5 | Statistik, empty state, sidebar, dan isolasi cache/scope unit |
-| `MasterDataTest` | 88 | Siswa, master, import/export, identitas, pembayaran, tagihan, permission, audit |
+| `MasterDataTest` | 90 | Siswa, master, import/export, identitas, pembayaran, tagihan, permission, audit, dan konsistensi halaman tambah/edit |
 | `PaymentMenuTest` | 63 | Workspace pembayaran, transaksi, bukti, scope, riwayat, struk |
 | `ReportMenuTest` | 12 | Filter dan export empat laporan |
 | `PerformanceCacheTest` | 1 | Invalidasi namespace cache |
 | Feature/unit contoh dan kertas struk | 3 | Smoke dasar dan ukuran PDF struk |
 
-**Verifikasi 28 Oktober 2026:** full suite lulus, **196 test / 2.581 assertion**, pada SQLite `:memory:`. Setelah batch konsistensi UI, `PaymentMenuTest` kembali lulus **63 test / 766 assertion** dan `npm run build` lulus dengan Vite 8.0.16. Smoke HTTP pada server dan SQLite sementara lulus untuk Dashboard, Data Siswa tanpa aksi hapus, Pembayaran, Tagihan, Pengaturan tanpa rekening, serta endpoint Verifikasi Transfer yang menghasilkan 404. Migration permission baru ikut teruji pada database test, tetapi belum diterapkan ke database operasional. QA visual browser dan status migration deployment belum diperiksa.
+**Verifikasi 29 Oktober 2026:** setelah konsistensi form tambah/edit Master Data dan pengelompokan form Siswa diterapkan, full suite lulus **198 test / 2.620 assertion** pada SQLite `:memory:` dan `npm run build` lulus dengan Vite 8.0.16. `MasterDataTest` sendiri lulus **90 test / 1.503 assertion**, termasuk struktur responsif Tambah/Edit Siswa, isi ulang nilai edit, link edit halaman penuh, modal edit sederhana, scope unit/siswa, dan permission `users.manage`. Audit source memastikan warna modul memakai token (warna literal hanya tersisa pada aturan print), tabel lebar memakai wrapper gulir, aksi filter responsif memiliki lebar yang konsisten, dan tombol ikon utama memiliki nama aksesibel. Smoke HTTP tanggal 28 Oktober pada server dan SQLite sementara lulus untuk Dashboard, Data Siswa tanpa aksi hapus, Pembayaran, Tagihan, Pengaturan tanpa rekening, serta endpoint Verifikasi Transfer yang menghasilkan 404. Migration permission baru ikut teruji pada database test, tetapi belum diterapkan ke database operasional. QA visual browser belum dapat diselesaikan karena Computer Use tidak dapat memverifikasi URL Chrome dengan cukup aman; status migration deployment juga belum diperiksa.
 
 ## Gap dan Risiko Prioritas
 
@@ -81,6 +81,10 @@ Risiko penghapusan siswa, kebocoran Dashboard lintas unit, rekening global, dan 
 
 Ringkasan berikut disimpulkan dari file yang berubah, bukan dari judul commit yang sebagian masih generik.
 
+- **29 Oktober 2026:** form Tambah/Edit Siswa dibagi menjadi Identitas, Akademik, Orang Tua, Alamat, dan Status. Heading dan kartu memakai lebar yang sama, pasangan field memakai grid dua kolom desktop/satu kolom mobile, status memiliki panel jelas, dan validasi tampil dekat field terkait.
+- **29 Oktober 2026:** form tambah/edit Master Data diseragamkan. Siswa, kategori pembayaran, keringanan, role, dan user menggunakan halaman penuh dengan kelompok informasi serta footer aksi yang sama; edit tahun pelajaran, unit, dan kelas tetap modal. Route edit kompleks mendapat permission dan scope data yang sama dengan aksi terkait.
+- **29 Oktober 2026:** batch kedua konsistensi UI menyatukan aksi filter pada mobile, footer/pagination data, ukuran modal konfirmasi/form/import, serta padding modal responsif; audit source dark/responsif/print dilakukan setelah browser QA tidak tersedia.
+- **29 Oktober 2026:** audit aksesibilitas UI menambahkan nama aksesibel pada tombol ikon topbar/sidebar dan menyatukan perilaku fokus dialog: fokus awal, siklus Tab, Escape, dan kembali ke pemicu.
 - **28 Oktober 2026:** batch pertama konsistensi UI menyatukan header halaman, aksi header mobile, tombol sekunder, ikon tombol, serta aksi tabel pada riwayat pembayaran/SPP/pembayaran lain-lain.
 - **21 Oktober 2026:** penyempurnaan interaksi dan tampilan workspace Pembayaran serta test terkait.
 - **20 Oktober 2026:** konsolidasi komponen tabel/sorting, tampilan lintas modul, dan penyesuaian verifikasi transfer.
