@@ -24,7 +24,7 @@ Status **Tersedia** tidak otomatis berarti siap produksi. Kesiapan rilis tetap m
 - 104 route aplikasi aktif.
 - 13 controller, 20 model, 14 service, dan 51 migration.
 - 53 Blade view.
-- 196 metode feature test dan 2 metode unit test terdefinisi.
+- 200 metode feature test dan 2 metode unit test terdefinisi.
 - Isolasi test dikonfigurasi menggunakan SQLite `:memory:` dan guard pada `tests/TestCase.php`.
 
 ## Status Modul
@@ -33,7 +33,7 @@ Status **Tersedia** tidak otomatis berarti siap produksi. Kesiapan rilis tetap m
 | --- | --- | --- | --- |
 | Autentikasi dan akses | **Tersedia · Tercakup test** | Login biasa/wali, logout, rate limit, reset akun legacy, middleware permission, scope unit dan siswa | Skenario akses termasuk dalam full suite yang lulus. |
 | Dashboard | **Tersedia · Tercakup test** | Ringkasan penerimaan, tagihan, tren bulanan, aktivitas, dan rekap unit | Query serta cache key sudah mengikuti scope unit/siswa pengguna. |
-| Data siswa | **Tersedia · Tercakup test** | Daftar, tambah, edit, import preview/progress, export XLSX, filter, sort, dan pagination | Form tambah/edit sudah dikelompokkan menjadi Identitas, Akademik, Orang Tua, Alamat, dan Status dengan grid responsif serta error per field. Hapus permanen tetap diblokir. |
+| Data siswa | **Tersedia · Tercakup test** | Daftar, tambah, edit, import preview/progress, export XLSX, filter, sort, pagination, dan perapihan massal awal tagihan | Kolom awal tagihan kosong pada MTs, MA, dan PONPES langsung terisi 1 Agustus sesuai tahun masuk. Aksi massal memiliki preview, scope unit, permission ganda, audit, pembatalan tagihan pra-Agustus yang belum dibayar, serta perlindungan tanggal manual dan pembayaran sah. Kasus pembayaran sebagian dilewati untuk tinjauan manual. |
 | Pindah/naik kelas dan alumni | **Tersedia · Tercakup test** | Pindah kelas, promosi tahun/kelas, alumni massal, daftar alumni, dan reaktivasi | Jejak audit dan validasi konteks memiliki skenario test. |
 | Rapikan identitas | **Tersedia · Tercakup test** | Kandidat duplikat, tinjau, gabung, dan pisah identitas | Test lulus: transaksi/tagihan tetap pada `student_id` asal. |
 | Kualitas Data | **Gap** | Tidak ditemukan route `/manajemen-siswa/kualitas-data` | Kebutuhannya masih tercatat dalam PRD dan perlu dirancang sebagai fitur terpisah. |
@@ -52,13 +52,13 @@ Status **Tersedia** tidak otomatis berarti siap produksi. Kesiapan rilis tetap m
 | `AuthTest` | 10 | Login, wali, rate limit, permission default-deny |
 | `BillAccessTest` | 14 | Scope tagihan, portal wali, transfer, sinkronisasi |
 | `DashboardTest` | 5 | Statistik, empty state, sidebar, dan isolasi cache/scope unit |
-| `MasterDataTest` | 90 | Siswa, master, import/export, identitas, pembayaran, tagihan, permission, audit, dan konsistensi halaman tambah/edit |
+| `MasterDataTest` | 94 | Siswa, master, import/export, perapihan awal tagihan, identitas, pembayaran, tagihan, permission, audit, dan konsistensi halaman tambah/edit |
 | `PaymentMenuTest` | 63 | Workspace pembayaran, transaksi, bukti, scope, riwayat, struk |
 | `ReportMenuTest` | 12 | Filter dan export empat laporan |
 | `PerformanceCacheTest` | 1 | Invalidasi namespace cache |
 | Feature/unit contoh dan kertas struk | 3 | Smoke dasar dan ukuran PDF struk |
 
-**Verifikasi 29 Oktober 2026:** setelah konsistensi form tambah/edit Master Data dan pengelompokan form Siswa diterapkan, full suite lulus **198 test / 2.620 assertion** pada SQLite `:memory:` dan `npm run build` lulus dengan Vite 8.0.16. `MasterDataTest` sendiri lulus **90 test / 1.503 assertion**, termasuk struktur responsif Tambah/Edit Siswa, isi ulang nilai edit, link edit halaman penuh, modal edit sederhana, scope unit/siswa, dan permission `users.manage`. Audit source memastikan warna modul memakai token (warna literal hanya tersisa pada aturan print), tabel lebar memakai wrapper gulir, aksi filter responsif memiliki lebar yang konsisten, dan tombol ikon utama memiliki nama aksesibel. Smoke HTTP tanggal 28 Oktober pada server dan SQLite sementara lulus untuk Dashboard, Data Siswa tanpa aksi hapus, Pembayaran, Tagihan, Pengaturan tanpa rekening, serta endpoint Verifikasi Transfer yang menghasilkan 404. Migration permission baru ikut teruji pada database test, tetapi belum diterapkan ke database operasional. QA visual browser belum dapat diselesaikan karena Computer Use tidak dapat memverifikasi URL Chrome dengan cukup aman; status migration deployment juga belum diperiksa.
+**Verifikasi 29 Oktober 2026:** setelah perapihan massal serta default awal tagihan siswa MTs/MA/PONPES, konsistensi form tambah/edit Master Data, dan pengelompokan form Siswa diterapkan, full suite lulus **202 test / 2.669 assertion** pada SQLite `:memory:` dan `npm run build` lulus dengan Vite 8.0.16. `MasterDataTest` sendiri lulus **94 test / 1.552 assertion**, termasuk preview dan konfirmasi perapihan massal, permission ganda, scope unit, audit, pembatalan aman tagihan pra-Agustus, perlindungan pembayaran sebagian/lunas, pengisian langsung 1 Agustus pada tambah/edit, pengecualian tanggal manual siswa pindahan, serta preservasi nilai existing saat cell import kosong. Audit source memastikan warna modul memakai token (warna literal hanya tersisa pada aturan print), tabel lebar memakai wrapper gulir, aksi filter responsif memiliki lebar yang konsisten, dan tombol ikon utama memiliki nama aksesibel. Smoke HTTP tanggal 28 Oktober pada server dan SQLite sementara lulus untuk Dashboard, Data Siswa tanpa aksi hapus, Pembayaran, Tagihan, Pengaturan tanpa rekening, serta endpoint Verifikasi Transfer yang menghasilkan 404. Migration permission baru ikut teruji pada database test, tetapi belum diterapkan ke database operasional. QA visual browser belum dapat diselesaikan karena Computer Use tidak dapat memverifikasi URL Chrome dengan cukup aman; status migration deployment juga belum diperiksa.
 
 ## Gap dan Risiko Prioritas
 
@@ -82,6 +82,8 @@ Risiko penghapusan siswa, kebocoran Dashboard lintas unit, rekening global, dan 
 Ringkasan berikut disimpulkan dari file yang berubah, bukan dari judul commit yang sebagian masih generik.
 
 - **29 Oktober 2026:** form Tambah/Edit Siswa dibagi menjadi Identitas, Akademik, Orang Tua, Alamat, dan Status. Heading dan kartu memakai lebar yang sama, pasangan field memakai grid dua kolom desktop/satu kolom mobile, status memiliki panel jelas, dan validasi tampil dekat field terkait.
+- **29 Oktober 2026:** kolom awal tagihan kosong pada MTs, MA, dan PONPES langsung terisi 1 Agustus sesuai tahun tanggal masuk pada form tambah, form edit data lama, dan import siswa baru. Petugas tetap dapat menentukan tanggal lain untuk siswa pindahan/kondisi khusus; nilai manual existing tidak ditimpa.
+- **29 Oktober 2026:** aksi massal Rapikan Awal Tagihan ditambahkan pada Data Siswa dengan preview, permission `students.update` + `bills.sync`, scope unit, audit, dan perlindungan transaksi. Tagihan pra-Agustus tanpa pembayaran dibatalkan; siswa dengan pembayaran sebagian dilewati untuk ditinjau manual.
 - **29 Oktober 2026:** form tambah/edit Master Data diseragamkan. Siswa, kategori pembayaran, keringanan, role, dan user menggunakan halaman penuh dengan kelompok informasi serta footer aksi yang sama; edit tahun pelajaran, unit, dan kelas tetap modal. Route edit kompleks mendapat permission dan scope data yang sama dengan aksi terkait.
 - **29 Oktober 2026:** batch kedua konsistensi UI menyatukan aksi filter pada mobile, footer/pagination data, ukuran modal konfirmasi/form/import, serta padding modal responsif; audit source dark/responsif/print dilakukan setelah browser QA tidak tersedia.
 - **29 Oktober 2026:** audit aksesibilitas UI menambahkan nama aksesibel pada tombol ikon topbar/sidebar dan menyatukan perilaku fokus dialog: fokus awal, siklus Tab, Escape, dan kembali ke pemicu.

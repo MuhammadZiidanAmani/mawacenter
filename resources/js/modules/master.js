@@ -6,6 +6,8 @@ const modalTitle = document.querySelector('[data-modal-title]');
 const studentUnit = document.querySelector('[data-student-unit]');
 const studentClass = document.querySelector('[data-student-class]');
 const studentClassOptions = studentClass ? Array.from(studentClass.options) : [];
+const studentEntryDate = document.querySelector('[data-student-entry-date]');
+const studentBillingStart = document.querySelector('[data-student-billing-start]');
 const registrationScopeSelect = document.querySelector('[data-registration-scope-select]');
 const registrationLevelField = document.querySelector('[data-registration-level-field]');
 const registrationLevelSelect = document.querySelector('[data-registration-level-select]');
@@ -77,6 +79,26 @@ const studentRegions = {
     village: document.querySelector('[data-student-region="village"]'),
 };
 const regionApiBase = 'https://www.emsifa.com/api-wilayah-indonesia/api';
+const augustBillingStartUnits = new Set(['MTS', 'MA', 'PONPES']);
+let automaticBillingStart = studentBillingStart?.dataset.autoSuggested === 'true'
+    ? studentBillingStart.value
+    : '';
+
+const syncStudentBillingStart = () => {
+    if (!studentUnit || !studentEntryDate || !studentBillingStart) return;
+
+    const currentValue = studentBillingStart.value;
+    if (currentValue && currentValue !== automaticBillingStart) return;
+
+    const unitCode = studentUnit.selectedOptions[0]?.dataset.unitCode?.toUpperCase() || '';
+    const entryYear = studentEntryDate.value.slice(0, 4);
+    const suggestedValue = augustBillingStartUnits.has(unitCode) && /^\d{4}$/.test(entryYear)
+        ? `${entryYear}-08-01`
+        : '';
+
+    studentBillingStart.value = suggestedValue;
+    automaticBillingStart = suggestedValue;
+};
 
 const regionPlaceholder = {
     province: 'Pilih Provinsi',
@@ -301,7 +323,13 @@ registrationScopeSelect?.addEventListener('change', syncRegistrationScope);
 studentUnit?.addEventListener('change', () => {
     filterStudentClasses();
     filterRegistrationLevels();
+    syncStudentBillingStart();
 });
+studentEntryDate?.addEventListener('change', () => syncStudentBillingStart());
+studentBillingStart?.addEventListener('input', () => {
+    if (studentBillingStart.value !== automaticBillingStart) automaticBillingStart = '';
+});
+syncStudentBillingStart();
 if (registrationLevelSelect) {
     filterRegistrationLevels(registrationLevelSelect.value);
     syncRegistrationScope();

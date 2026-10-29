@@ -162,7 +162,7 @@ Field per record/unit: NIS, kelas/unit, tahun pelajaran, tanggal masuk, tanggal 
 - **FIN-02:** `Pending`/`Ditolak` tidak mengurangi sisa dan tidak dihitung sebagai penerimaan sah. Hanya status `Diterima` yang mengurangi kewajiban.
 - **FIN-03:** nominal positif dan tidak melampaui sisa tagihan terpilih; validasi ulang pada submit, bukan hanya saat preview/quote.
 - **FIN-04:** SPP dibayar berurutan dari tunggakan tertua; cicilan dialokasikan berurutan ke periode terpilih. Untuk MTs/MA, Juli masuk Daftar Ulang sesuai aturan service existing.
-- **FIN-05:** `billing_start_date`, tanggal masuk, serta aturan tahun/periode mencegah tagihan sebelum awal kewajiban yang sah. Jangan menghasilkan tagihan lama hanya karena siswa diedit/diimpor.
+- **FIN-05:** `billing_start_date`, tanggal masuk, serta aturan tahun/periode mencegah tagihan sebelum awal kewajiban yang sah. Siswa baru pada unit MTs, MA, dan PONPES memakai default 1 Agustus pada tahun tanggal masuk ketika tanggal mulai tagihan belum diisi. Nilai manual selalu diprioritaskan agar siswa pindahan atau kondisi khusus dapat memakai bulan lain. Jangan menghasilkan tagihan lama hanya karena siswa diedit/diimpor.
 - **FIN-06:** laundry adalah pembayaran opsional bulanan; tidak ikut pilih semua kewajiban dan tidak muncul sebagai tunggakan. Periode mengikuti penutupan bulan dan urutan bulan berjalan/berikutnya pada service existing.
 - **FIN-07:** sinkronisasi menyesuaikan kewajiban yang relevan, tidak membuat transaksi pembayaran, menghilangkan pembayaran diterima, atau memindahkan ownership.
 - **FIN-08:** pengajuan/keputusan transfer dan perubahan pembayaran harus konsisten ketika request diulang atau bersamaan; uji transaksi database, locking, validasi status, dan alokasi agar tidak terhitung dua kali.
@@ -188,9 +188,11 @@ Data siswa tidak dapat dihapus permanen dari UI maupun endpoint operasional. Gun
 
 ### 6.2 Tambah/Edit (`STU-02`)
 
-Kelompok form: identitas, orang tua/wali, alamat, akademik, status. Nama, kelas, dan tahun wajib; NIS divalidasi dalam konteks unit; tanggal mulai tagihan opsional tetapi valid. Nonaktif wajib tanggal keluar dan alasan. Reaktivasi memvalidasi kembali kelas/tahun serta membersihkan atau menonaktifkan makna tanggal/alasan keluar.
+Kelompok form: identitas, orang tua/wali, alamat, akademik, status. Nama, kelas, dan tahun wajib; NIS divalidasi dalam konteks unit; tanggal mulai tagihan opsional tetapi valid. Pada MTs, MA, dan PONPES, kolom kosong langsung terisi 1 Agustus sesuai tahun tanggal masuk, baik pada form tambah maupun saat membuka form edit data lama yang belum memiliki awal tagihan. Petugas tetap dapat mengubah tanggal tersebut; nilai manual yang sudah tersimpan tidak boleh ditimpa oleh saran otomatis. Nonaktif wajib tanggal keluar dan alasan. Reaktivasi memvalidasi kembali kelas/tahun serta membersihkan atau menonaktifkan makna tanggal/alasan keluar.
 
 Simpan siswa menjalankan sinkronisasi tagihan relevan. Data kelas/tahun kosong yang sudah terlanjur ada harus bisa ditinjau/diperbaiki tanpa membuat halaman gagal.
+
+Perapihan massal awal tagihan tersedia bagi pengguna yang sekaligus memiliki `students.update` dan `bills.sync`. Preview menampilkan jumlah siswa MTs/MA/PONPES dengan awal tagihan kosong, tagihan sebelum Agustus yang belum dibayar, transaksi berbayar yang dipertahankan, serta siswa yang perlu ditinjau. Konfirmasi mengisi 1 Agustus sesuai tahun masuk dan membatalkan tagihan SPP sebelum tanggal tersebut hanya bila belum memiliki pembayaran. Siswa dengan tagihan sebelum Agustus yang sudah dibayar sebagian dilewati seluruhnya untuk ditinjau manual; tanggal manual, tagihan lunas, dan transaksi sah tidak diubah. Proses mengikuti scope unit pengguna dan dicatat pada audit log.
 
 ### 6.3 Import/Export (`STU-03`)
 
@@ -201,6 +203,7 @@ Template/export mencakup: No, NIS, NISN, Nama, Tempat Lahir, Tanggal Lahir, Jeni
 - Header wajib hilang, unit tidak dikenal, data ambigu, atau tahun aktif tidak tersedia menghasilkan penolakan yang jelas.
 - Kelas baru boleh dibuat otomatis hanya pada unit valid; preview/hasil menyebut kelas yang dibuat.
 - Cell kosong pada baris update tidak boleh menghapus data lama tanpa aturan import eksplisit.
+- Pada baris siswa baru MTs, MA, dan PONPES, tanggal mulai tagihan kosong mengikuti default 1 Agustus sesuai tahun tanggal masuk. Tanggal yang disediakan file diprioritaskan; tanggal manual siswa existing dipertahankan ketika cell import kosong.
 - Import memakai tahun aktif bagi siswa baru, menyinkronkan tagihan terdampak, dan melaporkan jumlah berhasil, update, gagal/dilewati, kelas baru, serta alasan.
 - Export mengikuti filter dan urutan aktif, dengan nama `data-siswa-{scope}-{YYYY-MM-DD}.xlsx`; scope kode unit atau `semua`. Format kompatibel dengan template dan menjaga kode/NIS yang memiliki nol awal.
 

@@ -14,9 +14,11 @@ use App\Models\User;
 use App\Services\AuditLogService;
 use App\Services\BillService;
 use App\Services\ChargeCalculator;
+use App\Services\StudentBillingStartCleanupService;
 use App\Services\StudentImportService;
 use App\Support\ClassLevel;
 use App\Support\PerformanceCache;
+use App\Support\StudentBillingStart;
 use App\Support\StudentXlsx;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
@@ -275,6 +277,7 @@ class MasterDataController extends Controller
             || $request->routeIs('student-management.students.create')
             || $request->routeIs('student-management.students.edit');
         $showStudentImport = $request->routeIs('student-management.students.import');
+        $showStudentBillingStartCleanup = $request->routeIs('student-management.students.billing-start-cleanup.index');
         $studentImportPreview = $this->studentImportPreview($request);
         $needsClasses = in_array($tab, ['students', 'fee-types', 'fee-discounts'], true);
         $needsEducationUnits = in_array($tab, ['students', 'classes', 'fee-types', 'fee-discounts', 'data-users'], true);
@@ -308,6 +311,8 @@ class MasterDataController extends Controller
             'editingStudent' => $editingStudent,
             'editingMaster' => $editingMaster,
             'showStudentImport' => $showStudentImport,
+            'showStudentBillingStartCleanup' => $showStudentBillingStartCleanup,
+            'studentBillingStartCleanupPreview' => $request->attributes->get('studentBillingStartCleanupPreview'),
             'studentImportPreview' => $studentImportPreview,
             'studentImportToken' => $request->string('import_token')->value() ?: null,
             'studentClassAlumniCount' => $studentClassAlumniCount,
@@ -408,6 +413,45 @@ class MasterDataController extends Controller
         $request->merge(['tab' => 'students']);
 
         return $this->index($request);
+    }
+
+    public function studentBillingStartCleanup(Request $request, StudentBillingStartCleanupService $cleanup)
+    {
+        $this->authorizeStudentBillingStartCleanup($request);
+        $request->merge(['tab' => 'students']);
+        $request->attributes->set('studentBillingStartCleanupPreview', $cleanup->preview($this->accessibleUnitIds()));
+
+        return $this->index($request);
+    }
+
+    public function storeStudentBillingStartCleanup(Request $request, StudentBillingStartCleanupService $cleanup): RedirectResponse
+    {
+        $this->authorizeStudentBillingStartCleanup($request);
+        $result = $cleanup->apply($this->accessibleUnitIds());
+
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.billing_start_cleanup',
+            $result['student_ids'],
+            [
+                'updated_students' => $result['updated_students'],
+                'cancelled_unpaid_bills' => $result['cancelled_bills'],
+                'paid_bills_preserved' => $result['paid_bills_preserved'],
+                'partially_paid_bills' => $result['partially_paid_bills'],
+                'unit_counts' => $result['unit_counts'],
+            ],
+            request: $request,
+        );
+
+        $message = $result['updated_students'] < 1
+            ? 'Tidak ada data awal tagihan yang perlu dirapikan.'
+            : number_format($result['updated_students'], 0, ',', '.').' siswa berhasil diperbarui dan '
+                .number_format($result['cancelled_bills'], 0, ',', '.').' tagihan sebelum Agustus yang belum dibayar dibatalkan.';
+
+        if ($result['partially_paid_bills'] > 0) {
+            $message .= ' '.number_format($result['partially_paid_bills'], 0, ',', '.').' siswa dengan pembayaran sebagian dilewati dan perlu ditinjau.';
+        }
+
+        return redirect()->route('student-management.students.index')->with('success', $message);
     }
 
     public function studentTransfer(Request $request)
@@ -1377,6 +1421,16 @@ class MasterDataController extends Controller
         $this->authorizeUnitAccess($request, (int) $student->schoolClass?->education_unit_id);
     }
 
+    private function authorizeStudentBillingStartCleanup(Request $request): void
+    {
+        $user = $request->user();
+        abort_unless(
+            $user?->isSuperAdmin()
+                || ($user?->hasPermission('students.update') && $user?->hasPermission('bills.sync')),
+            403,
+        );
+    }
+
     private function validateEducationUnit(Request $request, ?EducationUnit $educationUnit = null): array
     {
         $validated = $request->validate([
@@ -1514,6 +1568,10 @@ class MasterDataController extends Controller
         }
         $validated = $request->validate($rules);
         $this->authorizeUnitAccess($request, (int) $validated['education_unit_id']);
+        if (! $student && empty($validated['billing_start_date'])) {
+            $unitCode = EducationUnit::whereKey($validated['education_unit_id'])->value('code');
+            $validated['billing_start_date'] = StudentBillingStart::defaultFor($unitCode, $validated['entry_date']);
+        }
         if (! empty($validated['nisn'])) {
             $nisnQuery = Student::where('nisn', $validated['nisn']);
             if ($student) {

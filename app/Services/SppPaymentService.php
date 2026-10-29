@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Bill;
 use App\Models\SppPayment;
 use App\Models\SppPaymentItem;
 use App\Models\Student;
@@ -42,41 +43,9 @@ class SppPaymentService
 
     public function quoteNextMonths(Student $student, int $monthCount = 12): array
     {
-        $current = CarbonImmutable::instance(now())->startOfMonth();
-        $oldestOutstanding = $this->outstandingPeriods($student, 1)[0] ?? null;
-        $start = $oldestOutstanding
-            ? CarbonImmutable::create($oldestOutstanding['year'], $oldestOutstanding['month'], 1)
-            : $current;
-
-        $periods = [];
-        $scanMonths = max(36, $monthCount + 24);
-        for ($period = $start; $period->lt($start->addMonths($scanMonths)) && count($periods) < $monthCount; $period = $period->addMonth()) {
-            if (! $this->periodIsPayable($student, $period->year, $period->month)) {
-                continue;
-            }
-
-            $charge = $this->calculator->calculateSppMonth($student, $period->year, $period->month);
-            $paid = (int) SppPaymentItem::where('student_id', $student->id)
-                ->where('year', $period->year)
-                ->where('month', $period->month)
-                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
-                ->sum('paid_amount');
-            if ($charge['final_amount'] <= $paid) {
-                continue;
-            }
-
-            $periods[] = ['year' => $period->year, 'month' => $period->month];
-        }
-
-        if (count($periods) < $monthCount) {
-            throw ValidationException::withMessages([
-                'payment_month_counts' => 'Periode SPP yang dipilih belum tersedia untuk siswa ini.',
-            ]);
-        }
-
-        $quote = $this->calculatePeriodSelection($student, $periods);
-        $quote['period_start'] = $periods[0];
-        $quote['period_end'] = $periods[array_key_last($periods)];
+        $quote = $this->quoteByMonthCount($student, $monthCount);
+        $quote['period_start'] = $quote['items'][0] ?? null;
+        $quote['period_end'] = $quote['items'][array_key_last($quote['items'])] ?? null;
 
         return $quote;
     }
@@ -84,10 +53,17 @@ class SppPaymentService
     public function paymentWindow(Student $student, int $futureMonthCount = 12): array
     {
         $outstandingCount = count($this->outstandingPeriods($student));
-        $defaultMonthCount = max(1, $outstandingCount);
-        $quote = $this->quoteNextMonths($student, $defaultMonthCount + $futureMonthCount);
+        if ($outstandingCount < 1) {
+            throw ValidationException::withMessages([
+                'month_count' => 'Tidak ada tagihan SPP aktif yang dapat dibayar.',
+            ]);
+        }
 
-        return $quote + ['default_month_count' => $defaultMonthCount];
+        $quote = $this->quoteByMonthCount($student, $outstandingCount);
+        $quote['period_start'] = $quote['items'][0] ?? null;
+        $quote['period_end'] = $quote['items'][array_key_last($quote['items'])] ?? null;
+
+        return $quote + ['default_month_count' => $outstandingCount];
     }
 
     public function paymentPlan(Student $student, ?SppPayment $ignoredPayment = null): array
@@ -239,37 +215,14 @@ class SppPaymentService
 
     public function oldestOutstandingPeriod(Student $student): ?array
     {
-        $start = $this->billingStart($student);
-        $end = now()->startOfMonth();
-        if ($student->exit_date && $student->exit_date->lt($end)) {
-            $end = $student->exit_date->startOfMonth();
-        }
+        $period = $this->outstandingPeriods($student, 1)[0] ?? null;
 
-        for ($period = $start; $period->lte($end); $period = $period->addMonth()) {
-            if (! $this->periodIsPayable($student, $period->year, $period->month)) {
-                continue;
-            }
-
-            $charge = $this->calculator->calculateSppMonth($student, $period->year, $period->month);
-            if ($charge['final_amount'] < 1) {
-                continue;
-            }
-            $paid = (int) SppPaymentItem::where('student_id', $student->id)
-                ->where('year', $period->year)
-                ->where('month', $period->month)
-                ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
-                ->sum('paid_amount');
-            if ($paid < $charge['final_amount']) {
-                return [
-                    'year' => $period->year,
-                    'month' => $period->month,
-                    'month_name' => $this->monthName($period->month),
-                    'payment_status' => $paid > 0 ? 'Belum Lunas' : 'Belum Dibayar',
-                ];
-            }
-        }
-
-        return null;
+        return $period ? [
+            'year' => $period['year'],
+            'month' => $period['month'],
+            'month_name' => $this->monthName($period['month']),
+            'payment_status' => $period['payment_status'],
+        ] : null;
     }
 
     public function record(Student $student, array $data): SppPayment
@@ -780,33 +733,17 @@ class SppPaymentService
 
     private function calculatePeriodSelection(Student $student, array $periods, ?SppPayment $ignoredPayment = null): array
     {
-        $items = [];
-        foreach ($periods as $period) {
-            $year = (int) $period['year'];
-            $month = (int) $period['month'];
-            $charge = $this->calculator->calculateSppMonth($student, $year, $month);
-            if ($charge['original_amount'] < 1) {
-                throw ValidationException::withMessages(['student_id' => 'Kategori pembayaran SPP aktif untuk siswa belum tersedia.']);
-            }
-
-            $paidAmount = $this->paidAmountForMonth($student, $year, $month, $ignoredPayment);
-            $remainingAmount = max(0, $charge['final_amount'] - $paidAmount);
-            if ($remainingAmount < 1) {
-                continue;
-            }
-
-            $items[] = [
-                'year' => $year,
-                'month' => $month,
-                'month_name' => $this->monthName($month),
-                'original_amount' => $charge['original_amount'],
-                'discount_amount' => $charge['discount_amount'],
-                'total_amount' => $charge['final_amount'],
-                'paid_amount' => $paidAmount,
-                'remaining_amount' => $remainingAmount,
-                'payment_status' => $paidAmount > 0 ? 'Belum Lunas' : 'Belum Dibayar',
-            ];
-        }
+        $items = array_map(fn (array $period) => [
+            'year' => (int) $period['year'],
+            'month' => (int) $period['month'],
+            'month_name' => $this->monthName((int) $period['month']),
+            'original_amount' => (int) $period['original_amount'],
+            'discount_amount' => (int) $period['discount_amount'],
+            'total_amount' => (int) $period['total_amount'],
+            'paid_amount' => (int) $period['paid_amount'],
+            'remaining_amount' => (int) $period['remaining_amount'],
+            'payment_status' => $period['payment_status'],
+        ], $periods);
 
         return [
             'original_amount' => array_sum(array_column($items, 'original_amount')),
@@ -826,40 +763,56 @@ class SppPaymentService
 
     private function outstandingPeriodsFrom(Student $student, CarbonImmutable $start, ?int $limit = null, ?SppPayment $ignoredPayment = null): array
     {
-        $end = now()->startOfMonth();
-        if ($student->exit_date && $student->exit_date->lt($end)) {
-            $end = $student->exit_date->startOfMonth();
+        $ignoredAmounts = collect();
+        if ($ignoredPayment?->status === 'Diterima') {
+            $ignoredPayment->loadMissing('items');
+            $ignoredAmounts = $ignoredPayment->items
+                ->groupBy(fn ($item) => ((int) $item->year).'-'.((int) $item->month))
+                ->map(fn ($items) => (int) $items->sum('paid_amount'));
         }
 
-        $periods = [];
-        for ($period = $start; $period->lte($end); $period = $period->addMonth()) {
-            if (! $this->periodIsPayable($student, $period->year, $period->month)) {
-                continue;
-            }
+        $bills = Bill::query()
+            ->where('student_id', $student->id)
+            ->where('source_type', 'spp')
+            ->where('status', '!=', 'Dibatalkan')
+            ->whereNotNull('year')
+            ->whereNotNull('month')
+            ->where(fn ($query) => $query
+                ->whereNull('issue_date')
+                ->orWhereDate('issue_date', '<=', now()->toDateString()))
+            ->where(fn ($query) => $query
+                ->where('year', '>', $start->year)
+                ->orWhere(fn ($query) => $query
+                    ->where('year', $start->year)
+                    ->where('month', '>=', $start->month)))
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
 
-            $charge = $this->calculator->calculateSppMonth($student, $period->year, $period->month);
-            if ($charge['final_amount'] < 1) {
-                continue;
-            }
-            $paid = $this->paidAmountForMonth($student, $period->year, $period->month, $ignoredPayment);
-            $remaining = max(0, $charge['final_amount'] - $paid);
-            if ($remaining < 1) {
-                continue;
-            }
+        $periods = $bills->map(function (Bill $bill) use ($ignoredAmounts) {
+            $restoredAmount = (int) $ignoredAmounts->get(((int) $bill->year).'-'.((int) $bill->month), 0);
+            $remainingAmount = min((int) $bill->total_amount, (int) $bill->remaining_amount + $restoredAmount);
+            $paidAmount = max(0, (int) $bill->paid_amount - $restoredAmount);
 
-            $periods[] = [
-                'year' => $period->year,
-                'month' => $period->month,
-                'remaining_amount' => $remaining,
-                'payment_status' => $paid > 0 ? 'Belum Lunas' : 'Belum Dibayar',
+            return [
+                'year' => (int) $bill->year,
+                'month' => (int) $bill->month,
+                'original_amount' => (int) $bill->original_amount,
+                'discount_amount' => (int) $bill->discount_amount,
+                'total_amount' => (int) $bill->total_amount,
+                'paid_amount' => $paidAmount,
+                'remaining_amount' => $remainingAmount,
+                'payment_status' => $paidAmount > 0 ? 'Belum Lunas' : 'Belum Dibayar',
             ];
+        })
+            ->filter(fn (array $period) => $period['remaining_amount'] > 0)
+            ->values();
 
-            if ($limit !== null && count($periods) >= $limit) {
-                break;
-            }
+        if ($limit !== null) {
+            $periods = $periods->take($limit);
         }
 
-        return $periods;
+        return $periods->all();
     }
 
     private function paidAmountForMonth(Student $student, int $year, int $month, ?SppPayment $ignoredPayment = null): int

@@ -56,6 +56,7 @@ class EnsureRolePermission
             in_array($routeName, ['student-management.index', 'student-management.students.index', 'student-management.alumni.index'], true) => ['students.view'],
             $routeName === 'student-management.students.create' => ['students.create'],
             $routeName === 'student-management.students.import' => ['students.import'],
+            str_starts_with($routeName, 'student-management.students.billing-start-cleanup.') => ['students.update', 'bills.sync'],
             $routeName === 'student-management.students.edit' => ['students.update'],
             str_starts_with($routeName, 'student-management.students.class-alumni.') => ['students.alumni'],
             str_starts_with($routeName, 'student-management.class-transfer.') => ['students.movement'],

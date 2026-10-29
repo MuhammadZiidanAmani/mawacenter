@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AcademicYear;
 use App\Models\EducationUnit;
 use App\Models\Student;
+use App\Support\StudentBillingStart;
 use App\Support\StudentXlsx;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -93,7 +94,7 @@ class StudentImportService
                 }
 
                 try {
-                    $payload = $this->studentPayload($row, $class->id, $activeYear, $existing);
+                    $payload = $this->studentPayload($row, $unit->code, $class->id, $activeYear, $existing);
                     $student = $existing;
                     if ($persist) {
                         if ($existing) {
@@ -255,7 +256,7 @@ class StudentImportService
         $result['rows'][] = $row;
     }
 
-    private function studentPayload(array $row, int $classId, AcademicYear $activeYear, ?Student $existing): array
+    private function studentPayload(array $row, string $unitCode, int $classId, AcademicYear $activeYear, ?Student $existing): array
     {
         $payload = [
             'nis' => $row['nis'],
@@ -278,9 +279,6 @@ class StudentImportService
             'kecamatan' => 'district',
             'desa' => 'village',
             'alamat' => 'address',
-            'mulai_tagihan_khusus' => 'billing_start_date',
-            'tanggal_mulai_tagihan' => 'billing_start_date',
-            'mulai_tagihan' => 'billing_start_date',
         ] as $header => $field) {
             if (! $existing || $this->hasHeader($row, $header)) {
                 $payload[$field] = $row[$field];
@@ -289,6 +287,21 @@ class StudentImportService
 
         if (! $existing || ($this->hasHeader($row, 'tanggal_masuk') && $row['entry_date'] !== null)) {
             $payload['entry_date'] = $row['entry_date'] ?? now()->toDateString();
+        }
+
+        $hasBillingStartHeader = collect([
+            'mulai_tagihan_khusus',
+            'tanggal_mulai_tagihan',
+            'mulai_tagihan',
+        ])->contains(fn (string $header) => $this->hasHeader($row, $header));
+
+        if ($row['billing_start_date'] !== null && (! $existing || $hasBillingStartHeader)) {
+            $payload['billing_start_date'] = $row['billing_start_date'];
+        } elseif (! $existing) {
+            $payload['billing_start_date'] = StudentBillingStart::defaultFor(
+                $unitCode,
+                $payload['entry_date'] ?? now()->toDateString(),
+            );
         }
 
         if (! $existing || $this->hasHeader($row, 'status_masuk')) {

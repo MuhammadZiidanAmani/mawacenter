@@ -37,6 +37,14 @@
         $selectedGender = old('gender', $studentForm?->gender ?? 'L');
         $selectedIntakeStatus = old('intake_status', $studentForm?->intake_status ?? \App\Models\Student::INTAKE_RETURNING);
         $isActiveStudent = (string) old('is_active', $studentForm ? ($studentForm->is_active ? '1' : '0') : '1') === '1';
+        $studentEntryDate = $studentDate('entry_date', now()->toDateString());
+        $studentBillingStart = $studentDate('billing_start_date');
+        $selectedUnitCode = collect($educationUnits)->first(fn ($unit) => (string) $unit->id === (string) $selectedUnitId)?->code;
+        $suggestedBillingStart = \App\Support\StudentBillingStart::defaultFor($selectedUnitCode, $studentEntryDate);
+        $billingStartWasSuggested = $studentBillingStart === '' && $suggestedBillingStart !== null;
+        if ($billingStartWasSuggested) {
+            $studentBillingStart = $suggestedBillingStart;
+        }
     @endphp
     @unless($studentForm)
     <section class="student-form-section student-form-source span-2">
@@ -97,7 +105,7 @@
         </div>
         <div class="student-form-grid">
             <label>Unit Pendidikan
-                <select name="education_unit_id" required data-student-unit @error('education_unit_id') aria-invalid="true" aria-describedby="student-unit-error" @enderror><option value="">Pilih Unit Pendidikan</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" @selected((string) $selectedUnitId === (string) $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>@endforeach</select>
+                <select name="education_unit_id" required data-student-unit @error('education_unit_id') aria-invalid="true" aria-describedby="student-unit-error" @enderror><option value="">Pilih Unit Pendidikan</option>@foreach($educationUnits as $unit)<option value="{{ $unit->id }}" data-unit-code="{{ strtoupper($unit->code) }}" @selected((string) $selectedUnitId === (string) $unit->id)>{{ $unit->code }} - {{ $unit->name }}</option>@endforeach</select>
                 @error('education_unit_id')<small class="master-field-error" id="student-unit-error">{{ $message }}</small>@enderror
             </label>
             <label>Kelas
@@ -109,11 +117,12 @@
                 @error('academic_year_id')<small class="master-field-error" id="student-year-error">{{ $message }}</small>@enderror
             </label>
             <label>Tanggal Masuk
-                <input type="date" name="entry_date" required value="{{ $studentDate('entry_date', now()->toDateString()) }}" @error('entry_date') aria-invalid="true" aria-describedby="student-entry-date-error" @enderror>
+                <input type="date" name="entry_date" required value="{{ $studentEntryDate }}" data-student-entry-date @error('entry_date') aria-invalid="true" aria-describedby="student-entry-date-error" @enderror>
                 @error('entry_date')<small class="master-field-error" id="student-entry-date-error">{{ $message }}</small>@enderror
             </label>
             <label>Mulai Tagihan Khusus
-                <input type="date" name="billing_start_date" value="{{ $studentDate('billing_start_date') }}" @error('billing_start_date') aria-invalid="true" aria-describedby="student-billing-start-error" @enderror>
+                <input type="date" name="billing_start_date" value="{{ $studentBillingStart }}" data-student-billing-start data-auto-suggested="{{ $billingStartWasSuggested ? 'true' : 'false' }}" @error('billing_start_date') aria-invalid="true" aria-describedby="student-billing-start-help student-billing-start-error" @enderror>
+                <small id="student-billing-start-help">MTs, MA, dan PONPES otomatis disarankan mulai 1 Agustus sesuai tahun masuk. Tanggal tetap dapat diubah untuk siswa pindahan atau kondisi khusus.</small>
                 @error('billing_start_date')<small class="master-field-error" id="student-billing-start-error">{{ $message }}</small>@enderror
             </label>
             <label>Status Masuk

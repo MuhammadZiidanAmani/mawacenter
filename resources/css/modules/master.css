@@ -90,6 +90,19 @@
 .student-import-preview { display: grid; gap: 14px; }
 .student-import-progress-track { height: 8px; overflow: hidden; background: var(--app-border-soft); border-radius: 999px; }
 .student-import-progress-track [data-student-import-progress-bar] { display: block; width: 0; height: 100%; background: var(--app-primary); border-radius: inherit; transition: width .2s ease; }
+.student-billing-cleanup-card { display: grid; gap: 16px; padding: 18px; }
+.student-billing-cleanup-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.student-billing-cleanup-summary > div { display: grid; gap: 6px; padding: 14px; background: var(--app-panel-soft); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); }
+.student-billing-cleanup-summary span, .student-billing-cleanup-units > strong { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.student-billing-cleanup-summary strong { color: var(--app-text); font-size: var(--app-text-total-size); font-weight: 700; line-height: var(--app-text-total-leading); font-variant-numeric: tabular-nums; }
+.student-billing-cleanup-units { display: grid; gap: 8px; }
+.student-billing-cleanup-units > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.student-billing-cleanup-units span { display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px; color: var(--app-label); background: var(--app-neutral-soft); border: 1px solid var(--app-border); border-radius: var(--app-radius-action); }
+.student-billing-cleanup-note { display: grid; gap: 3px; padding: 12px 14px; border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); }
+.student-billing-cleanup-note.success { color: var(--app-success); background: var(--app-success-soft); }
+.student-billing-cleanup-note.warning { color: var(--app-warning); background: var(--app-warning-soft); }
+.student-billing-cleanup-note span { font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.student-billing-cleanup-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px; border-top: 1px solid var(--app-border-soft); }
 
 .master-pagination, .student-pagination-links { display: flex; flex-wrap: wrap; gap: 8px; }
 .master-data-pagination-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0; }
@@ -126,4 +139,11 @@
     .master-edit-modal .master-form .form-actions { display: grid; grid-template-columns: 1fr; }
     .master-edit-modal .master-form .form-actions .button { width: 100%; }
     .student-import-page-actions .button { width: 100%; }
+    .student-billing-cleanup-summary { grid-template-columns: 1fr 1fr; }
+    .student-billing-cleanup-actions { display: grid; grid-template-columns: 1fr; }
+    .student-billing-cleanup-actions .button { width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .student-billing-cleanup-summary { grid-template-columns: 1fr; }
 }

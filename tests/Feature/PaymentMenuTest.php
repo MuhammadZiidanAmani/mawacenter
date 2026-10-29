@@ -18,6 +18,7 @@ use App\Services\BillService;
 use App\Services\GoogleDriveStorageException;
 use App\Services\GoogleDriveStorageService;
 use App\Services\OtherPaymentService;
+use App\Services\SppPaymentService;
 use App\Support\StudentXlsx;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -254,6 +255,7 @@ class PaymentMenuTest extends TestCase
             'creates_bill' => false,
             'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
         $otherPayments = Mockery::mock(OtherPaymentService::class);
         $otherPayments->shouldReceive('quote')->twice()->andReturn([
             'original_amount' => 50000,
@@ -707,7 +709,7 @@ class PaymentMenuTest extends TestCase
         $overviewXpath = new \DOMXPath($overviewDom);
         $overviewAmount = $overviewXpath->query('//tr[td//small[contains(., "'.$context['identity']->nis.'/")]]/td[4]')->item(0);
         $this->assertNotNull($overviewAmount);
-        $this->assertSame('Rp 60.000', trim($overviewAmount->textContent));
+        $this->assertSame('Rp 260.000', trim($overviewAmount->textContent));
 
         $defaultDetail = $this->actingAs($admin)->get(route('finance.payments.index', [
             'search' => $context['identity']->name,
@@ -717,7 +719,7 @@ class PaymentMenuTest extends TestCase
         @$defaultDom->loadHTML($defaultDetail->getContent());
         $defaultRemaining = (new \DOMXPath($defaultDom))->query('//section[contains(concat(" ", normalize-space(@class), " "), " payment-reference-stats ")]/article[3]/strong')->item(0);
         $this->assertNotNull($defaultRemaining);
-        $this->assertSame('Rp 60.000', trim(preg_replace('/\s+/', ' ', $defaultRemaining->textContent)));
+        $this->assertSame('Rp 260.000', trim(preg_replace('/\s+/', ' ', $defaultRemaining->textContent)));
 
         $pondokDetail = $this->actingAs($admin)->get(route('finance.payments.index', [
             'search' => $context['identity']->name,
@@ -728,7 +730,7 @@ class PaymentMenuTest extends TestCase
         @$pondokDom->loadHTML($pondokDetail->getContent());
         $pondokRemaining = (new \DOMXPath($pondokDom))->query('//section[contains(concat(" ", normalize-space(@class), " "), " payment-reference-stats ")]/article[3]/strong')->item(0);
         $this->assertNotNull($pondokRemaining);
-        $this->assertSame('Rp 150.000', trim(preg_replace('/\s+/', ' ', $pondokRemaining->textContent)));
+        $this->assertSame('Rp 750.000', trim(preg_replace('/\s+/', ' ', $pondokRemaining->textContent)));
     }
 
     public function test_payment_overview_supports_approved_page_sizes_and_preserves_filters(): void
@@ -877,6 +879,7 @@ class PaymentMenuTest extends TestCase
             'creates_bill' => false,
             'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
 
         $response = $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get(route('finance.payments.index', [
@@ -1025,6 +1028,7 @@ class PaymentMenuTest extends TestCase
             'payment_group' => 'spp', 'code' => 'SPP-TRANSFER-NO-PROOF', 'name' => 'SPP Transfer Tanpa Bukti',
             'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
 
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->post(route('finance.payments.store'), [
@@ -1100,6 +1104,7 @@ class PaymentMenuTest extends TestCase
             'payment_group' => 'spp', 'code' => 'SPP-DRIVE-FAIL', 'name' => 'SPP Drive Gagal',
             'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
         $drive = Mockery::mock(GoogleDriveStorageService::class);
         $drive->shouldReceive('upload')->once()->andThrow(new GoogleDriveStorageException('Bukti transfer gagal diunggah ke Google Drive. Silakan coba lagi.'));
         $this->app->instance(GoogleDriveStorageService::class, $drive);
@@ -1139,6 +1144,7 @@ class PaymentMenuTest extends TestCase
             'payment_group' => 'spp', 'code' => 'SPP-SUCCESS', 'name' => 'SPP Success',
             'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
 
         $this->actingAs(User::factory()->create(['role' => 'admin']));
         $response = $this->post(route('finance.payments.store'), [
@@ -1772,7 +1778,8 @@ class PaymentMenuTest extends TestCase
         $ponpesClass = SchoolClass::create(['education_unit_id' => $ponpes->id, 'name' => 'Asrama A', 'level' => 'Asrama']);
         $identity = Student::create([
             'nis' => 'MTS-001', 'nisn' => '1234567890', 'name' => 'Ahmad Fauzan', 'gender' => 'L',
-            'school_class_id' => $mtsClass->id, 'academic_year_id' => $year->id, 'is_active' => true,
+            'school_class_id' => $mtsClass->id, 'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-10-01', 'is_active' => true,
         ]);
         $boarding = Student::create([
             'identity_student_id' => $identity->id, 'nis' => 'PP-099', 'nisn' => '1234567890',
@@ -1782,13 +1789,14 @@ class PaymentMenuTest extends TestCase
         FeeType::create([
             'education_unit_id' => $mts->id, 'school_class_id' => $mtsClass->id,
             'academic_year_id' => $year->id, 'payment_group' => 'spp', 'code' => 'SPP-MTS',
-            'name' => 'SPP MTs', 'amount' => 300000, 'period' => 'Bulanan', 'is_active' => true,
+            'name' => 'SPP MTs', 'amount' => 300000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
         ]);
         FeeType::create([
             'education_unit_id' => $ponpes->id, 'school_class_id' => $ponpesClass->id,
             'academic_year_id' => $year->id, 'payment_group' => 'laundry', 'code' => 'LAUNDRY-PP',
             'name' => 'Laundry Ponpes', 'amount' => 100000, 'period' => 'Bulanan', 'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($identity);
 
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get('/keuangan/pembayaran?search=Ahmad')
@@ -2016,7 +2024,7 @@ class PaymentMenuTest extends TestCase
             ->assertJsonPath('errors.months.0', 'Pembayaran Laundry untuk bulan sebelumnya sudah ditutup. Pilih bulan berjalan atau bulan berikutnya.');
     }
 
-    public function test_transaction_hub_can_pay_spp_through_a_selected_future_month(): void
+    public function test_transaction_hub_only_offers_spp_periods_with_active_bills(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-07-05 10:00:00'));
 
@@ -2044,12 +2052,13 @@ class PaymentMenuTest extends TestCase
             'creates_bill' => true,
             'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
 
         $this->actingAs(User::factory()->create());
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
-            ->assertSee('Bayar sampai')
-            ->assertSee('data-payment-bill-period-select', false)
+            ->assertDontSee('Bayar sampai')
+            ->assertDontSee('data-payment-bill-period-select', false)
             ->assertSee('NOMINAL PEMBAYARAN')
             ->assertSee('data-payment-bill-full', false)
             ->assertSee('Total Pembayaran')
@@ -2062,27 +2071,95 @@ class PaymentMenuTest extends TestCase
             ->assertDontSee('payment-prd-history-link', false)
             ->assertSee('Bayar &amp; Cetak Struk', false)
             ->assertSee('Juli 2026')
-            ->assertSee('Desember 2026');
+            ->assertDontSee('Desember 2026');
 
         $this->post('/keuangan/pembayaran', [
             'student_id' => $student->id,
             'search' => $student->name,
             'bill_keys' => [$student->id.':spp'],
-            'payment_month_counts' => [$student->id.'_spp' => 6],
+            'payment_month_counts' => [$student->id.'_spp' => 1],
             'payment_method' => 'Cash',
-            'paid_amount' => 1800000,
+            'paid_amount' => 300000,
         ])
             ->assertRedirect();
 
         $this->assertDatabaseCount('spp_payments', 1);
-        $this->assertDatabaseCount('spp_payment_items', 6);
+        $this->assertDatabaseCount('spp_payment_items', 1);
         $this->assertDatabaseHas('spp_payment_items', ['year' => 2026, 'month' => 7, 'paid_amount' => 300000]);
-        $this->assertDatabaseHas('spp_payment_items', ['year' => 2026, 'month' => 12, 'paid_amount' => 300000]);
+        $this->assertDatabaseMissing('spp_payment_items', ['year' => 2026, 'month' => 12]);
+    }
+
+    public function test_payment_spp_card_uses_active_bills_instead_of_recalculating_virtual_history(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-10-29 12:00:00'));
+
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Pondok Pesantren', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '12B', 'level' => 12]);
+        $student = Student::create([
+            'nis' => 'BILL-SOURCE-001',
+            'name' => 'Siswa Sumber Tagihan',
+            'gender' => 'P',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'billing_start_date' => '2020-08-01',
+            'is_active' => true,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'spp',
+            'code' => 'SPP-BILL-SOURCE',
+            'name' => 'SPP Aktif',
+            'amount' => 600000,
+            'period' => 'Bulanan',
+            'creates_bill' => true,
+            'is_active' => true,
+        ]);
+
+        $period = CarbonImmutable::parse('2025-07-01');
+        for ($index = 0; $index < 16; $index++, $period = $period->addMonth()) {
+            Bill::create([
+                'student_id' => $student->id,
+                'academic_year_id' => $year->id,
+                'source_type' => 'spp',
+                'year' => $period->year,
+                'month' => $period->month,
+                'generation_key' => hash('sha256', 'test-spp|'.$student->id.'|'.$period->format('Y-m')),
+                'title' => 'SPP '.$period->format('m/Y'),
+                'issue_date' => $period->toDateString(),
+                'due_date' => $period->day(10)->toDateString(),
+                'original_amount' => 600000,
+                'discount_amount' => 0,
+                'total_amount' => 600000,
+                'paid_amount' => 0,
+                'remaining_amount' => 600000,
+                'status' => 'Belum Dibayar',
+                'unit_name' => $unit->name,
+                'class_name' => $class->name,
+            ]);
+        }
+
+        $service = app(SppPaymentService::class);
+        $plan = $service->paymentPlan($student);
+        $quote = $service->quoteByMonthCount($student, $plan['default_month_count']);
+
+        $this->assertSame(16, $plan['default_month_count']);
+        $this->assertSame(16, $plan['max_month_count']);
+        $this->assertSame(9600000, $quote['remaining_amount']);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.index', ['search' => $student->name]))
+            ->assertOk()
+            ->assertSee('16 tagihan tercatat')
+            ->assertSee('9.600.000')
+            ->assertSee('Juli 2025 - Oktober 2026')
+            ->assertDontSee('45.000.000');
     }
 
     public function test_payment_bill_cards_expose_spp_period_selector_per_card_input_and_full_control(): void
     {
-        $this->travelTo(CarbonImmutable::parse('2026-07-05 10:00:00'));
+        $this->travelTo(CarbonImmutable::parse('2026-08-05 10:00:00'));
         $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
         $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
         $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '1A', 'level' => 1]);
@@ -2096,6 +2173,7 @@ class PaymentMenuTest extends TestCase
             'payment_group' => 'spp', 'code' => 'SPP-CARD', 'name' => 'SPP Kartu',
             'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
 
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get(route('finance.payments.index', ['search' => $student->name]))
@@ -2135,6 +2213,7 @@ class PaymentMenuTest extends TestCase
             'payment_group' => 'daftar-ulang', 'code' => 'DU-ALLOC', 'name' => 'Daftar Ulang Alokasi',
             'amount' => 50000, 'period' => 'Sekali Bayar', 'creates_bill' => true, 'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
 
         $sppKey = $student->id.':spp';
         $registrationKey = $student->id.':daftar-ulang';
@@ -2187,6 +2266,7 @@ class PaymentMenuTest extends TestCase
             'payment_group' => 'daftar-ulang', 'code' => 'DU-OVER', 'name' => 'Daftar Ulang Batas',
             'amount' => 50000, 'period' => 'Sekali Bayar', 'creates_bill' => true, 'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
 
         $sppKey = $student->id.':spp';
         $registrationKey = $student->id.':daftar-ulang';
@@ -2208,7 +2288,7 @@ class PaymentMenuTest extends TestCase
         $this->assertDatabaseCount('other_payments', 0);
     }
 
-    public function test_spp_paid_through_current_month_shows_zero_but_allows_next_month_payment(): void
+    public function test_spp_paid_through_current_month_does_not_create_a_virtual_future_bill(): void
     {
         $this->travelTo(CarbonImmutable::parse('2026-09-20 10:00:00'));
 
@@ -2262,29 +2342,20 @@ class PaymentMenuTest extends TestCase
                 'payment_status' => 'Lunas',
             ]);
         }
+        app(BillService::class)->syncStudentCurrentBills($student);
 
         $this->actingAs(User::factory()->create(['role' => 'admin']));
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
             ->assertOk()
-            ->assertSee('Bayar sampai')
-            ->assertSee('NOMINAL PEMBAYARAN')
-            ->assertSee('Oktober 2026');
+            ->assertDontSee('Bayar sampai')
+            ->assertDontSee('Oktober 2026')
+            ->assertSee('Tidak ada tagihan aktif untuk siswa ini.');
 
-        $this->post('/keuangan/pembayaran', [
+        $this->assertDatabaseMissing('bills', [
             'student_id' => $student->id,
-            'search' => $student->name,
-            'bill_keys' => [$student->id.':spp'],
-            'payment_month_counts' => [$student->id.'_spp' => 1],
-            'payment_method' => 'Cash',
-            'paid_amount' => 600000,
-        ])->assertRedirect();
-
-        $this->assertDatabaseHas('spp_payment_items', [
-            'student_id' => $student->id,
+            'source_type' => 'spp',
             'year' => 2026,
             'month' => 10,
-            'paid_amount' => 600000,
-            'payment_status' => 'Lunas',
         ]);
     }
 
@@ -2367,6 +2438,7 @@ class PaymentMenuTest extends TestCase
             'creates_bill' => true,
             'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
 
         $this->actingAs(User::factory()->create());
         $this->get('/keuangan/pembayaran?search='.urlencode($student->name))
@@ -3038,8 +3110,10 @@ class PaymentMenuTest extends TestCase
             'name' => 'SPP MI Proof',
             'amount' => 100000,
             'period' => 'Bulanan',
+            'creates_bill' => true,
             'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($student);
         $drive = Mockery::mock(GoogleDriveStorageService::class);
         $drive->shouldReceive('upload')->once()->andReturn([
             'file_id' => 'drive-proof-123',
@@ -3108,6 +3182,8 @@ class PaymentMenuTest extends TestCase
         ]);
         FeeType::create(['education_unit_id' => $assignedUnit->id, 'academic_year_id' => $year->id, 'payment_group' => 'spp', 'code' => 'SPP-MI-BULK', 'name' => 'SPP MI Bulk', 'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true]);
         FeeType::create(['education_unit_id' => $otherUnit->id, 'academic_year_id' => $year->id, 'payment_group' => 'spp', 'code' => 'SPP-PP-BULK', 'name' => 'SPP PP Bulk', 'amount' => 100000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true]);
+        app(BillService::class)->syncStudentCurrentBills($identity);
+        app(BillService::class)->syncStudentCurrentBills($linkedOtherUnit);
 
         $this->actingAs($this->scopedCashier($assignedUnit))
             ->post(route('finance.payments.store'), [
@@ -3256,6 +3332,8 @@ class PaymentMenuTest extends TestCase
             'payment_group' => 'spp', 'code' => 'SPP-MULTI-PONPES', 'name' => 'SPP PONPES',
             'amount' => 200000, 'period' => 'Bulanan', 'creates_bill' => true, 'is_active' => true,
         ]);
+        app(BillService::class)->syncStudentCurrentBills($identity);
+        app(BillService::class)->syncStudentCurrentBills($pondokRegistration);
 
         return compact('year', 'mtsUnit', 'pondokUnit', 'mtsClass', 'pondokClass', 'identity', 'pondokRegistration');
     }

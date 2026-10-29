@@ -452,14 +452,14 @@ class PaymentController extends Controller
 
                 if ($group === 'spp') {
                     if ($selectedMonthCount > 0) {
-                        $quote = $sppPayments->quoteNextMonths($student, $selectedMonthCount);
+                        $quote = $sppPayments->quoteByMonthCount($student, $selectedMonthCount);
                         $paidAmount = min($availablePayment, (int) $quote['remaining_amount']);
                         if ($paidAmount < 1) {
                             continue;
                         }
 
                         $payment = $sppPayments->record($student, $baseData + [
-                            'advance_month_count' => $selectedMonthCount,
+                            'month_count' => $selectedMonthCount,
                             'paid_amount' => $paidAmount,
                         ]);
                         $createdPayments->push([
@@ -768,7 +768,7 @@ class PaymentController extends Controller
 
             if ($group === 'spp') {
                 if ($selectedMonthCount > 0) {
-                    $amounts->put($billKey, (int) $sppPayments->quoteNextMonths($student, $selectedMonthCount)['remaining_amount']);
+                    $amounts->put($billKey, (int) $sppPayments->quoteByMonthCount($student, $selectedMonthCount)['remaining_amount']);
 
                     continue;
                 }
