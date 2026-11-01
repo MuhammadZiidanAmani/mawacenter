@@ -184,13 +184,13 @@
                 @endif
                 <div class="app-table-surface student-data-card payment-data-card spp-history other-payment-history">
                     @include('partials.list-toolbar', ['action' => route('finance.other.index', ['category' => $paymentSection['key']]), 'searchLabel' => 'Cari pembayaran '.$paymentSection['title']])
-                    <div class="app-table-scroll table-wrap"><table @class(['app-data-table', 'data-table', 'student-flat-table', 'payment-flat-table', 'spp-list-table', 'registration-payment-table' => in_array($paymentSection['key'], ['daftar-ulang', 'laundry'], true)])><thead><tr><th>No</th><th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'method', 'label' => 'Cara Bayar'])</th><th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th><th>Rincian</th></tr></thead><tbody>
+                    <div class="app-table-scroll table-wrap"><table @class(['app-data-table', 'data-table', 'student-flat-table', 'payment-flat-table', 'spp-list-table', 'registration-payment-table' => in_array($paymentSection['key'], ['pendaftaran', 'daftar-ulang', 'laundry'], true)])><thead><tr><th>No</th><th>@include('partials.sortable-heading', ['column' => 'nis', 'label' => 'NIS'])</th><th>@include('partials.sortable-heading', ['column' => 'name', 'label' => 'Nama'])</th><th>@include('partials.sortable-heading', ['column' => 'class', 'label' => 'Kelas'])</th><th>@include('partials.sortable-heading', ['column' => 'method', 'label' => 'Cara Bayar'])</th><th>@include('partials.sortable-heading', ['column' => 'total', 'label' => 'Total'])</th><th>Rincian</th></tr></thead><tbody>
                         @forelse($payments as $payment)
                             <tr class="spp-main-row">
                                 <td>{{ $payments->firstItem()+$loop->index }}</td><td>{{ $payment->student?->nis ?? '-' }}</td><td><span class="payment-student-name">{{ $payment->student?->name ?? '-' }}</span><small class="payment-student-unit">Unit Pendidikan: {{ $payment->student?->schoolClass?->educationUnit?->code ?? '-' }}</small></td><td>{{ $payment->student?->schoolClass?->name ?? '-' }}</td><td><span class="payment-method">{{ strtolower($payment->payment_method) }}</span></td><td><span>Rp {{ number_format($payment->paid_amount,0,',','.') }}</span></td><td><button type="button" class="app-table-action spp-expand-button" data-spp-row-toggle="other-{{ $payment->id }}" aria-expanded="false">Lihat</button></td>
                             </tr>
                             <tr class="spp-expanded-row" data-spp-row-detail="other-{{ $payment->id }}" hidden><td colspan="7">
-                                @if(in_array($paymentSection['key'], ['daftar-ulang', 'laundry'], true))
+                                @if(in_array($paymentSection['key'], ['pendaftaran', 'daftar-ulang', 'laundry'], true))
                                     <div @class(['registration-payment-detail', 'spp-payment-detail' => $paymentSection['key'] === 'laundry'])>
                                         <div class="registration-detail-item payment-type"><span>{{ $paymentSection['key'] === 'laundry' ? 'Bulan' : 'Kategori Pembayaran' }}</span><strong>{{ $paymentSection['key'] === 'laundry' ? $payment->items->map(fn($item) => $months[$item->month].' '.$item->year)->join(', ') : ($payment->feeType?->name ?? '-') }}</strong></div>
                                         <div class="registration-detail-item"><span>Cara Bayar</span><strong><span class="compact-badge method">{{ strtolower($payment->payment_method) }}</span></strong></div>
@@ -332,7 +332,7 @@
                     </div>
                 </form>
                 <?php endif; ?>
-                <?php if ($paymentSection['key'] === 'daftar-ulang') : ?>
+                <?php if (in_array($paymentSection['key'], ['pendaftaran', 'daftar-ulang'], true)) : ?>
                 @php
                     $selectedOtherStudentId = old('student_id', request('student_id'));
                     $selectedOtherStudent = $selectedOtherStudentId ? $students->firstWhere('id', (int) $selectedOtherStudentId) : null;
@@ -340,7 +340,7 @@
                         ? (($selectedOtherStudent->schoolClass?->educationUnit?->code ?? '-').' - '.$selectedOtherStudent->nis.' - '.$selectedOtherStudent->name)
                         : old('student_search');
                 @endphp
-                <form method="POST" action="{{ route('finance.other.store', ['category' => 'daftar-ulang']) }}" class="card payment-spp-v8-form payment-registration-v1-form" data-other-form data-payment-category="daftar-ulang" data-quote-url="{{ route('finance.other.quote', ['category' => 'daftar-ulang']) }}">@csrf
+                <form method="POST" action="{{ route('finance.other.store', ['category' => $paymentSection['key']]) }}" class="card payment-spp-v8-form payment-registration-v1-form" data-other-form data-payment-category="{{ $paymentSection['key'] }}" data-quote-url="{{ route('finance.other.quote', ['category' => $paymentSection['key']]) }}">@csrf
                     <div class="payment-form-body">
                         <section class="payment-spp-v8-layout">
                             <div class="payment-spp-v8-main">
@@ -411,7 +411,7 @@
                                 <div class="payment-spp-receipt-period">
                                     <span>Kategori</span>
                                     <strong data-other-summary-category>-</strong>
-                                    <small>Daftar ulang siswa</small>
+                                    <small>{{ $paymentSection['key'] === 'pendaftaran' ? 'Pendaftaran Siswa Baru/Pindahan' : 'Daftar ulang Siswa Lama' }}</small>
                                 </div>
                                 <dl>
                                     <div><dt>Nominal Asli</dt><dd data-other-original>Rp 0</dd></div>
@@ -429,12 +429,12 @@
                         </section>
                     </div>
                     <div class="form-actions">
-                        <a href="{{ route('finance.other.index', ['category' => 'daftar-ulang']) }}" class="button button-secondary">Batal</a>
+                        <a href="{{ route('finance.other.index', ['category' => $paymentSection['key']]) }}" class="button button-secondary">Batal</a>
                         <button class="button button-primary" data-other-submit formtarget="_blank">Simpan Pembayaran</button>
                     </div>
                 </form>
                 <?php endif; ?>
-                <?php if (! in_array($paymentSection['key'], ['laundry', 'daftar-ulang'], true)) : ?>
+                <?php if (! in_array($paymentSection['key'], ['laundry', 'pendaftaran', 'daftar-ulang'], true)) : ?>
                 @php
                     $selectedOtherStudentId = old('student_id', request('student_id'));
                     $selectedOtherStudent = $selectedOtherStudentId ? $students->firstWhere('id', (int) $selectedOtherStudentId) : null;

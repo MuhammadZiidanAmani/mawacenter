@@ -69,6 +69,59 @@
     line-height: var(--app-text-body-leading);
 }
 
+body.student-data-body main.student-page .student-list-filter-card > .student-flat-header .student-master-heading {
+    flex: 1 1 260px;
+    min-width: 220px;
+}
+
+body.student-data-body main.student-page .student-list-filter-card > .student-flat-header .student-master-heading h1 {
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+.student-primary-actions {
+    max-width: 100%;
+}
+
+.student-maintenance-toolbar {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px;
+    background: var(--app-panel-soft);
+    border: 1px solid var(--app-border);
+    border-radius: var(--app-radius-panel);
+}
+
+.student-maintenance-heading {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.student-maintenance-heading strong {
+    color: var(--app-text);
+    font-size: var(--app-text-body-size);
+    font-weight: 700;
+    line-height: var(--app-text-body-leading);
+}
+
+.student-maintenance-heading span {
+    color: var(--app-muted);
+    font-size: var(--app-text-meta-size);
+    line-height: var(--app-text-meta-leading);
+}
+
+.student-maintenance-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
 :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-filter-panel, .class-movement-filter-panel) {
     display: grid;
 }
@@ -450,6 +503,20 @@
     :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .identity-cleanup-page, .student-alumni-page, .student-class-alumni-page) .student-flat-header {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    body.student-data-body main.student-page .student-list-filter-card > .student-flat-header .student-master-heading {
+        min-width: 0;
+    }
+
+    .student-maintenance-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .student-maintenance-actions,
+    .student-maintenance-actions .button {
+        width: 100%;
     }
 
     :is(body.student-data-body main.student-page, .class-movement-standard-page, .identity-standard-page, .student-alumni-page) :is(.student-reference-filter-grid, .class-movement-filter-grid),

@@ -161,6 +161,7 @@ class OtherPaymentController extends Controller
         $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
         $this->authorizeStudentAccess($request, $student);
         $feeType = $this->feeTypeForSection($validated['fee_type_id'], $section);
+        $this->assertPendaftaranBillIsPayable($student, $feeType, $section);
 
         if ($section['key'] === 'laundry') {
             return response()->json($laundryPayments->quote(
@@ -205,6 +206,7 @@ class OtherPaymentController extends Controller
         $student = Student::with('schoolClass.educationUnit')->findOrFail($validated['student_id']);
         $this->authorizeStudentAccess($request, $student);
         $feeType = $this->feeTypeForSection($validated['fee_type_id'], $section);
+        $this->assertPendaftaranBillIsPayable($student, $feeType, $section);
         $payment = $section['key'] === 'laundry'
             ? $laundryPayments->record($student, $feeType, $validated)
             : $payments->record($student, $feeType, $validated);
@@ -535,6 +537,10 @@ class OtherPaymentController extends Controller
     private function section(Request $request): array
     {
         return match ($request->string('category')->value()) {
+            'pendaftaran' => [
+                'key' => 'pendaftaran', 'title' => 'Pendaftaran',
+                'description' => 'Kelola seluruh transaksi biaya pendaftaran Siswa Baru dan Pindahan.',
+            ],
             'daftar-ulang' => [
                 'key' => 'daftar-ulang', 'title' => 'Daftar Ulang',
                 'description' => 'Kelola seluruh transaksi pembayaran daftar ulang siswa.',
@@ -545,7 +551,7 @@ class OtherPaymentController extends Controller
             ],
             default => [
                 'key' => 'lain-lain', 'title' => 'Lain-lain',
-                'description' => 'Lihat seluruh transaksi pembayaran selain SPP, daftar ulang, dan laundry.',
+                'description' => 'Lihat seluruh transaksi pembayaran selain SPP, pendaftaran, daftar ulang, dan laundry.',
             ],
         };
     }
@@ -651,6 +657,30 @@ class OtherPaymentController extends Controller
         return $feeType;
     }
 
+    private function assertPendaftaranBillIsPayable(Student $student, FeeType $feeType, array $section): void
+    {
+        if ($section['key'] !== 'pendaftaran') {
+            return;
+        }
+
+        $hasPayableBill = Bill::query()
+            ->where('student_id', $student->id)
+            ->where('source_type', 'fee_type')
+            ->where('fee_type_id', $feeType->id)
+            ->where('remaining_amount', '>', 0)
+            ->where('status', '!=', 'Dibatalkan')
+            ->where(fn ($bill) => $bill
+                ->whereNull('issue_date')
+                ->orWhereDate('issue_date', '<=', now()->toDateString()))
+            ->exists();
+
+        if (! $hasPayableBill) {
+            throw ValidationException::withMessages([
+                'fee_type_id' => 'Tagihan Pendaftaran belum tersedia atau sudah lunas. Jalankan Sinkron Tagihan terlebih dahulu.',
+            ]);
+        }
+    }
+
     private function sectionParams(array $section): array
     {
         return $section['key'] === 'lain-lain' ? [] : ['category' => $section['key']];
@@ -661,7 +691,7 @@ class OtherPaymentController extends Controller
         $payment->loadMissing('feeType');
         $group = $payment->feeType?->payment_group;
 
-        return in_array($group, ['daftar-ulang', 'laundry'], true) ? ['category' => $group] : [];
+        return in_array($group, ['pendaftaran', 'daftar-ulang', 'laundry'], true) ? ['category' => $group] : [];
     }
 
     private function receiptNumber(OtherPayment $payment): string
@@ -674,6 +704,7 @@ class OtherPaymentController extends Controller
         $payment->loadMissing('feeType');
 
         return match ($payment->feeType?->payment_group) {
+            'pendaftaran' => 'PD',
             'daftar-ulang' => 'DU',
             'laundry' => 'LD',
             default => 'LL',

@@ -35,7 +35,9 @@
         $selectedClassId = old('school_class_id', $studentForm?->school_class_id);
         $selectedYearId = old('academic_year_id', $studentForm?->academic_year_id ?? $activeAcademicYear?->id);
         $selectedGender = old('gender', $studentForm?->gender ?? 'L');
-        $selectedIntakeStatus = old('intake_status', $studentForm?->intake_status ?? \App\Models\Student::INTAKE_RETURNING);
+        $selectedIntakeStatus = old('intake_status', $studentForm
+            ? ($studentForm->intake_status ?? \App\Models\Student::INTAKE_RETURNING)
+            : \App\Models\Student::INTAKE_NEW);
         $isActiveStudent = (string) old('is_active', $studentForm ? ($studentForm->is_active ? '1' : '0') : '1') === '1';
         $studentEntryDate = $studentDate('entry_date', now()->toDateString());
         $studentBillingStart = $studentDate('billing_start_date');
@@ -242,6 +244,7 @@
             <span>Kategori Pembayaran</span>
             <select name="payment_group" required data-fee-category>
                 <option value="spp" @selected($selectedPaymentGroup === 'spp')>SPP</option>
+                <option value="pendaftaran" @selected($selectedPaymentGroup === 'pendaftaran')>Pendaftaran</option>
                 <option value="daftar-ulang" @selected($selectedPaymentGroup === 'daftar-ulang')>Daftar Ulang</option>
                 <option value="laundry" @selected($selectedPaymentGroup === 'laundry')>Laundry</option>
                 <option value="lain-lain" @selected($selectedPaymentGroup === 'lain-lain')>Lain-lain</option>
@@ -277,13 +280,14 @@
             <small data-fee-scope-help>Kategori akan berlaku untuk seluruh tingkat pada unit yang dipilih.</small>
         </div>
 
-        <label class="fee-type-simple-field fee-type-simple-student-scope">
+        <label class="fee-type-simple-field fee-type-simple-student-scope" data-fee-student-scope-field>
             <span>Sasaran Siswa</span>
-            <select name="student_scope">
+            <select name="student_scope" data-fee-student-scope>
                 @foreach(\App\Models\FeeType::STUDENT_SCOPE_LABELS as $key => $label)
                     <option value="{{ $key }}" @selected($masterField('student_scope', \App\Models\FeeType::STUDENT_SCOPE_ALL) === $key)>{{ $label }}</option>
                 @endforeach
             </select>
+            <small data-fee-student-scope-help>Pilih siswa yang dikenai kategori ini.</small>
         </label>
 
         <label class="fee-type-simple-field fee-type-simple-short" data-registration-level-field hidden>

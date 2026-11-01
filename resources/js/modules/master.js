@@ -19,6 +19,8 @@ const feePeriodField = document.querySelector('[data-fee-period-field]');
 const feePeriod = document.querySelector('[data-fee-period]');
 const feeBehaviorTitle = document.querySelector('[data-fee-behavior-title]');
 const feeBehaviorDescription = document.querySelector('[data-fee-behavior-description]');
+const feeStudentScope = document.querySelector('[data-fee-student-scope]');
+const feeStudentScopeHelp = document.querySelector('[data-fee-student-scope-help]');
 const studentFilterPairs = Array.from(document.querySelectorAll('[data-student-filter-unit]'))
     .map((unitSelect) => {
         const scope = unitSelect.closest('form') || document;
@@ -297,9 +299,23 @@ const syncFeeCategory = () => {
     const createsBill = masterForm?.querySelector('input[name="creates_bill"]:checked')?.value ?? '1';
     const settings = {
         spp: ['Bulanan', 'Tagihan Wajib', 'SPP akan masuk ke tagihan siswa setiap bulan.'],
+        pendaftaran: ['Sekali Bayar', 'Tagihan Wajib', 'Pendaftaran akan muncul satu kali untuk Siswa Baru dan Pindahan.'],
         'daftar-ulang': ['Sekali Bayar', 'Tagihan Wajib', 'Daftar ulang akan muncul satu kali sebagai kewajiban siswa.'],
         laundry: ['Bulanan', 'Pembayaran Opsional', 'Laundry tidak membuat tagihan otomatis; pembayaran dicatat hanya pada bulan yang diikuti.'],
     };
+
+    const fixedStudentScopes = {
+        pendaftaran: ['new_transfer', 'Sasaran otomatis: Siswa Baru dan Pindahan.'],
+        'daftar-ulang': ['returning', 'Sasaran otomatis: Siswa Lama.'],
+    };
+    const fixedStudentScope = fixedStudentScopes[group];
+    if (feeStudentScope) {
+        feeStudentScope.disabled = Boolean(fixedStudentScope);
+        if (fixedStudentScope) feeStudentScope.value = fixedStudentScope[0];
+    }
+    if (feeStudentScopeHelp) {
+        feeStudentScopeHelp.textContent = fixedStudentScope?.[1] ?? 'Pilih siswa yang dikenai kategori ini.';
+    }
 
     feeBillingChoice.hidden = group !== 'lain-lain';
     if (group === 'lain-lain') {

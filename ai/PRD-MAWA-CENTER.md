@@ -143,7 +143,7 @@ Pengguna tanpa penugasan yang diperlukan tidak memperoleh akses global secara ot
 | `Bill` | Kewajiban per siswa dan sumber/periode; total, terbayar, sisa, status |
 | `BillPaymentAllocation`, `BillManualPayment` | Alokasi dan pembayaran yang dipakai service tagihan |
 | `SppPayment`, `SppPaymentItem`, `SppPaymentCorrection` | Transaksi SPP, rincian periode, koreksi |
-| `OtherPayment`, `OtherPaymentItem` | Daftar ulang, laundry, dan pembayaran lain |
+| `OtherPayment`, `OtherPaymentItem` | Pendaftaran, daftar ulang, laundry, dan pembayaran lain |
 | `GuardianTransferRequest` | Pengajuan transfer wali, bill IDs, nominal, bukti, status dan verifier |
 | `BillSyncRun` | Status/progres sinkronisasi tagihan |
 | `AppSetting`, `AuditLog` | Pengaturan aplikasi/rekening dan jejak operasi |
@@ -167,6 +167,7 @@ Field per record/unit: NIS, kelas/unit, tahun pelajaran, tanggal masuk, tanggal 
 - **FIN-07:** sinkronisasi menyesuaikan kewajiban yang relevan, tidak membuat transaksi pembayaran, menghilangkan pembayaran diterima, atau memindahkan ownership.
 - **FIN-08:** pengajuan/keputusan transfer dan perubahan pembayaran harus konsisten ketika request diulang atau bersamaan; uji transaksi database, locking, validasi status, dan alokasi agar tidak terhitung dua kali.
 - **FIN-09:** perubahan kelas, tahun, alumni, atau identitas tidak menghapus transaksi historis. Koreksi/batal mengikuti service dan jejak audit, bukan edit nominal langsung pada database.
+- **FIN-10:** kategori `Pendaftaran` adalah tagihan wajib sekali bayar untuk `Siswa Baru` dan `Pindahan`; kategori `Daftar Ulang` adalah tagihan wajib sekali bayar untuk `Siswa Lama`. Sasaran ditetapkan server dari `intake_status`, bukan dari tingkat kelas, sehingga siswa pindahan kelas 8/11 tetap membayar Pendaftaran. Keduanya dibuat sebagai `FeeType`, lalu masuk ke Tagihan dan Pembayaran setelah Sinkron Tagihan; Pendaftaran yang belum disinkronkan tidak boleh dibayar melalui endpoint langsung.
 
 ### 5.4 Batas Modul
 
@@ -190,6 +191,8 @@ Data siswa tidak dapat dihapus permanen dari UI maupun endpoint operasional. Gun
 
 Kelompok form: identitas, orang tua/wali, alamat, akademik, status. Nama, kelas, dan tahun wajib; NIS divalidasi dalam konteks unit; tanggal mulai tagihan opsional tetapi valid. Pada MTs, MA, dan PONPES, kolom kosong langsung terisi 1 Agustus sesuai tahun tanggal masuk, baik pada form tambah maupun saat membuka form edit data lama yang belum memiliki awal tagihan. Petugas tetap dapat mengubah tanggal tersebut; nilai manual yang sudah tersimpan tidak boleh ditimpa oleh saran otomatis. Nonaktif wajib tanggal keluar dan alasan. Reaktivasi memvalidasi kembali kelas/tahun serta membersihkan atau menonaktifkan makna tanggal/alasan keluar.
 
+Form siswa baru dan baris import baru tanpa Status Masuk memakai default `Siswa Baru`; nilai import yang tidak dikenal ditolak, bukan diam-diam dianggap `Siswa Lama`. Status `Pindahan` harus dipilih eksplisit. Aksi Rapikan Status Masuk tersedia bagi pengguna yang sekaligus memiliki `students.update` dan `bills.sync`: preview memeriksa seluruh siswa dalam scope unit berdasarkan tahun/tanggal masuk, tingkat awal unit, riwayat naik kelas, serta kewajiban/pembayaran terdahulu. Ringkasan tetap menghitung seluruh hasil, tetapi tabel hanya menampilkan siswa yang perlu ditinjau manual. Hanya bukti kuat yang boleh mengubah `Siswa Baru`/`Siswa Lama` otomatis. Pindahan, data nonaktif, data tidak lengkap, dan penerimaan tahun berjalan pada tingkat lanjutan tetap dipertahankan untuk tinjauan manual. Konfirmasi menyinkronkan tagihan siswa yang berubah dan mencatat audit; nama/NIS tidak disimpan dalam metadata ringkasan.
+
 Simpan siswa menjalankan sinkronisasi tagihan relevan. Data kelas/tahun kosong yang sudah terlanjur ada harus bisa ditinjau/diperbaiki tanpa membuat halaman gagal.
 
 Perapihan massal awal tagihan tersedia bagi pengguna yang sekaligus memiliki `students.update` dan `bills.sync`. Preview menampilkan jumlah siswa MTs/MA/PONPES dengan awal tagihan kosong, tagihan sebelum Agustus yang belum dibayar, transaksi berbayar yang dipertahankan, serta siswa yang perlu ditinjau. Konfirmasi mengisi 1 Agustus sesuai tahun masuk dan membatalkan tagihan SPP sebelum tanggal tersebut hanya bila belum memiliki pembayaran. Siswa dengan tagihan sebelum Agustus yang sudah dibayar sebagian dilewati seluruhnya untuk ditinjau manual; tanggal manual, tagihan lunas, dan transaksi sah tidak diubah. Proses mengikuti scope unit pengguna dan dicatat pada audit log.
@@ -198,7 +201,7 @@ Perapihan massal awal tagihan tersedia bagi pengguna yang sekaligus memiliki `st
 
 Alur wajib: download template bila perlu, upload Excel, preview, konfirmasi, simpan baris valid, hasil. Preview berisi total/valid/update/gagal, status Baru/Update/Gagal, dan alasan per baris. File sementara memakai token; token hilang/kedaluwarsa meminta upload ulang; file dibersihkan setelah selesai.
 
-Template/export mencakup: No, NIS, NISN, Nama, Tempat Lahir, Tanggal Lahir, Jenis Kelamin, Nama Ayah, Nama Ibu, WhatsApp Ayah, WhatsApp Ibu, Provinsi, Kota/Kabupaten, Kecamatan, Desa/Kelurahan, Alamat, Unit Pendidikan, Kelas, Tanggal Masuk, Tanggal Mulai Tagihan, Status, Tanggal Keluar, Alasan Nonaktif.
+Template/export mencakup: No, NIS, NISN, Nama, Tempat Lahir, Tanggal Lahir, Jenis Kelamin, Nama Ayah, Nama Ibu, WhatsApp Ayah, WhatsApp Ibu, Provinsi, Kota/Kabupaten, Kecamatan, Desa/Kelurahan, Alamat, Unit Pendidikan, Kelas, Tanggal Masuk, Tanggal Mulai Tagihan, Status Masuk, Status, Tanggal Keluar, Alasan Nonaktif.
 
 - Header wajib hilang, unit tidak dikenal, data ambigu, atau tahun aktif tidak tersedia menghasilkan penolakan yang jelas.
 - Kelas baru boleh dibuat otomatis hanya pada unit valid; preview/hasil menyebut kelas yang dibuat.
@@ -289,7 +292,7 @@ Riwayat menggabungkan SPP/Other, maksimal 5-10 item; kode/test saat ini memakai 
 
 ### 7.5 Import Pembayaran (`PAY-05`)
 
-Jenis: SPP, Daftar Ulang, Laundry, Lain-lain. Pilih konteks/file, Preview Data, validasi valid/gagal/duplikat, lalu konfirmasi jika ada baris valid. SPP mewajibkan unit, bulan, tahun dari form sebagai konteks utama; kolom Excel yang berbeda harus ditolak. Jika kolom unit/bulan/tahun tidak ada, gunakan konteks form.
+Jenis: SPP, Pendaftaran, Daftar Ulang, Laundry, Lain-lain. Pilih konteks/file, Preview Data, validasi valid/gagal/duplikat, lalu konfirmasi jika ada baris valid. SPP mewajibkan unit, bulan, tahun dari form sebagai konteks utama; kolom Excel yang berbeda harus ditolak. Jika kolom unit/bulan/tahun tidak ada, gunakan konteks form.
 
 Khusus import Excel SPP, bulan boleh diproses tanpa mengikuti tunggakan paling lama siswa. Pembayaran SPP manual tetap berurutan. Import tetap wajib menolak periode di luar masa tagihan, bulan yang sudah lunas, nominal melebihi sisa tagihan, unit/siswa yang tidak sesuai scope, serta transaksi duplikat.
 
@@ -303,7 +306,7 @@ Sumber: S04 dan S06. ID: `BILL-*`.
 
 ### 8.1 Dataset dan Scope (`BILL-01`)
 
-Sumber utama `bills`: `remaining_amount > 0`, bukan `Dibatalkan`. SPP memakai `source_type=spp`; daftar ulang dari `fee_type` dengan `payment_group=daftar-ulang`; lain-lain dari manual/kategori relevan. Laundry dikecualikan selama opsional.
+Sumber utama `bills`: `remaining_amount > 0`, bukan `Dibatalkan`. SPP memakai `source_type=spp`; pendaftaran dan daftar ulang berasal dari `fee_type` dengan `payment_group` masing-masing; lain-lain dari manual/kategori relevan. Laundry dikecualikan selama opsional.
 
 Tahun aktif menjadi konteks operasional; periode internal sampai bulan berjalan boleh dipakai sinkron, tetapi bukan filter utama tambahan. Sinkron admin/internal bukan aksi kasir harian. Pembayaran diterima memperbarui sisa sehingga siswa lunas hilang dari daftar kewajiban.
 
@@ -354,7 +357,7 @@ Filter tanggal dari/sampai (default hari ini), unit, kelas, petugas; Cari Siswa 
 
 Rekap unit: No, Unit Pendidikan, Jumlah Transaksi, Cash, Transfer, Jumlah Penerimaan; satu footer total seluruh hasil filter. Detail: No, Tanggal, NIS, Nama Siswa, Unit, Kelas, Jenis Pembayaran, Cara Bayar, Petugas, Nominal. Memuat SPP, daftar ulang, laundry, lainnya yang merupakan transaksi sah. Tidak mengulang angka rekap sebagai kartu besar.
 
-XLSX berisi detail dan ringkasan; PDF memuat periode, ringkasan unit, serta transaksi. Aksi detail/cetak opsional dan berizin; tidak menjadikan laporan sebagai form penagihan.
+XLSX berisi detail dan ringkasan; PDF memuat periode, ringkasan unit, serta transaksi. Pendaftaran dilaporkan sebagai kelompok tersendiri dan tidak digabung ke Lain-lain. Aksi detail/cetak opsional dan berizin; tidak menjadikan laporan sebagai form penagihan.
 
 ### 10.2 SPP Perbulan (`RPT-02`)
 
@@ -374,7 +377,7 @@ Isi bulan: Lunas = tanggal pembayaran; cicil = Sebagian + tanggal terakhir bila 
 
 ### 10.4 Rekap Per Unit (`RPT-04`)
 
-Filter tanggal dari/sampai, default hari ini; tidak ada Cari Siswa. Tabel No, Unit Pendidikan, SPP, Daftar Ulang, Laundry, Lain-lain, Jumlah Penerimaan. Footer Total Keseluruhan selalu tersedia dan menjumlahkan seluruh unit hasil filter. Tanpa kartu angka pengulangan.
+Filter tanggal dari/sampai, default hari ini; tidak ada Cari Siswa. Tabel No, Unit Pendidikan, SPP, Pendaftaran, Daftar Ulang, Laundry, Lain-lain, Jumlah Penerimaan. Footer Total Keseluruhan selalu tersedia dan menjumlahkan seluruh unit hasil filter. Tanpa kartu angka pengulangan.
 
 ### 10.5 Export dan Empty (`RPT-05`)
 
@@ -391,7 +394,7 @@ Bagian ini melengkapi PRD dari S06 dan pembacaan kode; belum ada PRD modul terpi
 - **Dashboard:** ringkasan penerimaan hari/bulan, tren, siswa aktif, tagihan/sisa/jatuh tempo, persentase pelunasan, aktivitas terbaru, rekap unit. Statistik dan chart ringan; tidak menggantikan laporan. Query dan cache wajib dibatasi berdasarkan unit/siswa yang dapat diakses pengguna.
 - **Tahun Pelajaran:** konteks aktif operasional serta periode arsip/laporan; validasi perubahan konteks dengan data terikat.
 - **Unit/Kelas:** unit pendidikan, kelas/tingkat, tahun dan status; pilihan kelas mengikuti unit. Penonaktifan tidak menghapus riwayat siswa/pembayaran.
-- **Kategori Pembayaran:** tarif/scope unit, kelas/tingkat, tahun, kelompok pembayaran, scope siswa dan `creates_bill`; gunakan `FeeType`/`ChargeCalculator`. Filter unit+nama/kode; aktif/nonaktif tampil bersama, status dikelola di form.
+- **Kategori Pembayaran:** tarif/scope unit, kelas/tingkat, tahun, kelompok pembayaran, scope siswa dan `creates_bill`; gunakan `FeeType`/`ChargeCalculator`. Pendaftaran otomatis memakai sasaran Siswa Baru/Pindahan, sedangkan Daftar Ulang otomatis memakai Siswa Lama; keduanya wajib dan sekali bayar. Filter unit+nama/kode; aktif/nonaktif tampil bersama, status dikelola di form.
 - **Keringanan Biaya:** relasi siswa dan pembayaran/tarif sesuai `FeeDiscount`. Filter unit+kelas+nama siswa; status bukan filter utama. Perubahan tarif/keringanan memperhatikan tagihan dan transaksi existing.
 - **Data User/Role:** `users.manage`, role aktif/permission, penugasan unit dan wali-anak. Jangan membuka hak penuh karena nama role terlihat seperti admin.
 - **Pengaturan:** nama, username, email, serta perubahan password dengan password saat ini dan konfirmasi. Konfigurasi bank/rekening global dinonaktifkan dan tidak boleh diproses oleh endpoint profil. Jika diaktifkan kembali, wajib memakai endpoint serta permission khusus Super Admin.
@@ -450,7 +453,7 @@ Checklist berikut menyatukan skenario sumber; pilih test yang terkait perubahan.
 | ACL-01 | Permission aksi siswa dibedakan; role tidak bisa bypass lewat URL; route tak terpetakan ditolak | `AuthTest`, `MasterDataTest`, `BillAccessTest` |
 | ACL-02 | Bendahara hanya unitnya, wali hanya anaknya, kasir hanya Cash; print/proof/export/search ikut scope | `BillAccessTest`, `PaymentMenuTest`, `ReportMenuTest` dan audit endpoint |
 | STU-01 | Default tahun aktif, unit-kelas dependen, nama/NIS/NISN, sort/per_page/pagination/query kembali konsisten | `MasterDataTest` |
-| STU-02 | Create/edit valid, personal lintas identitas benar, akademik/NIS per record, nonaktif dan reaktivasi valid, tagihan sinkron | `MasterDataTest` |
+| STU-02 | Create/edit valid, default siswa baru benar, perapihan status masuk hanya mengubah rekomendasi aman, kasus ambigu/pindahan/nonaktif dipertahankan, scope dan permission ganda benar, personal lintas identitas benar, akademik/NIS per record, nonaktif dan reaktivasi valid, tagihan sinkron | `MasterDataTest` |
 | STU-03 | Header invalid, tanpa tahun aktif, preview hilang, update sel kosong, unit tidak valid, kelas otomatis, hasil serta cleanup file | `MasterDataTest` |
 | STU-04 | Confidence benar, tinjau record benar, minimal dua anggota, root stabil, split melepas grup; `student_id` keuangan tetap | `MasterDataTest` |
 | STU-05 | Pindah/promosi menolak nonaktif/tahun sumber salah/target sama/duplikat; promosi mengubah intake, tahun dan kelas | `MasterDataTest` |

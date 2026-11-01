@@ -87,6 +87,10 @@ class FeeType extends Model
             return $query->where('payment_group', 'spp');
         }
 
+        if ($group === 'pendaftaran') {
+            return $query->where('payment_group', 'pendaftaran');
+        }
+
         if ($group === 'daftar-ulang') {
             return $query->where(fn (Builder $feeType) => $feeType
                 ->where('payment_group', 'daftar-ulang')

@@ -82,7 +82,7 @@ class ReportQueryService
             'until_month' => $untilMonth >= 1 && $untilMonth <= 12 ? $untilMonth : now()->month,
             'unit_id' => $request->integer('unit_id') ?: null,
             'class_id' => $request->integer('class_id') ?: null,
-            'type' => in_array($request->string('type')->value(), ['spp', 'daftar-ulang', 'laundry', 'lain-lain'], true) ? $request->string('type')->value() : null,
+            'type' => in_array($request->string('type')->value(), ['spp', 'pendaftaran', 'daftar-ulang', 'laundry', 'lain-lain'], true) ? $request->string('type')->value() : null,
             'fee_type_id' => $request->integer('fee_type_id') ?: null,
             'payment_method' => in_array($request->string('payment_method')->value(), ['Cash', 'Transfer'], true) ? $request->string('payment_method')->value() : null,
             'payment_status' => in_array($request->string('payment_status')->value(), ['Diterima', 'Pending', 'Dibatalkan'], true) ? $request->string('payment_status')->value() : null,
@@ -105,6 +105,7 @@ class ReportQueryService
                 ['label' => 'Jumlah Transaksi', 'value' => $rows->count(), 'type' => 'number'],
                 ['label' => 'Jumlah Siswa', 'value' => $accepted->pluck('student_id')->filter()->unique()->count(), 'type' => 'number'],
                 ['label' => 'Total SPP', 'value' => (int) $accepted->where('group', 'spp')->sum('amount'), 'type' => 'money'],
+                ['label' => 'Total Pendaftaran', 'value' => (int) $accepted->where('group', 'pendaftaran')->sum('amount'), 'type' => 'money'],
                 ['label' => 'Total Daftar Ulang', 'value' => (int) $accepted->where('group', 'daftar-ulang')->sum('amount'), 'type' => 'money'],
                 ['label' => 'Total Laundry', 'value' => (int) $accepted->where('group', 'laundry')->sum('amount'), 'type' => 'money'],
                 ['label' => 'Total Lain-lain', 'value' => (int) $accepted->where('group', 'lain-lain')->sum('amount'), 'type' => 'money'],
@@ -379,6 +380,7 @@ class ReportQueryService
                 'unit_id' => $unit->id,
                 'unit' => $unit->name,
                 'spp' => (int) $unitTransactions->where('group', 'spp')->sum('amount'),
+                'pendaftaran' => (int) $unitTransactions->where('group', 'pendaftaran')->sum('amount'),
                 'daftar_ulang' => (int) $unitTransactions->where('group', 'daftar-ulang')->sum('amount'),
                 'laundry' => (int) $unitTransactions->where('group', 'laundry')->sum('amount'),
                 'lain_lain' => (int) $unitTransactions->where('group', 'lain-lain')->sum('amount'),
@@ -926,6 +928,7 @@ class ReportQueryService
     {
         return [
             'spp' => (int) $rows->sum('spp'),
+            'pendaftaran' => (int) $rows->sum('pendaftaran'),
             'daftar_ulang' => (int) $rows->sum('daftar_ulang'),
             'laundry' => (int) $rows->sum('laundry'),
             'lain_lain' => (int) $rows->sum('lain_lain'),
@@ -952,7 +955,7 @@ class ReportQueryService
     private function otherPaymentGroup(OtherPayment $payment): string
     {
         $group = $payment->feeType?->payment_group;
-        if (in_array($group, ['daftar-ulang', 'laundry', 'lain-lain'], true)) {
+        if (in_array($group, ['pendaftaran', 'daftar-ulang', 'laundry', 'lain-lain'], true)) {
             return $group;
         }
 
@@ -970,6 +973,7 @@ class ReportQueryService
     {
         return [
             'spp' => 'SPP',
+            'pendaftaran' => 'Pendaftaran',
             'daftar-ulang' => 'Daftar Ulang',
             'laundry' => 'Laundry',
             'lain-lain' => 'Lain-lain',

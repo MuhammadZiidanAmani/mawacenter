@@ -17,6 +17,7 @@ use App\Services\BillService;
 use App\Services\ChargeCalculator;
 use App\Services\StudentBillingStartCleanupService;
 use App\Services\StudentImportService;
+use App\Services\StudentIntakeStatusCleanupService;
 use App\Support\ClassLevel;
 use App\Support\PerformanceCache;
 use App\Support\StudentBillingStart;
@@ -279,6 +280,7 @@ class MasterDataController extends Controller
             || $request->routeIs('student-management.students.edit');
         $showStudentImport = $request->routeIs('student-management.students.import');
         $showStudentBillingStartCleanup = $request->routeIs('student-management.students.billing-start-cleanup.index');
+        $showStudentIntakeStatusCleanup = $request->routeIs('student-management.students.intake-status-cleanup.index');
         $showAlumniBillCleanup = $request->routeIs('student-management.students.alumni-bill-cleanup.index');
         $studentImportPreview = $this->studentImportPreview($request);
         $needsClasses = in_array($tab, ['students', 'fee-types', 'fee-discounts'], true);
@@ -315,6 +317,8 @@ class MasterDataController extends Controller
             'showStudentImport' => $showStudentImport,
             'showStudentBillingStartCleanup' => $showStudentBillingStartCleanup,
             'studentBillingStartCleanupPreview' => $request->attributes->get('studentBillingStartCleanupPreview'),
+            'showStudentIntakeStatusCleanup' => $showStudentIntakeStatusCleanup,
+            'studentIntakeStatusCleanupPreview' => $request->attributes->get('studentIntakeStatusCleanupPreview'),
             'showAlumniBillCleanup' => $showAlumniBillCleanup,
             'alumniBillCleanupPreview' => $request->attributes->get('alumniBillCleanupPreview'),
             'studentImportPreview' => $studentImportPreview,
@@ -453,6 +457,56 @@ class MasterDataController extends Controller
 
         if ($result['partially_paid_bills'] > 0) {
             $message .= ' '.number_format($result['partially_paid_bills'], 0, ',', '.').' siswa dengan pembayaran sebagian dilewati dan perlu ditinjau.';
+        }
+
+        return redirect()->route('student-management.students.index')->with('success', $message);
+    }
+
+    public function studentIntakeStatusCleanup(Request $request, StudentIntakeStatusCleanupService $cleanup)
+    {
+        $this->authorizeStudentIntakeStatusCleanup($request);
+        $request->merge(['tab' => 'students']);
+        $request->attributes->set('studentIntakeStatusCleanupPreview', $cleanup->preview($this->accessibleUnitIds()));
+
+        return $this->index($request);
+    }
+
+    public function storeStudentIntakeStatusCleanup(Request $request, StudentIntakeStatusCleanupService $cleanup): RedirectResponse
+    {
+        $this->authorizeStudentIntakeStatusCleanup($request);
+        $result = $cleanup->apply($this->accessibleUnitIds());
+
+        if ($result['student_ids'] !== []) {
+            Student::query()
+                ->whereIn('id', $result['student_ids'])
+                ->get(['id', 'academic_year_id'])
+                ->groupBy('academic_year_id')
+                ->each(function ($students, $academicYearId) {
+                    $academicYear = AcademicYear::find($academicYearId);
+                    if ($academicYear) {
+                        app(BillService::class)->syncStudentsCurrentBills($academicYear, $students->pluck('id'));
+                    }
+                });
+        }
+
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.intake_status_cleanup',
+            $result['student_ids'],
+            [
+                'scanned_students' => $result['scanned_count'],
+                'updated_students' => $result['updated_students'],
+                'review_students' => $result['review_count'],
+                'unit_counts' => $result['unit_counts'],
+                'changes' => $result['changes'],
+            ],
+            request: $request,
+        );
+
+        $message = $result['updated_students'] < 1
+            ? 'Tidak ada status masuk yang aman untuk diperbaiki otomatis.'
+            : number_format($result['updated_students'], 0, ',', '.').' status masuk siswa berhasil diperbaiki dan tagihannya disinkronkan.';
+        if ($result['review_count'] > 0) {
+            $message .= ' '.number_format($result['review_count'], 0, ',', '.').' data ambigu tetap dipertahankan untuk ditinjau manual.';
         }
 
         return redirect()->route('student-management.students.index')->with('success', $message);
@@ -1535,6 +1589,16 @@ class MasterDataController extends Controller
         );
     }
 
+    private function authorizeStudentIntakeStatusCleanup(Request $request): void
+    {
+        $user = $request->user();
+        abort_unless(
+            $user?->isSuperAdmin()
+                || ($user?->hasPermission('students.update') && $user?->hasPermission('bills.sync')),
+            403,
+        );
+    }
+
     private function authorizeAlumniBillCleanup(Request $request): void
     {
         $user = $request->user();
@@ -2077,7 +2141,7 @@ class MasterDataController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'max:120'],
-            'payment_group' => ['nullable', Rule::in(['spp', 'daftar-ulang', 'laundry', 'lain-lain'])],
+            'payment_group' => ['nullable', Rule::in(['spp', 'pendaftaran', 'daftar-ulang', 'laundry', 'lain-lain'])],
             'education_unit_id' => ['required', 'exists:education_units,id'],
             'academic_year_id' => ['nullable', 'exists:academic_years,id'],
             'school_class_id' => ['nullable'],
@@ -2094,9 +2158,15 @@ class MasterDataController extends Controller
         $this->authorizeUnitAccess($request, (int) $validated['education_unit_id']);
         $validated['payment_group'] ??= $feeType?->payment_group ?? 'lain-lain';
         $validated['student_scope'] ??= $feeType?->student_scope ?? FeeType::STUDENT_SCOPE_ALL;
+        $validated['student_scope'] = match ($validated['payment_group']) {
+            'pendaftaran' => FeeType::STUDENT_SCOPE_NEW_TRANSFER,
+            'daftar-ulang' => FeeType::STUDENT_SCOPE_RETURNING,
+            default => $validated['student_scope'],
+        };
 
         $fixedBehavior = [
             'spp' => ['period' => 'Bulanan', 'creates_bill' => true],
+            'pendaftaran' => ['period' => 'Sekali Bayar', 'creates_bill' => true],
             'daftar-ulang' => ['period' => 'Sekali Bayar', 'creates_bill' => true],
             'laundry' => ['period' => 'Bulanan', 'creates_bill' => false],
         ][$validated['payment_group']] ?? null;

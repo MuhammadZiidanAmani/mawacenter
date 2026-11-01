@@ -627,7 +627,7 @@
                                                             <th>Petugas</th>
                                                             <td>{{ $row['operator'] ?? '-' }}</td>
                                                         </tr>
-                                                        @if(in_array(($row['group'] ?? null), ['daftar-ulang', 'lain-lain'], true))
+                                                        @if(in_array(($row['group'] ?? null), ['pendaftaran', 'daftar-ulang', 'lain-lain'], true))
                                                             <tr>
                                                                 <th>Nama Pembayaran</th>
                                                                 <td>{{ $row['description'] ?? '-' }}</td>

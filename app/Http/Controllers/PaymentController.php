@@ -518,6 +518,11 @@ class PaymentController extends Controller
                 $matchedFeeTypes = $this->matchedFeeTypes($student, $feeTypes)
                     ->filter(fn (FeeType $feeType) => $this->paymentGroup($feeType) === $group)
                     ->values();
+                if ($group === 'pendaftaran') {
+                    $matchedFeeTypes = $matchedFeeTypes
+                        ->whereIn('id', $this->outstandingFeeTypeIds($student, $matchedFeeTypes))
+                        ->values();
+                }
 
                 foreach ($matchedFeeTypes as $feeType) {
                     if ($availablePayment < 1) {
@@ -784,6 +789,11 @@ class PaymentController extends Controller
             $matchedFeeTypes = $this->matchedFeeTypes($student, $feeTypes)
                 ->filter(fn (FeeType $feeType) => $this->paymentGroup($feeType) === $group)
                 ->values();
+            if ($group === 'pendaftaran') {
+                $matchedFeeTypes = $matchedFeeTypes
+                    ->whereIn('id', $this->outstandingFeeTypeIds($student, $matchedFeeTypes))
+                    ->values();
+            }
 
             foreach ($matchedFeeTypes as $feeType) {
                 if ($group === 'laundry') {
@@ -822,6 +832,7 @@ class PaymentController extends Controller
         $payment->loadMissing('feeType');
 
         return match ($payment->feeType?->payment_group) {
+            'pendaftaran' => 'PD',
             'daftar-ulang' => 'DU',
             'laundry' => 'LD',
             default => 'LL',
@@ -1057,6 +1068,7 @@ class PaymentController extends Controller
         $grouped = $matchedFeeTypes->groupBy(fn (FeeType $feeType) => $this->paymentGroup($feeType));
         $definitions = [
             'spp' => ['label' => 'SPP', 'url' => route('finance.spp.create', ['student_id' => $student->id])],
+            'pendaftaran' => ['label' => 'Pendaftaran', 'url' => route('finance.other.create', ['category' => 'pendaftaran', 'student_id' => $student->id])],
             'daftar-ulang' => ['label' => 'Daftar Ulang', 'url' => route('finance.other.create', ['category' => 'daftar-ulang', 'student_id' => $student->id])],
             'lain-lain' => ['label' => 'Lain-lain', 'url' => route('finance.other.create', ['student_id' => $student->id])],
         ];
@@ -1197,6 +1209,25 @@ class PaymentController extends Controller
             ];
         }
 
+        if ($group === 'pendaftaran') {
+            $remainingAmount = (int) Bill::query()
+                ->where('student_id', $student->id)
+                ->where('source_type', 'fee_type')
+                ->whereIn('fee_type_id', $feeTypes->pluck('id'))
+                ->where('remaining_amount', '>', 0)
+                ->where('status', '!=', 'Dibatalkan')
+                ->where(fn ($bill) => $bill
+                    ->whereNull('issue_date')
+                    ->orWhereDate('issue_date', '<=', now()->toDateString()))
+                ->sum('remaining_amount');
+
+            return [
+                'amount_label' => $this->rupiah($remainingAmount),
+                'remaining_amount' => $remainingAmount,
+                'detail_label' => $feeTypes->pluck('name')->filter()->unique()->join(', ') ?: 'Biaya Pendaftaran',
+            ];
+        }
+
         $remainingAmount = 0;
         $detailLabel = $feeTypes->pluck('name')->filter()->unique()->join(', ');
 
@@ -1245,8 +1276,26 @@ class PaymentController extends Controller
 
     private function matchedFeeTypes(Student $student, Collection $feeTypes): Collection
     {
-        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->matchesSchoolClass($student->schoolClass)
+        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->matchesStudent($student)
             && ($this->paymentGroup($feeType) === 'daftar-ulang' || ! $feeType->academic_year_id || $feeType->academic_year_id === $student->academic_year_id));
+    }
+
+    private function outstandingFeeTypeIds(Student $student, Collection $feeTypes): Collection
+    {
+        if ($feeTypes->isEmpty()) {
+            return collect();
+        }
+
+        return Bill::query()
+            ->where('student_id', $student->id)
+            ->where('source_type', 'fee_type')
+            ->whereIn('fee_type_id', $feeTypes->pluck('id'))
+            ->where('remaining_amount', '>', 0)
+            ->where('status', '!=', 'Dibatalkan')
+            ->where(fn ($bill) => $bill
+                ->whereNull('issue_date')
+                ->orWhereDate('issue_date', '<=', now()->toDateString()))
+            ->pluck('fee_type_id');
     }
 
     private function hasPayableFeeType(Student $student, Collection $feeTypes, string $group, OtherPaymentService $otherPayments): bool

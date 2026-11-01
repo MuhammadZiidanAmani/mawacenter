@@ -122,9 +122,10 @@ class BillQueryService
                 'education_units.code as unit_code',
                 'education_units.name as unit_name',
             ])
+            ->selectRaw("SUM(CASE WHEN bills.source_type = 'fee_type' AND fee_types.payment_group = 'pendaftaran' THEN bills.remaining_amount ELSE 0 END) as pendaftaran")
             ->selectRaw("SUM(CASE WHEN bills.source_type = 'fee_type' AND fee_types.payment_group = 'daftar-ulang' THEN bills.remaining_amount ELSE 0 END) as daftar_ulang")
             ->selectRaw("SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END) as spp")
-            ->selectRaw("SUM(CASE WHEN bills.source_type = 'manual' OR (bills.source_type = 'fee_type' AND (fee_types.payment_group IS NULL OR fee_types.payment_group NOT IN ('daftar-ulang', 'laundry'))) THEN bills.remaining_amount ELSE 0 END) as lain_lain")
+            ->selectRaw("SUM(CASE WHEN bills.source_type = 'manual' OR (bills.source_type = 'fee_type' AND (fee_types.payment_group IS NULL OR fee_types.payment_group NOT IN ('pendaftaran', 'daftar-ulang', 'laundry'))) THEN bills.remaining_amount ELSE 0 END) as lain_lain")
             ->selectRaw('SUM(bills.remaining_amount) as total_remaining')
             ->groupBy(
                 'students.id',
@@ -165,6 +166,7 @@ class BillQueryService
         $students->setCollection($students->getCollection()->map(function ($row) use ($studentModels) {
             return [
                 'student' => $studentModels->get($row->student_id),
+                'pendaftaran' => (int) ($row->pendaftaran ?? 0),
                 'daftar_ulang' => (int) ($row->daftar_ulang ?? 0),
                 'spp' => (int) ($row->spp ?? 0),
                 'lain_lain' => (int) ($row->lain_lain ?? 0),
@@ -188,7 +190,7 @@ class BillQueryService
     public function overview(int $year, int $untilMonth, array $filters): array
     {
         return PerformanceCache::remember(
-            'bill-overview-v5',
+            'bill-overview-v6',
             ['year' => $year, 'until_month' => $untilMonth, 'filters' => $filters],
             config('performance.query_cache.bill_stats_ttl', 120),
             function () use ($year, $untilMonth, $filters) {
@@ -203,8 +205,9 @@ class BillQueryService
                     ])
                     ->selectRaw("COUNT(DISTINCT CASE WHEN {$billableCondition} THEN bills.student_id END) as students")
                     ->selectRaw("COALESCE(SUM(CASE WHEN bills.source_type = 'spp' THEN bills.remaining_amount ELSE 0 END), 0) as spp")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN bills.source_type = 'fee_type' AND fee_types.payment_group = 'pendaftaran' THEN bills.remaining_amount ELSE 0 END), 0) as pendaftaran")
                     ->selectRaw("COALESCE(SUM(CASE WHEN bills.source_type = 'fee_type' AND fee_types.payment_group = 'daftar-ulang' THEN bills.remaining_amount ELSE 0 END), 0) as daftar_ulang")
-                    ->selectRaw("COALESCE(SUM(CASE WHEN bills.source_type = 'manual' OR (bills.source_type = 'fee_type' AND (fee_types.payment_group IS NULL OR fee_types.payment_group NOT IN ('daftar-ulang', 'laundry'))) THEN bills.remaining_amount ELSE 0 END), 0) as lain_lain")
+                    ->selectRaw("COALESCE(SUM(CASE WHEN bills.source_type = 'manual' OR (bills.source_type = 'fee_type' AND (fee_types.payment_group IS NULL OR fee_types.payment_group NOT IN ('pendaftaran', 'daftar-ulang', 'laundry'))) THEN bills.remaining_amount ELSE 0 END), 0) as lain_lain")
                     ->selectRaw("COALESCE(SUM(CASE WHEN {$billableCondition} THEN bills.total_amount ELSE 0 END), 0) as billed")
                     ->selectRaw("COALESCE(SUM(CASE WHEN {$billableCondition} THEN bills.paid_amount ELSE 0 END), 0) as paid")
                     ->selectRaw("COALESCE(SUM(CASE WHEN {$billableCondition} THEN bills.remaining_amount ELSE 0 END), 0) as remaining")
@@ -221,9 +224,10 @@ class BillQueryService
                         'unit_name' => $row->unit_name ?? 'Tanpa Unit',
                         'students' => (int) ($row->students ?? 0),
                         'spp' => (int) ($row->spp ?? 0),
+                        'pendaftaran' => (int) ($row->pendaftaran ?? 0),
                         'daftar_ulang' => (int) ($row->daftar_ulang ?? 0),
                         'lain_lain' => (int) ($row->lain_lain ?? 0),
-                        'other' => (int) ($row->daftar_ulang ?? 0) + (int) ($row->lain_lain ?? 0),
+                        'other' => (int) ($row->pendaftaran ?? 0) + (int) ($row->daftar_ulang ?? 0) + (int) ($row->lain_lain ?? 0),
                         'billed' => (int) ($row->billed ?? 0),
                         'paid' => (int) ($row->paid ?? 0),
                         'remaining' => (int) ($row->remaining ?? 0),

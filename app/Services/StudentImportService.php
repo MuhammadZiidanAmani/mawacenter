@@ -241,6 +241,7 @@ class StudentImportService
             $unit === '' => 'Unit pendidikan kosong.',
             $class === '' => 'Kelas kosong.',
             $gender === null => 'Jenis kelamin tidak valid.',
+            $intakeStatus === null => 'Status Masuk tidak valid. Gunakan Siswa Baru, Siswa Lama, atau Pindahan.',
             ! $isActive && ($exitDate === null || $inactiveReason === null) => 'Siswa nonaktif wajib memiliki Tanggal Keluar dan Alasan Nonaktif.',
             default => null,
         };
@@ -367,14 +368,16 @@ class StudentImportService
         return $value === '' ? null : $value;
     }
 
-    private function normalizeIntakeStatus(mixed $value): string
+    private function normalizeIntakeStatus(mixed $value): ?string
     {
         $value = $this->normalizeLookup((string) $value);
 
         return match (true) {
+            $value === '' => Student::INTAKE_NEW,
             in_array($value, ['siswabaru', 'baru', 'santribaru'], true) => Student::INTAKE_NEW,
+            in_array($value, ['siswalama', 'lama', 'santrilama', 'returning'], true) => Student::INTAKE_RETURNING,
             in_array($value, ['pindahan', 'transfer'], true) => Student::INTAKE_TRANSFER,
-            default => Student::INTAKE_RETURNING,
+            default => null,
         };
     }
 

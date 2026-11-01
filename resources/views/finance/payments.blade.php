@@ -826,6 +826,7 @@
                     <div class="payment-history-grid">
                         @foreach([
                             ['SPP', 'Pembayaran bulanan SPP siswa.', route('finance.spp.index'), 'SPP'],
+                            ['Pendaftaran', 'Biaya masuk untuk Siswa Baru dan Pindahan.', route('finance.other.index', ['category' => 'pendaftaran']), 'PD'],
                             ['Daftar Ulang', 'Pembayaran daftar ulang dan biaya awal siswa.', route('finance.other.index', ['category' => 'daftar-ulang']), 'DU'],
                             ['Laundry', 'Pembayaran laundry bulanan siswa.', route('finance.other.index', ['category' => 'laundry']), 'LD'],
                             ['Lain-lain', 'Kategori pembayaran lainnya.', route('finance.other.index'), 'LL'],
@@ -863,6 +864,7 @@
                 @php
                     $importTypes = [
                         ['spp', 'SPP', 'SPP', 'Pembayaran bulanan siswa.', route('finance.spp.import.preview')],
+                        ['pendaftaran', 'PD', 'Pendaftaran', 'Biaya masuk Siswa Baru dan Pindahan.', route('finance.other.import.preview', ['category' => 'pendaftaran'])],
                         ['daftar-ulang', 'DU', 'Daftar Ulang', 'Pembayaran daftar ulang siswa.', route('finance.other.import.preview', ['category' => 'daftar-ulang'])],
                         ['laundry', 'LD', 'Laundry', 'Pembayaran laundry per bulan.', route('finance.other.import.preview', ['category' => 'laundry'])],
                         ['lain-lain', 'LL', 'Lain-lain', 'Kategori pembayaran lainnya.', route('finance.other.import.preview')],

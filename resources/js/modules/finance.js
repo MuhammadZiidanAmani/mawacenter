@@ -516,7 +516,7 @@ if (otherForm) {
     const summaryCategory = otherForm.querySelector('[data-other-summary-category]');
     const summaryTotal = otherForm.querySelector('[data-other-summary-total]');
     const summaryStatus = otherForm.querySelector('[data-other-summary-status]');
-    const autoFillPaidInput = otherForm.dataset.paymentCategory === 'daftar-ulang';
+    const autoFillPaidInput = ['pendaftaran', 'daftar-ulang'].includes(otherForm.dataset.paymentCategory);
     let paidInputEditedManually = Boolean(digitsOnly(paidInput.value));
     const time = otherForm.querySelector('[data-other-time]');
     const clockDisplay = otherForm.querySelector('[data-wib-clock]');

@@ -261,6 +261,7 @@ class ReportController extends Controller
                 ['key' => 'no', 'label' => 'No', 'type' => 'number'],
                 ['key' => 'unit', 'label' => 'Unit Pendidikan', 'class' => 'name'],
                 ['key' => 'spp', 'label' => 'SPP', 'type' => 'money'],
+                ['key' => 'pendaftaran', 'label' => 'Pendaftaran', 'type' => 'money'],
                 ['key' => 'daftar_ulang', 'label' => 'Daftar Ulang', 'type' => 'money'],
                 ['key' => 'laundry', 'label' => 'Laundry', 'type' => 'money'],
                 ['key' => 'lain_lain', 'label' => 'Lain-lain', 'type' => 'money'],
@@ -366,7 +367,7 @@ class ReportController extends Controller
             'transactions' => array_values(array_intersect($safeColumns, ['date', 'nis', 'student', 'unit', 'class', 'type', 'method', 'status', 'operator', 'amount'])),
             'monthly-spp' => array_values(array_intersect($safeColumns, ['date', 'nis', 'student', 'unit', 'class', 'month', 'year', 'nominal', 'method', 'operator'])),
             'yearly-spp' => $safeColumns,
-            'unit-recap' => array_values(array_intersect($safeColumns, ['unit', 'spp', 'daftar_ulang', 'laundry', 'lain_lain', 'total'])),
+            'unit-recap' => array_values(array_intersect($safeColumns, ['unit', 'spp', 'pendaftaran', 'daftar_ulang', 'laundry', 'lain_lain', 'total'])),
             default => [],
         };
     }

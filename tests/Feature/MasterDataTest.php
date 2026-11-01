@@ -206,6 +206,8 @@ class MasterDataTest extends TestCase
             ->assertSee('Export')
             ->assertSee('Cari Siswa')
             ->assertSee('student-flat-header', false)
+            ->assertSee('student-primary-actions', false)
+            ->assertSee('student-maintenance-toolbar', false)
             ->assertSee('student-flat-table', false)
             ->assertSee('data-student-filter-unit', false)
             ->assertSee('data-student-filter-class', false)
@@ -1723,6 +1725,122 @@ class MasterDataTest extends TestCase
             ->assertOk();
     }
 
+    public function test_intake_status_cleanup_previews_and_applies_only_safe_corrections(): void
+    {
+        $year = AcademicYear::create([
+            'name' => '2026/2027',
+            'start_date' => '2026-07-01',
+            'end_date' => '2027-06-30',
+            'is_active' => true,
+        ]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'MTs Mambaul Hikmah', 'is_active' => true]);
+        $class7 = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '7A', 'level' => 'Kelas 7', 'is_active' => true]);
+        $class8 = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '8A', 'level' => 'Kelas 8', 'is_active' => true]);
+
+        $newStudent = Student::create([
+            'nis' => 'INTAKE-NEW', 'name' => 'Calon Siswa Baru', 'gender' => 'L',
+            'school_class_id' => $class7->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2026-05-12', 'intake_status' => Student::INTAKE_RETURNING, 'is_active' => true,
+        ]);
+        $returningStudent = Student::create([
+            'nis' => 'INTAKE-OLD', 'name' => 'Siswa Lama Terbukti', 'gender' => 'P',
+            'school_class_id' => $class8->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2025-07-10', 'intake_status' => Student::INTAKE_NEW, 'is_active' => true,
+        ]);
+        $ambiguousStudent = Student::create([
+            'nis' => 'INTAKE-REVIEW', 'name' => 'Siswa Tingkat Lanjutan', 'gender' => 'L',
+            'school_class_id' => $class8->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2026-05-12', 'intake_status' => Student::INTAKE_RETURNING, 'is_active' => true,
+        ]);
+        $transferStudent = Student::create([
+            'nis' => 'INTAKE-TRANSFER', 'name' => 'Siswa Pindahan', 'gender' => 'P',
+            'school_class_id' => $class8->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2026-05-12', 'intake_status' => Student::INTAKE_TRANSFER, 'is_active' => true,
+        ]);
+        $inactiveStudent = Student::create([
+            'nis' => 'INTAKE-INACTIVE', 'name' => 'Siswa Nonaktif', 'gender' => 'L',
+            'school_class_id' => $class7->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2026-05-12', 'intake_status' => Student::INTAKE_RETURNING,
+            'is_active' => false, 'exit_date' => '2026-08-01', 'inactive_reason' => 'Pindah sekolah',
+        ]);
+
+        $this->get(route('student-management.students.intake-status-cleanup.index'))
+            ->assertOk()
+            ->assertSee('Rapikan Status Masuk')
+            ->assertSee('Data yang Perlu Ditinjau')
+            ->assertDontSee('Calon Siswa Baru')
+            ->assertDontSee('Siswa Lama Terbukti')
+            ->assertSee('Siswa Tingkat Lanjutan')
+            ->assertSee('Aman diperbaiki')
+            ->assertSee('Tinjau manual');
+
+        $this->post(route('student-management.students.intake-status-cleanup.store'))
+            ->assertRedirect(route('student-management.students.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSame(Student::INTAKE_NEW, $newStudent->refresh()->intake_status);
+        $this->assertSame(Student::INTAKE_RETURNING, $returningStudent->refresh()->intake_status);
+        $this->assertSame(Student::INTAKE_RETURNING, $ambiguousStudent->refresh()->intake_status);
+        $this->assertSame(Student::INTAKE_TRANSFER, $transferStudent->refresh()->intake_status);
+        $this->assertSame(Student::INTAKE_RETURNING, $inactiveStudent->refresh()->intake_status);
+
+        $audit = AuditLog::where('action', 'students.intake_status_cleanup')->firstOrFail();
+        $this->assertEqualsCanonicalizing([$newStudent->id, $returningStudent->id], $audit->student_ids);
+        $this->assertSame(2, $audit->metadata['updated_students']);
+        $this->assertSame(3, $audit->metadata['review_students']);
+    }
+
+    public function test_intake_status_cleanup_requires_student_update_and_bill_sync_permissions(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'start_date' => '2026-07-01', 'is_active' => true]);
+        $allowedUnit = EducationUnit::create(['code' => 'MTs', 'name' => 'MTs Dalam Scope', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'MA', 'name' => 'MA Luar Scope', 'is_active' => true]);
+        $allowedClass = SchoolClass::create(['education_unit_id' => $allowedUnit->id, 'name' => '7A', 'level' => 7, 'is_active' => true]);
+        $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => '10A', 'level' => 10, 'is_active' => true]);
+        Student::create([
+            'nis' => 'SCOPE-IN', 'name' => 'Siswa Dalam Scope', 'gender' => 'L',
+            'school_class_id' => $allowedClass->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2026-05-01', 'intake_status' => Student::INTAKE_RETURNING, 'is_active' => true,
+        ]);
+        Student::create([
+            'nis' => 'SCOPE-OUT', 'name' => 'Siswa Luar Scope', 'gender' => 'P',
+            'school_class_id' => $otherClass->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2026-05-01', 'intake_status' => Student::INTAKE_RETURNING, 'is_active' => true,
+        ]);
+        $role = Role::create([
+            'key' => 'intake_cleanup_limited',
+            'name' => 'Intake Cleanup Limited',
+            'permissions' => ['students.update'],
+            'is_active' => true,
+        ]);
+        $operator = User::factory()->create(['role' => $role->key]);
+        $operator->educationUnits()->attach($allowedUnit->id);
+
+        $this->actingAs($operator)
+            ->get(route('student-management.students.intake-status-cleanup.index'))
+            ->assertForbidden();
+        $this->actingAs($operator)
+            ->post(route('student-management.students.intake-status-cleanup.store'))
+            ->assertForbidden();
+
+        $role->update(['permissions' => ['students.update', 'bills.sync']]);
+        $operator->unsetRelation('roleRecord');
+
+        $this->actingAs($operator)
+            ->get(route('student-management.students.intake-status-cleanup.index'))
+            ->assertOk()
+            ->assertSee('<div><span>Data diperiksa</span><strong>1</strong></div>', false)
+            ->assertDontSee('Siswa Dalam Scope')
+            ->assertDontSee('Siswa Luar Scope');
+    }
+
+    public function test_new_student_form_defaults_intake_status_to_new(): void
+    {
+        $this->get(route('student-management.students.create'))
+            ->assertOk()
+            ->assertSee('value="new" selected', false);
+    }
+
     public function test_all_master_data_can_be_created(): void
     {
         $this->post('/master-data/academic-years', ['name' => '2025/2026', 'is_active' => 1])->assertRedirect();
@@ -2014,10 +2132,11 @@ class MasterDataTest extends TestCase
             ->assertSee('data-fee-category', false);
 
         foreach ([
-            ['name' => 'SPP', 'payment_group' => 'spp', 'period' => 'Tahunan', 'creates_bill' => 0, 'expected_period' => 'Bulanan', 'expected_bill' => true],
-            ['name' => 'Daftar Ulang', 'payment_group' => 'daftar-ulang', 'period' => 'Bulanan', 'creates_bill' => 0, 'expected_period' => 'Sekali Bayar', 'expected_bill' => true],
-            ['name' => 'Laundry', 'payment_group' => 'laundry', 'period' => 'Sekali Bayar', 'creates_bill' => 1, 'expected_period' => 'Bulanan', 'expected_bill' => false],
-            ['name' => 'Uang Kegiatan', 'payment_group' => 'lain-lain', 'period' => 'Tahunan', 'creates_bill' => 0, 'expected_period' => 'Tahunan', 'expected_bill' => false],
+            ['name' => 'SPP', 'payment_group' => 'spp', 'period' => 'Tahunan', 'creates_bill' => 0, 'expected_period' => 'Bulanan', 'expected_bill' => true, 'expected_scope' => FeeType::STUDENT_SCOPE_ALL],
+            ['name' => 'Pendaftaran', 'payment_group' => 'pendaftaran', 'period' => 'Bulanan', 'creates_bill' => 0, 'expected_period' => 'Sekali Bayar', 'expected_bill' => true, 'expected_scope' => FeeType::STUDENT_SCOPE_NEW_TRANSFER],
+            ['name' => 'Daftar Ulang', 'payment_group' => 'daftar-ulang', 'period' => 'Bulanan', 'creates_bill' => 0, 'expected_period' => 'Sekali Bayar', 'expected_bill' => true, 'expected_scope' => FeeType::STUDENT_SCOPE_RETURNING],
+            ['name' => 'Laundry', 'payment_group' => 'laundry', 'period' => 'Sekali Bayar', 'creates_bill' => 1, 'expected_period' => 'Bulanan', 'expected_bill' => false, 'expected_scope' => FeeType::STUDENT_SCOPE_ALL],
+            ['name' => 'Uang Kegiatan', 'payment_group' => 'lain-lain', 'period' => 'Tahunan', 'creates_bill' => 0, 'expected_period' => 'Tahunan', 'expected_bill' => false, 'expected_scope' => FeeType::STUDENT_SCOPE_ALL],
         ] as $category) {
             $this->post('/master-data/fee-types', [
                 'name' => $category['name'],
@@ -2035,7 +2154,70 @@ class MasterDataTest extends TestCase
             $saved = FeeType::where('name', $category['name'])->firstOrFail();
             $this->assertSame($category['expected_period'], $saved->period);
             $this->assertSame($category['expected_bill'], $saved->creates_bill);
+            $this->assertSame($category['expected_scope'], $saved->student_scope);
         }
+    }
+
+    public function test_registration_and_reregistration_categories_target_the_right_students_after_bill_sync(): void
+    {
+        $year = AcademicYear::create([
+            'name' => '2026/2027',
+            'start_date' => '2026-07-01',
+            'end_date' => '2027-06-30',
+            'is_active' => true,
+        ]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VII A', 'level' => 'Kelas VII']);
+        $newStudent = Student::create(['nis' => 'REG-NEW', 'name' => 'Siswa Baru', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'intake_status' => Student::INTAKE_NEW, 'is_active' => true]);
+        $transferStudent = Student::create(['nis' => 'REG-TRANSFER', 'name' => 'Siswa Pindahan', 'gender' => 'P', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'intake_status' => Student::INTAKE_TRANSFER, 'is_active' => true]);
+        $returningStudent = Student::create(['nis' => 'REG-RETURNING', 'name' => 'Siswa Lama', 'gender' => 'L', 'school_class_id' => $class->id, 'academic_year_id' => $year->id, 'intake_status' => Student::INTAKE_RETURNING, 'is_active' => true]);
+
+        foreach ([
+            ['name' => 'Biaya Pendaftaran', 'payment_group' => 'pendaftaran', 'student_scope' => FeeType::STUDENT_SCOPE_ALL, 'amount' => 750000],
+            ['name' => 'Daftar Ulang', 'payment_group' => 'daftar-ulang', 'student_scope' => FeeType::STUDENT_SCOPE_ALL, 'amount' => 500000],
+        ] as $category) {
+            $this->post('/master-data/fee-types', $category + [
+                'education_unit_id' => $unit->id,
+                'academic_year_id' => $year->id,
+                'class_scope' => 'all',
+                'school_class_id' => 'all',
+                'period' => 'Bulanan',
+                'creates_bill' => 0,
+                'is_active' => 1,
+            ])->assertRedirect('/master-data?tab=fee-types');
+        }
+
+        $registration = FeeType::where('payment_group', 'pendaftaran')->firstOrFail();
+        $reregistration = FeeType::where('payment_group', 'daftar-ulang')->firstOrFail();
+        $this->assertSame(FeeType::STUDENT_SCOPE_NEW_TRANSFER, $registration->student_scope);
+        $this->assertSame(FeeType::STUDENT_SCOPE_RETURNING, $reregistration->student_scope);
+
+        $this->get(route('finance.other.create', ['category' => 'pendaftaran', 'student_id' => $newStudent->id]))
+            ->assertRedirect(route('finance.payments.index'))
+            ->assertSessionHasErrors('student_id');
+
+        $result = app(BillService::class)->generateFeeTypes($year, collect([$registration, $reregistration]), 2026, 8);
+        $this->assertSame(3, $result['created']);
+
+        $this->assertDatabaseHas('bills', ['student_id' => $newStudent->id, 'fee_type_id' => $registration->id, 'remaining_amount' => 750000]);
+        $this->assertDatabaseHas('bills', ['student_id' => $transferStudent->id, 'fee_type_id' => $registration->id, 'remaining_amount' => 750000]);
+        $this->assertDatabaseMissing('bills', ['student_id' => $returningStudent->id, 'fee_type_id' => $registration->id]);
+        $this->assertDatabaseHas('bills', ['student_id' => $returningStudent->id, 'fee_type_id' => $reregistration->id, 'remaining_amount' => 500000]);
+        $this->assertDatabaseMissing('bills', ['student_id' => $newStudent->id, 'fee_type_id' => $reregistration->id]);
+        $this->assertDatabaseMissing('bills', ['student_id' => $transferStudent->id, 'fee_type_id' => $reregistration->id]);
+
+        $this->get(route('finance.other.create', ['category' => 'pendaftaran', 'student_id' => $newStudent->id]))
+            ->assertOk()
+            ->assertSee('Biaya Pendaftaran')
+            ->assertDontSee('Daftar Ulang');
+        $this->get(route('finance.payments.index', ['search' => 'REG-NEW', 'student_id' => $newStudent->id]))
+            ->assertOk()
+            ->assertSeeText('Pendaftaran')
+            ->assertDontSeeText('Daftar Ulang');
+        $this->get(route('finance.payments.index', ['search' => 'REG-RETURNING', 'student_id' => $returningStudent->id]))
+            ->assertOk()
+            ->assertSeeText('Daftar Ulang')
+            ->assertDontSeeText('Pendaftaran');
     }
 
     public function test_registration_category_is_managed_by_fee_types_and_available_for_payment(): void

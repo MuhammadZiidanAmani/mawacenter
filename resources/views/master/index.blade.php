@@ -206,6 +206,91 @@
                 @if($studentImportPreview)
                     @include('master.partials.student-import-preview')
                 @endif
+            @elseif ($tab === 'students' && $showStudentIntakeStatusCleanup)
+                @php
+                    $intakePreview = $studentIntakeStatusCleanupPreview ?? [];
+                    $intakeCandidates = (int) ($intakePreview['candidate_count'] ?? 0);
+                    $intakeReviews = (int) ($intakePreview['review_count'] ?? 0);
+                    $intakeUnchanged = (int) ($intakePreview['unchanged_count'] ?? 0);
+                @endphp
+                <section class="student-workspace student-billing-cleanup-page">
+                    <div class="student-flat-header">
+                        <div class="student-master-heading">
+                            <h1>Rapikan Status Masuk</h1>
+                            <p>Sortir Siswa Baru, Siswa Lama, dan Pindahan berdasarkan tahun, tanggal masuk, kelas, serta riwayat siswa.</p>
+                        </div>
+                        <div class="student-title-actions">
+                            <a href="{{ route('student-management.students.index') }}" class="button button-secondary">Kembali</a>
+                        </div>
+                    </div>
+
+                    <section class="card student-billing-cleanup-card">
+                        <div class="master-create-heading">
+                            <div>
+                                <strong>Data yang Perlu Ditinjau</strong>
+                                <span>Tabel hanya menampilkan data yang tidak aman diputuskan otomatis. Jumlah seluruh hasil pemeriksaan tetap tersedia pada ringkasan.</span>
+                            </div>
+                        </div>
+
+                        <div class="student-billing-cleanup-summary" aria-label="Ringkasan perapihan status masuk">
+                            <div><span>Data diperiksa</span><strong>{{ number_format((int) ($intakePreview['scanned_count'] ?? 0), 0, ',', '.') }}</strong></div>
+                            <div><span>Aman diperbaiki</span><strong>{{ number_format($intakeCandidates, 0, ',', '.') }}</strong></div>
+                            <div><span>Perlu ditinjau</span><strong>{{ number_format($intakeReviews, 0, ',', '.') }}</strong></div>
+                            <div><span>Sudah sesuai</span><strong>{{ number_format($intakeUnchanged, 0, ',', '.') }}</strong></div>
+                        </div>
+
+                        <div class="student-intake-current-summary" aria-label="Komposisi status saat ini">
+                            <span>Siswa Baru <strong>{{ number_format((int) ($intakePreview['new_count'] ?? 0), 0, ',', '.') }}</strong></span>
+                            <span>Siswa Lama <strong>{{ number_format((int) ($intakePreview['returning_count'] ?? 0), 0, ',', '.') }}</strong></span>
+                            <span>Pindahan <strong>{{ number_format((int) ($intakePreview['transfer_count'] ?? 0), 0, ',', '.') }}</strong></span>
+                        </div>
+
+                        <div class="student-billing-cleanup-note {{ $intakeReviews > 0 ? 'warning' : 'success' }}">
+                            @if($intakeReviews > 0)
+                                <strong>Ada data yang sengaja tidak diubah.</strong>
+                                <span>Periksa baris bertanda Tinjau manual, terutama siswa yang masuk langsung ke kelas 8/11 atau berstatus Pindahan.</span>
+                            @elseif($intakeCandidates > 0)
+                                <strong>Perubahan aman siap diterapkan.</strong>
+                                <span>Status akan diperbarui lalu kategori tagihan siswa terkait disinkronkan.</span>
+                            @else
+                                <strong>Tidak ada status yang perlu diperbaiki otomatis.</strong>
+                                <span>Data yang sudah sesuai tetap dipertahankan.</span>
+                            @endif
+                        </div>
+
+                        @if(($intakePreview['preview_rows'] ?? []) !== [])
+                            <div class="app-table-surface">
+                                <div class="app-table-scroll">
+                                    <table class="app-data-table student-intake-cleanup-table">
+                                        <thead><tr><th>Siswa</th><th>Unit / Kelas</th><th>Tahun / Masuk</th><th>Status Sekarang</th><th>Rekomendasi</th><th>Alasan</th><th>Aksi</th></tr></thead>
+                                        <tbody>
+                                            @foreach($intakePreview['preview_rows'] as $row)
+                                                <tr>
+                                                    <td><strong>{{ $row['name'] }}</strong><br><small>{{ $row['nis'] }}</small></td>
+                                                    <td>{{ $row['unit'] }} / {{ $row['class'] }}</td>
+                                                    <td>{{ $row['academic_year'] }}<br><small>{{ $row['entry_date'] }}</small></td>
+                                                    <td><span class="student-cleanup-status is-neutral">{{ $row['current_label'] }}</span></td>
+                                                    <td><span class="student-cleanup-status {{ $row['action'] === 'Perbaiki otomatis' ? 'is-fix' : ($row['action'] === 'Tinjau manual' ? 'is-review' : 'is-neutral') }}">{{ $row['action'] === 'Perbaiki otomatis' ? $row['suggested_label'] : $row['action'] }}</span></td>
+                                                    <td><small>{{ $row['reason'] }}</small></td>
+                                                    <td><a href="{{ route('student-management.students.edit', $row['student_id']) }}" class="button button-secondary">Edit</a></td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            @if($intakePreview['preview_truncated'] ?? false)
+                                <small class="student-billing-cleanup-limit">Tabel menampilkan 200 data tinjauan pertama. Seluruh data dalam scope tetap diperiksa saat dikonfirmasi.</small>
+                            @endif
+                        @endif
+
+                        <form method="POST" action="{{ route('student-management.students.intake-status-cleanup.store') }}" class="student-billing-cleanup-actions" data-confirm="Terapkan perbaikan status masuk yang aman dan sinkronkan tagihan siswa terkait?">
+                            @csrf
+                            <a href="{{ route('student-management.students.index') }}" class="button button-secondary">Batal</a>
+                            <button class="button button-primary" @disabled($intakeCandidates < 1)>{!! $icon('check') !!} Terapkan Perbaikan Aman</button>
+                        </form>
+                    </section>
+                </section>
             @elseif ($tab === 'students' && $showStudentBillingStartCleanup)
                 @php
                     $cleanupPreview = $studentBillingStartCleanupPreview ?? [];
@@ -418,7 +503,7 @@
                             <h1>Data Siswa</h1>
                             <p>Kelola identitas, kelas, wali, dan status siswa.</p>
                         </div>
-                        <div class="student-title-actions student-export-actions">
+                        <div class="student-title-actions student-export-actions student-primary-actions">
                             @if ($canCreateStudents)
                             <a href="{{ route('student-management.students.create') }}" class="button student-add-button">{!! $icon('plus') !!} Tambah</a>
                             @endif
@@ -428,17 +513,29 @@
                             @if ($canImportStudents)
                             <a href="{{ route('student-management.students.import') }}" class="button action-purple">{!! $icon('upload') !!} Import</a>
                             @endif
-                            @if ($canCleanupStudentBillingStart)
-                            <a href="{{ route('student-management.students.billing-start-cleanup.index') }}" class="button button-secondary">{!! $icon('calendar') !!} Rapikan Awal Tagihan</a>
-                            @endif
-                            @if ($canCleanupAlumniBills)
-                            <a href="{{ route('student-management.students.alumni-bill-cleanup.index') }}" class="button button-secondary">{!! $icon('receipt') !!} Rapikan Tagihan Alumni</a>
-                            @endif
                             @if ($canExportStudents)
                             <a href="{{ route('master.students.export', $studentExportQuery) }}" class="button action-green">{!! $icon('download') !!} Export</a>
                             @endif
                         </div>
                     </div>
+
+                    @if ($canCleanupStudentBillingStart || $canCleanupAlumniBills)
+                        <div class="student-maintenance-toolbar" aria-label="Perapihan data siswa">
+                            <div class="student-maintenance-heading">
+                                <strong>Perapihan Data</strong>
+                                <span>Periksa dan rapikan data lama tanpa memenuhi area aksi utama.</span>
+                            </div>
+                            <div class="student-maintenance-actions">
+                                @if ($canCleanupStudentBillingStart)
+                                <a href="{{ route('student-management.students.intake-status-cleanup.index') }}" class="button button-secondary">{!! $icon('sort') !!} Status Masuk</a>
+                                <a href="{{ route('student-management.students.billing-start-cleanup.index') }}" class="button button-secondary">{!! $icon('calendar') !!} Awal Tagihan</a>
+                                @endif
+                                @if ($canCleanupAlumniBills)
+                                <a href="{{ route('student-management.students.alumni-bill-cleanup.index') }}" class="button button-secondary">{!! $icon('receipt') !!} Tagihan Alumni</a>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
 
                     <form id="student-data-filter" method="GET" action="{{ route('student-management.students.index') }}" class="student-filter-panel student-reference-filter student-fee-card-filter" data-student-filter-panel>
                         <input type="hidden" name="per_page" value="{{ request('per_page', 10) }}">

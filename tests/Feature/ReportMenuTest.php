@@ -803,6 +803,75 @@ class ReportMenuTest extends TestCase
             ->assertDontSee('Rp 70.000');
     }
 
+    public function test_pendaftaran_is_reported_separately_from_lain_lain(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        [$year, $unit, $class] = $this->schoolContext();
+        $student = Student::create([
+            'nis' => 'REPORT-REG',
+            'name' => 'Siswa Pendaftaran',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'intake_status' => Student::INTAKE_NEW,
+            'is_active' => true,
+        ]);
+        $registration = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'pendaftaran',
+            'student_scope' => FeeType::STUDENT_SCOPE_NEW_TRANSFER,
+            'code' => 'PENDAFTARAN-REPORT',
+            'name' => 'Biaya Pendaftaran',
+            'amount' => 750000,
+            'period' => 'Sekali Bayar',
+            'creates_bill' => true,
+            'is_active' => true,
+        ]);
+        $other = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'lain-lain',
+            'code' => 'LAIN-REPORT',
+            'name' => 'Biaya Lain',
+            'amount' => 100000,
+            'period' => 'Sekali Bayar',
+            'creates_bill' => false,
+            'is_active' => true,
+        ]);
+
+        foreach ([[$registration, 750000], [$other, 100000]] as [$feeType, $amount]) {
+            OtherPayment::create([
+                'student_id' => $student->id,
+                'fee_type_id' => $feeType->id,
+                'transaction_at' => '2026-06-10 08:00:00',
+                'payment_method' => 'Cash',
+                'status' => 'Diterima',
+                'original_amount' => $amount,
+                'discount_amount' => 0,
+                'total_amount' => $amount,
+                'paid_amount' => $amount,
+                'remaining_amount' => 0,
+                'payment_status' => 'Lunas',
+            ]);
+        }
+
+        $this->get('/laporan/transaksi?date_from=2026-06-01&date_to=2026-06-30&type=pendaftaran')
+            ->assertOk()
+            ->assertViewHas('rows', fn ($rows) => $rows->count() === 1
+                && $rows->first()['group'] === 'pendaftaran'
+                && $rows->first()['amount'] === 750000)
+            ->assertSee('Pendaftaran')
+            ->assertDontSee('Biaya Lain');
+
+        $this->get('/laporan/rekap-unit?date_from=2026-06-01&date_to=2026-06-30')
+            ->assertOk()
+            ->assertViewHas('rows', fn ($rows) => $rows->firstWhere('unit_id', $unit->id)['pendaftaran'] === 750000
+                && $rows->firstWhere('unit_id', $unit->id)['lain_lain'] === 100000)
+            ->assertViewHas('tableTotals', fn ($totals) => $totals['pendaftaran'] === 750000
+                && $totals['lain_lain'] === 100000);
+    }
+
     private function schoolContext(): array
     {
         $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);

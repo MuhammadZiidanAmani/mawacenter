@@ -61,7 +61,7 @@
                             <input type="date" name="date_to" value="{{ $filters['date_to']->format('Y-m-d') }}" aria-label="Tanggal akhir">
                         </span>
                     </label>
-                    <label><span>Kategori Pembayaran</span><select name="type"><option value="">-- semua --</option><option value="spp" @selected($filters['type'] === 'spp')>SPP</option><option value="daftar-ulang" @selected($filters['type'] === 'daftar-ulang')>Daftar Ulang</option><option value="laundry" @selected($filters['type'] === 'laundry')>Laundry</option><option value="lain-lain" @selected($filters['type'] === 'lain-lain')>Lain-lain</option></select></label>
+                    <label><span>Kategori Pembayaran</span><select name="type"><option value="">-- semua --</option><option value="spp" @selected($filters['type'] === 'spp')>SPP</option><option value="pendaftaran" @selected($filters['type'] === 'pendaftaran')>Pendaftaran</option><option value="daftar-ulang" @selected($filters['type'] === 'daftar-ulang')>Daftar Ulang</option><option value="laundry" @selected($filters['type'] === 'laundry')>Laundry</option><option value="lain-lain" @selected($filters['type'] === 'lain-lain')>Lain-lain</option></select></label>
                     <label><span>Cara Bayar</span><select name="payment_method"><option value="">-- semua --</option><option value="Cash" @selected($filters['payment_method'] === 'Cash')>Cash</option><option value="Transfer" @selected($filters['payment_method'] === 'Transfer')>Transfer</option></select></label>
                     <label><span>Status</span><select name="status"><option value="">-- semua --</option><option value="Diterima" @selected($filters['status'] === 'Diterima')>Diterima</option><option value="Pending" @selected($filters['status'] === 'Pending')>Pending</option></select></label>
                     <label><span>Petugas</span><select name="operator_name"><option value="">-- semua --</option>@foreach($operators as $operator)<option value="{{ $operator }}" @selected($filters['operator_name'] === $operator)>{{ $operator }}</option>@endforeach</select></label>
@@ -85,6 +85,7 @@
                     <div class="report-summary-strip">
                         <div class="total"><span>{{ $rupiah($stats['total']) }}</span><small>{{ number_format($stats['accepted_transactions'], 0, ',', '.') }} diterima</small></div>
                         <div><span>SPP</span><small>{{ $rupiah($stats['spp']) }}</small></div>
+                        <div><span>Pendaftaran</span><small>{{ $rupiah($stats['pendaftaran'] ?? 0) }}</small></div>
                         <div><span>Daftar Ulang</span><small>{{ $rupiah($stats['daftar_ulang']) }}</small></div>
                         <div><span>Laundry</span><small>{{ $rupiah($stats['laundry']) }}</small></div>
                         <div><span>Lain-lain</span><small>{{ $rupiah($stats['lain_lain']) }}</small></div>
