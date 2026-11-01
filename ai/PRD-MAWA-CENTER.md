@@ -225,7 +225,13 @@ Setelah sukses, sinkronkan tagihan, pertahankan riwayat, dan laporkan jumlah sis
 
 Jadikan Alumni muncul ketika unit, kelas, tahun, dan status Aktif lengkap. Halaman konfirmasi menyebut kelas, tahun, jumlah siswa, tanggal keluar, dan alasan maksimal 120 karakter. Kelas harus sesuai unit; minimal satu siswa aktif. Hasil menjadikan semua siswa aktif pada konteks tersebut nonaktif dan kembali dengan filter nonaktif.
 
-Data Alumni memuat No, NIS, Nama, JK, Unit, Tanggal Keluar, Alasan, Aksi. Filter/search mencakup unit, tahun, nama/NIS/NISN, alasan, serta konteks kelas bila tersedia. Edit membuka record yang sama dan dapat mengaktifkan kembali dengan `students.update`. Empty state alumni netral; tidak menghapus tagihan/transaksi lama. Alumni dengan sisa kewajiban masih dapat diproses pada pembayaran sesuai scope.
+Data Alumni memuat No, NIS, Nama, JK, Unit, Tanggal Keluar, Alasan, Aksi. Filter/search mencakup unit, tahun, nama/NIS/NISN, alasan, serta konteks kelas bila tersedia. Edit membuka record yang sama dan dapat mengaktifkan kembali dengan `students.update`. Empty state alumni netral; tidak menghapus tagihan/transaksi lama.
+
+Penonaktifan individual tersedia sebagai aksi langsung pada baris Data Siswa, tetap memakai halaman konfirmasi yang mewajibkan tanggal keluar dan alasan. Penonaktifan individual maupun Jadikan Alumni per kelas wajib menyinkronkan tagihan. Tagihan terbit yang belum dibayar setelah periode keluar dibatalkan; tagihan periode keluar dan sebelumnya tetap menjadi kewajiban. Tagihan yang sudah dibayar sebagian atau lunas serta seluruh transaksi lama tidak boleh dibatalkan atau dihapus.
+
+Rapikan Tagihan Alumni tersedia bagi pengguna yang sekaligus memiliki `students.alumni` dan `bills.sync`. Preview menampilkan alumni terdampak, rincian tagihan maksimal 100 baris, keputusan Batalkan/Tinjau, cakupan unit, tagihan berbayar yang dipertahankan, dan alumni tanpa tanggal keluar. Konfirmasi hanya membatalkan tagihan terbit dari SPP/kategori wajib setelah periode keluar yang tidak memiliki nominal pembayaran maupun alokasi. Tagihan manual, tagihan periode keluar/sebelumnya, tagihan berbayar, dan transaksi tidak diubah. Proses mengikuti scope unit dan dicatat pada audit log.
+
+Alumni hanya ditawarkan pada Kasir bila masih memiliki tagihan SPP atau kategori nonbulanan yang telah terbit, masih bersisa, dan dapat diproses sesuai scope unit pengguna. Konteksnya diberi label Alumni/Nonaktif. Kasir boleh melunasi kewajiban lama tersebut, termasuk kategori historis yang sudah nonaktif, tetapi tidak membuat pilihan biaya opsional baru untuk alumni. Setelah seluruh kewajiban yang dapat diproses lunas, alumni tidak lagi muncul pada pencarian Kasir.
 
 ### 6.7 Audit (`STU-07`)
 
@@ -448,9 +454,9 @@ Checklist berikut menyatukan skenario sumber; pilih test yang terkait perubahan.
 | STU-03 | Header invalid, tanpa tahun aktif, preview hilang, update sel kosong, unit tidak valid, kelas otomatis, hasil serta cleanup file | `MasterDataTest` |
 | STU-04 | Confidence benar, tinjau record benar, minimal dua anggota, root stabil, split melepas grup; `student_id` keuangan tetap | `MasterDataTest` |
 | STU-05 | Pindah/promosi menolak nonaktif/tahun sumber salah/target sama/duplikat; promosi mengubah intake, tahun dan kelas | `MasterDataTest` |
-| STU-06 | Alumni butuh konteks lengkap, kelas tak kosong, tanggal/alasan; jumlah benar; arsip dan reaktivasi tidak menghapus riwayat | `MasterDataTest` |
+| STU-06 | Alumni butuh konteks lengkap, kelas tak kosong, tanggal/alasan; aksi individual dan massal menyinkronkan tagihan; preview perapihan lama mengikuti permission/scope, membatalkan kewajiban pasca-keluar yang belum dibayar, mempertahankan tagihan manual/periode keluar/sebelumnya dan pembayaran sah; arsip serta reaktivasi tidak menghapus riwayat | `MasterDataTest`, `PaymentMenuTest` |
 | STU-07/08 | Audit before/after dan pelaku benar; indikator kualitas read-only, detail terfilter/paginated sesuai izin | Kebutuhan tambahan; Kualitas Data belum route aktif |
-| PAY-01/02 | Search/auto-select identitas, profile lintas unit, wajib/opsional default tepat, periode dan total sinkron | `PaymentMenuTest` + interaksi browser |
+| PAY-01/02 | Search/auto-select identitas, profile lintas unit, alumni menunggak tetap dapat dipilih sesuai scope hingga lunas, wajib/opsional default tepat, periode dan total sinkron | `PaymentMenuTest` + interaksi browser |
 | PAY-03 | Lunas readonly, cicil positif <= total, bukti wajib/ukuran/tipe, request Transfer kasir ditolak, stale/double submit aman | `PaymentMenuTest` |
 | PAY-04/05 | SPP/Other/Laundry sesuai service, struk tersedia, lima terbaru, import konteks form dan preview tetap benar | `PaymentMenuTest` |
 | BILL-01 | Lunas/Dibatalkan/laundry tidak masuk; ringkasan dan tabel filter/search/scope sama | `BillAccessTest`, test pembayaran/tagihan relevan |

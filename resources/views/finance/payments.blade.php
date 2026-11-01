@@ -121,6 +121,7 @@
                             $activeRegistration?->nis,
                             $activeUnitLabel,
                             $activeClassLabel,
+                            $activeRegistration && ! $activeRegistration->is_active ? 'Nonaktif/Alumni' : null,
                         ])->filter()->values();
                         $usesSegmentedContextSwitcher = $hasMultipleRegistrations && $selectedRegistrations->count() <= 3;
                     @endphp
@@ -143,7 +144,7 @@
                                 <form method="GET" action="{{ route('finance.payments.index') }}" class="payment-unit-context-form" data-payment-context-form>
                                     <input type="hidden" name="search" value="{{ $search }}">
                                     <input type="hidden" name="student_id" value="{{ $selectedPreviewIdentity?->id }}">
-                                    <span class="payment-unit-context-label" id="payment-unit-context-label">Unit Aktif</span>
+                                    <span class="payment-unit-context-label" id="payment-unit-context-label">Unit Pendidikan</span>
                                     @if($usesSegmentedContextSwitcher)
                                     <div @class(['payment-context-segmented', 'is-three' => $selectedRegistrations->count() === 3]) role="radiogroup" aria-labelledby="payment-unit-context-label">
                                         @foreach($selectedRegistrations as $registration)
@@ -151,6 +152,7 @@
                                                 $registrationUnitLabel = collect([
                                                     $registration->schoolClass?->educationUnit?->code ?? $registration->schoolClass?->educationUnit?->name,
                                                     $registration->schoolClass?->name,
+                                                    ! $registration->is_active ? 'Alumni' : null,
                                                 ])->filter()->join(' • ');
                                                 $isActiveRegistration = (int) $registration->id === (int) $activeRegistration?->id;
                                             @endphp
@@ -174,6 +176,7 @@
                                                 $registrationUnitLabel = collect([
                                                     $registration->schoolClass?->educationUnit?->code ?? $registration->schoolClass?->educationUnit?->name,
                                                     $registration->schoolClass?->name,
+                                                    ! $registration->is_active ? 'Alumni' : null,
                                                 ])->filter()->join(' • ');
                                             @endphp
                                             <option value="{{ $registration->id }}" @selected((int) $registration->id === (int) $activeRegistration?->id)>{{ $registrationUnitLabel ?: 'Unit belum tersedia' }}</option>
@@ -389,7 +392,9 @@
                                                 ->filter()
                                                 ->unique()
                                                 ->join(' / ');
-                                            $statusLabel = 'Aktif';
+                                            $statusLabel = $registrations->contains(fn ($registration) => $registration->is_active)
+                                                ? 'Aktif'
+                                                : 'Alumni · Menunggak';
                                         @endphp
                                         <a
                                             href="{{ route('finance.payments.index', ['search' => $identity->name, 'student_id' => $identity->id]) }}"

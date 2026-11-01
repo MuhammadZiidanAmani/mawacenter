@@ -11,6 +11,7 @@ use App\Models\Role;
 use App\Models\SchoolClass;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\AlumniBillCleanupService;
 use App\Services\AuditLogService;
 use App\Services\BillService;
 use App\Services\ChargeCalculator;
@@ -278,6 +279,7 @@ class MasterDataController extends Controller
             || $request->routeIs('student-management.students.edit');
         $showStudentImport = $request->routeIs('student-management.students.import');
         $showStudentBillingStartCleanup = $request->routeIs('student-management.students.billing-start-cleanup.index');
+        $showAlumniBillCleanup = $request->routeIs('student-management.students.alumni-bill-cleanup.index');
         $studentImportPreview = $this->studentImportPreview($request);
         $needsClasses = in_array($tab, ['students', 'fee-types', 'fee-discounts'], true);
         $needsEducationUnits = in_array($tab, ['students', 'classes', 'fee-types', 'fee-discounts', 'data-users'], true);
@@ -313,6 +315,8 @@ class MasterDataController extends Controller
             'showStudentImport' => $showStudentImport,
             'showStudentBillingStartCleanup' => $showStudentBillingStartCleanup,
             'studentBillingStartCleanupPreview' => $request->attributes->get('studentBillingStartCleanupPreview'),
+            'showAlumniBillCleanup' => $showAlumniBillCleanup,
+            'alumniBillCleanupPreview' => $request->attributes->get('alumniBillCleanupPreview'),
             'studentImportPreview' => $studentImportPreview,
             'studentImportToken' => $request->string('import_token')->value() ?: null,
             'studentClassAlumniCount' => $studentClassAlumniCount,
@@ -454,6 +458,100 @@ class MasterDataController extends Controller
         return redirect()->route('student-management.students.index')->with('success', $message);
     }
 
+    public function alumniBillCleanup(Request $request, AlumniBillCleanupService $cleanup)
+    {
+        $this->authorizeAlumniBillCleanup($request);
+        $request->merge(['tab' => 'students']);
+        $request->attributes->set('alumniBillCleanupPreview', $cleanup->preview($this->accessibleUnitIds()));
+
+        return $this->index($request);
+    }
+
+    public function storeAlumniBillCleanup(Request $request, AlumniBillCleanupService $cleanup): RedirectResponse
+    {
+        $this->authorizeAlumniBillCleanup($request);
+        $result = $cleanup->apply($this->accessibleUnitIds());
+
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.alumni_bill_cleanup',
+            $result['student_ids'],
+            [
+                'affected_alumni' => $result['alumni_count'],
+                'cancelled_unpaid_bills' => $result['cancelled_bills'],
+                'paid_bills_preserved' => $result['paid_bills_preserved'],
+                'review_alumni_count' => $result['review_alumni_count'],
+                'missing_exit_date_count' => $result['missing_exit_date_count'],
+                'unit_counts' => $result['unit_counts'],
+            ],
+            request: $request,
+        );
+
+        $message = $result['cancelled_bills'] < 1
+            ? 'Tidak ada tagihan alumni lama yang perlu dibatalkan.'
+            : number_format($result['cancelled_bills'], 0, ',', '.').' tagihan pasca-keluar yang belum dibayar berhasil dibatalkan.';
+        if ($result['paid_bills_preserved'] > 0) {
+            $message .= ' '.number_format($result['paid_bills_preserved'], 0, ',', '.').' tagihan berbayar dipertahankan untuk ditinjau.';
+        }
+
+        return redirect()->route('student-management.alumni.index')->with('success', $message);
+    }
+
+    public function studentDeactivate(Request $request, Student $student)
+    {
+        $this->authorizeStudentAccess($request, $student);
+        abort_unless($student->is_active, 404);
+
+        return view('student-management.deactivate-student', [
+            'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
+            'student' => $student->load(['schoolClass.educationUnit', 'academicYear']),
+        ]);
+    }
+
+    public function storeStudentDeactivate(Request $request, Student $student): RedirectResponse
+    {
+        $this->authorizeStudentAccess($request, $student);
+        $exitDateRules = ['required', 'date'];
+        if ($student->entry_date) {
+            $exitDateRules[] = 'after_or_equal:'.$student->entry_date->format('Y-m-d');
+        }
+        $validated = $request->validate([
+            'exit_date' => $exitDateRules,
+            'inactive_reason' => ['required', 'string', 'max:120'],
+        ]);
+        abort_unless($student->is_active, 422, 'Siswa sudah berstatus nonaktif.');
+
+        $before = $this->studentAuditSnapshot($student->loadMissing(['schoolClass.educationUnit', 'academicYear']));
+        DB::transaction(function () use ($student, $validated) {
+            $lockedStudent = Student::whereKey($student->id)->lockForUpdate()->firstOrFail();
+            abort_unless($lockedStudent->is_active, 422, 'Siswa sudah berstatus nonaktif.');
+            $lockedStudent->update([
+                'is_active' => false,
+                'exit_date' => $validated['exit_date'],
+                'inactive_reason' => $validated['inactive_reason'],
+            ]);
+        });
+
+        $student->refresh()->loadMissing(['schoolClass.educationUnit', 'academicYear']);
+        $billSyncResult = app(BillService::class)->syncStudentCurrentBills($student);
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.deactivate',
+            [$student->id],
+            ['message' => 'Siswa dinonaktifkan dari aksi Data Siswa.', 'bill_sync' => $billSyncResult],
+            $before,
+            $this->studentAuditSnapshot($student),
+            $request,
+            Student::class,
+            $student->id,
+        );
+
+        return redirect()->route('student-management.students.index', [
+            'unit_id' => $student->schoolClass?->education_unit_id,
+            'class_id' => $student->school_class_id,
+            'year_id' => $student->academic_year_id,
+            'status' => 'inactive',
+        ])->with('success', $student->name.' berhasil dinonaktifkan dan tagihannya telah disinkronkan.');
+    }
+
     public function studentTransfer(Request $request)
     {
         return $this->studentClassMovementPage($request, 'transfer');
@@ -541,6 +639,7 @@ class MasterDataController extends Controller
             ]);
         }
         $this->authorizeClassAccess($request, $class);
+        $year = AcademicYear::findOrFail($validated['year_id']);
 
         $students = Student::where('school_class_id', $validated['class_id'])
             ->where('academic_year_id', $validated['year_id'])
@@ -559,6 +658,10 @@ class MasterDataController extends Controller
             'exit_date' => $validated['exit_date'],
             'inactive_reason' => $validated['inactive_reason'],
         ]);
+        $billSyncResult = app(BillService::class)->syncStudentsCurrentBills(
+            $year,
+            $studentRows->pluck('id'),
+        );
         app(AuditLogService::class)->recordStudentOperation(
             'students.class_alumni',
             $studentRows->pluck('id'),
@@ -568,6 +671,7 @@ class MasterDataController extends Controller
                 'year_id' => (int) $validated['year_id'],
                 'exit_date' => $validated['exit_date'],
                 'inactive_reason' => $validated['inactive_reason'],
+                'bill_sync' => $billSyncResult,
             ],
             ['students' => $studentRows->map(fn (Student $student) => $this->studentAuditSnapshot($student))->values()->all()],
             ['is_active' => false, 'exit_date' => $validated['exit_date'], 'inactive_reason' => $validated['inactive_reason']],
@@ -1427,6 +1531,16 @@ class MasterDataController extends Controller
         abort_unless(
             $user?->isSuperAdmin()
                 || ($user?->hasPermission('students.update') && $user?->hasPermission('bills.sync')),
+            403,
+        );
+    }
+
+    private function authorizeAlumniBillCleanup(Request $request): void
+    {
+        $user = $request->user();
+        abort_unless(
+            $user?->isSuperAdmin()
+                || ($user?->hasPermission('students.alumni') && $user?->hasPermission('bills.sync')),
             403,
         );
     }

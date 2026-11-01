@@ -4,6 +4,7 @@
     $isStudentAction = $type === 'students';
     $isStudentCardAction = $isStudentAction && ($studentCardAction ?? false);
     $canEditStudent = auth()->user()?->hasPermission('students.update') ?? false;
+    $canDeactivateStudent = $isStudentAction && $row->is_active && (auth()->user()?->hasPermission('students.alumni') ?? false);
     $requiredPermission = in_array($type, ['data-roles', 'data-users'], true) ? 'users.manage' : 'master.manage';
     $canManageMasterRow = auth()->user()?->hasPermission($requiredPermission) ?? false;
     $usesPageEdit = in_array($type, ['fee-types', 'fee-discounts', 'data-roles', 'data-users'], true);
@@ -20,6 +21,11 @@
     @if($canEditStudent)
     <a class="app-table-action is-icon-only icon-button edit-button" href="{{ route('student-management.students.edit', array_merge([$row], request()->query())) }}" title="Edit" aria-label="Edit data">
         {!! $icon('edit') !!}
+    </a>
+    @endif
+    @if($canDeactivateStudent)
+    <a class="app-table-action is-compact-mobile" href="{{ route('student-management.students.deactivate.create', array_merge([$row], request()->query())) }}" title="Nonaktifkan siswa" aria-label="Nonaktifkan siswa">
+        {!! $icon('check') !!}<span>Nonaktifkan</span>
     </a>
     @endif
     @elseif($canManageMasterRow)

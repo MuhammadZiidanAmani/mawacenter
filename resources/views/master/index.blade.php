@@ -271,6 +271,100 @@
                         </form>
                     </section>
                 </section>
+            @elseif ($tab === 'students' && $showAlumniBillCleanup)
+                @php
+                    $cleanupPreview = $alumniBillCleanupPreview ?? [];
+                    $cleanupAlumni = (int) ($cleanupPreview['alumni_count'] ?? 0);
+                    $cleanupCancelableBills = (int) ($cleanupPreview['cancelable_bill_count'] ?? 0);
+                    $cleanupPaidBills = (int) ($cleanupPreview['paid_bills_preserved'] ?? 0);
+                    $cleanupReviewAlumni = (int) ($cleanupPreview['review_alumni_count'] ?? 0);
+                    $cleanupMissingExit = (int) ($cleanupPreview['missing_exit_date_count'] ?? 0);
+                @endphp
+                <section class="student-workspace student-billing-cleanup-page">
+                    <div class="student-flat-header">
+                        <div class="student-master-heading">
+                            <h1>Rapikan Tagihan Alumni</h1>
+                            <p>Periksa tagihan lama yang masih tercatat setelah tanggal siswa keluar.</p>
+                        </div>
+                        <div class="student-title-actions">
+                            <a href="{{ route('student-management.alumni.index') }}" class="button button-secondary">Kembali</a>
+                        </div>
+                    </div>
+
+                    <section class="card student-billing-cleanup-card">
+                        <div class="master-create-heading">
+                            <div>
+                                <strong>Preview Perubahan</strong>
+                                <span>Hanya tagihan SPP dan kategori wajib yang terbit setelah siswa keluar serta belum memiliki pembayaran yang akan dibatalkan.</span>
+                            </div>
+                        </div>
+
+                        <div class="student-billing-cleanup-summary" aria-label="Ringkasan perapihan tagihan alumni">
+                            <div><span>Alumni terdampak</span><strong>{{ number_format($cleanupAlumni, 0, ',', '.') }}</strong></div>
+                            <div><span>Tagihan akan dibatalkan</span><strong>{{ number_format($cleanupCancelableBills, 0, ',', '.') }}</strong></div>
+                            <div><span>Tagihan berbayar dipertahankan</span><strong>{{ number_format($cleanupPaidBills, 0, ',', '.') }}</strong></div>
+                            <div><span>Alumni perlu ditinjau</span><strong>{{ number_format($cleanupReviewAlumni, 0, ',', '.') }}</strong></div>
+                        </div>
+
+                        @if(($cleanupPreview['unit_counts'] ?? []) !== [])
+                            <div class="student-billing-cleanup-units">
+                                <strong>Cakupan per unit</strong>
+                                <div>
+                                    @foreach($cleanupPreview['unit_counts'] as $unitCode => $count)
+                                        <span>{{ $unitCode }} <b>{{ number_format($count, 0, ',', '.') }}</b></span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="student-billing-cleanup-note {{ $cleanupPaidBills > 0 ? 'warning' : 'success' }}">
+                            @if($cleanupPaidBills > 0)
+                                <strong>Ada tagihan berbayar yang perlu ditinjau.</strong>
+                                <span>Tagihan yang sudah dicicil atau memiliki alokasi pembayaran tidak akan dibatalkan.{{ $cleanupMissingExit > 0 ? ' Terdapat '.number_format($cleanupMissingExit, 0, ',', '.').' alumni tanpa tanggal keluar.' : '' }}</span>
+                            @elseif($cleanupMissingExit > 0)
+                                <strong>Ada alumni tanpa tanggal keluar.</strong>
+                                <span>{{ number_format($cleanupMissingExit, 0, ',', '.') }} data harus diperbaiki terlebih dahulu agar periode tagihannya dapat dinilai.</span>
+                            @elseif($cleanupCancelableBills > 0)
+                                <strong>Data siap dirapikan.</strong>
+                                <span>Tagihan pada bulan keluar dan sebelumnya tetap dipertahankan.</span>
+                            @else
+                                <strong>Tidak ada data yang perlu dirapikan.</strong>
+                                <span>Tidak ditemukan tagihan alumni pasca-keluar yang aman untuk dibatalkan.</span>
+                            @endif
+                        </div>
+
+                        @if(($cleanupPreview['preview_rows'] ?? []) !== [])
+                            <div class="app-table-surface">
+                                <div class="app-table-scroll">
+                                    <table class="app-data-table alumni-bill-cleanup-table">
+                                        <thead><tr><th>Siswa</th><th>Unit</th><th>Tagihan</th><th>Periode</th><th>Sisa</th><th>Tindakan</th></tr></thead>
+                                        <tbody>
+                                            @foreach($cleanupPreview['preview_rows'] as $row)
+                                                <tr>
+                                                    <td><strong>{{ $row['student_name'] }}</strong><br><small>{{ $row['nis'] }}</small></td>
+                                                    <td>{{ $row['unit'] }}</td>
+                                                    <td>{{ $row['title'] }}</td>
+                                                    <td>{{ $row['period'] }}</td>
+                                                    <td>Rp {{ number_format($row['remaining_amount'], 0, ',', '.') }}</td>
+                                                    <td><span class="student-cleanup-status {{ $row['action'] === 'Batalkan' ? 'is-cancel' : 'is-review' }}">{{ $row['action'] }}</span></td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            @if($cleanupPreview['preview_truncated'] ?? false)
+                                <small class="student-billing-cleanup-limit">Preview menampilkan 100 tagihan pertama. Seluruh data dalam scope tetap diproses saat dikonfirmasi.</small>
+                            @endif
+                        @endif
+
+                        <form method="POST" action="{{ route('student-management.students.alumni-bill-cleanup.store') }}" class="student-billing-cleanup-actions">
+                            @csrf
+                            <a href="{{ route('student-management.alumni.index') }}" class="button button-secondary">Batal</a>
+                            <button class="button button-primary" @disabled($cleanupCancelableBills < 1)>{!! $icon('check') !!} Terapkan Perapihan</button>
+                        </form>
+                    </section>
+                </section>
             @else
             @if ($tab !== 'students')
             <section class="student-workspace master-flat-workspace">
@@ -301,6 +395,8 @@
                         $canCleanupStudentBillingStart = (auth()->user()?->isSuperAdmin() ?? false)
                             || ((auth()->user()?->hasPermission('students.update') ?? false) && (auth()->user()?->hasPermission('bills.sync') ?? false));
                         $canManageStudentAlumni = auth()->user()?->hasPermission('students.alumni') ?? false;
+                        $canCleanupAlumniBills = (auth()->user()?->isSuperAdmin() ?? false)
+                            || ($canManageStudentAlumni && (auth()->user()?->hasPermission('bills.sync') ?? false));
                         $studentExportQuery = array_filter([
                             'unit_id' => request('unit_id'),
                             'class_id' => request('class_id'),
@@ -334,6 +430,9 @@
                             @endif
                             @if ($canCleanupStudentBillingStart)
                             <a href="{{ route('student-management.students.billing-start-cleanup.index') }}" class="button button-secondary">{!! $icon('calendar') !!} Rapikan Awal Tagihan</a>
+                            @endif
+                            @if ($canCleanupAlumniBills)
+                            <a href="{{ route('student-management.students.alumni-bill-cleanup.index') }}" class="button button-secondary">{!! $icon('receipt') !!} Rapikan Tagihan Alumni</a>
                             @endif
                             @if ($canExportStudents)
                             <a href="{{ route('master.students.export', $studentExportQuery) }}" class="button action-green">{!! $icon('download') !!} Export</a>

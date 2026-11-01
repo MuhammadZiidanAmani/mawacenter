@@ -7,6 +7,7 @@ use App\Models\AppSetting;
 use App\Models\AuditLog;
 use App\Models\Bill;
 use App\Models\BillManualPayment;
+use App\Models\BillPaymentAllocation;
 use App\Models\BillSyncRun;
 use App\Models\EducationUnit;
 use App\Models\FeeDiscount;
@@ -244,6 +245,7 @@ class MasterDataTest extends TestCase
             ->assertDontSee('Export')
             ->assertDontSee('master-data/students/template')
             ->assertDontSee('Jadikan Alumni')
+            ->assertDontSee('Nonaktifkan siswa')
             ->assertDontSee('title="Edit"', false)
             ->assertDontSee('Rapikan Identitas')
             ->assertDontSee('Pindah Kelas')
@@ -262,6 +264,9 @@ class MasterDataTest extends TestCase
         $this->get('/manajemen-siswa/naik-kelas')->assertForbidden();
         $this->get('/manajemen-siswa/rapikan-identitas')->assertForbidden();
         $this->get('/manajemen-siswa/data-siswa/jadikan-alumni-kelas?unit_id='.$unit->id.'&class_id='.$class->id.'&year_id='.$year->id)->assertForbidden();
+        $this->get(route('student-management.students.deactivate.create', $student))->assertForbidden();
+        $this->post(route('student-management.students.deactivate.store', $student), [])->assertForbidden();
+        $this->get(route('student-management.students.alumni-bill-cleanup.index'))->assertForbidden();
 
         Role::create([
             'key' => 'student_operator',
@@ -289,6 +294,7 @@ class MasterDataTest extends TestCase
             ->assertSee('Export')
             ->assertDontSee('master-data/students/template')
             ->assertSee('Jadikan Alumni')
+            ->assertSee('Nonaktifkan siswa')
             ->assertSee('title="Edit"', false)
             ->assertDontSee('Kualitas Data')
             ->assertSee('Rapikan Identitas')
@@ -307,6 +313,8 @@ class MasterDataTest extends TestCase
         $this->get('/manajemen-siswa/naik-kelas')->assertOk();
         $this->get('/manajemen-siswa/rapikan-identitas')->assertOk();
         $this->get('/manajemen-siswa/data-siswa/jadikan-alumni-kelas?unit_id='.$unit->id.'&class_id='.$class->id.'&year_id='.$year->id)->assertOk();
+        $this->get(route('student-management.students.deactivate.create', $student))->assertOk();
+        $this->get(route('student-management.students.alumni-bill-cleanup.index'))->assertForbidden();
     }
 
     public function test_unit_scoped_student_permission_cannot_access_other_units(): void
@@ -580,6 +588,250 @@ class MasterDataTest extends TestCase
         $this->assertSame(2, $audit->student_count);
         $this->assertSame($class->id, (int) $audit->metadata['class_id']);
         $this->assertFalse($audit->after_values['is_active']);
+    }
+
+    public function test_class_alumni_cancels_only_unpaid_bills_after_exit_period(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-08-15 10:00:00'));
+
+        $year = AcademicYear::create([
+            'name' => '2025/2026',
+            'start_date' => '2025-07-01',
+            'end_date' => '2026-06-30',
+            'is_active' => true,
+        ]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VI A', 'level' => 'Kelas VI']);
+        $unpaidStudent = Student::create([
+            'nis' => 'ALUMNI-CANCEL-001', 'name' => 'Alumni Tagihan Kosong', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2025-07-01', 'billing_start_date' => '2025-07-01', 'is_active' => true,
+        ]);
+        $partiallyPaidStudent = Student::create([
+            'nis' => 'ALUMNI-CANCEL-002', 'name' => 'Alumni Tagihan Sebagian', 'gender' => 'P',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2025-07-01', 'billing_start_date' => '2025-07-01', 'is_active' => true,
+        ]);
+        $this->createSppCategory($unit, 100000);
+        $annualFee = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'lain-lain',
+            'code' => 'TAHUNAN-ALUMNI',
+            'name' => 'Biaya Tahunan Alumni',
+            'amount' => 250000,
+            'period' => 'Tahunan',
+            'creates_bill' => false,
+            'is_active' => true,
+        ]);
+
+        $juneBill = Bill::create([
+            'student_id' => $unpaidStudent->id, 'academic_year_id' => $year->id,
+            'source_type' => 'spp', 'year' => 2026, 'month' => 6,
+            'generation_key' => hash('sha256', 'spp|'.$unpaidStudent->id.'|2026|6'),
+            'title' => 'SPP Juni 2026', 'issue_date' => '2026-06-01', 'due_date' => '2026-06-10',
+            'original_amount' => 100000, 'discount_amount' => 0, 'total_amount' => 100000,
+            'paid_amount' => 0, 'remaining_amount' => 100000, 'status' => 'Belum Dibayar',
+        ]);
+        $unpaidJulyBill = Bill::create([
+            'student_id' => $unpaidStudent->id, 'academic_year_id' => $year->id,
+            'source_type' => 'spp', 'year' => 2026, 'month' => 7,
+            'generation_key' => hash('sha256', 'spp|'.$unpaidStudent->id.'|2026|7'),
+            'title' => 'SPP Juli 2026', 'issue_date' => '2026-07-01', 'due_date' => '2026-07-10',
+            'original_amount' => 100000, 'discount_amount' => 0, 'total_amount' => 100000,
+            'paid_amount' => 0, 'remaining_amount' => 100000, 'status' => 'Belum Dibayar',
+        ]);
+        $partiallyPaidJulyBill = Bill::create([
+            'student_id' => $partiallyPaidStudent->id, 'academic_year_id' => $year->id,
+            'source_type' => 'spp', 'year' => 2026, 'month' => 7,
+            'generation_key' => hash('sha256', 'spp|'.$partiallyPaidStudent->id.'|2026|7'),
+            'title' => 'SPP Juli 2026', 'issue_date' => '2026-07-01', 'due_date' => '2026-07-10',
+            'original_amount' => 100000, 'discount_amount' => 0, 'total_amount' => 100000,
+            'paid_amount' => 40000, 'remaining_amount' => 60000, 'status' => 'Sebagian',
+        ]);
+        $annualBill = Bill::create([
+            'student_id' => $unpaidStudent->id, 'academic_year_id' => $year->id,
+            'source_type' => 'fee_type', 'fee_type_id' => $annualFee->id, 'year' => 2026, 'month' => null,
+            'generation_key' => hash('sha256', 'fee-alumni|'.$unpaidStudent->id.'|'.$annualFee->id),
+            'title' => 'Biaya Tahunan Alumni', 'issue_date' => '2026-07-01', 'due_date' => '2026-07-31',
+            'original_amount' => 250000, 'discount_amount' => 0, 'total_amount' => 250000,
+            'paid_amount' => 0, 'remaining_amount' => 250000, 'status' => 'Belum Dibayar',
+        ]);
+
+        $this->post(route('student-management.students.class-alumni.store'), [
+            'unit_id' => $unit->id,
+            'class_id' => $class->id,
+            'year_id' => $year->id,
+            'exit_date' => '2026-06-30',
+            'inactive_reason' => 'Lulus',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('bills', [
+            'id' => $juneBill->id,
+            'status' => 'Belum Dibayar',
+            'remaining_amount' => 100000,
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $unpaidJulyBill->id,
+            'status' => 'Dibatalkan',
+            'remaining_amount' => 0,
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $partiallyPaidJulyBill->id,
+            'status' => 'Sebagian',
+            'paid_amount' => 40000,
+            'remaining_amount' => 60000,
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $annualBill->id,
+            'status' => 'Dibatalkan',
+            'remaining_amount' => 0,
+        ]);
+        $this->assertSame(2, Student::whereIn('id', [$unpaidStudent->id, $partiallyPaidStudent->id])
+            ->where('is_active', false)
+            ->whereDate('exit_date', '2026-06-30')
+            ->count());
+    }
+
+    public function test_individual_student_can_be_deactivated_from_dedicated_action(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-08-15 10:00:00'));
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VI B', 'level' => 'Kelas VI']);
+        $student = Student::create([
+            'nis' => 'NONAKTIF-001', 'name' => 'Siswa Pindah', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2025-07-01', 'billing_start_date' => '2025-07-01', 'is_active' => true,
+        ]);
+        $this->createSppCategory($unit, 100000);
+        $julyBill = Bill::create([
+            'student_id' => $student->id, 'academic_year_id' => $year->id,
+            'source_type' => 'spp', 'year' => 2026, 'month' => 7,
+            'generation_key' => 'individual-deactivate-july', 'title' => 'SPP Juli 2026',
+            'issue_date' => '2026-07-01', 'due_date' => '2026-07-10',
+            'original_amount' => 100000, 'discount_amount' => 0, 'total_amount' => 100000,
+            'paid_amount' => 0, 'remaining_amount' => 100000, 'status' => 'Belum Dibayar',
+        ]);
+
+        $this->get(route('student-management.students.index'))
+            ->assertOk()
+            ->assertSee('Nonaktifkan siswa');
+        $this->get(route('student-management.students.deactivate.create', $student))
+            ->assertOk()
+            ->assertSee('Konfirmasi Nonaktif')
+            ->assertSee($student->name);
+        $this->post(route('student-management.students.deactivate.store', $student), [
+            'exit_date' => '2026-06-30',
+            'inactive_reason' => 'Pindah Sekolah',
+        ])->assertRedirect(route('student-management.students.index', [
+            'unit_id' => $unit->id,
+            'class_id' => $class->id,
+            'year_id' => $year->id,
+            'status' => 'inactive',
+        ]));
+
+        $this->assertDatabaseHas('students', [
+            'id' => $student->id,
+            'is_active' => false,
+            'exit_date' => '2026-06-30 00:00:00',
+            'inactive_reason' => 'Pindah Sekolah',
+        ]);
+        $this->assertSame('Dibatalkan', $julyBill->refresh()->status);
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'students.deactivate',
+            'subject_type' => Student::class,
+            'subject_id' => $student->id,
+        ]);
+    }
+
+    public function test_alumni_bill_cleanup_previews_and_cancels_only_unpaid_generated_bills_after_exit(): void
+    {
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'Madrasah Tsanawiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'IX A', 'level' => 'Kelas IX']);
+        $alumni = Student::create([
+            'nis' => 'ALUMNI-RAPIH-001', 'name' => 'Alumni Lama', 'gender' => 'P',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2025-07-01', 'is_active' => false,
+            'exit_date' => '2026-06-15', 'inactive_reason' => 'Lulus',
+        ]);
+        Student::create([
+            'nis' => 'ALUMNI-RAPIH-002', 'name' => 'Alumni Tanpa Tanggal Keluar', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'entry_date' => '2025-07-01', 'is_active' => false,
+            'inactive_reason' => 'Data lama',
+        ]);
+        $billData = fn (string $key, int $month, int $paid = 0, int $remaining = 100000, string $status = 'Belum Dibayar') => [
+            'student_id' => $alumni->id, 'academic_year_id' => $year->id,
+            'source_type' => 'spp', 'year' => 2026, 'month' => $month,
+            'generation_key' => $key, 'title' => 'SPP',
+            'issue_date' => CarbonImmutable::create(2026, $month, 1)->toDateString(),
+            'due_date' => CarbonImmutable::create(2026, $month, 10)->toDateString(),
+            'original_amount' => 100000, 'discount_amount' => 0, 'total_amount' => 100000,
+            'paid_amount' => $paid, 'remaining_amount' => $remaining, 'status' => $status,
+        ];
+        $juneBill = Bill::create($billData('alumni-cleanup-june', 6));
+        $julyBill = Bill::create($billData('alumni-cleanup-july', 7));
+        $paidJulyBill = Bill::create($billData('alumni-cleanup-paid-july', 7, 25000, 75000, 'Sebagian'));
+        $allocatedAugustBill = Bill::create($billData('alumni-cleanup-allocated-august', 8));
+        BillPaymentAllocation::create([
+            'bill_id' => $allocatedAugustBill->id,
+            'payment_type' => 'spp',
+            'payment_id' => 999,
+            'amount' => 10000,
+        ]);
+        $manualBill = Bill::create(array_merge($billData('alumni-cleanup-manual', 8), [
+            'source_type' => 'manual',
+        ]));
+
+        $this->get(route('student-management.students.alumni-bill-cleanup.index'))
+            ->assertOk()
+            ->assertSee('Rapikan Tagihan Alumni')
+            ->assertSee('Tagihan akan dibatalkan')
+            ->assertSee('Tagihan berbayar dipertahankan')
+            ->assertSee('Ada tagihan berbayar yang perlu ditinjau.')
+            ->assertSee('Alumni Tanpa Tanggal Keluar')
+            ->assertSee('Tanggal keluar belum diisi');
+        $this->post(route('student-management.students.alumni-bill-cleanup.store'))
+            ->assertRedirect(route('student-management.alumni.index'))
+            ->assertSessionHas('success');
+
+        $this->assertSame('Belum Dibayar', $juneBill->refresh()->status);
+        $this->assertSame('Dibatalkan', $julyBill->refresh()->status);
+        $this->assertSame(0, (int) $julyBill->remaining_amount);
+        $this->assertSame('Sebagian', $paidJulyBill->refresh()->status);
+        $this->assertSame('Belum Dibayar', $allocatedAugustBill->refresh()->status);
+        $this->assertSame('Belum Dibayar', $manualBill->refresh()->status);
+        $audit = AuditLog::where('action', 'students.alumni_bill_cleanup')->firstOrFail();
+        $this->assertSame(2, $audit->student_count);
+        $this->assertSame(1, (int) $audit->metadata['cancelled_unpaid_bills']);
+        $this->assertSame(2, (int) $audit->metadata['paid_bills_preserved']);
+        $this->assertSame(1, (int) $audit->metadata['missing_exit_date_count']);
+    }
+
+    public function test_alumni_bill_cleanup_requires_alumni_and_bill_sync_permissions(): void
+    {
+        $role = Role::create([
+            'key' => 'alumni_cleanup_limited',
+            'name' => 'Perapihan Alumni Terbatas',
+            'permissions' => ['students.alumni'],
+            'is_active' => true,
+        ]);
+        $limitedUser = User::factory()->create(['role' => $role->key]);
+
+        $this->actingAs($limitedUser)
+            ->get(route('student-management.students.alumni-bill-cleanup.index'))
+            ->assertForbidden();
+        $this->actingAs($limitedUser)
+            ->post(route('student-management.students.alumni-bill-cleanup.store'))
+            ->assertForbidden();
+
+        $role->update(['permissions' => ['students.alumni', 'bills.sync']]);
+        $limitedUser->unsetRelation('roleRecord');
+        $this->actingAs($limitedUser)
+            ->get(route('student-management.students.alumni-bill-cleanup.index'))
+            ->assertOk();
     }
 
     public function test_student_create_update_reactivate_and_export_are_audited(): void
@@ -3130,7 +3382,7 @@ class MasterDataTest extends TestCase
             ->assertSee('Penertiban Administrasi Keuangan')
             ->assertSee('Tagihan Siswa')
             ->assertSee('SPP AGUSTUS - DESEMBER')
-            ->assertSee('SPP JANUARI - JUNI')
+            ->assertSee('SPP FEBRUARI - JUNI')
             ->assertSee('Daftar Ulang')
             ->assertSee('Total Keseluruhan')
             ->assertSee('Terbilang:')

@@ -103,6 +103,12 @@
 .student-billing-cleanup-note.warning { color: var(--app-warning); background: var(--app-warning-soft); }
 .student-billing-cleanup-note span { font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 .student-billing-cleanup-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px; border-top: 1px solid var(--app-border-soft); }
+.alumni-bill-cleanup-table { min-width: 820px; }
+.alumni-bill-cleanup-table td:nth-child(5) { text-align: right; font-variant-numeric: tabular-nums; }
+.student-cleanup-status { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 9px; font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); border-radius: 999px; }
+.student-cleanup-status.is-cancel { color: var(--app-danger); background: var(--app-danger-soft); }
+.student-cleanup-status.is-review { color: var(--app-warning); background: var(--app-warning-soft); }
+.student-billing-cleanup-limit { color: var(--app-muted); }
 
 .master-pagination, .student-pagination-links { display: flex; flex-wrap: wrap; gap: 8px; }
 .master-data-pagination-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0; }

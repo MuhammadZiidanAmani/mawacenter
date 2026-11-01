@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Bill;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\OtherPaymentItem;
@@ -21,6 +22,31 @@ class OtherPaymentService
     public function quote(Student $student, FeeType $feeType, ?CarbonInterface $date = null): array
     {
         $date ??= now();
+        $outstandingBill = $feeType->creates_bill && $feeType->period !== 'Bulanan'
+            ? Bill::query()
+                ->where('student_id', $student->id)
+                ->where('source_type', 'fee_type')
+                ->where('fee_type_id', $feeType->id)
+                ->where('remaining_amount', '>', 0)
+                ->where('status', '!=', 'Dibatalkan')
+                ->where(fn ($bill) => $bill
+                    ->whereNull('issue_date')
+                    ->orWhereDate('issue_date', '<=', $date->toDateString()))
+                ->orderBy('issue_date')
+                ->orderBy('id')
+                ->first()
+            : null;
+
+        if ($outstandingBill) {
+            return [
+                'original_amount' => (int) $outstandingBill->original_amount,
+                'discount_amount' => (int) $outstandingBill->discount_amount,
+                'total_amount' => (int) $outstandingBill->total_amount,
+                'paid_amount' => (int) $outstandingBill->paid_amount,
+                'remaining_amount' => (int) $outstandingBill->remaining_amount,
+            ];
+        }
+
         $charge = $this->calculator->calculate($student, 'fee_type', $feeType, $date);
         if ($charge['original_amount'] < 1) {
             throw ValidationException::withMessages([

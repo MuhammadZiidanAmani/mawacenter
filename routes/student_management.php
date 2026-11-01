@@ -12,6 +12,10 @@ Route::prefix('manajemen-siswa')->name('student-management.')->group(function ()
         Route::get('/data-siswa/import', 'studentImport')->name('students.import');
         Route::get('/data-siswa/rapikan-awal-tagihan', 'studentBillingStartCleanup')->name('students.billing-start-cleanup.index');
         Route::post('/data-siswa/rapikan-awal-tagihan', 'storeStudentBillingStartCleanup')->name('students.billing-start-cleanup.store');
+        Route::get('/data-siswa/rapikan-tagihan-alumni', 'alumniBillCleanup')->name('students.alumni-bill-cleanup.index');
+        Route::post('/data-siswa/rapikan-tagihan-alumni', 'storeAlumniBillCleanup')->name('students.alumni-bill-cleanup.store');
+        Route::get('/data-siswa/{student}/nonaktifkan', 'studentDeactivate')->name('students.deactivate.create');
+        Route::post('/data-siswa/{student}/nonaktifkan', 'storeStudentDeactivate')->name('students.deactivate.store');
         Route::get('/data-siswa/{student}/edit', 'studentEdit')->name('students.edit');
         Route::get('/data-siswa/jadikan-alumni-kelas', 'classAlumniCreate')->name('students.class-alumni.create');
         Route::post('/data-siswa/jadikan-alumni-kelas', 'storeClassAlumni')->name('students.class-alumni.store');

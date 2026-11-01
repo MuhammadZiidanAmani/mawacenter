@@ -1057,7 +1057,7 @@ class BillService
             }
             $period = CarbonImmutable::create((int) $bill->year, (int) $bill->month, 1)->startOfMonth();
             if (! $this->eligible($student, $period) || $this->sppIsIncludedInRegistration($student, (int) $bill->year, (int) $bill->month)) {
-                if ((int) $bill->paid_amount > 0) {
+                if ($this->billHasPayment($bill)) {
                     return false;
                 }
 
@@ -1095,6 +1095,20 @@ class BillService
             $feeType = $bill->feeType;
             if (! $feeType) {
                 return false;
+            }
+
+            if ($this->billFallsAfterStudentExit($bill, $student)) {
+                if ($this->billHasPayment($bill)) {
+                    return false;
+                }
+
+                $bill->update([
+                    'remaining_amount' => 0,
+                    'status' => 'Dibatalkan',
+                    'cancel_reason' => 'Tagihan tidak berlaku setelah siswa keluar atau menjadi alumni.',
+                ]);
+
+                return true;
             }
 
             $date = $bill->issue_date?->toImmutable()
@@ -1293,6 +1307,27 @@ class BillService
 
         return $startDate->lte($month->endOfMonth())
             && (! $student->exit_date || $student->exit_date->gte($month->startOfMonth()));
+    }
+
+    private function billFallsAfterStudentExit(Bill $bill, Student $student): bool
+    {
+        if (! $student->exit_date) {
+            return false;
+        }
+
+        if ($bill->year && $bill->month) {
+            $billPeriod = CarbonImmutable::create((int) $bill->year, (int) $bill->month, 1)->startOfMonth();
+
+            return $billPeriod->gt($student->exit_date->startOfMonth());
+        }
+
+        return $bill->issue_date?->gt($student->exit_date) ?? false;
+    }
+
+    private function billHasPayment(Bill $bill): bool
+    {
+        return (int) $bill->paid_amount > 0
+            || $bill->allocations()->where('amount', '>', 0)->exists();
     }
 
     private function sppIsIncludedInRegistration(Student $student, int $year, int $month): bool

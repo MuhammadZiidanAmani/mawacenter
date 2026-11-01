@@ -171,7 +171,7 @@ class PaymentController extends Controller
 
                     $selectedStudentId = (int) $identityId;
                     $selectedRegistrationId = (int) $activeRegistration->id;
-                    $feeTypes = FeeType::where('is_active', true)->get();
+                    $feeTypes = $this->paymentFeeTypes($selectedRegistrations, $unitIds);
                     $selectedRegistrations->each(function (Student $student) use ($activeRegistration, $feeTypes, $sppPayments, $otherPayments, $laundryPayments, $editSppPayment) {
                         if ((int) $student->id !== (int) $activeRegistration->id) {
                             $student->setAttribute('payment_options', []);
@@ -298,27 +298,24 @@ class PaymentController extends Controller
             ]);
         }
 
+        $unitIds = $request->user()?->accessibleUnitIds();
         $identityStudent = Student::with(['academicYear', 'schoolClass.educationUnit'])
-            ->where('is_active', true)
             ->findOrFail($validated['student_id']);
         $identityId = $identityStudent->identity_student_id ?: $identityStudent->id;
         $registrationId = (int) ($validated['registration_id'] ?? 0);
-        $selectedStudent = $registrationId > 0
-            ? Student::with(['academicYear', 'schoolClass.educationUnit'])->where('is_active', true)->find($registrationId)
-            : $identityStudent;
+        $selectedStudent = $this->paymentStudentBaseQuery($unitIds)
+            ->with(['academicYear', 'schoolClass.educationUnit'])
+            ->find($registrationId > 0 ? $registrationId : $identityStudent->id);
 
         if (! $selectedStudent || (int) ($selectedStudent->identity_student_id ?: $selectedStudent->id) !== (int) $identityId) {
             abort(403, 'Registrasi siswa tidak sesuai dengan identitas siswa yang dipilih.');
         }
 
-        $unitIds = $request->user()?->accessibleUnitIds();
         if (is_array($unitIds) && ! in_array((int) $selectedStudent->schoolClass?->education_unit_id, $unitIds, true)) {
             abort(403, 'Anda tidak memiliki akses ke siswa ini.');
         }
         $registrations = collect([$selectedStudent])->keyBy('id');
-        $feeTypes = FeeType::where('is_active', true)
-            ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
-            ->get();
+        $feeTypes = $this->paymentFeeTypes($registrations, $unitIds);
         $selectedKeys = collect($validated['bill_keys'] ?? [])
             ->concat($validated['optional_keys'] ?? [])
             ->unique()
@@ -877,14 +874,69 @@ class PaymentController extends Controller
     private function paymentStudentBaseQuery(?array $unitIds, int $classId = 0)
     {
         return Student::query()
-            ->where('is_active', true)
+            ->where(function ($student) {
+                $student
+                    ->where(function ($activeStudent) {
+                        $activeStudent
+                            ->where('students.is_active', true)
+                            ->whereHas('schoolClass', fn ($class) => $class
+                                ->where('is_active', true)
+                                ->whereHas('educationUnit', fn ($unit) => $unit->where('is_active', true)));
+                    })
+                    ->orWhere(function ($inactiveStudent) {
+                        $inactiveStudent
+                            ->where('students.is_active', false)
+                            ->whereHas('bills', function ($bill) {
+                                $this->applyPayableOutstandingBillScope($bill);
+                            });
+                    });
+            })
             ->when($classId > 0, fn ($query) => $query->where('school_class_id', $classId))
             ->whereHas('schoolClass', function ($class) use ($unitIds) {
-                $class
-                    ->where('is_active', true)
-                    ->whereHas('educationUnit', fn ($unit) => $unit->where('is_active', true))
-                    ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds));
+                $class->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds));
             });
+    }
+
+    private function applyPayableOutstandingBillScope($query): void
+    {
+        $query
+            ->where(function ($source) {
+                $source
+                    ->where('source_type', 'spp')
+                    ->orWhere(fn ($feeBill) => $feeBill
+                        ->where('source_type', 'fee_type')
+                        ->whereHas('feeType', fn ($feeType) => $feeType->where('period', '!=', 'Bulanan')));
+            })
+            ->where('remaining_amount', '>', 0)
+            ->where('status', '!=', 'Dibatalkan')
+            ->where(fn ($bill) => $bill
+                ->whereNull('issue_date')
+                ->orWhereDate('issue_date', '<=', now()->toDateString()));
+    }
+
+    private function paymentFeeTypes(Collection $registrations, ?array $unitIds): Collection
+    {
+        $studentIds = $registrations->pluck('id')->map(fn ($id) => (int) $id)->filter()->values();
+        $historicalFeeTypeIds = $studentIds->isEmpty()
+            ? collect()
+            : Bill::query()
+                ->whereIn('student_id', $studentIds)
+                ->where('source_type', 'fee_type')
+                ->whereNotNull('fee_type_id')
+                ->whereHas('feeType', fn ($feeType) => $feeType->where('period', '!=', 'Bulanan'))
+                ->where('remaining_amount', '>', 0)
+                ->where('status', '!=', 'Dibatalkan')
+                ->where(fn ($bill) => $bill
+                    ->whereNull('issue_date')
+                    ->orWhereDate('issue_date', '<=', now()->toDateString()))
+                ->pluck('fee_type_id');
+
+        return FeeType::query()
+            ->where(fn ($feeType) => $feeType
+                ->where('is_active', true)
+                ->when($historicalFeeTypeIds->isNotEmpty(), fn ($query) => $query->orWhereIn('id', $historicalFeeTypeIds)))
+            ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
+            ->get();
     }
 
     private function paymentOverviewRows(
@@ -1203,6 +1255,16 @@ class PaymentController extends Controller
             return false;
         }
 
+        if (! $student->is_active) {
+            return Bill::where('student_id', $student->id)
+                ->where('source_type', 'fee_type')
+                ->whereIn('fee_type_id', $feeTypes->pluck('id'))
+                ->whereHas('feeType', fn ($feeType) => $feeType->where('period', '!=', 'Bulanan'))
+                ->where('remaining_amount', '>', 0)
+                ->where('status', '!=', 'Dibatalkan')
+                ->exists();
+        }
+
         if ($feeTypes->contains(fn (FeeType $feeType) => ! $feeType->creates_bill)) {
             return true;
         }
@@ -1231,6 +1293,10 @@ class PaymentController extends Controller
 
     private function optionalPaymentOptions(Student $student, Collection $feeTypes, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments): array
     {
+        if (! $student->is_active) {
+            return [];
+        }
+
         return $this->matchedFeeTypes($student, $feeTypes)
             ->filter(fn (FeeType $feeType) => ! $feeType->creates_bill || $this->paymentGroup($feeType) === 'laundry')
             ->map(function (FeeType $feeType) use ($student, $otherPayments, $laundryPayments) {

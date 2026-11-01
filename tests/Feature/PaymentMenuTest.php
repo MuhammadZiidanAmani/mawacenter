@@ -1440,7 +1440,7 @@ class PaymentMenuTest extends TestCase
         ]));
 
         $defaultResponse->assertOk()
-            ->assertSee('Unit Aktif')
+            ->assertSee('Unit Pendidikan')
             ->assertDontSee('Ganti Unit')
             ->assertSee('payment-unit-context-form', false)
             ->assertSee('payment-context-segmented', false)
@@ -1470,7 +1470,7 @@ class PaymentMenuTest extends TestCase
             ->assertDontSee('NIS '.$context['pondokRegistration']->nis)
             ->assertSee('PONPES')
             ->assertSee('BIAYA BULANAN')
-            ->assertSee('Unit Aktif')
+            ->assertSee('Unit Pendidikan')
             ->assertSee('payment-context-segmented', false)
             ->assertDontSee('Ganti Unit');
         $switchedDom = new \DOMDocument;
@@ -1498,7 +1498,7 @@ class PaymentMenuTest extends TestCase
             ->assertDontSee('NIS '.$context['identity']->nis)
             ->assertSee('BIAYA BULANAN')
             ->assertSee('payment-context-segmented', false)
-            ->assertSee('Unit Aktif');
+            ->assertSee('Unit Pendidikan');
         $this->assertStringContainsString('value="'.$context['identity']->id.':spp"', $reverseResponse->getContent());
         $this->assertStringNotContainsString('value="'.$context['pondokRegistration']->id.':spp"', $reverseResponse->getContent());
     }
@@ -1534,7 +1534,7 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'admin']))
             ->get(route('finance.payments.index', ['search' => $context['identity']->name]))
             ->assertOk()
-            ->assertSee('Unit Aktif')
+            ->assertSee('Unit Pendidikan')
             ->assertSee('id="payment-unit-context-select"', false)
             ->assertSee('name="registration_id"', false)
             ->assertSee('MI • VI A')
@@ -1566,7 +1566,6 @@ class PaymentMenuTest extends TestCase
             ->assertSee($student->nis)
             ->assertSee('MTs')
             ->assertSee('VII A')
-            ->assertDontSee('Unit Aktif')
             ->assertDontSee('Ganti Unit')
             ->assertDontSee('payment-unit-context-form', false)
             ->assertDontSee('payment-context-segmented', false);
@@ -1589,12 +1588,11 @@ class PaymentMenuTest extends TestCase
             ->assertSee($student->nis)
             ->assertSee('PONPES')
             ->assertSee('Asrama')
-            ->assertDontSee('Unit Aktif')
             ->assertDontSee('payment-unit-context-form', false)
             ->assertDontSee('payment-context-segmented', false);
     }
 
-    public function test_inactive_linked_registration_is_not_offered_as_a_payment_context(): void
+    public function test_inactive_linked_registration_with_outstanding_bill_is_offered_as_a_payment_context(): void
     {
         $context = $this->multiUnitPaymentContext();
         $context['pondokRegistration']->update(['is_active' => false]);
@@ -1605,9 +1603,10 @@ class PaymentMenuTest extends TestCase
         $response->assertOk()
             ->assertSee('MTs')
             ->assertSee('VII A')
-            ->assertDontSee('Unit Aktif')
-            ->assertDontSee('payment-unit-context-form', false)
-            ->assertDontSee('registration_id='.$context['pondokRegistration']->id, false);
+            ->assertSee('Unit Pendidikan')
+            ->assertSee('payment-unit-context-form', false)
+            ->assertSee('PONPES • Asrama A • Alumni')
+            ->assertSee('value="'.$context['pondokRegistration']->id.'"', false);
     }
 
     public function test_multi_unit_context_supports_ma_and_ponpes_labels(): void
@@ -1620,7 +1619,7 @@ class PaymentMenuTest extends TestCase
             ->assertOk()
             ->assertSee('MA • VII A')
             ->assertSee('PONPES • Asrama A')
-            ->assertSee('Unit Aktif');
+            ->assertSee('Unit Pendidikan');
     }
 
     public function test_long_student_name_keeps_student_context_copy_and_actions_visible(): void
@@ -1634,7 +1633,7 @@ class PaymentMenuTest extends TestCase
             ->get(route('finance.payments.index', ['search' => $longName]))
             ->assertOk()
             ->assertSee($longName)
-            ->assertSee('Unit Aktif')
+            ->assertSee('Unit Pendidikan')
             ->assertDontSee('Ganti Siswa');
     }
 
@@ -1647,7 +1646,7 @@ class PaymentMenuTest extends TestCase
             ->get(route('finance.payments.index', ['search' => $context['identity']->name]))
             ->assertOk()
             ->assertSee('BIAYA BULANAN')
-            ->assertDontSee('Unit Aktif')
+            ->assertDontSee('Unit Pendidikan')
             ->assertDontSee('Ganti Unit');
     }
 
@@ -2155,6 +2154,181 @@ class PaymentMenuTest extends TestCase
             ->assertSee('9.600.000')
             ->assertSee('Juli 2025 - Oktober 2026')
             ->assertDontSee('45.000.000');
+    }
+
+    public function test_inactive_student_with_outstanding_bill_can_be_paid_from_cashier(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-10-29 12:00:00'));
+
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'PONPES', 'name' => 'Pondok Pesantren', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => '12B', 'level' => 12]);
+        $student = Student::create([
+            'nis' => 'ALUMNI-DEBT-001',
+            'name' => 'Alumni Masih Menunggak',
+            'gender' => 'L',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-08-01',
+            'exit_date' => '2026-09-15',
+            'inactive_reason' => 'Mengundurkan diri',
+            'is_active' => false,
+        ]);
+        FeeType::create([
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'spp',
+            'code' => 'SPP-ALUMNI-DEBT',
+            'name' => 'SPP Alumni',
+            'amount' => 600000,
+            'period' => 'Bulanan',
+            'creates_bill' => true,
+            'is_active' => true,
+        ]);
+        $bill = Bill::create([
+            'student_id' => $student->id,
+            'academic_year_id' => $year->id,
+            'source_type' => 'spp',
+            'year' => 2026,
+            'month' => 8,
+            'generation_key' => hash('sha256', 'spp|'.$student->id.'|2026|8'),
+            'title' => 'SPP Agustus 2026',
+            'issue_date' => '2026-08-01',
+            'due_date' => '2026-08-10',
+            'original_amount' => 600000,
+            'discount_amount' => 0,
+            'total_amount' => 600000,
+            'paid_amount' => 0,
+            'remaining_amount' => 600000,
+            'status' => 'Belum Dibayar',
+            'unit_name' => $unit->name,
+            'class_name' => $class->name,
+        ]);
+        $user = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($user)
+            ->get(route('finance.payments.index', ['search' => $student->name]))
+            ->assertOk()
+            ->assertSee('Alumni Masih Menunggak')
+            ->assertSee('Nonaktif/Alumni');
+
+        $this->get(route('finance.payments.index', [
+            'search' => $student->name,
+            'student_id' => $student->id,
+            'registration_id' => $student->id,
+        ]))
+            ->assertOk()
+            ->assertSee('Nonaktif/Alumni')
+            ->assertSee('BIAYA BULANAN')
+            ->assertSee('600.000');
+
+        $this->post(route('finance.payments.store'), [
+            'student_id' => $student->id,
+            'registration_id' => $student->id,
+            'search' => $student->name,
+            'bill_keys' => [$student->id.':spp'],
+            'payment_month_counts' => [$student->id.'_spp' => 1],
+            'payment_method' => 'Cash',
+            'paid_amount' => 600000,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('spp_payments', [
+            'student_id' => $student->id,
+            'status' => 'Diterima',
+            'paid_amount' => 600000,
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $bill->id,
+            'status' => 'Lunas',
+            'remaining_amount' => 0,
+        ]);
+
+        $this->get(route('finance.payments.index', ['search' => $student->name]))
+            ->assertOk()
+            ->assertDontSee('Alumni · Menunggak');
+    }
+
+    public function test_inactive_student_can_pay_historical_non_monthly_bill_from_cashier(): void
+    {
+        $this->travelTo(CarbonImmutable::parse('2026-10-29 12:00:00'));
+
+        $year = AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'Madrasah Ibtidaiyah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VI A', 'level' => 6]);
+        $student = Student::create([
+            'nis' => 'ALUMNI-ANNUAL-001',
+            'name' => 'Alumni Tagihan Tahunan',
+            'gender' => 'P',
+            'school_class_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'entry_date' => '2025-07-01',
+            'exit_date' => '2026-06-30',
+            'inactive_reason' => 'Lulus',
+            'is_active' => false,
+        ]);
+        $feeType = FeeType::create([
+            'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
+            'payment_group' => 'lain-lain',
+            'code' => 'HISTORICAL-ANNUAL',
+            'name' => 'Biaya Tahunan Lama',
+            'amount' => 250000,
+            'period' => 'Sekali Bayar',
+            'creates_bill' => true,
+            'is_active' => false,
+        ]);
+        $bill = Bill::create([
+            'student_id' => $student->id,
+            'academic_year_id' => $year->id,
+            'source_type' => 'fee_type',
+            'fee_type_id' => $feeType->id,
+            'year' => 2025,
+            'month' => null,
+            'generation_key' => hash('sha256', 'fee|'.$student->id.'|'.$feeType->id.'|once'),
+            'title' => 'Biaya Tahunan Lama',
+            'issue_date' => '2025-07-01',
+            'due_date' => '2025-07-31',
+            'original_amount' => 250000,
+            'discount_amount' => 0,
+            'total_amount' => 250000,
+            'paid_amount' => 0,
+            'remaining_amount' => 250000,
+            'status' => 'Belum Dibayar',
+            'unit_name' => $unit->name,
+            'class_name' => $class->name,
+        ]);
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+
+        $this->get(route('finance.payments.index', [
+            'search' => $student->name,
+            'student_id' => $student->id,
+            'registration_id' => $student->id,
+        ]))
+            ->assertOk()
+            ->assertSee('Nonaktif/Alumni')
+            ->assertSee('Biaya Tahunan Lama')
+            ->assertSee('250.000');
+
+        $this->post(route('finance.payments.store'), [
+            'student_id' => $student->id,
+            'registration_id' => $student->id,
+            'search' => $student->name,
+            'bill_keys' => [$student->id.':lain-lain'],
+            'payment_method' => 'Cash',
+            'paid_amount' => 250000,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('other_payments', [
+            'student_id' => $student->id,
+            'fee_type_id' => $feeType->id,
+            'status' => 'Diterima',
+            'paid_amount' => 250000,
+        ]);
+        $this->assertDatabaseHas('bills', [
+            'id' => $bill->id,
+            'status' => 'Lunas',
+            'remaining_amount' => 0,
+        ]);
     }
 
     public function test_payment_bill_cards_expose_spp_period_selector_per_card_input_and_full_control(): void

@@ -18,6 +18,7 @@
         'school' => '<path d="m3 10 9-5 9 5-9 5-9-5Z"/><path d="M7 12v5c3 2 7 2 10 0v-5"/>',
         'info' => '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
         'calendar' => '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+        'receipt' => '<path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2Z"/><path d="M9 7h6M9 11h6M9 15h3"/>',
         'sort' => '<path d="m8 9 4-4 4 4M16 15l-4 4-4-4"/>',
         'sort-up' => '<path d="m7 14 5-5 5 5"/>',
         'sort-down' => '<path d="m7 10 5 5 5-5"/>',
@@ -49,6 +50,11 @@
                         <h1>Data Alumni</h1>
                         <p>Kelola data siswa yang sudah lulus atau berstatus nonaktif/alumni.</p>
                     </div>
+                    @if((auth()->user()?->isSuperAdmin() ?? false) || ((auth()->user()?->hasPermission('students.alumni') ?? false) && (auth()->user()?->hasPermission('bills.sync') ?? false)))
+                        <div class="student-title-actions">
+                            <a href="{{ route('student-management.students.alumni-bill-cleanup.index') }}" class="button button-secondary">{!! $icon('receipt') !!} Rapikan Tagihan Alumni</a>
+                        </div>
+                    @endif
                 </div>
 
                 <form method="GET" action="{{ route('student-management.alumni.index') }}" class="student-filter-panel student-reference-filter student-fee-card-filter" data-student-filter-panel>
