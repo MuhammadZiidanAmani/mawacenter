@@ -95,6 +95,7 @@
 .student-billing-cleanup-summary > div { display: grid; gap: 6px; padding: 14px; background: var(--app-panel-soft); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); }
 .student-billing-cleanup-summary span, .student-billing-cleanup-units > strong { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 .student-billing-cleanup-summary strong { color: var(--app-text); font-size: var(--app-text-total-size); font-weight: 700; line-height: var(--app-text-total-leading); font-variant-numeric: tabular-nums; }
+.student-billing-cleanup-summary small { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 .student-billing-cleanup-units { display: grid; gap: 8px; }
 .student-billing-cleanup-units > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .student-billing-cleanup-units span { display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px; color: var(--app-label); background: var(--app-neutral-soft); border: 1px solid var(--app-border); border-radius: var(--app-radius-action); }
@@ -102,7 +103,9 @@
 .student-billing-cleanup-note.success { color: var(--app-success); background: var(--app-success-soft); }
 .student-billing-cleanup-note.warning { color: var(--app-warning); background: var(--app-warning-soft); }
 .student-billing-cleanup-note span { font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
-.student-billing-cleanup-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 16px; border-top: 1px solid var(--app-border-soft); }
+.student-billing-cleanup-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 16px; border-top: 1px solid var(--app-border-soft); }
+.student-cleanup-confirmation { display: flex; flex: 1 0 100%; align-items: flex-start; gap: 9px; color: var(--app-label); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.student-cleanup-confirmation input { width: 17px; height: 17px; margin: 1px 0 0; accent-color: var(--app-primary); }
 .alumni-bill-cleanup-table { min-width: 820px; }
 .alumni-bill-cleanup-table td:nth-child(5) { text-align: right; font-variant-numeric: tabular-nums; }
 .student-cleanup-status { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 9px; font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); border-radius: 999px; }

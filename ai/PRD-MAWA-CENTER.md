@@ -1,6 +1,6 @@
 # PRD Induk MA'WA CENTER
 
-Versi: 1.0 | Tanggal konsolidasi: 21 September 2026 | Bahasa UI: Indonesia.
+Versi: 1.1 | Tanggal konsolidasi: 21 September 2026 | Pembaruan produk: 3 November 2026 | Bahasa UI: Indonesia.
 
 Dokumen ini menggabungkan seluruh PRD modul yang sebelumnya terpisah dalam folder `ai`, standar lintas aplikasi, serta catatan rilis/QA/cleanup. Dokumen sumber telah dihapus setelah konsolidasi. Detail visual berada di [Design System CSS/Tailwind](DESIGN-SYSTEM-TAILWIND.md). ID sumber historis dan pemetaannya berada di [indeks dokumentasi](README.md#inventaris-sumber); isi sumber lama dapat ditelusuri melalui riwayat Git.
 
@@ -86,6 +86,7 @@ Instruksi pengguna terbaru mengarahkan perubahan. Untuk dokumen yang bertentanga
 | Mode terang dan gelap | Light memakai canvas putih `#ffffff`; dark memakai token `html[data-theme="dark"]` lengkap. Tombol topbar menyimpan preferensi pada `localStorage` (`mawa-center-theme`) dan memakai preferensi sistem bila belum ada pilihan. Alur keuangan tidak terpengaruh; PDF/struk tetap putih. Lihat [aturan mode gelap](DESIGN-SYSTEM-TAILWIND.md#mode-gelap). |
 | Scope Dashboard Unit | Agregat, aktivitas terbaru, rekap unit, dan cache Dashboard dibatasi memakai `accessibleUnitIds()`/`accessibleStudentIds()`. Cache key wajib tetap memuat scope akses agar hasil global tidak bocor ke pengguna unit. |
 | Transfer manual sementara | Arahan 28 Oktober 2026: pengajuan transfer Portal Wali, rekening global yang dapat diedit, dan Verifikasi Transfer dinonaktifkan sambil menunggu integrasi payment gateway. Transfer manual tetap dapat dicatat dari Kasir hanya oleh Super Admin setelah dana dikonfirmasi; Petugas tetap Cash. Data dan riwayat transfer lama dipertahankan. |
+| Kelas aktif dan kelas tujuan tahun depan | **Target design/Gap per 3 November 2026:** kondisi akademik tahunan harus dipisahkan melalui enrollment. Kode saat ini masih menyimpan satu kelas/tahun/status masuk langsung pada `students`; belum ditemukan model, migration, route, atau UI enrollment tahunan. Jangan menganggap target bagian 5.1, 6.5, 7, 8, 12.5, dan acceptance `ENR-*` sudah tersedia. |
 
 Permission operasional keuangan dipisahkan: `payments.verify_transfer` khusus verifikasi transfer wali dan hanya Super Admin, `payments.import` untuk import, `payments.manage` untuk koreksi/pembatalan/edit/hapus transaksi, serta `bills.sync` untuk sinkronisasi tagihan. Penambahan izin harus melalui role eksplisit; nama role tidak otomatis memberi akses. Verifikasi pembatasan tetap mencakup middleware, controller, service, UI, dan URL langsung.
 
@@ -135,7 +136,8 @@ Pengguna tanpa penugasan yang diperlukan tidak memperoleh akses global secara ot
 | Entitas | Tanggung Jawab dan Relasi |
 | --- | --- |
 | `AcademicYear`, `EducationUnit`, `SchoolClass` | Konteks tahun aktif, unit, kelas/tingkat |
-| `Student` | Pendaftaran akademik; `identity_student_id` menghubungkan orang yang sama |
+| `Student` | Record siswa pada satu konteks unit yang stabil; `identity_student_id` menghubungkan orang yang sama. Kelas/tahun/status pada record ini masih menjadi kondisi akademik tunggal pada kode saat ini |
+| `StudentEnrollment` | **Target design/Gap:** kondisi akademik siswa per unit dan tahun pelajaran: kelas, tingkat, status masuk, status enrollment, tanggal masuk/keluar, serta sumber enrollment sebelumnya |
 | `User`, `Role` | Akun, role, permission, keharusan reset password |
 | `education_unit_user` | Penugasan satu pengguna ke satu/beberapa unit |
 | `guardian_student` | Relasi wali-anak, hubungan, primary, waktu verifikasi |
@@ -154,6 +156,8 @@ Field personal bersama saat ini: NISN, nama, tempat/tanggal lahir, gender, nama 
 
 Field per record/unit: NIS, kelas/unit, tahun pelajaran, tanggal masuk, tanggal mulai tagihan, status masuk, status aktif, tanggal keluar, dan alasan nonaktif. Pendaftaran dari identitas existing menyalin personal, bukan seluruh kondisi akademik.
 
+**Target design enrollment tahunan — Gap per 3 November 2026:** `Student` dan relasi identitas tetap menjadi pemilik data personal serta NIS/unit, sedangkan kelas, tahun pelajaran, status masuk, dan status akademik tahunan dipindahkan bertahap ke `StudentEnrollment`. Satu record siswa dapat memiliki banyak enrollment lintas tahun tanpa menimpa riwayat. Status enrollment minimum: `Direncanakan`, `Aktif`, `Selesai`, dan `Dibatalkan`. Kombinasi `student_id + education_unit_id + academic_year_id` harus unik; hanya satu enrollment `Aktif` untuk siswa pada unit yang sama. Enrollment `Direncanakan` menyimpan kelas tujuan tanpa mengubah kelas aktif tahun berjalan.
+
 **DATA-01:** gabung/pisah identitas hanya mengubah relasi identitas. `student_id` pada pembayaran, tagihan, dan riwayat tetap record asal. Nama sama tidak membuktikan orang yang sama. Alumni tetap baris `students` dengan `is_active=false`, bukan tabel arsip baru.
 
 ### 5.3 Keuangan
@@ -167,7 +171,10 @@ Field per record/unit: NIS, kelas/unit, tahun pelajaran, tanggal masuk, tanggal 
 - **FIN-07:** sinkronisasi menyesuaikan kewajiban yang relevan, tidak membuat transaksi pembayaran, menghilangkan pembayaran diterima, atau memindahkan ownership.
 - **FIN-08:** pengajuan/keputusan transfer dan perubahan pembayaran harus konsisten ketika request diulang atau bersamaan; uji transaksi database, locking, validasi status, dan alokasi agar tidak terhitung dua kali.
 - **FIN-09:** perubahan kelas, tahun, alumni, atau identitas tidak menghapus transaksi historis. Koreksi/batal mengikuti service dan jejak audit, bukan edit nominal langsung pada database.
-- **FIN-10:** kategori `Pendaftaran` adalah tagihan wajib sekali bayar untuk `Siswa Baru` dan `Pindahan`; kategori `Daftar Ulang` adalah tagihan wajib sekali bayar untuk `Siswa Lama`. Sasaran ditetapkan server dari `intake_status`, bukan dari tingkat kelas, sehingga siswa pindahan kelas 8/11 tetap membayar Pendaftaran. Keduanya dibuat sebagai `FeeType`, lalu masuk ke Tagihan dan Pembayaran setelah Sinkron Tagihan; Pendaftaran yang belum disinkronkan tidak boleh dibayar melalui endpoint langsung.
+- **FIN-10:** kategori `Pendaftaran` adalah tagihan wajib sekali bayar untuk `Siswa Baru` dan `Pindahan`; kategori `Daftar Ulang` adalah tagihan wajib sekali bayar untuk `Siswa Lama`. Sasaran ditetapkan server dari `intake_status`, bukan dari tingkat kelas, sehingga siswa pindahan kelas 8/11 tetap membayar Pendaftaran. Keduanya wajib memiliki Tahun Pelajaran dan dibedakan dengan kunci jenis, unit, tahun pelajaran, serta tingkat kelas; kombinasi yang sama tidak boleh dibuat ganda. Sinkronisasi hanya memakai kategori pada tahun siswa yang sedang diproses. Daftar Ulang tahun depan boleh dibayar sebelum tahun tersebut aktif, sedangkan kategori tahun lama hanya ditawarkan bila siswa masih memiliki tagihan aktif. Keduanya dibuat sebagai `FeeType`, lalu masuk ke Tagihan dan Pembayaran setelah Sinkron Tagihan; Pendaftaran yang belum disinkronkan tidak boleh dibayar melalui endpoint langsung.
+- **FIN-11:** migrasi operasional memakai cut-off SPP 1 Januari 2026 untuk siswa aktif MTs, MA, dan PONPES. Perapihan hanya membatalkan tagihan SPP sebelum cut-off yang benar-benar belum memiliki nominal pembayaran, alokasi, pembayaran manual, maupun transaksi SPP berstatus `Diterima`. Tagihan lunas/sebagian, seluruh transaksi historis, siswa nonaktif, tagihan non-SPP, dan awal tagihan setelah cut-off dipertahankan. Tunggakan khusus sebelum 2026 diterbitkan kembali secara manual setelah verifikasi petugas.
+- **FIN-12 (Target design/Gap):** Pendaftaran dan Daftar Ulang terhubung ke enrollment tahun tujuan. Enrollment pertama pada record siswa/unit mempertahankan status penerimaan `Siswa Baru` atau `Pindahan` dan dikenai Pendaftaran; enrollment lanjutan dari tahun sebelumnya otomatis berstatus `Siswa Lama` dan dikenai Daftar Ulang. Aturan ini tidak ditentukan dari tingkat kelas, sehingga siswa pindahan yang pertama masuk pada kelas 8/11 tetap Pendaftaran, sedangkan siswa yang naik ke kelas 8/9 atau 11/12 tetap Daftar Ulang. Tingkat tarif mengikuti kelas tujuan pada enrollment, bukan kelas aktif tahun sebelumnya. Enrollment `Direncanakan` boleh memiliki tagihan dan menerima pembayaran lebih awal.
+- **FIN-13 (Target design/Gap):** tagihan menyimpan snapshot jenis, nama kategori, unit, tahun pelajaran, kelas/tingkat tujuan, status masuk, dan nominal saat diterbitkan. Perubahan tarif, kelas, atau aktivasi tahun berikutnya tidak mengubah snapshot maupun transaksi historis. Kombinasi kategori `kelompok pembayaran + unit + tahun pelajaran + tingkat` harus unik; kombinasi tagihan `enrollment + kategori + periode` tidak boleh ganda.
 
 ### 5.4 Batas Modul
 
@@ -197,6 +204,8 @@ Simpan siswa menjalankan sinkronisasi tagihan relevan. Data kelas/tahun kosong y
 
 Perapihan massal awal tagihan tersedia bagi pengguna yang sekaligus memiliki `students.update` dan `bills.sync`. Preview menampilkan jumlah siswa MTs/MA/PONPES dengan awal tagihan kosong, tagihan sebelum Agustus yang belum dibayar, transaksi berbayar yang dipertahankan, serta siswa yang perlu ditinjau. Konfirmasi mengisi 1 Agustus sesuai tahun masuk dan membatalkan tagihan SPP sebelum tanggal tersebut hanya bila belum memiliki pembayaran. Siswa dengan tagihan sebelum Agustus yang sudah dibayar sebagian dilewati seluruhnya untuk ditinjau manual; tanggal manual, tagihan lunas, dan transaksi sah tidak diubah. Proses mengikuti scope unit pengguna dan dicatat pada audit log.
 
+Cut-off Tagihan 2026 tersedia sebagai proses terpisah dengan permission yang sama. Preview wajib menampilkan siswa terdampak, jumlah/nominal tagihan lama tanpa pembayaran, tagihan berbayar, transaksi historis, pembayaran sebagian, dan cakupan unit. Konfirmasi eksplisit mengubah awal tagihan siswa aktif yang masih sebelum cut-off menjadi 1 Januari 2026 dan membatalkan hanya tagihan SPP pra-2026 tanpa bukti pembayaran. Proses tidak menghapus transaksi atau baris tagihan, mengikuti scope unit, memakai transaksi database, mencatat audit, dan harus mampu memproses volume data besar tanpa memuat seluruh tagihan ke memori aplikasi.
+
 ### 6.3 Import/Export (`STU-03`)
 
 Alur wajib: download template bila perlu, upload Excel, preview, konfirmasi, simpan baris valid, hasil. Preview berisi total/valid/update/gagal, status Baru/Update/Gagal, dan alasan per baris. File sementara memakai token; token hilang/kedaluwarsa meminta upload ulang; file dibersihkan setelah selesai.
@@ -223,6 +232,17 @@ Filter tahun sumber, unit, kelas, search, jumlah data; pilih siswa, tentukan tuj
 Pindah Kelas mengubah kelas dalam tahun yang sama. Naik Kelas mewajibkan kelas+tahun tujuan dan mengubah `intake_status` menjadi `Siswa Lama`. Tolak tujuan invalid, tujuan tidak sesuai scope unit, semua target sama dengan kondisi awal, atau nama duplikat dalam kelas tujuan. Pilihan campuran yang sudah berada di tujuan perlu hasil yang tidak ambigu; rekomendasi menolak kasus ambigu, bukan diam-diam memindahkan sebagian.
 
 Setelah sukses, sinkronkan tagihan, pertahankan riwayat, dan laporkan jumlah siswa. Nama sama pada kelas berbeda tidak otomatis ditolak sebagai duplikasi global.
+
+#### Target Enrollment Tahunan (`ENR-01`, Gap)
+
+Naik kelas lintas tahun ditingkatkan menjadi dua tahap agar kelas aktif tidak berubah sebelum waktunya:
+
+1. **Rencanakan kenaikan:** pilih tahun sumber, siswa, tahun tujuan, unit, serta kelas tujuan. Sistem membuat `StudentEnrollment` berstatus `Direncanakan`, menyimpan hubungan ke enrollment sumber, dan tidak mengubah enrollment `Aktif`.
+2. **Aktifkan tahun baru:** setelah preview dan konfirmasi, enrollment lama menjadi `Selesai` dan enrollment tujuan menjadi `Aktif` secara atomik. Enrollment yang dibatalkan tidak boleh diaktifkan.
+
+Rencana menolak siswa nonaktif, tujuan di luar scope, lebih dari satu enrollment pada unit+tahun yang sama, kelas tujuan tidak sesuai unit, serta target yang ambigu. Preview memuat kelas asal/tujuan, status masuk tujuan, kategori Pendaftaran/Daftar Ulang yang cocok, tagihan yang sudah terbit/dibayar lebih awal, kategori yang belum tersedia, dan potensi duplikasi. Aktivasi tidak membuat ulang tagihan yang sudah diterbitkan untuk enrollment tujuan.
+
+Pindah kelas dalam tahun yang sama tetap memperbarui enrollment `Aktif`. Pindah unit atau penerimaan baru membuat enrollment pada record siswa/unit yang sah dan tidak memindahkan `student_id` transaksi dari record asal.
 
 ### 6.6 Alumni (`STU-06`)
 
@@ -252,7 +272,7 @@ Sumber: S03, S06, V01 dan arahan pengguna terbaru. ID: `PAY-*`.
 
 ### 7.1 Layout dan Pencarian (`PAY-01`)
 
-Halaman default langsung transaksi: Cari Siswa -> Pilih Tagihan -> Bayar -> Cetak Struk. Tidak ada landing page atau tab Transaksi Baru/Import/Riwayat. Import Excel merupakan aksi heading.
+Halaman default langsung transaksi: Cari Siswa -> Pilih konteks enrollment/tahun bila lebih dari satu -> Pilih Tagihan -> Tinjau -> Konfirmasi -> Bayar -> Cetak Struk. Selama enrollment tahunan belum diimplementasikan, konteks memakai record siswa/unit dan tagihan existing. Tidak ada landing page atau tab Transaksi Baru/Import/Riwayat. Import Excel merupakan aksi heading.
 
 Saat belum memilih siswa, tampilkan pencarian ringkas dan empty state. Cari nama/NIS/NISN, kelompokkan pendaftaran lintas unit menjadi satu identitas. Boleh auto-select bila tepat satu identitas. Setelah dipilih, profil memuat NIS/unit/kelas gabungan, nama, dan status; pencarian tidak mendominasi workspace.
 
@@ -274,13 +294,15 @@ Daftar dibagi Tagihan Wajib dan Pembayaran Opsional. Wajib yang masih bersisa de
 
 Checkbox dan pilihan periode berada pada daftar tagihan. SPP/laundry memakai label `Bayar sampai`; item tanpa periode menampilkan detail singkat. Nominal item dan total berubah saat pilihan/periode berubah. Profil/daftar lintas unit tetap memperhatikan scope pengguna.
 
+Pendaftaran dan Daftar Ulang menampilkan konteks lengkap `Jenis · Unit · Tingkat/Kelas Tujuan · Tahun Pelajaran`. Daftar Ulang tahun depan memakai enrollment `Direncanakan`; kategori tahun lama hanya ditawarkan bila masih ada tagihan aktif. Setelah enrollment tersedia, pemilihan kategori tidak boleh hanya mengandalkan kelas aktif pada `students`.
+
 ### 7.3 Form Kasir (`PAY-03`)
 
 Isi: total terpilih, tipe Lunas/Cicil, Nominal Dibayar, metode, bukti bila Transfer, tombol `Bayar & Cetak Struk`. Lunas mengisi total dan readonly; Cicil dapat diubah dari 1 sampai total terpilih. Jangan gunakan istilah Titip untuk cicilan.
 
 Metode UI Tunai/Transfer Bank dipetakan ke `Cash`/`Transfer`. Petugas hanya Cash; pembatasan juga wajib pada request server. Transfer baru mewajibkan bukti JPG/JPEG/PNG/PDF maksimal 2 MB dan rekening tujuan. Transfer kasir/admin dan pengajuan transfer wali memiliki alur berbeda; jangan membuat semua transfer otomatis Pending bila service admin memang menerima langsung.
 
-Tombol tidak aktif saat pilihan kosong/total nol/nominal invalid, dan menjaga ukuran saat loading. Sebelum penyimpanan keuangan, konfirmasi siswa, periode, nominal, serta metode. Submit ulang tidak boleh menggandakan pembayaran.
+Tombol tidak aktif saat pilihan kosong/total nol/nominal invalid, dan menjaga ukuran saat loading. Sebelum penyimpanan keuangan, tampilkan konfirmasi siswa/NIS, enrollment atau tahun tujuan, unit/kelas tujuan, rincian tagihan/periode, nominal, serta metode. Submit ulang tidak boleh menggandakan pembayaran.
 
 Statistik dihitung dari pilihan dan nominal saat ini; sisa/progres konsisten, tidak negatif atau lebih dari 100%. Keputusan nominal sah tetap pada server. Pertahankan fungsi rupiah/quote/alokasi existing.
 
@@ -292,13 +314,23 @@ Riwayat menggabungkan SPP/Other, maksimal 5-10 item; kode/test saat ini memakai 
 
 ### 7.5 Import Pembayaran (`PAY-05`)
 
-Jenis: SPP, Pendaftaran, Daftar Ulang, Laundry, Lain-lain. Pilih konteks/file, Preview Data, validasi valid/gagal/duplikat, lalu konfirmasi jika ada baris valid. SPP mewajibkan unit, bulan, tahun dari form sebagai konteks utama; kolom Excel yang berbeda harus ditolak. Jika kolom unit/bulan/tahun tidak ada, gunakan konteks form.
+Jenis: SPP, Pendaftaran, Daftar Ulang, Laundry, Lain-lain. Setiap import wajib memilih satu unit pendidikan sehingga satu file hanya memproses satu unit. Unit pada Excel harus cocok dengan unit pilihan dan akses pengguna; baris dari unit lain ditolak. Pilih konteks/file, Preview Data, validasi valid/gagal/duplikat, lalu konfirmasi jika ada baris valid. Bulan dan tahun hanya menjadi konteks tambahan untuk SPP; kolom Excel SPP yang berbeda harus ditolak. Jika kolom unit/bulan/tahun SPP tidak ada, gunakan konteks form.
+
+Import Pendaftaran/Daftar Ulang wajib memetakan kategori berdasarkan jenis, unit, tahun pelajaran, dan tingkat. Jika Excel menyebut tahun/tingkat yang berbeda dari kategori hasil pemetaan atau enrollment tujuan siswa, baris gagal; sistem tidak boleh diam-diam memindahkan transaksi ke kategori tahun/tingkat lain. Preview menampilkan konteks kategori tersebut sebelum konfirmasi.
 
 Khusus import Excel SPP, bulan boleh diproses tanpa mengikuti tunggakan paling lama siswa. Pembayaran SPP manual tetap berurutan. Import tetap wajib menolak periode di luar masa tagihan, bulan yang sudah lunas, nominal melebihi sisa tagihan, unit/siswa yang tidak sesuai scope, serta transaksi duplikat.
 
 Kolom minimal SPP: NIS, Nama, Cara bayar, Waktu, Nominal; Petugas opsional. Import memerlukan `payments.import`; izin tersebut tidak diberikan kepada Bendahara secara default.
 
 Empty/error penting: siswa tidak ditemukan, belum ada siswa dipilih, tidak ada tagihan aktif/wajib, opsional tersedia ketika wajib lunas, belum ada riwayat, belum memilih tagihan, nominal kosong/melebihi total, bukti belum diunggah, scope unit ditolak, atau tagihan sudah lunas. Error dekat konteks; empty bukan error.
+
+### 7.6 Konfirmasi dan Idempotensi (`PAY-06`, Target design/Gap)
+
+Setiap form pembayaran memperoleh token transaksi unik dari server. Token terikat pada pengguna, siswa/enrollment, tagihan terpilih, dan masa berlaku yang wajar. Penyimpanan pembayaran, item, serta alokasi berlangsung dalam transaksi database dengan locking pada kewajiban yang dibayar.
+
+Request pertama dengan token valid memproses pembayaran. Request ulang dengan token dan payload yang sama mengembalikan hasil transaksi pertama tanpa membuat transaksi/alokasi baru; payload berbeda dengan token yang sudah dipakai ditolak. Menonaktifkan tombol atau mengubah label loading hanya perlindungan UI, bukan pengganti idempotensi server. Token tidak boleh dipakai lintas pengguna atau scope unit.
+
+**Gap per 3 November 2026:** kode saat ini menonaktifkan tombol ketika submit, tetapi test masih menegaskan form kasir dikirim tanpa modal konfirmasi dan belum ditemukan kontrak token idempotensi pembayaran umum. Implementasi harus memperbarui kode dan test; PRD ini tidak menyatakan fitur tersebut sudah tersedia.
 
 ## 8. Tagihan
 
@@ -308,7 +340,11 @@ Sumber: S04 dan S06. ID: `BILL-*`.
 
 Sumber utama `bills`: `remaining_amount > 0`, bukan `Dibatalkan`. SPP memakai `source_type=spp`; pendaftaran dan daftar ulang berasal dari `fee_type` dengan `payment_group` masing-masing; lain-lain dari manual/kategori relevan. Laundry dikecualikan selama opsional.
 
+**Target design enrollment:** tagihan Pendaftaran/Daftar Ulang memiliki `student_enrollment_id` dan snapshot konteks penerbitan. Untuk kompatibilitas, `student_id` tetap dipertahankan sebagai ownership record asal dan tagihan legacy boleh memiliki enrollment null sampai migrasi berhasil. Pembayaran tetap dialokasikan ke `Bill`; menambahkan enrollment tidak memindahkan transaksi atau mengganti `student_id` historis.
+
 Tahun aktif menjadi konteks operasional; periode internal sampai bulan berjalan boleh dipakai sinkron, tetapi bukan filter utama tambahan. Sinkron admin/internal bukan aksi kasir harian. Pembayaran diterima memperbarui sisa sehingga siswa lunas hilang dari daftar kewajiban.
+
+Sinkronisasi enrollment dilakukan melalui preview. Preview menampilkan tahun/enrollment tujuan, kelas asal dan tujuan, status masuk, kategori dan nominal, jumlah tagihan baru/existing, pembayaran lebih awal yang dipertahankan, kategori yang tidak cocok, serta potensi duplikasi. Sinkronisasi dapat diulang dengan hasil idempoten dan tidak mengubah snapshot tagihan yang sudah terbit kecuali melalui alur koreksi terkontrol.
 
 Admin melihat semua; bendahara unit yang ditugaskan; wali anak terhubung tanpa ringkasan semua unit. Detail/print/download/URL langsung harus mengikuti scope yang sama.
 
@@ -394,7 +430,7 @@ Bagian ini melengkapi PRD dari S06 dan pembacaan kode; belum ada PRD modul terpi
 - **Dashboard:** ringkasan penerimaan hari/bulan, tren, siswa aktif, tagihan/sisa/jatuh tempo, persentase pelunasan, aktivitas terbaru, rekap unit. Statistik dan chart ringan; tidak menggantikan laporan. Query dan cache wajib dibatasi berdasarkan unit/siswa yang dapat diakses pengguna.
 - **Tahun Pelajaran:** konteks aktif operasional serta periode arsip/laporan; validasi perubahan konteks dengan data terikat.
 - **Unit/Kelas:** unit pendidikan, kelas/tingkat, tahun dan status; pilihan kelas mengikuti unit. Penonaktifan tidak menghapus riwayat siswa/pembayaran.
-- **Kategori Pembayaran:** tarif/scope unit, kelas/tingkat, tahun, kelompok pembayaran, scope siswa dan `creates_bill`; gunakan `FeeType`/`ChargeCalculator`. Pendaftaran otomatis memakai sasaran Siswa Baru/Pindahan, sedangkan Daftar Ulang otomatis memakai Siswa Lama; keduanya wajib dan sekali bayar. Filter unit+nama/kode; aktif/nonaktif tampil bersama, status dikelola di form.
+- **Kategori Pembayaran:** tarif/scope unit, kelas/tingkat, tahun, kelompok pembayaran, scope siswa dan `creates_bill`; gunakan `FeeType`/`ChargeCalculator`. Pendaftaran otomatis memakai sasaran Siswa Baru/Pindahan, sedangkan Daftar Ulang otomatis memakai Siswa Lama; keduanya wajib, sekali bayar, wajib memiliki tahun pelajaran, dan unik berdasarkan kelompok+unit+tahun+tingkat. Kategori tahun depan mencocokkan enrollment tujuan; kategori lama tanpa tagihan aktif tidak ditawarkan di kasir. Filter unit+nama/kode; aktif/nonaktif tampil bersama, status dikelola di form.
 - **Keringanan Biaya:** relasi siswa dan pembayaran/tarif sesuai `FeeDiscount`. Filter unit+kelas+nama siswa; status bukan filter utama. Perubahan tarif/keringanan memperhatikan tagihan dan transaksi existing.
 - **Data User/Role:** `users.manage`, role aktif/permission, penugasan unit dan wali-anak. Jangan membuka hak penuh karena nama role terlihat seperti admin.
 - **Pengaturan:** nama, username, email, serta perubahan password dengan password saat ini dan konfirmasi. Konfigurasi bank/rekening global dinonaktifkan dan tidak boleh diproses oleh endpoint profil. Jika diaktifkan kembali, wajib memakai endpoint serta permission khusus Super Admin.
@@ -442,6 +478,19 @@ UI berbahasa Indonesia, app-shell konsisten, tanpa landing page, tanpa kartu dek
 
 Jangan menghapus guard, memakai database operasional untuk test, menjalankan `migrate:fresh`/`db:wipe`, atau men-seed database pengguna untuk membuat tes lulus. Cache konfigurasi lokal dapat mengalahkan environment test bila tidak dipisahkan. Backup operasional dan file import/export bukan pengganti isolasi test.
 
+### 12.5 Target Migrasi Enrollment Tahunan (`ENR-02`, Gap)
+
+Implementasi enrollment wajib memakai migration additive dan rollout bertahap; jangan langsung menghapus kolom akademik existing pada `students`.
+
+1. Tambahkan tabel enrollment dan kolom relasi nullable pada tagihan/konteks pembayaran yang memerlukannya. Pertahankan `student_id` existing.
+2. Jalankan preview backfill berdasarkan `student_id`, unit/kelas, tahun pelajaran, status masuk, tanggal masuk/keluar, dan status aktif. Data ambigu tidak diubah otomatis dan masuk daftar tinjauan.
+3. Backfill harus idempoten: dijalankan ulang tidak membuat enrollment, tagihan, atau transaksi ganda. Simpan jumlah dibuat/existing/gagal dan audit tanpa data pribadi berlebihan.
+4. Setelah verifikasi, pembacaan memakai enrollment dengan fallback legacy yang eksplisit. Dual-write sementara hanya boleh memiliki satu pemilik aturan dan test konsistensi.
+5. Hubungkan tagihan Pendaftaran/Daftar Ulang ke enrollment bila dapat dibuktikan aman; tagihan/transaksi yang ambigu tetap pada `student_id` asal dan tidak dipindahkan.
+6. Aktifkan constraint unik setelah duplikasi dibersihkan. Penghapusan/finalisasi kolom legacy adalah rilis terpisah setelah rollback dan rekonsiliasi terbukti.
+
+Sebelum backfill database target: backup, cek jumlah siswa per unit/tahun, tagihan per sumber, transaksi/alokasi, enrollment kandidat, serta duplikasi. Sesudah backfill: rekonsiliasi angka yang sama, sampling siswa lintas status, dan pastikan total nominal transaksi tidak berubah. Proses operasional menyediakan dry-run/preview, chunking, locking yang sesuai, resume aman, serta audit. Test otomatis tetap hanya pada SQLite `:memory:`; pengujian backfill terhadap salinan data dilakukan di lingkungan nonproduksi terkontrol.
+
 ## 13. Kriteria Penerimaan
 
 Checklist berikut menyatukan skenario sumber; pilih test yang terkait perubahan. Pernyataan di sini bukan hasil test terbaru.
@@ -457,11 +506,15 @@ Checklist berikut menyatukan skenario sumber; pilih test yang terkait perubahan.
 | STU-03 | Header invalid, tanpa tahun aktif, preview hilang, update sel kosong, unit tidak valid, kelas otomatis, hasil serta cleanup file | `MasterDataTest` |
 | STU-04 | Confidence benar, tinjau record benar, minimal dua anggota, root stabil, split melepas grup; `student_id` keuangan tetap | `MasterDataTest` |
 | STU-05 | Pindah/promosi menolak nonaktif/tahun sumber salah/target sama/duplikat; promosi mengubah intake, tahun dan kelas | `MasterDataTest` |
+| ENR-01 | Rencana kenaikan membuat enrollment tujuan tanpa mengubah kelas aktif; kelas 7 dapat direncanakan ke kelas 8; aktivasi menyelesaikan enrollment lama dan mengaktifkan tujuan tanpa menggandakan tagihan | Kebutuhan tambahan; model/route/test belum tersedia |
+| ENR-02 | Backfill enrollment idempoten, data ambigu ditinjau, ownership `student_id` tetap, total transaksi/alokasi tidak berubah, constraint unik berlaku setelah rekonsiliasi | Kebutuhan migration + test service/command baru |
 | STU-06 | Alumni butuh konteks lengkap, kelas tak kosong, tanggal/alasan; aksi individual dan massal menyinkronkan tagihan; preview perapihan lama mengikuti permission/scope, membatalkan kewajiban pasca-keluar yang belum dibayar, mempertahankan tagihan manual/periode keluar/sebelumnya dan pembayaran sah; arsip serta reaktivasi tidak menghapus riwayat | `MasterDataTest`, `PaymentMenuTest` |
 | STU-07/08 | Audit before/after dan pelaku benar; indikator kualitas read-only, detail terfilter/paginated sesuai izin | Kebutuhan tambahan; Kualitas Data belum route aktif |
 | PAY-01/02 | Search/auto-select identitas, profile lintas unit, alumni menunggak tetap dapat dipilih sesuai scope hingga lunas, wajib/opsional default tepat, periode dan total sinkron | `PaymentMenuTest` + interaksi browser |
-| PAY-03 | Lunas readonly, cicil positif <= total, bukti wajib/ukuran/tipe, request Transfer kasir ditolak, stale/double submit aman | `PaymentMenuTest` |
+| PAY-03 | Lunas readonly, cicil positif <= total, bukti wajib/ukuran/tipe, request Transfer kasir ditolak, konfirmasi memuat siswa/enrollment/tagihan/nominal/metode | `PaymentMenuTest` + interaksi browser; konfirmasi masih gap |
 | PAY-04/05 | SPP/Other/Laundry sesuai service, struk tersedia, lima terbaru, import konteks form dan preview tetap benar | `PaymentMenuTest` |
+| PAY-06 | Token idempotensi terikat user/scope/payload; submit ulang sama mengembalikan transaksi pertama, payload berbeda ditolak, transaksi dan alokasi tidak ganda pada request bersamaan | Kebutuhan tambahan; test concurrency/service belum tersedia |
+| FIN-12/13 | Pendaftaran/Daftar Ulang memakai enrollment dan kelas tujuan yang benar; siswa pindahan tingkat lanjut tetap Pendaftaran; kelas 8/9 dan tahun berbeda tidak tertukar; snapshot tagihan tidak berubah saat tarif/kelas berubah | Kebutuhan tambahan + regresi master/tagihan/pembayaran |
 | BILL-01 | Lunas/Dibatalkan/laundry tidak masuk; ringkasan dan tabel filter/search/scope sama | `BillAccessTest`, test pembayaran/tagihan relevan |
 | BILL-02/03 | Sort dan pagination mempertahankan konteks, Detail surat, Bayar hanya berizin, rincian/terbilang/print sesuai | Feature terkait + QA print |
 | TRF-01 | Saat fitur dinonaktifkan, form/menu tidak tampil dan endpoint pengajuan/verifikasi menolak akses; bila diaktifkan, Pending tidak mengurangi sisa, hanya admin menerima/menolak, alasan tolak tersimpan, dan verifikasi ulang tidak menggandakan | `BillAccessTest`/test transfer terkait |
@@ -478,8 +531,8 @@ Nama suite mengacu file di `tests/Feature`; pemetaan menunjukkan tempat memeriks
 
 ### 14.1 Urutan Kerja
 
-- **P0:** isolasi test dan integritas data; permission/scope; input siswa, preview import, operasi kelas/alumni; tagihan dan pembayaran sah, konsistensi nominal, struk.
-- **P1:** rapikan identitas dan alumni, export/filter, audit, portal wali/verifikasi, empat laporan. Urutan laporan: Transaksi, SPP Perbulan, SPP Pertahun, Rekap Unit.
+- **P0:** isolasi test dan integritas data; permission/scope; input siswa, preview import, operasi kelas/alumni; tagihan dan pembayaran sah, konsistensi nominal, struk; token idempotensi pembayaran dan konfirmasi sebelum transaksi.
+- **P1:** desain/migration enrollment tahunan, rencana kelas tujuan, aktivasi tahun serta tagihan berbasis enrollment; rapikan identitas dan alumni, export/filter, audit, portal wali/verifikasi, empat laporan. Urutan laporan: Transaksi, SPP Perbulan, SPP Pertahun, Rekap Unit.
 - **P2:** penyempurnaan granular permission, monitoring kualitas data, UX/responsif, pemecahan view/JS bila kompleksitas membutuhkan.
 - **P3/maintenance:** detail indikator Kualitas Data dan pagination sesuai rencana rilis historis; cleanup CSS bertahap dan optimasi query. Penamaan P0-P3 pada release lama hanya berlaku untuk rilis Manajemen Siswa tersebut.
 
@@ -496,12 +549,16 @@ Urutan Multi Login: label/permission, relasi unit, scope unit, verifikasi admin,
 | Tagihan lama muncul/berubah tidak sah | Awal tagihan dan periode divalidasi; regressi service, riwayat diterima dipertahankan |
 | Scope bocor lewat laporan/cache/proof | Scope sebelum query/aggregate/export; cek cache key dan URL langsung |
 | Pending dihitung atau pembayaran ganda | Aturan status/alokasi, lock/transaction, pengujian request ulang |
+| Daftar Ulang tahun depan memakai kelas aktif tahun lama | Enrollment `Direncanakan` menyimpan kelas tujuan; kategori/tagihan mencocokkan enrollment, bukan kolom kelas tunggal pada siswa |
+| Backfill enrollment menggandakan atau memindahkan histori | Migration additive, dry-run idempoten, constraint unik, data ambigu ditinjau, rekonsiliasi total transaksi/alokasi, `student_id` asal dipertahankan |
 | CSS lintas menu berubah karena cleanup | Batch per pemilik selector, audit cascade, build dan screenshot menu terdampak |
 | Dokumen historis dikira implementasi aktif | Daftar gap, cek route/kode, catat tanggal bukti verifikasi |
 
 ### 14.3 Rilis dan Definition of Done
 
 Sebelum rilis: review perubahan relevan/worktree, target environment dan database, backup database target, catat role/permission, pastikan tidak ada operasi massal berjalan saat perubahan skema. Test dilakukan di environment terisolasi; build jika frontend berubah. Migration rilis sesuai versi kode, bukan mengeksekusi semua petunjuk historis tanpa pemeriksaan.
+
+Target enrollment tahunan belum boleh disebut selesai hanya karena tabel atau form sudah tersedia. Rilisnya harus melewati migration additive, preview dan rekonsiliasi backfill, fallback legacy yang teruji, rencana kelas tujuan, aktivasi tahun atomik, penerbitan tagihan idempoten, serta verifikasi bahwa nominal dan ownership transaksi historis tidak berubah. Penghapusan kolom akademik legacy merupakan rilis terpisah.
 
 Sumber rilis siswa menyebut migration `2026_08_01_000000_create_audit_logs_table` dan `2026_08_01_010000_add_student_granular_permissions_to_roles`. Status Ran serta angka 68 tests/971 assertions pada release note adalah hasil 1 Agustus 2026, bukan hasil pemeriksaan dokumentasi ini. Demikian pula hash commit lama adalah petunjuk sejarah, bukan target deploy otomatis.
 

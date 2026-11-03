@@ -63,6 +63,48 @@ class FeeType extends Model
             && $this->matchesStudentScope($student);
     }
 
+    public function matchesStudentAcademicYear(Student $student): bool
+    {
+        if (! $this->matchesStudent($student)) {
+            return false;
+        }
+
+        if (in_array($this->payment_group, ['pendaftaran', 'daftar-ulang'], true)) {
+            return $this->academic_year_id !== null
+                && (int) $this->academic_year_id === (int) $student->academic_year_id;
+        }
+
+        return $this->academic_year_id === null
+            || (int) $this->academic_year_id === (int) $student->academic_year_id;
+    }
+
+    public function matchesStudentPaymentYear(Student $student): bool
+    {
+        if ($this->matchesStudentAcademicYear($student)) {
+            return true;
+        }
+
+        if ($this->payment_group !== 'daftar-ulang' || ! $this->matchesStudent($student)) {
+            return false;
+        }
+
+        $this->loadMissing('academicYear');
+        $student->loadMissing('academicYear');
+        $feeYear = $this->academicYear?->start_date?->year
+            ?? $this->academicYearStartFromName($this->academicYear?->name);
+        $studentYear = $student->academicYear?->start_date?->year
+            ?? $this->academicYearStartFromName($student->academicYear?->name);
+
+        return $feeYear !== null && $studentYear !== null && $feeYear > $studentYear;
+    }
+
+    private function academicYearStartFromName(?string $name): ?int
+    {
+        return preg_match('/\b(20\d{2})\b/', (string) $name, $matches)
+            ? (int) $matches[1]
+            : null;
+    }
+
     public function matchesStudentScope(Student $student): bool
     {
         return match ($this->student_scope ?: self::STUDENT_SCOPE_ALL) {

@@ -1844,6 +1844,7 @@ class PaymentMenuTest extends TestCase
             ->get(route('finance.payments.import'))
             ->assertOk()
             ->assertSee('name="unit_id"', false)
+            ->assertSee('data-payment-import-unit-field', false)
             ->assertSee('value="'.$unit->id.'"', false)
             ->assertSee('name="month"', false)
             ->assertSee('value="7"', false)
@@ -1863,6 +1864,19 @@ class PaymentMenuTest extends TestCase
                 'year' => 2025,
             ])
             ->assertSessionHasErrors('file');
+    }
+
+    public function test_other_payment_import_preview_requires_a_unit(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->post(route('finance.other.import.preview', ['category' => 'daftar-ulang']), [
+                'file' => UploadedFile::fake()->create(
+                    'pembayaran.xlsx',
+                    10,
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                ),
+            ])
+            ->assertSessionHasErrors('unit_id');
     }
 
     public function test_spp_import_preview_rejects_invalid_file_type(): void
@@ -3200,6 +3214,7 @@ class PaymentMenuTest extends TestCase
         ]);
         $registrationFee = FeeType::create([
             'education_unit_id' => $otherUnit->id,
+            'academic_year_id' => $year->id,
             'payment_group' => 'daftar-ulang',
             'code' => 'DU-PONPES-TEST',
             'name' => 'Daftar Ulang PONPES Test',
@@ -3413,17 +3428,20 @@ class PaymentMenuTest extends TestCase
                 'other_payment_imports.'.$token => [
                     'path' => 'other-payment-imports/'.$token.'.xlsx',
                     'name' => 'other-payments.xlsx',
+                    'unit_id' => $assignedUnit->id,
                     'mappings' => [],
                 ],
             ])
             ->post(route('finance.other.import', ['category' => 'daftar-ulang']), ['token' => $token])
-            ->assertRedirect(route('finance.payments.import'));
+            ->assertRedirect(route('finance.payments.import'))
+            ->assertSessionHas('success', fn (string $message) => str_contains($message, 'tidak sesuai dengan unit yang dipilih'));
 
         $this->assertDatabaseHas('other_payments', ['student_id' => $assignedStudent->id, 'paid_amount' => 100000]);
         $this->assertDatabaseMissing('other_payments', ['student_id' => $otherStudent->id]);
         $audit = AuditLog::where('action', 'payments.other.import')->firstOrFail();
         $this->assertSame(1, (int) $audit->metadata['imported']);
         $this->assertSame(1, (int) $audit->metadata['failed_rows']);
+        $this->assertSame($assignedUnit->id, (int) $audit->metadata['unit_id']);
 
         CarbonImmutable::setTestNow();
     }
@@ -3447,6 +3465,7 @@ class PaymentMenuTest extends TestCase
         ]);
         $feeType = FeeType::create([
             'education_unit_id' => $unit->id,
+            'academic_year_id' => $year->id,
             'payment_group' => 'daftar-ulang',
             'code' => 'DU-PROOF',
             'name' => 'Daftar Ulang Proof',

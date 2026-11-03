@@ -3,10 +3,7 @@
 namespace App\Services;
 
 use App\Models\Bill;
-use App\Models\BillManualPayment;
-use App\Models\BillPaymentAllocation;
 use App\Models\SppPayment;
-use App\Models\SppPaymentItem;
 use App\Models\Student;
 use App\Support\PerformanceCache;
 use App\Support\StudentBillingStart;
@@ -28,7 +25,7 @@ class StudentBillingCutoffCleanupService
     {
         $result = DB::transaction(function () use ($unitIds) {
             $students = $this->candidateQuery($unitIds)->lockForUpdate()->get();
-            $analysis = $this->analyze($students, true);
+            $analysis = $this->analyze($students);
 
             $updatedStudents = $analysis['student_ids'] === []
                 ? 0
@@ -39,15 +36,9 @@ class StudentBillingCutoffCleanupService
                         'updated_at' => now(),
                     ]);
 
-            $cancelledBills = $analysis['cancelable_bill_ids'] === []
+            $cancelledBills = $analysis['cancelable_bill_count'] < 1
                 ? 0
-                : Bill::query()
-                    ->whereIn('id', $analysis['cancelable_bill_ids'])
-                    ->where('source_type', 'spp')
-                    ->where('status', '!=', 'Dibatalkan')
-                    ->where(fn ($query) => $query->whereNull('paid_amount')->orWhere('paid_amount', '<=', 0))
-                    ->whereDoesntHave('allocations', fn ($query) => $query->where('amount', '>', 0))
-                    ->whereDoesntHave('manualPayments', fn ($query) => $query->where('paid_amount', '>', 0))
+                : $this->cancelableBillQuery($students->pluck('id'))
                     ->update([
                         'remaining_amount' => 0,
                         'status' => 'Dibatalkan',
@@ -90,10 +81,43 @@ class StudentBillingCutoffCleanupService
             ->orderBy('students.id');
     }
 
-    private function analyze(Collection $students, bool $lockBills = false): array
+    private function analyze(Collection $students): array
     {
         $studentIds = $students->pluck('id')->map(fn ($id) => (int) $id)->values();
-        $billQuery = Bill::query()
+        $cancelableBillQuery = $this->cancelableBillQuery($studentIds);
+        $paidBillQuery = $this->paidBillQuery($studentIds);
+        $cancelableBillCount = (clone $cancelableBillQuery)->count();
+        $cancelableBillAmount = (int) (clone $cancelableBillQuery)->sum('remaining_amount');
+        $paidBillsPreserved = (clone $paidBillQuery)->count();
+        $paidBillAmountPreserved = (int) (clone $paidBillQuery)->sum('total_amount');
+        $partiallyPaidBills = (clone $paidBillQuery)->where('remaining_amount', '>', 0)->count();
+
+        $unitCounts = $students
+            ->groupBy(fn (Student $student) => $student->schoolClass?->educationUnit?->code ?? '-')
+            ->map->count()
+            ->sortKeys()
+            ->all();
+
+        return [
+            'cutoff_date' => self::CUTOFF_DATE,
+            'candidate_count' => $students->count(),
+            'cancelable_bill_count' => $cancelableBillCount,
+            'cancelable_bill_amount' => $cancelableBillAmount,
+            'paid_bills_preserved' => $paidBillsPreserved,
+            'paid_bill_amount_preserved' => $paidBillAmountPreserved,
+            'partially_paid_bills' => $partiallyPaidBills,
+            'historical_transactions_preserved' => $this->historicalTransactionCount($studentIds),
+            'unit_counts' => $unitCounts,
+            'student_ids' => $studentIds->all(),
+            'previous_billing_start_dates' => $students->mapWithKeys(fn (Student $student) => [
+                (string) $student->id => $student->billing_start_date?->format('Y-m-d'),
+            ])->all(),
+        ];
+    }
+
+    private function baseHistoricalBillQuery(Collection $studentIds): Builder
+    {
+        return Bill::query()
             ->whereIn('student_id', $studentIds)
             ->where('source_type', 'spp')
             ->where('status', '!=', 'Dibatalkan')
@@ -105,75 +129,39 @@ class StudentBillingCutoffCleanupService
                     ->orWhere(fn ($query) => $query
                         ->where('year', $cutoff->year)
                         ->where('month', '<', $cutoff->month));
-            })
-            ->orderBy('id');
-
-        if ($lockBills) {
-            $billQuery->lockForUpdate();
-        }
-
-        $bills = $billQuery->get([
-            'id', 'student_id', 'year', 'month', 'total_amount', 'paid_amount', 'remaining_amount',
-        ]);
-        $billIds = $bills->pluck('id');
-        $allocationAmounts = BillPaymentAllocation::query()
-            ->whereIn('bill_id', $billIds)
-            ->groupBy('bill_id')
-            ->selectRaw('bill_id, SUM(amount) AS aggregate')
-            ->pluck('aggregate', 'bill_id');
-        $manualAmounts = BillManualPayment::query()
-            ->whereIn('bill_id', $billIds)
-            ->groupBy('bill_id')
-            ->selectRaw('bill_id, SUM(paid_amount) AS aggregate')
-            ->pluck('aggregate', 'bill_id');
-        $acceptedPaymentPeriods = $this->acceptedPaymentPeriods($studentIds);
-
-        $hasPayment = fn (Bill $bill): bool => (int) $bill->paid_amount > 0
-            || (int) $allocationAmounts->get($bill->id, 0) > 0
-            || (int) $manualAmounts->get($bill->id, 0) > 0
-            || $acceptedPaymentPeriods->has($this->periodKey($bill->student_id, $bill->year, $bill->month));
-        $preservedBills = $bills->filter($hasPayment);
-        $cancelableBills = $bills->reject($hasPayment);
-        $reviewBills = $preservedBills->filter(fn (Bill $bill) => (int) $bill->remaining_amount > 0);
-
-        $unitCounts = $students
-            ->groupBy(fn (Student $student) => $student->schoolClass?->educationUnit?->code ?? '-')
-            ->map->count()
-            ->sortKeys()
-            ->all();
-
-        return [
-            'cutoff_date' => self::CUTOFF_DATE,
-            'candidate_count' => $students->count(),
-            'cancelable_bill_count' => $cancelableBills->count(),
-            'cancelable_bill_amount' => (int) $cancelableBills->sum('remaining_amount'),
-            'paid_bills_preserved' => $preservedBills->count(),
-            'paid_bill_amount_preserved' => (int) $preservedBills->sum('total_amount'),
-            'partially_paid_bills' => $reviewBills->count(),
-            'historical_transactions_preserved' => $this->historicalTransactionCount($studentIds),
-            'unit_counts' => $unitCounts,
-            'student_ids' => $studentIds->all(),
-            'cancelable_bill_ids' => $cancelableBills->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
-        ];
+            });
     }
 
-    private function acceptedPaymentPeriods(Collection $studentIds): Collection
+    private function paidBillQuery(Collection $studentIds): Builder
     {
-        return SppPaymentItem::query()
-            ->whereIn('student_id', $studentIds)
-            ->where('paid_amount', '>', 0)
+        return $this->baseHistoricalBillQuery($studentIds)
             ->where(function ($query) {
-                $cutoff = CarbonImmutable::parse(self::CUTOFF_DATE);
-                $query->where('year', '<', $cutoff->year)
-                    ->orWhere(fn ($query) => $query
-                        ->where('year', $cutoff->year)
-                        ->where('month', '<', $cutoff->month));
-            })
-            ->whereHas('payment', fn ($query) => $query->where('status', 'Diterima'))
-            ->get(['student_id', 'year', 'month'])
-            ->mapWithKeys(fn (SppPaymentItem $item) => [
-                $this->periodKey($item->student_id, $item->year, $item->month) => true,
-            ]);
+                $query->where('paid_amount', '>', 0)
+                    ->orWhereHas('allocations', fn ($query) => $query->where('amount', '>', 0))
+                    ->orWhereHas('manualPayments', fn ($query) => $query->where('paid_amount', '>', 0))
+                    ->orWhereExists(fn ($query) => $this->acceptedPaymentItemSubquery($query));
+            });
+    }
+
+    private function cancelableBillQuery(Collection $studentIds): Builder
+    {
+        return $this->baseHistoricalBillQuery($studentIds)
+            ->where(fn ($query) => $query->whereNull('paid_amount')->orWhere('paid_amount', '<=', 0))
+            ->whereDoesntHave('allocations', fn ($query) => $query->where('amount', '>', 0))
+            ->whereDoesntHave('manualPayments', fn ($query) => $query->where('paid_amount', '>', 0))
+            ->whereNotExists(fn ($query) => $this->acceptedPaymentItemSubquery($query));
+    }
+
+    private function acceptedPaymentItemSubquery($query): void
+    {
+        $query->selectRaw('1')
+            ->from('spp_payment_items as cutoff_items')
+            ->join('spp_payments as cutoff_payments', 'cutoff_payments.id', '=', 'cutoff_items.spp_payment_id')
+            ->whereColumn('cutoff_items.student_id', 'bills.student_id')
+            ->whereColumn('cutoff_items.year', 'bills.year')
+            ->whereColumn('cutoff_items.month', 'bills.month')
+            ->where('cutoff_items.paid_amount', '>', 0)
+            ->where('cutoff_payments.status', 'Diterima');
     }
 
     private function historicalTransactionCount(Collection $studentIds): int
@@ -188,10 +176,5 @@ class StudentBillingCutoffCleanupService
                         ->where('month', '<', $cutoff->month));
             })
             ->count();
-    }
-
-    private function periodKey(int $studentId, int $year, int $month): string
-    {
-        return $studentId.'-'.$year.'-'.$month;
     }
 }

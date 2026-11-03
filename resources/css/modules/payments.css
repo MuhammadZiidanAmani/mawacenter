@@ -107,13 +107,25 @@ main.payment-hub-page {
     gap: 16px;
 }
 
-.payment-import-spp-context {
+.payment-import-context-fields {
     display: grid;
     min-width: 0;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: end;
     gap: 16px;
 }
+
+.payment-import-unit-field { min-width: 0; }
+.payment-import-spp-context {
+    display: grid;
+    min-width: 0;
+    grid-column: span 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    gap: 16px;
+}
+.payment-import-spp-context[hidden] { display: none; }
+.payment-import-simple-form:not(.is-spp-import) .payment-import-unit-field { grid-column: 1 / -1; }
 
 .payment-import-card-heading h2,
 .payment-import-preview-section-heading h2,
@@ -933,6 +945,7 @@ main.payment-hub-page {
     .payment-import-mapping,
     .payment-import-preview-dashboard,
     .payment-import-result-panel { padding: 16px; }
+    .payment-import-context-fields,
     .payment-import-spp-context,
     .payment-import-mapping-fields,
     .payment-import-result-cards,

@@ -291,6 +291,73 @@
                         </form>
                     </section>
                 </section>
+            @elseif ($tab === 'students' && $showStudentBillingCutoffCleanup)
+                @php
+                    $cutoffPreview = $studentBillingCutoffCleanupPreview ?? [];
+                    $cutoffCandidates = (int) ($cutoffPreview['candidate_count'] ?? 0);
+                    $cutoffCancelableBills = (int) ($cutoffPreview['cancelable_bill_count'] ?? 0);
+                    $cutoffCancelableAmount = (int) ($cutoffPreview['cancelable_bill_amount'] ?? 0);
+                    $cutoffPaidBills = (int) ($cutoffPreview['paid_bills_preserved'] ?? 0);
+                    $cutoffTransactions = (int) ($cutoffPreview['historical_transactions_preserved'] ?? 0);
+                    $cutoffPartialBills = (int) ($cutoffPreview['partially_paid_bills'] ?? 0);
+                @endphp
+                <section class="student-workspace student-billing-cleanup-page">
+                    <div class="student-flat-header">
+                        <div class="student-master-heading">
+                            <h1>Cut-off Tagihan 2026</h1>
+                            <p>Mulai kewajiban SPP aktif dari 1 Januari 2026 tanpa menghapus transaksi historis.</p>
+                        </div>
+                        <div class="student-title-actions">
+                            <a href="{{ route('student-management.students.index') }}" class="button button-secondary">Kembali</a>
+                        </div>
+                    </div>
+
+                    <section class="card student-billing-cleanup-card">
+                        <div class="master-create-heading">
+                            <div>
+                                <strong>Preview Perubahan</strong>
+                                <span>Proses hanya mencakup siswa aktif MTs, MA, dan PONPES dalam scope akses Anda.</span>
+                            </div>
+                        </div>
+
+                        <div class="student-billing-cleanup-summary" aria-label="Ringkasan cut-off tagihan 2026">
+                            <div><span>Siswa disesuaikan</span><strong>{{ number_format($cutoffCandidates, 0, ',', '.') }}</strong></div>
+                            <div><span>Tagihan kosong dibatalkan</span><strong>{{ number_format($cutoffCancelableBills, 0, ',', '.') }}</strong><small>Rp {{ number_format($cutoffCancelableAmount, 0, ',', '.') }}</small></div>
+                            <div><span>Tagihan berbayar dipertahankan</span><strong>{{ number_format($cutoffPaidBills, 0, ',', '.') }}</strong></div>
+                            <div><span>Transaksi lama dipertahankan</span><strong>{{ number_format($cutoffTransactions, 0, ',', '.') }}</strong></div>
+                        </div>
+
+                        @if(($cutoffPreview['unit_counts'] ?? []) !== [])
+                            <div class="student-billing-cleanup-units">
+                                <strong>Cakupan per unit</strong>
+                                <div>
+                                    @foreach($cutoffPreview['unit_counts'] as $unitCode => $count)
+                                        <span>{{ $unitCode }} <b>{{ number_format($count, 0, ',', '.') }}</b></span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="student-billing-cleanup-note {{ $cutoffPartialBills > 0 ? 'warning' : 'success' }}">
+                            <strong>Transaksi tidak dihapus.</strong>
+                            <span>Tagihan SPP sebelum Januari 2026 yang sudah lunas atau sebagian dibayar tetap dipertahankan. Hanya tagihan tanpa pembayaran yang dibatalkan; tunggakan khusus 2025 dapat diterbitkan kembali secara manual.</span>
+                            @if($cutoffPartialBills > 0)
+                                <span>{{ number_format($cutoffPartialBills, 0, ',', '.') }} tagihan lama masih dibayar sebagian dan tetap tampil untuk ditinjau.</span>
+                            @endif
+                        </div>
+
+                        <form method="POST" action="{{ route('student-management.students.billing-cutoff-cleanup.store') }}" class="student-billing-cleanup-actions">
+                            @csrf
+                            <label class="student-cleanup-confirmation">
+                                <input type="checkbox" name="confirm_cutoff" value="1" required>
+                                <span>Saya sudah memeriksa preview dan setuju menerapkan cut-off 1 Januari 2026.</span>
+                            </label>
+                            @error('confirm_cutoff')<small class="master-field-error">{{ $message }}</small>@enderror
+                            <a href="{{ route('student-management.students.index') }}" class="button button-secondary">Batal</a>
+                            <button class="button button-primary" @disabled($cutoffCandidates < 1)>{!! $icon('check') !!} Terapkan Cut-off</button>
+                        </form>
+                    </section>
+                </section>
             @elseif ($tab === 'students' && $showStudentBillingStartCleanup)
                 @php
                     $cleanupPreview = $studentBillingStartCleanupPreview ?? [];
@@ -529,6 +596,7 @@
                                 @if ($canCleanupStudentBillingStart)
                                 <a href="{{ route('student-management.students.intake-status-cleanup.index') }}" class="button button-secondary">{!! $icon('sort') !!} Status Masuk</a>
                                 <a href="{{ route('student-management.students.billing-start-cleanup.index') }}" class="button button-secondary">{!! $icon('calendar') !!} Awal Tagihan</a>
+                                <a href="{{ route('student-management.students.billing-cutoff-cleanup.index') }}" class="button button-secondary">{!! $icon('calendar') !!} Cut-off 2026</a>
                                 @endif
                                 @if ($canCleanupAlumniBills)
                                 <a href="{{ route('student-management.students.alumni-bill-cleanup.index') }}" class="button button-secondary">{!! $icon('receipt') !!} Tagihan Alumni</a>

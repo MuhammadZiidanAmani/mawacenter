@@ -1,6 +1,6 @@
 # Perkembangan Proyek MA'WA CENTER
 
-Terakhir diperbarui: **1 November 2026**
+Terakhir diperbarui: **3 November 2026**
 Dasar pemeriksaan: repository lokal pada commit `80e4b754` dan dokumentasi induk di `ai/`.
 
 Dokumen ini adalah ringkasan perkembangan teknis aplikasi. PRD tetap menjadi sumber kebutuhan produk, sedangkan status di bawah didasarkan pada route, controller, service, view, migration, dan test yang tersedia di repository.
@@ -21,10 +21,10 @@ Status **Tersedia** tidak otomatis berarti siap produksi. Kesiapan rilis tetap m
 - Laravel **13.15.0** dengan PHP **^8.3**.
 - Blade server-rendered; aplikasi bukan SPA.
 - Vite 8, Tailwind CSS v4, JavaScript modular, dan CSS modular berbasis token `--app-*`.
-- 116 route aplikasi aktif.
-- 13 controller, 20 model, 17 service, dan 51 migration.
+- 118 route aplikasi aktif.
+- 13 controller, 20 model, 18 service, dan 51 migration.
 - 54 Blade view.
-- 212 metode feature test dan 2 metode unit test terdefinisi.
+- 216 metode feature test dan 2 metode unit test terdefinisi.
 - Isolasi test dikonfigurasi menggunakan SQLite `:memory:` dan guard pada `tests/TestCase.php`.
 
 ## Status Modul
@@ -33,7 +33,7 @@ Status **Tersedia** tidak otomatis berarti siap produksi. Kesiapan rilis tetap m
 | --- | --- | --- | --- |
 | Autentikasi dan akses | **Tersedia · Tercakup test** | Login biasa/wali, logout, rate limit, reset akun legacy, middleware permission, scope unit dan siswa | Skenario akses termasuk dalam full suite yang lulus. |
 | Dashboard | **Tersedia · Tercakup test** | Ringkasan penerimaan, tagihan, tren bulanan, aktivitas, dan rekap unit | Query serta cache key sudah mengikuti scope unit/siswa pengguna. |
-| Data siswa | **Tersedia · Tercakup test** | Daftar, tambah, edit, import preview/progress, export XLSX, filter, sort, pagination, perapihan status masuk, dan perapihan massal awal tagihan | Tambah/import baru memakai default Siswa Baru. Rapikan Status Masuk memeriksa seluruh data sesuai scope, hanya mengubah bukti kuat, mempertahankan pindahan/kasus ambigu/nonaktif, menyinkronkan tagihan, dan mencatat audit. Kolom awal tagihan kosong pada MTs, MA, dan PONPES langsung terisi 1 Agustus sesuai tahun masuk. |
+| Data siswa | **Tersedia · Tercakup test** | Daftar, tambah, edit, import preview/progress, export XLSX, filter, sort, pagination, perapihan status masuk/awal tagihan, dan cut-off tagihan 2026 | Tambah/import baru memakai default Siswa Baru. Cut-off 2026 memiliki preview, konfirmasi wajib, scope unit, audit, serta perlindungan transaksi/tagihan berbayar; cut-off telah diterapkan pada data lokal dan audit pascaproses konsisten. |
 | Pindah/naik kelas dan alumni | **Tersedia · Tercakup test** | Pindah kelas, promosi tahun/kelas, penonaktifan individual, alumni massal, daftar alumni, reaktivasi, dan perapihan tagihan alumni lama | Preview perapihan menunjukkan Batalkan/Tinjau dan mengikuti scope unit. Tagihan pasca-keluar yang belum dibayar dibatalkan; tagihan manual, periode keluar/sebelumnya, pembayaran sah, dan transaksi dipertahankan. |
 | Rapikan identitas | **Tersedia · Tercakup test** | Kandidat duplikat, tinjau, gabung, dan pisah identitas | Test lulus: transaksi/tagihan tetap pada `student_id` asal. |
 | Kualitas Data | **Gap** | Tidak ditemukan route `/manajemen-siswa/kualitas-data` | Kebutuhannya masih tercatat dalam PRD dan perlu dirancang sebagai fitur terpisah. |
@@ -52,13 +52,13 @@ Status **Tersedia** tidak otomatis berarti siap produksi. Kesiapan rilis tetap m
 | `AuthTest` | 10 | Login, wali, rate limit, permission default-deny |
 | `BillAccessTest` | 14 | Scope tagihan, portal wali, transfer, sinkronisasi |
 | `DashboardTest` | 5 | Statistik, empty state, sidebar, dan isolasi cache/scope unit |
-| `MasterDataTest` | 102 | Siswa, master, import/export, perapihan status masuk/awal/tagihan alumni, penonaktifan individual/massal, identitas, pembayaran, sasaran Pendaftaran/Daftar Ulang, permission, audit, serta konsistensi halaman tambah/edit |
+| `MasterDataTest` | 103 | Siswa, master, import/export, perapihan status masuk/awal/cut-off/tagihan alumni, penonaktifan individual/massal, identitas, pembayaran, sasaran Pendaftaran/Daftar Ulang, permission, audit, serta konsistensi halaman tambah/edit |
 | `PaymentMenuTest` | 66 | Workspace pembayaran, alumni menunggak, transaksi, bukti, scope, riwayat, struk, dan konsistensi nominal dengan tagihan aktif |
 | `ReportMenuTest` | 13 | Filter dan export empat laporan, termasuk pemisahan Pendaftaran dari Lain-lain |
 | `PerformanceCacheTest` | 1 | Invalidasi namespace cache |
 | Feature/unit contoh dan kertas struk | 3 | Smoke dasar dan ukuran PDF struk |
 
-**Verifikasi 1 November 2026:** full suite lulus **214 test / 2.811 assertion** pada SQLite `:memory:` dan `npm run build` lulus dengan Vite 8.0.16. `MasterDataTest` lulus **102 test / 1.662 assertion**, termasuk default Siswa Baru, preview/perbaikan status masuk, perlindungan data ambigu/pindahan/nonaktif, sasaran serta sinkronisasi Pendaftaran/Daftar Ulang, permission gabungan, dan scope unit. Audit baca-saja pada MySQL lokal memeriksa 2.473 siswa: 380 rekomendasi aman, 5 kasus tingkat lanjutan untuk tinjauan, dan 2.088 konsisten. Konfirmasi memperbaiki 380 status menjadi Siswa Baru; audit ulang menghasilkan 0 kandidat otomatis, 380 Siswa Baru, 2.093 Siswa Lama, dan 5 tinjauan manual. Sinkronisasi terkait menyegarkan 1.738 tagihan dan membuat 380 SPP yang memang belum ada (379 November 2026 dan 1 Agustus 2026); transaksi pembayaran tidak dibuat atau diubah. Verifikasi sebelumnya untuk penonaktifan, alumni, perapihan awal tagihan, kasir, laporan, akses, dan UI tetap tercakup oleh suite lengkap. QA visual browser tetap perlu dilakukan pada lingkungan pengguna.
+**Verifikasi 3 November 2026:** full suite lulus **218 test / 2.861 assertion** pada SQLite `:memory:` dan `npm run build` lulus dengan Vite 8.0.16. `PaymentMenuTest` lulus **67 test / 796 assertion** dan `MasterDataTest` lulus **105 test / 1.707 assertion**, termasuk penguncian Pendaftaran/Daftar Ulang berdasarkan tahun dan tingkat, pencegahan kategori ganda, pembayaran Daftar Ulang tahun depan, perlindungan tunggakan tahun lama, pemilihan unit wajib pada seluruh import pembayaran, penolakan baris Excel lintas unit, audit unit import, default Siswa Baru, preview/perbaikan status masuk, perlindungan data ambigu/pindahan/nonaktif, cut-off 2026 yang mempertahankan transaksi, permission gabungan, dan scope unit. Cut-off diterapkan pada MySQL lokal terhadap 1.532 siswa aktif; 36.506 tagihan lama tanpa pembayaran senilai Rp12.998.460.000 dibatalkan tanpa menghapus baris, sedangkan 5.512 tagihan/transaksi historis dan 307 tagihan sebagian bayar dipertahankan. Audit pascaproses menghasilkan 0 kandidat tersisa, seluruh 1.532 tanggal sudah 1 Januari 2026, sisa tagihan yang dibatalkan 0, dan jejak tanggal sebelumnya tersimpan pada audit log. Audit sebelumnya memeriksa 2.473 siswa dan memperbaiki 380 status aman menjadi Siswa Baru. QA visual browser tetap perlu dilakukan pada lingkungan pengguna.
 
 ## Gap dan Risiko Prioritas
 
@@ -81,6 +81,9 @@ Risiko penghapusan siswa, kebocoran Dashboard lintas unit, rekening global, dan 
 
 Ringkasan berikut disimpulkan dari file yang berubah, bukan dari judul commit yang sebagian masih generik.
 
+- **3 November 2026:** Kategori Pendaftaran dan Daftar Ulang dikunci berdasarkan jenis, unit, Tahun Pelajaran, dan tingkat kelas. Tahun Pelajaran wajib diisi, kombinasi kategori yang sama ditolak, sinkronisasi tidak lagi memakai Daftar Ulang dari tahun lain, serta kelas 8/9 dapat memiliki tarif terpisah. Daftar Ulang tahun depan tetap dapat dibayar lebih awal; kategori tahun lama hanya muncul bila masih ada tagihan aktif.
+- **3 November 2026:** Import Pembayaran kini mewajibkan pemilihan satu Unit Pendidikan untuk SPP, Pendaftaran, Daftar Ulang, Laundry, dan Lain-lain. Unit dipertahankan sepanjang preview/pemetaan/konfirmasi, dibatasi oleh scope pengguna, serta dicocokkan dengan kolom unit Excel agar satu file tidak mencampur transaksi lintas unit; Bulan/Tahun tetap khusus SPP.
+- **3 November 2026:** Cut-off Tagihan 2026 ditambahkan dan diterapkan melalui proses terkontrol pada Data Siswa. Proses menargetkan siswa aktif MTs/MA/PONPES yang masih memiliki awal tagihan sebelum 1 Januari 2026, membatalkan hanya SPP pra-2026 tanpa bukti pembayaran, mempertahankan tagihan lunas/sebagian dan seluruh transaksi historis, mengikuti scope unit, meminta konfirmasi eksplisit, serta mencatat audit beserta tanggal sebelumnya. Data lokal: 1.532 siswa disesuaikan, 36.506 tagihan kosong senilai Rp12.998.460.000 dibatalkan, 5.512 tagihan/transaksi historis dan 307 tagihan sebagian bayar dipertahankan; audit ulang menunjukkan 0 kandidat tersisa.
 - **1 November 2026:** Kategori resmi Pendaftaran dan Daftar Ulang dipisahkan. Pendaftaran otomatis menargetkan Siswa Baru/Pindahan, Daftar Ulang menargetkan Siswa Lama; keduanya wajib sekali bayar, masuk Tagihan melalui sinkronisasi, tampil terpisah di kasir/riwayat/import/struk/laporan, dan divalidasi server agar Pendaftaran yang belum disinkronkan tidak dapat dibayar lewat URL langsung.
 - **1 November 2026:** Rapikan Status Masuk ditambahkan pada Data Siswa dengan pemeriksaan seluruh scope, tabel khusus data yang perlu ditinjau, klasifikasi konservatif berbasis tanggal/tahun/tingkat/riwayat, permission `students.update` + `bills.sync`, sinkronisasi tagihan, dan audit. Form/import baru default Siswa Baru; nilai import tidak dikenal ditolak. Data lokal diperiksa dan 380 status aman telah diperbaiki, sedangkan 5 penerimaan tingkat lanjutan tetap menunggu keputusan manual. Header Data Siswa juga dirapikan: Tambah/Import/Export tetap sebagai aksi utama, sementara tiga aksi perapihan ditempatkan pada toolbar sekunder agar judul tidak tertekan atau pecah per huruf.
 - **29 Oktober 2026:** kasir SPP kini membaca tagihan aktif yang benar-benar tersimpan pada tabel `bills`. Ringkasan kewajiban, jumlah tagihan, rentang bulan, dan pilihan pembayaran tidak lagi berbeda akibat pembuatan bulan historis/future secara virtual dengan tarif saat ini.

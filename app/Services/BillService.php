@@ -894,22 +894,11 @@ class BillService
     private function feeTypeAppliesToStudentForSync(FeeType $feeType, Student $student): bool
     {
         $student->loadMissing(['academicYear', 'schoolClass']);
-        if (! $feeType->creates_bill || $feeType->payment_group === 'laundry' || ! $feeType->matchesStudent($student)) {
+        if (! $feeType->creates_bill || $feeType->payment_group === 'laundry' || ! $feeType->matchesStudentAcademicYear($student)) {
             return false;
         }
 
-        if ($this->isRegistrationFee($feeType)) {
-            return true;
-        }
-
-        return $feeType->academic_year_id === null || (int) $feeType->academic_year_id === (int) $student->academic_year_id;
-    }
-
-    private function isRegistrationFee(FeeType $feeType): bool
-    {
-        return $feeType->payment_group === 'daftar-ulang'
-            || $feeType->code === 'DAFTAR-ULANG'
-            || str_starts_with((string) $feeType->code, 'DAFTAR-ULANG-');
+        return true;
     }
 
     private function ensureSppBill(Student $student, AcademicYear $academicYear, int $year, int $month): array

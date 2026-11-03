@@ -15,6 +15,7 @@ use App\Services\AlumniBillCleanupService;
 use App\Services\AuditLogService;
 use App\Services\BillService;
 use App\Services\ChargeCalculator;
+use App\Services\StudentBillingCutoffCleanupService;
 use App\Services\StudentBillingStartCleanupService;
 use App\Services\StudentImportService;
 use App\Services\StudentIntakeStatusCleanupService;
@@ -280,6 +281,7 @@ class MasterDataController extends Controller
             || $request->routeIs('student-management.students.edit');
         $showStudentImport = $request->routeIs('student-management.students.import');
         $showStudentBillingStartCleanup = $request->routeIs('student-management.students.billing-start-cleanup.index');
+        $showStudentBillingCutoffCleanup = $request->routeIs('student-management.students.billing-cutoff-cleanup.index');
         $showStudentIntakeStatusCleanup = $request->routeIs('student-management.students.intake-status-cleanup.index');
         $showAlumniBillCleanup = $request->routeIs('student-management.students.alumni-bill-cleanup.index');
         $studentImportPreview = $this->studentImportPreview($request);
@@ -317,6 +319,8 @@ class MasterDataController extends Controller
             'showStudentImport' => $showStudentImport,
             'showStudentBillingStartCleanup' => $showStudentBillingStartCleanup,
             'studentBillingStartCleanupPreview' => $request->attributes->get('studentBillingStartCleanupPreview'),
+            'showStudentBillingCutoffCleanup' => $showStudentBillingCutoffCleanup,
+            'studentBillingCutoffCleanupPreview' => $request->attributes->get('studentBillingCutoffCleanupPreview'),
             'showStudentIntakeStatusCleanup' => $showStudentIntakeStatusCleanup,
             'studentIntakeStatusCleanupPreview' => $request->attributes->get('studentIntakeStatusCleanupPreview'),
             'showAlumniBillCleanup' => $showAlumniBillCleanup,
@@ -430,6 +434,55 @@ class MasterDataController extends Controller
         $request->attributes->set('studentBillingStartCleanupPreview', $cleanup->preview($this->accessibleUnitIds()));
 
         return $this->index($request);
+    }
+
+    public function studentBillingCutoffCleanup(Request $request, StudentBillingCutoffCleanupService $cleanup)
+    {
+        $this->authorizeStudentBillingStartCleanup($request);
+        $request->merge(['tab' => 'students']);
+        $request->attributes->set('studentBillingCutoffCleanupPreview', $cleanup->preview($this->accessibleUnitIds()));
+
+        return $this->index($request);
+    }
+
+    public function storeStudentBillingCutoffCleanup(Request $request, StudentBillingCutoffCleanupService $cleanup): RedirectResponse
+    {
+        $this->authorizeStudentBillingStartCleanup($request);
+        $request->validate([
+            'confirm_cutoff' => ['accepted'],
+        ], [
+            'confirm_cutoff.accepted' => 'Konfirmasi cut-off wajib dicentang sebelum proses dijalankan.',
+        ]);
+        $result = $cleanup->apply($this->accessibleUnitIds());
+
+        app(AuditLogService::class)->recordStudentOperation(
+            'students.billing_cutoff_cleanup',
+            $result['student_ids'],
+            [
+                'cutoff_date' => $result['cutoff_date'],
+                'updated_students' => $result['updated_students'],
+                'cancelled_unpaid_bills' => $result['cancelled_bills'],
+                'cancelled_unpaid_amount' => $result['cancelable_bill_amount'],
+                'paid_bills_preserved' => $result['paid_bills_preserved'],
+                'historical_transactions_preserved' => $result['historical_transactions_preserved'],
+                'partially_paid_bills' => $result['partially_paid_bills'],
+                'unit_counts' => $result['unit_counts'],
+            ],
+            ['billing_start_dates' => $result['previous_billing_start_dates']],
+            ['billing_start_date' => $result['cutoff_date']],
+            request: $request,
+        );
+
+        $message = $result['updated_students'] < 1
+            ? 'Tidak ada data yang perlu disesuaikan dengan cut-off 1 Januari 2026.'
+            : number_format($result['updated_students'], 0, ',', '.').' siswa disesuaikan ke cut-off 1 Januari 2026 dan '
+                .number_format($result['cancelled_bills'], 0, ',', '.').' tagihan SPP lama tanpa pembayaran dibatalkan.';
+
+        if ($result['historical_transactions_preserved'] > 0) {
+            $message .= ' '.number_format($result['historical_transactions_preserved'], 0, ',', '.').' transaksi historis tetap dipertahankan.';
+        }
+
+        return redirect()->route('student-management.students.index')->with('success', $message);
     }
 
     public function storeStudentBillingStartCleanup(Request $request, StudentBillingStartCleanupService $cleanup): RedirectResponse
@@ -2158,6 +2211,12 @@ class MasterDataController extends Controller
         $this->authorizeUnitAccess($request, (int) $validated['education_unit_id']);
         $validated['payment_group'] ??= $feeType?->payment_group ?? 'lain-lain';
         $validated['student_scope'] ??= $feeType?->student_scope ?? FeeType::STUDENT_SCOPE_ALL;
+        if (in_array($validated['payment_group'], ['pendaftaran', 'daftar-ulang'], true)
+            && empty($validated['academic_year_id'])) {
+            throw ValidationException::withMessages([
+                'academic_year_id' => 'Tahun Pelajaran wajib dipilih untuk Pendaftaran dan Daftar Ulang.',
+            ]);
+        }
         $validated['student_scope'] = match ($validated['payment_group']) {
             'pendaftaran' => FeeType::STUDENT_SCOPE_NEW_TRANSFER,
             'daftar-ulang' => FeeType::STUDENT_SCOPE_RETURNING,
@@ -2226,6 +2285,30 @@ class MasterDataController extends Controller
                 if ($duplicate) {
                     throw ValidationException::withMessages([
                         'payment_group' => 'Kategori SPP untuk unit, tingkat, dan tahun pelajaran tersebut sudah tersedia.',
+                    ]);
+                }
+            }
+        }
+        if (in_array($validated['payment_group'], ['pendaftaran', 'daftar-ulang'], true)) {
+            $existingFeeTypes = FeeType::with('schoolClass')
+                ->where('payment_group', $validated['payment_group'])
+                ->where('education_unit_id', $validated['education_unit_id'])
+                ->where('academic_year_id', $validated['academic_year_id'])
+                ->when($feeType, fn ($query) => $query->whereKeyNot($feeType->id))
+                ->get();
+
+            foreach ($levels as $level) {
+                $duplicate = $existingFeeTypes->contains(function (FeeType $existing) use ($level): bool {
+                    $existingLevel = $existing->school_class_id
+                        ? ClassLevel::key($existing->schoolClass?->level ?: $existing->schoolClass?->name)
+                        : $existing->class_level;
+
+                    return $existingLevel === $level;
+                });
+                if ($duplicate) {
+                    $scopeLabel = $level ? 'tingkat '.ClassLevel::label($level) : 'semua tingkat';
+                    throw ValidationException::withMessages([
+                        'payment_group' => "Kategori {$validated['payment_group']} untuk unit, tahun pelajaran, dan {$scopeLabel} tersebut sudah tersedia.",
                     ]);
                 }
             }

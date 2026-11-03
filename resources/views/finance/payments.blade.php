@@ -897,7 +897,7 @@
                     method="POST"
                     action="{{ $importTypes[0][4] }}"
                     enctype="multipart/form-data"
-                    class="payment-import-simple-form"
+                    class="payment-import-simple-form is-spp-import"
                     data-payment-import
                 >
                     @csrf
@@ -912,10 +912,10 @@
                                 </select>
                             </label>
 
-                            <div class="payment-import-spp-context" data-payment-import-spp-context>
-                                <label class="app-field payment-import-simple-field">
+                            <div class="payment-import-context-fields">
+                                <label class="app-field payment-import-simple-field payment-import-unit-field">
                                     <span>Unit Pendidikan</span>
-                                    <select name="unit_id" required data-payment-import-spp-field>
+                                    <select name="unit_id" required data-payment-import-unit-field>
                                         <option value="">Pilih unit</option>
                                         @foreach($educationUnits ?? [] as $unit)
                                             <option value="{{ $unit->id }}" @selected((int) old('unit_id') === $unit->id)>{{ $unit->name }}</option>
@@ -923,24 +923,25 @@
                                     </select>
                                 </label>
 
-                                <label class="app-field payment-import-simple-field">
-                                    <span>Bulan</span>
-                                    <select name="month" required data-payment-import-spp-field>
-                                        @foreach($importMonths as $monthNumber => $monthName)
-                                            <option value="{{ $monthNumber }}" @selected($defaultImportMonth === $monthNumber)>{{ $monthName }}</option>
-                                        @endforeach
-                                    </select>
-                                </label>
+                                <div class="payment-import-spp-context" data-payment-import-spp-context>
+                                    <label class="app-field payment-import-simple-field">
+                                        <span>Bulan</span>
+                                        <select name="month" required data-payment-import-spp-field>
+                                            @foreach($importMonths as $monthNumber => $monthName)
+                                                <option value="{{ $monthNumber }}" @selected($defaultImportMonth === $monthNumber)>{{ $monthName }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
 
-                                <label class="app-field payment-import-simple-field">
-                                    <span>Tahun</span>
-                                    <select name="year" required data-payment-import-spp-field>
-                                        @foreach($importYears as $year)
-                                            <option value="{{ $year }}" @selected($defaultImportYear === $year)>{{ $year }}</option>
-                                        @endforeach
-                                    </select>
-                                </label>
-
+                                    <label class="app-field payment-import-simple-field">
+                                        <span>Tahun</span>
+                                        <select name="year" required data-payment-import-spp-field>
+                                            @foreach($importYears as $year)
+                                                <option value="{{ $year }}" @selected($defaultImportYear === $year)>{{ $year }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </section>

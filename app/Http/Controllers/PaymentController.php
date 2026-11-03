@@ -731,6 +731,7 @@ class PaymentController extends Controller
         return view('finance.payments', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'educationUnits' => EducationUnit::orderByRaw("CASE code WHEN 'PAUD' THEN 1 WHEN 'RA' THEN 2 WHEN 'MI' THEN 3 WHEN 'MTs' THEN 4 WHEN 'MA' THEN 5 WHEN 'ULYA' THEN 6 WHEN 'PONPES' THEN 7 WHEN 'STIT' THEN 8 ELSE 9 END")
+                ->where('is_active', true)
                 ->when(is_array($unitIds), fn ($query) => $query->whereIn('id', $unitIds))
                 ->orderBy('name')
                 ->get(),
@@ -942,7 +943,7 @@ class PaymentController extends Controller
                     ->orWhereDate('issue_date', '<=', now()->toDateString()))
                 ->pluck('fee_type_id');
 
-        return FeeType::query()
+        return FeeType::with('academicYear')
             ->where(fn ($feeType) => $feeType
                 ->where('is_active', true)
                 ->when($historicalFeeTypeIds->isNotEmpty(), fn ($query) => $query->orWhereIn('id', $historicalFeeTypeIds)))
@@ -1276,8 +1277,17 @@ class PaymentController extends Controller
 
     private function matchedFeeTypes(Student $student, Collection $feeTypes): Collection
     {
-        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->matchesStudent($student)
-            && ($this->paymentGroup($feeType) === 'daftar-ulang' || ! $feeType->academic_year_id || $feeType->academic_year_id === $student->academic_year_id));
+        $outstandingFeeTypeIds = Bill::query()
+            ->where('student_id', $student->id)
+            ->where('source_type', 'fee_type')
+            ->whereIn('fee_type_id', $feeTypes->pluck('id'))
+            ->where('remaining_amount', '>', 0)
+            ->where('status', '!=', 'Dibatalkan')
+            ->pluck('fee_type_id')
+            ->flip();
+
+        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->matchesStudentPaymentYear($student)
+            || $outstandingFeeTypeIds->has($feeType->id));
     }
 
     private function outstandingFeeTypeIds(Student $student, Collection $feeTypes): Collection

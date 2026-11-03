@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\EducationUnit;
 use App\Models\FeeType;
 use App\Models\OtherPayment;
 use App\Models\Student;
@@ -23,6 +24,7 @@ class OtherPaymentImportService
     {
         [$headers, $rows] = $this->readRows($path);
         $sources = [];
+        $selectedUnit = $this->selectedUnit($unitIds);
         $feeTypes = FeeType::with(['educationUnit', 'schoolClass'])
             ->where('is_active', true)
             ->when($paymentGroup, fn ($query, $group) => $query->paymentGroup($group))
@@ -36,6 +38,9 @@ class OtherPaymentImportService
             $unit = trim((string) ($values['jenis_pendidikan'] ?? ''));
             $class = trim((string) ($values['kelas'] ?? ''));
             $classLevel = ClassLevel::key($class);
+            if ($selectedUnit && ! $this->educationUnitMatches($selectedUnit, $unit)) {
+                continue;
+            }
             $key = $this->sourceKey($category, $unit, $classLevel);
 
             if (! isset($sources[$key])) {
@@ -70,6 +75,7 @@ class OtherPaymentImportService
         [$headers, $rows] = $this->readRows($path);
         $result = ['total' => count($rows), 'valid' => 0, 'imported' => 0, 'duplicates' => 0, 'failures' => [], 'rows' => []];
         $prepared = [];
+        $selectedUnit = $this->selectedUnit($unitIds);
 
         DB::beginTransaction();
 
@@ -107,6 +113,11 @@ class OtherPaymentImportService
                 ->keyBy('id');
 
             foreach ($prepared as $row) {
+                if ($selectedUnit && ! $this->educationUnitMatches($selectedUnit, $row['unit'])) {
+                    $this->fail($result, $row, "Unit pada Excel ({$row['unit']}) tidak sesuai dengan unit yang dipilih ({$selectedUnit->name}).");
+
+                    continue;
+                }
                 if (isset($existingImportKeys[$row['import_key']])) {
                     $row['status'] = 'Duplikat';
                     $row['message'] = 'Transaksi ini sudah pernah diimpor.';
@@ -294,13 +305,27 @@ class OtherPaymentImportService
     private function matchesUnit(Student $student, string $unit): bool
     {
         $educationUnit = $student->schoolClass?->educationUnit;
+
+        return $educationUnit && $this->educationUnitMatches($educationUnit, $unit);
+    }
+
+    private function educationUnitMatches(EducationUnit $educationUnit, string $unit): bool
+    {
         $normalized = $this->normalizeLookup($unit);
 
-        return $educationUnit
-            && in_array($normalized, [
-                $this->normalizeLookup($educationUnit->code),
-                $this->normalizeLookup($educationUnit->name),
-            ], true);
+        return in_array($normalized, [
+            $this->normalizeLookup($educationUnit->code),
+            $this->normalizeLookup($educationUnit->name),
+        ], true);
+    }
+
+    private function selectedUnit(?array $unitIds): ?EducationUnit
+    {
+        if (! is_array($unitIds) || count($unitIds) !== 1) {
+            return null;
+        }
+
+        return EducationUnit::find((int) array_values($unitIds)[0]);
     }
 
     private function normalizeHeader(string $header): string
@@ -357,7 +382,7 @@ class OtherPaymentImportService
     {
         $student->loadMissing('schoolClass.educationUnit');
 
-        if ($mappedFeeType?->matchesStudent($student)) {
+        if ($mappedFeeType?->matchesStudentPaymentYear($student)) {
             return $mappedFeeType;
         }
 
@@ -366,7 +391,7 @@ class OtherPaymentImportService
 
         return $feeTypes
             ->filter(fn (FeeType $feeType) => $this->feeTypeMatchesCategory($feeType, $row['category'])
-                && $feeType->matchesStudent($student))
+                && $feeType->matchesStudentPaymentYear($student))
             ->sortBy(fn (FeeType $feeType) => $this->feeTypeScore($feeType, $academicYear, $classLevel))
             ->first();
     }

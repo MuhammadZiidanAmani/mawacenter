@@ -57,6 +57,7 @@ class EnsureRolePermission
             $routeName === 'student-management.students.create' => ['students.create'],
             $routeName === 'student-management.students.import' => ['students.import'],
             str_starts_with($routeName, 'student-management.students.billing-start-cleanup.') => ['students.update', 'bills.sync'],
+            str_starts_with($routeName, 'student-management.students.billing-cutoff-cleanup.') => ['students.update', 'bills.sync'],
             str_starts_with($routeName, 'student-management.students.intake-status-cleanup.') => ['students.update', 'bills.sync'],
             str_starts_with($routeName, 'student-management.students.alumni-bill-cleanup.') => ['students.alumni', 'bills.sync'],
             str_starts_with($routeName, 'student-management.students.deactivate.') => ['students.alumni'],

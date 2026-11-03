@@ -760,6 +760,7 @@ if (paymentImport) {
     const removeFileButton = paymentImport.querySelector('[data-payment-import-file-remove]');
     const submitButton = paymentImport.querySelector('[data-payment-import-submit]');
     const submitLabel = paymentImport.querySelector('[data-payment-import-submit-label]');
+    const unitField = paymentImport.querySelector('[data-payment-import-unit-field]');
     const sppContext = paymentImport.querySelector('[data-payment-import-spp-context]');
     const sppFields = Array.from(paymentImport.querySelectorAll('[data-payment-import-spp-field]'));
 
@@ -789,6 +790,7 @@ if (paymentImport) {
         if (action) paymentImport.action = action;
 
         const isSpp = category?.value === 'spp';
+        paymentImport.classList.toggle('is-spp-import', isSpp);
         if (sppContext) sppContext.hidden = !isSpp;
         sppFields.forEach((field) => {
             field.disabled = !isSpp;
@@ -796,13 +798,15 @@ if (paymentImport) {
         });
 
         const hasFile = Boolean(fileInput?.files?.length);
+        const hasUnit = Boolean(unitField?.value);
         const hasSppContext = !isSpp || sppFields.every((field) => field.value);
-        if (submitButton) submitButton.disabled = !hasFile || !hasSppContext;
+        if (submitButton) submitButton.disabled = !hasFile || !hasUnit || !hasSppContext;
         renderFileState();
     };
 
     category?.addEventListener('change', syncPaymentImport);
     fileInput?.addEventListener('change', syncPaymentImport);
+    unitField?.addEventListener('change', syncPaymentImport);
     sppFields.forEach((field) => field.addEventListener('change', syncPaymentImport));
     changeFileButton?.addEventListener('click', () => fileInput?.click());
     removeFileButton?.addEventListener('click', () => {

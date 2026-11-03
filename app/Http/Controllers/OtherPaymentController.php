@@ -423,19 +423,40 @@ class OtherPaymentController extends Controller
     public function previewImport(PreviewOtherPaymentImportRequest $request, OtherPaymentImportService $importer): View
     {
         $section = $this->section($request);
-        $unitIds = $request->user()?->accessibleUnitIds();
         $token = $request->string('token')->value();
         $stored = $token ? $request->session()->get("other_payment_imports.{$token}") : null;
 
         if (! $stored) {
             $file = $request->file('file');
+            $selectedUnitId = (int) $request->validated('unit_id');
+            $this->authorizeUnitAccess($request, $selectedUnitId);
+            $selectedUnit = EducationUnit::whereKey($selectedUnitId)->where('is_active', true)->first();
+            if (! $selectedUnit) {
+                throw ValidationException::withMessages(['unit_id' => 'Unit pendidikan tidak aktif atau tidak tersedia.']);
+            }
             $token = (string) Str::uuid();
             $path = $file->storeAs('other-payment-imports', $token.'.xlsx');
-            $stored = ['path' => $path, 'name' => $file->getClientOriginalName(), 'mappings' => []];
+            $stored = [
+                'path' => $path,
+                'name' => $file->getClientOriginalName(),
+                'unit_id' => $selectedUnitId,
+                'mappings' => [],
+            ];
+        } else {
+            $selectedUnitId = (int) ($stored['unit_id'] ?? 0);
+            if ($selectedUnitId < 1) {
+                throw ValidationException::withMessages(['unit_id' => 'Konteks unit import tidak tersedia. Silakan unggah ulang file.']);
+            }
+            $this->authorizeUnitAccess($request, $selectedUnitId);
+            $selectedUnit = EducationUnit::whereKey($selectedUnitId)->where('is_active', true)->first();
+            if (! $selectedUnit) {
+                throw ValidationException::withMessages(['unit_id' => 'Unit pendidikan tidak aktif atau tidak tersedia.']);
+            }
         }
+        $importUnitIds = [$selectedUnitId];
 
         try {
-            $sources = $importer->sources(Storage::path($stored['path']), $section['key'], $unitIds);
+            $sources = $importer->sources(Storage::path($stored['path']), $section['key'], $importUnitIds);
             $mappings = array_replace(
                 $stored['mappings'] ?? [],
                 is_array($request->input('mappings')) ? $request->input('mappings') : [],
@@ -448,7 +469,7 @@ class OtherPaymentController extends Controller
             $stored['mappings'] = $mappings;
             $request->session()->put("other_payment_imports.{$token}", $stored);
 
-            $feeTypes = $this->feeTypes($section);
+            $feeTypes = $this->feeTypes($section, $selectedUnitId);
             $feeTypeIds = $feeTypes->modelKeys();
             $unresolvedSources = collect($sources)
                 ->filter(fn (array $source) => ! in_array((int) ($mappings[$source['key']] ?? 0), $feeTypeIds, true))
@@ -458,7 +479,7 @@ class OtherPaymentController extends Controller
             return view('finance.payments', [
                 'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
                 'mode' => 'import-preview',
-                'importPreview' => $importer->preview(Storage::path($stored['path']), $mappings, $stored['name'], $section['key'], $unitIds),
+                'importPreview' => $importer->preview(Storage::path($stored['path']), $mappings, $stored['name'], $section['key'], $importUnitIds),
                 'importSources' => $sources,
                 'importMappings' => $mappings,
                 'importToken' => $token,
@@ -469,6 +490,7 @@ class OtherPaymentController extends Controller
                 'importAction' => route('finance.other.import', $this->sectionParams($section)),
                 'importPreviewType' => 'other',
                 'importFileName' => $stored['name'] ?? null,
+                'importContext' => ['unit' => $selectedUnit->name],
             ]);
         } catch (\Throwable $exception) {
             if (! $request->string('token')->value()) {
@@ -483,7 +505,6 @@ class OtherPaymentController extends Controller
     public function import(Request $request, OtherPaymentImportService $importer): RedirectResponse
     {
         $section = $this->section($request);
-        $unitIds = $request->user()?->accessibleUnitIds();
         $validated = $request->validate(['token' => ['required', 'uuid']]);
         $stored = $request->session()->pull("other_payment_imports.{$validated['token']}");
 
@@ -492,7 +513,16 @@ class OtherPaymentController extends Controller
         }
 
         try {
-            $result = $importer->import(Storage::path($stored['path']), $stored['mappings'] ?? [], $stored['name'], $section['key'], $unitIds);
+            $selectedUnitId = (int) ($stored['unit_id'] ?? 0);
+            if ($selectedUnitId < 1) {
+                throw ValidationException::withMessages(['unit_id' => 'Konteks unit import tidak tersedia. Silakan unggah ulang file.']);
+            }
+            $this->authorizeUnitAccess($request, $selectedUnitId);
+            $selectedUnit = EducationUnit::whereKey($selectedUnitId)->where('is_active', true)->first();
+            if (! $selectedUnit) {
+                throw ValidationException::withMessages(['unit_id' => 'Unit pendidikan tidak aktif atau tidak tersedia.']);
+            }
+            $result = $importer->import(Storage::path($stored['path']), $stored['mappings'] ?? [], $stored['name'], $section['key'], [$selectedUnitId]);
         } finally {
             Storage::delete($stored['path']);
         }
@@ -504,13 +534,8 @@ class OtherPaymentController extends Controller
         if ($result['failures']) {
             $message .= ' '.count($result['failures']).' transaksi gagal: '.collect($result['failures'])->pluck('message')->take(3)->implode(' ');
         }
-        $units = collect($result['rows'] ?? [])
-            ->pluck('unit')
-            ->filter()
-            ->unique()
-            ->values();
         $importResult = [
-            'context_label' => collect([$section['title'], $units->implode(', ')])->filter()->implode(' • '),
+            'context_label' => collect([$section['title'], $selectedUnit->name])->filter()->implode(' • '),
             'file_name' => $stored['name'] ?? null,
             'imported' => (int) $result['imported'],
             'failed' => count($result['failures']),
@@ -521,6 +546,7 @@ class OtherPaymentController extends Controller
             [
                 'file_name' => $stored['name'] ?? null,
                 'payment_group' => $section['key'],
+                'unit_id' => $selectedUnitId,
                 'imported' => (int) $result['imported'],
                 'duplicates' => (int) $result['duplicates'],
                 'failed_rows' => count($result['failures']),
@@ -556,7 +582,7 @@ class OtherPaymentController extends Controller
         };
     }
 
-    private function feeTypes(array $section)
+    private function feeTypes(array $section, ?int $selectedUnitId = null)
     {
         $unitIds = request()->user()?->accessibleUnitIds();
 
@@ -564,13 +590,23 @@ class OtherPaymentController extends Controller
             ->where('is_active', true)
             ->paymentGroup($section['key'])
             ->when(is_array($unitIds), fn ($query) => $query->whereIn('education_unit_id', $unitIds))
+            ->when($selectedUnitId, fn ($query, $unitId) => $query->where('education_unit_id', $unitId))
             ->orderBy('name')->get();
     }
 
     private function matchedFeeTypesForStudent(Student $student, $feeTypes, array $section)
     {
-        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->matchesStudent($student)
-            && ($section['key'] === 'daftar-ulang' || ! $feeType->academic_year_id || $feeType->academic_year_id === $student->academic_year_id));
+        $outstandingFeeTypeIds = Bill::query()
+            ->where('student_id', $student->id)
+            ->where('source_type', 'fee_type')
+            ->whereIn('fee_type_id', $feeTypes->pluck('id'))
+            ->where('remaining_amount', '>', 0)
+            ->where('status', '!=', 'Dibatalkan')
+            ->pluck('fee_type_id')
+            ->flip();
+
+        return $feeTypes->filter(fn (FeeType $feeType) => $feeType->matchesStudentPaymentYear($student)
+            || $outstandingFeeTypeIds->has($feeType->id));
     }
 
     private function hasPayableFeeTypeForStudent(Student $student, $feeTypes, array $section, OtherPaymentService $payments): bool
