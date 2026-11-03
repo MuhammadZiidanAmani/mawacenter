@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Bill extends Model
 {
     protected $fillable = [
-        'student_id', 'academic_year_id', 'source_type', 'fee_type_id', 'year', 'month',
+        'student_id', 'student_enrollment_id', 'academic_year_id', 'source_type', 'fee_type_id',
+        'payment_group_snapshot', 'fee_name_snapshot', 'academic_year_name_snapshot', 'year', 'month',
         'generation_key', 'title', 'issue_date', 'due_date', 'original_amount', 'discount_amount',
-        'total_amount', 'paid_amount', 'remaining_amount', 'status', 'unit_name', 'class_name', 'cancel_reason',
+        'total_amount', 'paid_amount', 'remaining_amount', 'status', 'unit_name', 'class_name',
+        'class_level_snapshot', 'intake_status_snapshot', 'cancel_reason',
     ];
 
     protected function casts(): array
@@ -31,6 +33,11 @@ class Bill extends Model
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function studentEnrollment(): BelongsTo
+    {
+        return $this->belongsTo(StudentEnrollment::class);
     }
 
     public function feeType(): BelongsTo

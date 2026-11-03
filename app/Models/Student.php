@@ -64,6 +64,11 @@ class Student extends Model
         return $this->hasMany(Bill::class);
     }
 
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(StudentEnrollment::class);
+    }
+
     public function intakeStatusLabel(): string
     {
         return self::INTAKE_LABELS[$this->intake_status ?: self::INTAKE_RETURNING] ?? self::INTAKE_LABELS[self::INTAKE_RETURNING];
