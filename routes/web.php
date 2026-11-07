@@ -2,10 +2,15 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DuitkuWebhookController;
+use App\Http\Controllers\GuardianOnlinePaymentController;
+use App\Http\Controllers\GuardianPaymentCartController;
 use App\Http\Controllers\GuardianPortalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
+
+Route::post('/duitku/callback', DuitkuWebhookController::class)->name('duitku.callback');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'create'])->name('login');
@@ -28,6 +33,8 @@ Route::middleware(['auth', 'role.access'])->group(function () {
     Route::get('/pengaturan', [SettingController::class, 'index'])->name('settings.index');
     Route::put('/pengaturan', [SettingController::class, 'update'])->name('settings.update');
     Route::get('/wali-santri/tagihan', [GuardianPortalController::class, 'index'])->name('guardian.bills.index');
+    Route::get('/wali-santri/keranjang-pembayaran', [GuardianPaymentCartController::class, 'index'])->name('guardian.payment-cart.index');
+    Route::post('/wali-santri/pembayaran-online', [GuardianOnlinePaymentController::class, 'store'])->name('guardian.online-payments.store');
     Route::post('/wali-santri/transfer', [GuardianPortalController::class, 'store'])->name('guardian.transfers.store');
 
     require __DIR__.'/master.php';

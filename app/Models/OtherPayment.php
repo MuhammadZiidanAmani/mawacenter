@@ -12,6 +12,7 @@ class OtherPayment extends Model
         'student_id', 'fee_type_id', 'transaction_at', 'payment_method', 'transfer_proof_path', 'transfer_proof_file_id', 'transfer_proof_metadata', 'status',
         'original_amount', 'discount_amount', 'total_amount', 'paid_amount',
         'remaining_amount', 'payment_status', 'operator_name', 'operator_user_id', 'import_source', 'import_key',
+        'reconciliation_status', 'reconciliation_flagged_at',
     ];
 
     protected function casts(): array
@@ -24,6 +25,7 @@ class OtherPayment extends Model
             'total_amount' => 'integer',
             'paid_amount' => 'integer',
             'remaining_amount' => 'integer',
+            'reconciliation_flagged_at' => 'datetime',
         ];
     }
 

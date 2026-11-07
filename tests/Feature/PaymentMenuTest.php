@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\MarkExpiredPendingPayments;
 use App\Models\AcademicYear;
 use App\Models\AuditLog;
 use App\Models\Bill;
@@ -331,6 +332,101 @@ class PaymentMenuTest extends TestCase
             ->assertSee(route('finance.other.index', ['category' => 'laundry']), false)
             ->assertSee(route('finance.other.index'), false)
             ->assertDontSee('Riwayat Lainnya');
+    }
+
+    public function test_payment_reconciliation_page_uses_read_only_mock_transactions_and_local_filters(): void
+    {
+        $response = $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.reconciliation'));
+
+        $response->assertOk()
+            ->assertSee('Rekonsiliasi Pembayaran')
+            ->assertSee('Data Simulasi')
+            ->assertSee('Tombol tinjau hanya menampilkan detail dan tidak mengubah transaksi.')
+            ->assertSee('data-payment-reconciliation', false)
+            ->assertSee('data-reconciliation-search', false)
+            ->assertSee('data-reconciliation-issue', false)
+            ->assertSee('data-reconciliation-severity', false)
+            ->assertSee('data-reconciliation-modal', false)
+            ->assertSee('SPP-20261106-000184')
+            ->assertSee('Alokasi tidak sinkron')
+            ->assertSee('Rekomendasi Pemeriksaan')
+            ->assertSee('href="'.route('finance.payments.reconciliation').'"', false);
+
+        $dom = new \DOMDocument;
+        @$dom->loadHTML($response->getContent());
+        $xpath = new \DOMXPath($dom);
+        $this->assertCount(4, $xpath->query('//*[@data-reconciliation-row]'));
+        $this->assertCount(4, $xpath->query('//*[@data-reconciliation-detail]'));
+    }
+
+    public function test_payment_reconciliation_requires_transaction_management_permission(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'bendahara']))
+            ->get(route('finance.payments.reconciliation'))
+            ->assertForbidden();
+    }
+
+    public function test_expiry_job_marks_only_old_pending_payments_without_accepting_them(): void
+    {
+        CarbonImmutable::setTestNow('2026-11-07 12:00:00');
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VI A', 'level' => 6]);
+        $student = Student::create([
+            'nis' => 'RECON-001', 'name' => 'Siswa Rekonsiliasi', 'gender' => 'L',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01', 'is_active' => true,
+        ]);
+        $oldPending = SppPayment::create([
+            'student_id' => $student->id, 'transaction_at' => now()->subHours(25),
+            'payment_method' => 'Transfer', 'status' => 'Pending',
+            'original_amount' => 100000, 'discount_amount' => 0, 'total_amount' => 100000,
+            'paid_amount' => 100000, 'remaining_amount' => 100000, 'payment_status' => 'Pending',
+        ]);
+        $recentPending = SppPayment::create([
+            'student_id' => $student->id, 'transaction_at' => now()->subHours(2),
+            'payment_method' => 'Transfer', 'status' => 'Pending',
+            'original_amount' => 100000, 'discount_amount' => 0, 'total_amount' => 100000,
+            'paid_amount' => 100000, 'remaining_amount' => 100000, 'payment_status' => 'Pending',
+        ]);
+
+        app(MarkExpiredPendingPayments::class)->handle();
+
+        $this->assertSame('Kadaluarsa', $oldPending->refresh()->reconciliation_status);
+        $this->assertNotNull($oldPending->reconciliation_flagged_at);
+        $this->assertSame('Pending', $oldPending->status);
+        $this->assertSame('Pending', $oldPending->payment_status);
+        $this->assertNull($recentPending->refresh()->reconciliation_status);
+    }
+
+    public function test_reconciliation_endpoint_returns_live_anomalies_for_authorized_user(): void
+    {
+        $year = AcademicYear::create(['name' => '2026/2027', 'is_active' => true]);
+        $unit = EducationUnit::create(['code' => 'MTs', 'name' => 'MTs Mambaul Hikmah', 'is_active' => true]);
+        $class = SchoolClass::create(['education_unit_id' => $unit->id, 'name' => 'VIII B', 'level' => 8]);
+        $student = Student::create([
+            'nis' => 'RECON-002', 'name' => 'Siswa Endpoint Rekonsiliasi', 'gender' => 'P',
+            'school_class_id' => $class->id, 'academic_year_id' => $year->id,
+            'billing_start_date' => '2026-07-01', 'is_active' => true,
+        ]);
+        $payment = SppPayment::create([
+            'student_id' => $student->id, 'transaction_at' => '2026-11-06 08:00:00',
+            'payment_method' => 'Cash', 'status' => 'Diterima',
+            'original_amount' => 300000, 'discount_amount' => 0, 'total_amount' => 300000,
+            'paid_amount' => 300000, 'remaining_amount' => 0, 'payment_status' => 'Lunas',
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->getJson(route('finance.payments.reconciliation.data'))
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('meta.critical', 1)
+            ->assertJsonPath('data.0.id', $payment->id)
+            ->assertJsonPath('data.0.issue', 'Belum teralokasi')
+            ->assertJsonPath('data.0.recorded_amount', 300000)
+            ->assertJsonPath('data.0.allocated_amount', 0)
+            ->assertJsonPath('data.0.difference', 300000);
     }
 
     public function test_transaction_hub_stays_focused_without_history_buttons(): void

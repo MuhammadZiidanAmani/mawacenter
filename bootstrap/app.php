@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureRolePermission;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,6 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->validateCsrfTokens(except: [
+            'duitku/callback',
+        ]);
+
         $middleware->redirectUsersTo(fn (Request $request) => match (true) {
             $request->user()?->isPetugas() => route('finance.payments.index'),
             $request->user()?->isBendaharaUnit() => route('finance.bills.index'),
@@ -20,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $middleware->alias([
-            'role.access' => \App\Http\Middleware\EnsureRolePermission::class,
+            'role.access' => EnsureRolePermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

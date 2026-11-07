@@ -40,4 +40,15 @@ return [
         'folder_id' => env('GOOGLE_DRIVE_FOLDER_ID'),
     ],
 
+    'duitku' => [
+        'enabled' => (bool) env('DUITKU_ENABLED', false),
+        'merchant_code' => env('DUITKU_MERCHANT_CODE'),
+        'api_key' => env('DUITKU_API_KEY'),
+        'base_url' => env('DUITKU_BASE_URL', 'https://sandbox.duitku.com'),
+        'callback_url' => env('DUITKU_CALLBACK_URL'),
+        'return_url' => env('DUITKU_RETURN_URL'),
+        'expiry_minutes' => (int) env('DUITKU_EXPIRY_MINUTES', 60),
+        'timeout_seconds' => (int) env('DUITKU_TIMEOUT_SECONDS', 15),
+    ],
+
 ];

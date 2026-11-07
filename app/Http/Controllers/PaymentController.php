@@ -17,8 +17,10 @@ use App\Services\GoogleDriveStorageException;
 use App\Services\GoogleDriveStorageService;
 use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentService;
+use App\Services\PaymentReconciliationService;
 use App\Services\SppPaymentService;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -816,6 +818,110 @@ class PaymentController extends Controller
         return view('finance.payments', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
             'mode' => 'history',
+        ]);
+    }
+
+    public function reconciliation(): View
+    {
+        $transactions = collect([
+            [
+                'reference' => 'SPP-20261106-000184',
+                'student' => 'Naila Rahma',
+                'nis' => 'SIM-240184',
+                'unit' => 'MI',
+                'class' => 'VI A',
+                'date' => '06/11/2026 08.42 WIB',
+                'method' => 'Tunai',
+                'source' => 'SPP',
+                'issue' => 'Alokasi tidak sinkron',
+                'issue_key' => 'allocation',
+                'severity' => 'Kritis',
+                'severity_key' => 'critical',
+                'recorded_amount' => 450000,
+                'allocated_amount' => 300000,
+                'difference' => 150000,
+                'description' => 'Nominal transaksi lebih besar daripada total alokasi pada tagihan SPP.',
+                'recommendation' => 'Periksa item SPP dan tautkan selisih ke periode yang benar sebelum transaksi ditutup.',
+            ],
+            [
+                'reference' => 'DU-20261105-000072',
+                'student' => 'Rafi Akbar',
+                'nis' => 'SIM-240072',
+                'unit' => 'MTs',
+                'class' => 'VIII B',
+                'date' => '05/11/2026 13.15 WIB',
+                'method' => 'Transfer Bank',
+                'source' => 'Daftar Ulang',
+                'issue' => 'Alokasi melebihi transaksi',
+                'issue_key' => 'allocation',
+                'severity' => 'Kritis',
+                'severity_key' => 'critical',
+                'recorded_amount' => 900000,
+                'allocated_amount' => 1000000,
+                'difference' => -100000,
+                'description' => 'Total alokasi tagihan lebih besar daripada nominal transaksi yang tercatat.',
+                'recommendation' => 'Tinjau histori koreksi dan kurangi alokasi berlebih tanpa mengubah transaksi historis lain.',
+            ],
+            [
+                'reference' => 'LL-20261104-000031',
+                'student' => 'Salwa Azzahra',
+                'nis' => 'SIM-240031',
+                'unit' => 'RA',
+                'class' => 'B1',
+                'date' => '04/11/2026 10.08 WIB',
+                'method' => 'Tunai',
+                'source' => 'Lain-lain',
+                'issue' => 'Belum teralokasi',
+                'issue_key' => 'unallocated',
+                'severity' => 'Peringatan',
+                'severity_key' => 'warning',
+                'recorded_amount' => 250000,
+                'allocated_amount' => 0,
+                'difference' => 250000,
+                'description' => 'Transaksi sudah diterima tetapi belum memiliki alokasi ke tagihan siswa.',
+                'recommendation' => 'Pilih tagihan tujuan yang sesuai setelah memverifikasi kategori dan unit pendidikan.',
+            ],
+            [
+                'reference' => 'SPP-20261103-000155',
+                'student' => 'Faris Maulana',
+                'nis' => 'SIM-240155',
+                'unit' => 'MA',
+                'class' => 'XI IPA',
+                'date' => '03/11/2026 09.27 WIB',
+                'method' => 'Transfer Bank',
+                'source' => 'SPP',
+                'issue' => 'Status tertahan',
+                'issue_key' => 'status',
+                'severity' => 'Peringatan',
+                'severity_key' => 'warning',
+                'recorded_amount' => 500000,
+                'allocated_amount' => 500000,
+                'difference' => 0,
+                'description' => 'Nominal dan alokasi sesuai, tetapi status transaksi belum berubah dari Pending.',
+                'recommendation' => 'Pastikan bukti penerimaan dana valid sebelum memperbarui status transaksi.',
+            ],
+        ]);
+
+        return view('finance.payment-reconciliation', [
+            'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
+            'transactions' => $transactions,
+            'totalDifference' => $transactions->sum(fn (array $transaction) => abs($transaction['difference'])),
+            'criticalCount' => $transactions->where('severity_key', 'critical')->count(),
+            'unallocatedCount' => $transactions->where('issue_key', 'unallocated')->count(),
+        ]);
+    }
+
+    public function reconciliationData(Request $request, PaymentReconciliationService $reconciliation): JsonResponse
+    {
+        $transactions = $reconciliation->anomalies($request->user()?->accessibleUnitIds());
+
+        return response()->json([
+            'data' => $transactions,
+            'meta' => [
+                'total' => $transactions->count(),
+                'critical' => $transactions->where('severity', 'Kritis')->count(),
+                'total_difference' => $transactions->sum(fn (array $transaction) => abs($transaction['difference'])),
+            ],
         ]);
     }
 

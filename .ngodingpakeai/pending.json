@@ -1,6 +1,6 @@
 {
   "repo": "MuhammadZiidanAmani/mawacenter",
-  "generatedForCommit": "832327222f82fc06bb8541224c51c3e3287f6e71",
+  "generatedForCommit": "49276d6e57ab62b2e11f27b253bce065a71b8322",
   "files": [
     {
       "path": ".editorconfig",
@@ -945,6 +945,12 @@
       "size": 1119
     },
     {
+      "path": "app/Exceptions/DuitkuException.php",
+      "reason": "needs_summary",
+      "language": "php",
+      "size": 107
+    },
+    {
       "path": "app/Http/Controllers/AuthController.php",
       "reason": "needs_summary",
       "language": "php",
@@ -969,6 +975,18 @@
       "size": 12802
     },
     {
+      "path": "app/Http/Controllers/DuitkuWebhookController.php",
+      "reason": "new",
+      "language": "php",
+      "size": 8470
+    },
+    {
+      "path": "app/Http/Controllers/GuardianOnlinePaymentController.php",
+      "reason": "needs_summary",
+      "language": "php",
+      "size": 7220
+    },
+    {
       "path": "app/Http/Controllers/GuardianPortalController.php",
       "reason": "needs_summary",
       "language": "php",
@@ -990,7 +1008,7 @@
       "path": "app/Http/Controllers/PaymentController.php",
       "reason": "needs_summary",
       "language": "php",
-      "size": 71903
+      "size": 76816
     },
     {
       "path": "app/Http/Controllers/ReportController.php",
@@ -1026,7 +1044,7 @@
       "path": "app/Http/Middleware/EnsureRolePermission.php",
       "reason": "needs_summary",
       "language": "php",
-      "size": 6785
+      "size": 7013
     },
     {
       "path": "app/Http/Requests/CorrectOtherPaymentRequest.php",
@@ -1087,6 +1105,12 @@
       "reason": "needs_summary",
       "language": "php",
       "size": 1514
+    },
+    {
+      "path": "app/Jobs/MarkExpiredPendingPayments.php",
+      "reason": "needs_summary",
+      "language": "php",
+      "size": 845
     },
     {
       "path": "app/Models/AcademicYear.php",
@@ -1155,10 +1179,16 @@
       "size": 850
     },
     {
+      "path": "app/Models/OnlinePaymentTransaction.php",
+      "reason": "changed",
+      "language": "php",
+      "size": 1526
+    },
+    {
       "path": "app/Models/OtherPayment.php",
       "reason": "needs_summary",
       "language": "php",
-      "size": 1423
+      "size": 1540
     },
     {
       "path": "app/Models/OtherPaymentItem.php",
@@ -1182,7 +1212,7 @@
       "path": "app/Models/SppPayment.php",
       "reason": "needs_summary",
       "language": "php",
-      "size": 1425
+      "size": 1542
     },
     {
       "path": "app/Models/SppPaymentCorrection.php",
@@ -1251,6 +1281,12 @@
       "size": 4012
     },
     {
+      "path": "app/Services/DuitkuService.php",
+      "reason": "needs_summary",
+      "language": "php",
+      "size": 6076
+    },
+    {
       "path": "app/Services/GoogleDriveStorageException.php",
       "reason": "needs_summary",
       "language": "php",
@@ -1285,6 +1321,12 @@
       "reason": "needs_summary",
       "language": "php",
       "size": 4670
+    },
+    {
+      "path": "app/Services/PaymentReconciliationService.php",
+      "reason": "needs_summary",
+      "language": "php",
+      "size": 3705
     },
     {
       "path": "app/Services/ReportQueryService.php",
@@ -1372,9 +1414,9 @@
     },
     {
       "path": "bootstrap/app.php",
-      "reason": "needs_summary",
+      "reason": "changed",
       "language": "php",
-      "size": 1164
+      "size": 1283
     },
     {
       "path": "bootstrap/cache/.gitignore",
@@ -1458,7 +1500,7 @@
       "path": "config/payments.php",
       "reason": "needs_summary",
       "language": "php",
-      "size": 284
+      "size": 392
     },
     {
       "path": "config/performance.php",
@@ -1482,7 +1524,7 @@
       "path": "config/services.php",
       "reason": "needs_summary",
       "language": "php",
-      "size": 1183
+      "size": 1685
     },
     {
       "path": "config/session.php",
@@ -1815,6 +1857,18 @@
       "size": 3212
     },
     {
+      "path": "database/migrations/2026_11_07_000000_add_reconciliation_fields_to_payments.php",
+      "reason": "needs_summary",
+      "language": "php",
+      "size": 935
+    },
+    {
+      "path": "database/migrations/2026_11_07_010000_create_online_payment_transactions_table.php",
+      "reason": "changed",
+      "language": "php",
+      "size": 2085
+    },
+    {
       "path": "database/seeders/DatabaseSeeder.php",
       "reason": "needs_summary",
       "language": "php",
@@ -2056,9 +2110,9 @@
     },
     {
       "path": "resources/css/modules/payments.css",
-      "reason": "changed",
+      "reason": "needs_summary",
       "language": "css",
-      "size": 40675
+      "size": 47332
     },
     {
       "path": "resources/css/modules/reports.css",
@@ -2086,9 +2140,9 @@
     },
     {
       "path": "resources/js/app.js",
-      "reason": "changed",
+      "reason": "needs_summary",
       "language": "javascript",
-      "size": 60091
+      "size": 63559
     },
     {
       "path": "resources/js/modules/bills.js",
@@ -2175,8 +2229,14 @@
       "size": 5459
     },
     {
+      "path": "resources/views/finance/payment-reconciliation.blade.php",
+      "reason": "needs_summary",
+      "language": "php",
+      "size": 10885
+    },
+    {
       "path": "resources/views/finance/payments.blade.php",
-      "reason": "changed",
+      "reason": "needs_summary",
       "language": "php",
       "size": 117493
     },
@@ -2286,7 +2346,7 @@
       "path": "resources/views/partials/sidebar.blade.php",
       "reason": "needs_summary",
       "language": "php",
-      "size": 8067
+      "size": 8447
     },
     {
       "path": "resources/views/partials/sortable-heading-v6.blade.php",
@@ -2448,13 +2508,13 @@
       "path": "routes/console.php",
       "reason": "needs_summary",
       "language": "php",
-      "size": 210
+      "size": 372
     },
     {
       "path": "routes/finance.php",
       "reason": "needs_summary",
       "language": "php",
-      "size": 3956
+      "size": 4120
     },
     {
       "path": "routes/master.php",
@@ -2470,9 +2530,9 @@
     },
     {
       "path": "routes/web.php",
-      "reason": "needs_summary",
+      "reason": "changed",
       "language": "php",
-      "size": 2189
+      "size": 2530
     },
     {
       "path": "storage/app/.gitignore",
@@ -42099,6 +42159,12 @@
       "size": 425
     },
     {
+      "path": "storage/framework/views/2ca0add7e87332896e56be6ca3b2568d.php",
+      "reason": "needs_summary",
+      "language": "php",
+      "size": 12282
+    },
+    {
       "path": "storage/framework/views/2cce6ed20bd540a0d6b76d3a1e50d40e.php",
       "reason": "needs_summary",
       "language": "php",
@@ -42442,7 +42508,7 @@
     },
     {
       "path": "storage/framework/views/70aa32d426b785fc47c90dace3653d33.php",
-      "reason": "changed",
+      "reason": "needs_summary",
       "language": "php",
       "size": 128634
     },
@@ -42607,6 +42673,12 @@
       "reason": "needs_summary",
       "language": "php",
       "size": 394
+    },
+    {
+      "path": "storage/framework/views/9f4ee6727554e3fca2c680e460824d4b.php",
+      "reason": "new",
+      "language": "php",
+      "size": 425
     },
     {
       "path": "storage/framework/views/a03cee677f42cc906fd8e59b75812c01.php",
@@ -43038,7 +43110,7 @@
       "path": "storage/framework/views/f5932a6c79ef4f937d1a9785fffd672f.php",
       "reason": "needs_summary",
       "language": "php",
-      "size": 9110
+      "size": 9557
     },
     {
       "path": "storage/framework/views/f6d213ba8e80c5354118801c9129667e.php",
@@ -43095,6 +43167,12 @@
       "size": 440
     },
     {
+      "path": "tests/Feature/GuardianOnlinePaymentTest.php",
+      "reason": "changed",
+      "language": "php",
+      "size": 15697
+    },
+    {
       "path": "tests/Feature/MasterDataTest.php",
       "reason": "needs_summary",
       "language": "php",
@@ -43102,9 +43180,9 @@
     },
     {
       "path": "tests/Feature/PaymentMenuTest.php",
-      "reason": "changed",
+      "reason": "needs_summary",
       "language": "php",
-      "size": 177936
+      "size": 183180
     },
     {
       "path": "tests/Feature/PerformanceCacheTest.php",

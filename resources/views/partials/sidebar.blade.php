@@ -19,6 +19,7 @@
         'chevron' => '<path d="m9 18 6-6-6-6"/>',
         'arrow-up' => '<path d="M12 19V5m0 0-5 5m5-5 5 5"/>',
         'switch' => '<path d="M7 7h11m0 0-4-4m4 4-4 4M17 17H6m0 0 4-4m-4 4 4 4"/>',
+        'cart' => '<circle cx="9" cy="20" r="1"/><circle cx="19" cy="20" r="1"/><path d="M3 4h2l2.7 10.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H7"/>',
     ];
     $sidebarIcon = fn ($name, $class = '') => $sidebarSvg($sidebarIcons[$name], $class);
     $canAccess = fn (string $permission) => auth()->user()?->hasPermission($permission) ?? false;
@@ -50,17 +51,23 @@
         @if($canAccess('dashboard.view'))
         <a href="{{ route('dashboard') }}" class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}" @if($activeMenu === 'dashboard') aria-current="page" @endif>{!! $sidebarIcon('grid') !!}<span>Dashboard</span></a>
         @endif
-        @if($canAccessPaymentMenu || ($guardianTransfersEnabled && auth()->user()?->isSuperAdmin()) || $canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))
+        @if($canAccessPaymentMenu || $canAccess('payments.manage') || ($guardianTransfersEnabled && auth()->user()?->isSuperAdmin()) || $canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))
         <p class="nav-section-label">KEUANGAN</p>
         @endif
         @if($canAccessPaymentMenu)
         <a href="{{ $paymentMenuUrl }}" class="nav-item {{ $activeMenu === 'payment' ? 'active' : '' }}" @if($activeMenu === 'payment') aria-current="page" @endif>{!! $sidebarIcon('card') !!}<span>Pembayaran</span></a>
+        @endif
+        @if($canAccess('payments.manage'))
+        <a href="{{ route('finance.payments.reconciliation') }}" class="nav-item {{ $activeMenu === 'payment-reconciliation' ? 'active' : '' }}" @if($activeMenu === 'payment-reconciliation') aria-current="page" @endif>{!! $sidebarIcon('switch') !!}<span>Rekonsiliasi Pembayaran</span></a>
         @endif
         @if($guardianTransfersEnabled && auth()->user()?->isSuperAdmin())
         <a href="{{ route('finance.transfer-verifications.index') }}" class="nav-item {{ $activeMenu === 'transfer-verification' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>Verifikasi Transfer</span></a>
         @endif
         @if($canAccess('bills.view') || $canAccess('bills.view_unit') || $canAccess('bills.view_guardian'))
         <a href="{{ route('finance.bills.index') }}" class="nav-item {{ $activeMenu === 'bills' ? 'active' : '' }}">{!! $sidebarIcon('receipt') !!}<span>Tagihan</span></a>
+        @endif
+        @if(auth()->user()?->isGuardian() && $canAccess('bills.view_guardian'))
+        <a href="{{ route('guardian.payment-cart.index') }}" class="nav-item {{ $activeMenu === 'payment-cart' ? 'active' : '' }}" @if($activeMenu === 'payment-cart') aria-current="page" @endif>{!! $sidebarIcon('cart') !!}<span>Keranjang Pembayaran</span></a>
         @endif
 
         @if($canAccess('reports.view') || $canAccess('reports.view_unit'))

@@ -13,6 +13,8 @@ Route::prefix('keuangan/pembayaran')->name('finance.payments.')->controller(Paym
     Route::post('/', 'store')->name('store');
     Route::get('/receipt', 'receiptBatch')->name('receipt');
     Route::get('/riwayat', 'history')->name('history');
+    Route::get('/rekonsiliasi', 'reconciliation')->name('reconciliation');
+    Route::get('/rekonsiliasi/data', 'reconciliationData')->name('reconciliation.data');
     Route::get('/import', 'import')->name('import');
 });
 

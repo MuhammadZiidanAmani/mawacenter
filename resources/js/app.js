@@ -697,6 +697,67 @@ if (transferRejectModal) {
     });
 }
 
+const paymentReconciliation = document.querySelector('[data-payment-reconciliation]');
+if (paymentReconciliation) {
+    const rows = Array.from(paymentReconciliation.querySelectorAll('[data-reconciliation-row]'));
+    const search = paymentReconciliation.querySelector('[data-reconciliation-search]');
+    const issue = paymentReconciliation.querySelector('[data-reconciliation-issue]');
+    const severity = paymentReconciliation.querySelector('[data-reconciliation-severity]');
+    const count = paymentReconciliation.querySelector('[data-reconciliation-count]');
+    const empty = paymentReconciliation.querySelector('[data-reconciliation-empty]');
+    const modal = paymentReconciliation.querySelector('[data-reconciliation-modal]');
+    const setModalText = (selector, value) => {
+        const target = modal?.querySelector(selector);
+        if (target) target.textContent = value || '-';
+    };
+    const applyFilters = () => {
+        const needle = search.value.trim().toLocaleLowerCase('id-ID');
+        let visible = 0;
+        rows.forEach((row) => {
+            const matchesSearch = !needle || row.dataset.search.includes(needle);
+            const matchesIssue = issue.value === 'all' || row.dataset.issue === issue.value;
+            const matchesSeverity = severity.value === 'all' || row.dataset.severity === severity.value;
+            const matches = matchesSearch && matchesIssue && matchesSeverity;
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        count.textContent = String(visible);
+        empty.hidden = visible > 0;
+    };
+    const closeModal = () => {
+        modal.classList.remove('show');
+        modal.hidden = true;
+        document.body.style.overflow = '';
+    };
+
+    [search, issue, severity].forEach((control) => control.addEventListener(control === search ? 'input' : 'change', applyFilters));
+    paymentReconciliation.querySelector('[data-reconciliation-reset]')?.addEventListener('click', () => {
+        search.value = '';
+        issue.value = 'all';
+        severity.value = 'all';
+        applyFilters();
+        search.focus();
+    });
+    paymentReconciliation.querySelectorAll('[data-reconciliation-detail]').forEach((button) => button.addEventListener('click', () => {
+        setModalText('[data-reconciliation-modal-reference]', button.dataset.reference);
+        setModalText('[data-reconciliation-modal-student]', button.dataset.student);
+        setModalText('[data-reconciliation-modal-student-meta]', button.dataset.studentMeta);
+        setModalText('[data-reconciliation-modal-issue]', button.dataset.issueLabel);
+        setModalText('[data-reconciliation-modal-description]', button.dataset.description);
+        setModalText('[data-reconciliation-modal-recommendation]', button.dataset.recommendation);
+        setModalText('[data-reconciliation-modal-recorded]', button.dataset.recorded);
+        setModalText('[data-reconciliation-modal-allocated]', button.dataset.allocated);
+        setModalText('[data-reconciliation-modal-difference]', button.dataset.difference);
+        modal.hidden = false;
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }));
+    modal.querySelectorAll('[data-reconciliation-close]').forEach((button) => button.addEventListener('click', closeModal));
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) closeModal();
+    });
+}
+
 document.querySelectorAll('.payment-one-stop-history-card').forEach((historyCard) => {
     const filters = Array.from(historyCard.querySelectorAll('[data-payment-history-filter]'));
     const items = Array.from(historyCard.querySelectorAll('[data-payment-history-type]'));
@@ -1080,7 +1141,7 @@ document.querySelectorAll('[data-alert]').forEach((alert) => {
 });
 
 const appModalSelector = '.modal-backdrop, .result-modal-backdrop, .spp-import-modal-backdrop';
-const appModalCloseSelector = '[data-alert-close], [data-app-confirm-cancel], [data-payment-success-close], [data-payment-delete-cancel], [data-transfer-reject-cancel], [data-modal-close], [data-spp-crud-close], [data-report-payment-close], [data-other-crud-close], [data-spp-import-close]';
+const appModalCloseSelector = '[data-alert-close], [data-app-confirm-cancel], [data-payment-success-close], [data-payment-delete-cancel], [data-transfer-reject-cancel], [data-reconciliation-close], [data-modal-close], [data-spp-crud-close], [data-report-payment-close], [data-other-crud-close], [data-spp-import-close]';
 const appModalFocusableSelector = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
 const appModalFocusOrigins = new WeakMap();
 const visibleAppModals = () => Array.from(document.querySelectorAll(appModalSelector)).filter((modal) => !modal.hidden && modal.classList.contains('show'));

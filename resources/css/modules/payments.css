@@ -914,12 +914,60 @@ main.payment-hub-page {
 .payment-success-receipts strong { color: var(--app-primary); font-size: var(--app-text-body-size); font-weight: 700; line-height: var(--app-text-body-leading); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; text-align: right; }
 .payment-one-stop-history-action.danger:hover { color: var(--app-danger); background: var(--app-danger-soft); border-color: var(--app-danger-border-soft); }
 
+.payment-reconciliation-page { display: grid; width: 100%; min-width: 0; gap: 18px; padding: var(--app-page-padding-y) var(--app-page-padding-x) 32px; background: var(--app-canvas); }
+.payment-reconciliation-page > :not(.modal-backdrop) { width: min(100%, var(--app-content-width)); min-width: 0; margin-inline: auto; }
+.payment-reconciliation-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.payment-reconciliation-heading .eyebrow,
+.payment-reconciliation-detail-modal .eyebrow { margin: 0 0 4px; color: var(--app-primary); font-size: var(--app-text-meta-size); font-weight: 700; line-height: var(--app-text-meta-leading); text-transform: uppercase; }
+.payment-reconciliation-heading h1 { margin: 0; color: var(--app-text); font-size: var(--app-text-page-size); font-weight: 700; line-height: var(--app-text-page-leading); }
+.payment-reconciliation-heading > div > p:last-child { max-width: 680px; margin: 5px 0 0; color: var(--app-muted); }
+.payment-reconciliation-mock-badge { flex: 0 0 auto; padding: 6px 10px; color: var(--app-warning); background: var(--app-warning-soft); border: 1px solid var(--app-warning-border); border-radius: 999px; font-size: var(--app-text-meta-size); font-weight: 700; line-height: var(--app-text-meta-leading); }
+.payment-reconciliation-notice { padding: 12px 14px; color: var(--app-label); background: var(--app-info-soft); border: 1px solid var(--app-info-border); border-radius: var(--app-radius); }
+.payment-reconciliation-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.payment-reconciliation-stats article { display: grid; min-width: 0; gap: 5px; padding: 16px; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.payment-reconciliation-stats article.is-critical { border-color: var(--app-danger-border); }
+.payment-reconciliation-stats span { color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); }
+.payment-reconciliation-stats strong { min-width: 0; color: var(--app-text); font-size: var(--app-text-total-size); font-weight: 700; line-height: var(--app-text-total-leading); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.payment-reconciliation-stats article.is-critical strong { color: var(--app-danger); }
+.payment-reconciliation-stats small { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.payment-reconciliation-panel { overflow: hidden; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.payment-reconciliation-filters { display: grid; grid-template-columns: minmax(240px, 1.5fr) repeat(2, minmax(170px, 1fr)) auto; gap: 12px; align-items: end; padding: 16px; border-bottom: 1px solid var(--app-border-soft); }
+.payment-reconciliation-filters label { display: grid; min-width: 0; gap: 6px; color: var(--app-label); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); }
+.payment-reconciliation-filters input,
+.payment-reconciliation-filters select { width: 100%; }
+.payment-reconciliation-table { width: 100%; min-width: 1160px; }
+.payment-reconciliation-table td strong { display: block; color: var(--app-text); font-weight: 600; }
+.payment-reconciliation-table td small { display: block; margin-top: 3px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.payment-reconciliation-money { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.payment-reconciliation-money.is-mismatch { color: var(--app-danger); font-weight: 700; }
+.payment-reconciliation-money.is-balanced { color: var(--app-success); font-weight: 600; }
+.payment-reconciliation-footer { padding: 12px 16px; color: var(--app-muted); border-top: 1px solid var(--app-border-soft); font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
+.payment-reconciliation-footer span { color: var(--app-text); font-weight: 700; font-variant-numeric: tabular-nums; }
+.payment-reconciliation-detail-modal { width: min(100%, 580px); }
+.payment-reconciliation-detail-content { display: grid; gap: 16px; padding: 20px; }
+.payment-reconciliation-detail-student { display: grid; gap: 3px; }
+.payment-reconciliation-detail-student strong { color: var(--app-text); font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.payment-reconciliation-detail-student span { color: var(--app-muted); }
+.payment-reconciliation-detail-content dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.payment-reconciliation-detail-content dl > div { display: grid; gap: 4px; padding: 12px; background: var(--app-panel-soft); border-radius: var(--app-radius); }
+.payment-reconciliation-detail-content dt,
+.payment-reconciliation-detail-content section > span { color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); }
+.payment-reconciliation-detail-content dd { margin: 0; color: var(--app-text); font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.payment-reconciliation-detail-content section { display: grid; gap: 5px; padding: 14px; border: 1px solid var(--app-border); border-radius: var(--app-radius); }
+.payment-reconciliation-detail-content section strong { color: var(--app-danger); }
+.payment-reconciliation-detail-content section p { margin: 0; color: var(--app-label); }
+.payment-reconciliation-detail-content section.is-recommendation { background: var(--app-info-soft); border-color: var(--app-info-border); }
+.payment-reconciliation-detail-actions { padding: 0 20px 20px; }
+
 @media (max-width: 960px) {
     .payment-import-context-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 1180px) {
     .payment-prd-layout.is-student-selected { grid-template-columns: 1fr; grid-template-areas: "stats" "summary" "bills" "history"; }
+
+    .payment-reconciliation-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .payment-reconciliation-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
     .payment-overview-panel { max-width: none; }
 
@@ -931,6 +979,14 @@ main.payment-hub-page {
 }
 
 @media (max-width: 760px) {
+    .payment-reconciliation-page { padding: 16px; }
+    .payment-reconciliation-heading { flex-direction: column; }
+    .payment-reconciliation-stats,
+    .payment-reconciliation-filters,
+    .payment-reconciliation-detail-content dl { grid-template-columns: 1fr; }
+    .payment-reconciliation-filters .button { width: 100%; }
+    .payment-reconciliation-detail-content { padding: var(--app-modal-padding-mobile); }
+    .payment-reconciliation-detail-actions { padding: 0 var(--app-modal-padding-mobile) var(--app-modal-padding-mobile); }
     .payment-one-stop-history-action { width: 40px; height: 40px; }
     .payment-prd-bill-heading, .payment-one-stop-history-item { grid-template-columns: minmax(0, 1fr); }
     .payment-prd-bill-heading { display: grid; }
@@ -991,4 +1047,78 @@ main.payment-hub-page {
     .payment-import-preview-pagination .pagination { width: 100%; justify-content: center; }
     .payment-import-preview-search { width: 100%; max-width: none; }
     .payment-import-dropzone { min-height: 150px; }
+}
+/* Guardian payment cart mock. */
+.payment-cart-page { display: grid; width: min(100%, 1200px); min-width: 0; margin: 0 auto; padding: 24px 32px; gap: 20px; }
+.payment-cart-heading { display: flex; min-width: 0; align-items: end; justify-content: space-between; gap: 16px; }
+.payment-cart-heading > div { display: grid; min-width: 0; gap: 4px; }
+.payment-cart-heading h1 { margin: 0; font-size: var(--app-text-page-size); line-height: var(--app-text-page-leading); }
+.payment-cart-heading p { margin: 0; color: var(--app-muted); }
+.payment-cart-mock-badge { width: max-content; margin-bottom: 4px; padding: 3px 8px; color: var(--app-info); background: var(--app-info-soft); border-radius: var(--app-radius); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); }
+.payment-cart-notice { display: flex; align-items: center; gap: 12px; padding: 14px 16px; color: var(--app-label); background: var(--app-primary-soft); border: 1px solid var(--app-primary-border); border-radius: var(--app-radius-panel); }
+.payment-cart-notice > .icon { width: 22px; height: 22px; flex: 0 0 auto; color: var(--app-primary); }
+.payment-cart-notice div { display: grid; gap: 2px; }
+.payment-cart-notice span { color: var(--app-muted); }
+.payment-cart-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); min-width: 0; align-items: start; gap: 20px; }
+.payment-cart-items, .payment-cart-summary { min-width: 0; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.payment-cart-section-head { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--app-border-soft); }
+.payment-cart-section-head > div { display: grid; min-width: 0; gap: 2px; }
+.payment-cart-section-head h2 { margin: 0; font-size: var(--app-text-section-size); line-height: var(--app-text-section-leading); }
+.payment-cart-section-head span { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.payment-cart-section-head .payment-cart-identity-chip { padding: 4px 8px; color: var(--app-primary); background: var(--app-primary-soft); border-radius: var(--app-radius); font-weight: 600; white-space: nowrap; }
+.payment-cart-group { margin: 16px 20px; overflow: hidden; border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); }
+.payment-cart-student { display: flex; min-width: 0; align-items: center; gap: 12px; padding: 14px 16px 8px; }
+.payment-cart-student-icon { display: grid; width: 40px; height: 40px; flex: 0 0 auto; place-items: center; color: var(--app-primary); background: var(--app-primary-soft); border-radius: var(--app-radius); }
+.payment-cart-student-icon .icon { width: 20px; height: 20px; }
+.payment-cart-student-copy { display: grid; min-width: 0; flex: 1; gap: 2px; overflow-wrap: anywhere; }
+.payment-cart-student-copy span, .payment-cart-unit-name, .payment-cart-item-copy small { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.payment-cart-unit-chip { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; padding: 4px 8px; color: var(--app-info); background: var(--app-info-soft); border-radius: var(--app-radius); font-size: var(--app-text-meta-size); font-weight: 600; }
+.payment-cart-unit-chip .icon { width: 15px; height: 15px; }
+.payment-cart-unit-name { padding: 0 16px 12px 68px; }
+.payment-cart-list { display: grid; border-top: 1px solid var(--app-border-soft); }
+.payment-cart-item { display: grid; grid-template-columns: auto minmax(0, 1fr) max-content; min-width: 0; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--app-border-soft); }
+.payment-cart-item:last-child { border-bottom: 0; }
+.payment-cart-item-copy { display: grid; min-width: 0; gap: 2px; overflow-wrap: anywhere; }
+.payment-cart-item-amount, .payment-cart-group-total strong, .payment-cart-totals dd { font-variant-numeric: tabular-nums; text-align: right; }
+.payment-cart-group-total { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--app-panel-soft); border-top: 1px solid var(--app-border-soft); }
+.payment-cart-summary { position: sticky; top: 84px; }
+.payment-cart-totals { display: grid; margin: 0; padding: 16px 20px 4px; gap: 10px; }
+.payment-cart-totals > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.payment-cart-totals dt { color: var(--app-muted); }
+.payment-cart-totals dd { margin: 0; font-weight: 600; }
+.payment-cart-totals .payment-cart-grand-total { margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--app-border); }
+.payment-cart-grand-total dt, .payment-cart-grand-total dd { color: var(--app-text); font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.payment-cart-grand-total dd { color: var(--app-primary); }
+.payment-cart-methods { display: grid; margin: 12px 20px 16px; padding: 0; gap: 8px; border: 0; }
+.payment-cart-methods legend { margin-bottom: 8px; color: var(--app-label); font-weight: 600; }
+.payment-cart-methods label { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--app-border); border-radius: var(--app-radius-field); }
+.payment-cart-methods label.is-selected { background: var(--app-primary-soft); border-color: var(--app-primary-border); }
+.payment-cart-methods label > span { display: grid; gap: 2px; }
+.payment-cart-methods small { color: var(--app-muted); }
+.payment-cart-checkout { width: calc(100% - 40px); margin: 0 20px; }
+.payment-cart-helper { margin: 8px 20px 16px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); text-align: center; }
+.payment-cart-security { display: flex; align-items: flex-start; gap: 10px; padding: 14px 20px; background: var(--app-success-soft); border-top: 1px solid var(--app-success-border); }
+.payment-cart-security > .icon { width: 20px; height: 20px; flex: 0 0 auto; color: var(--app-success); }
+.payment-cart-security > span { display: grid; gap: 2px; }
+.payment-cart-security small { color: var(--app-muted); }
+
+@media (max-width: 960px) {
+    .payment-cart-page { padding: 20px 24px; }
+    .payment-cart-layout { grid-template-columns: 1fr; }
+    .payment-cart-summary { position: static; }
+}
+
+@media (max-width: 640px) {
+    .payment-cart-page { padding: 16px; gap: 16px; }
+    .payment-cart-heading { align-items: stretch; flex-direction: column; }
+    .payment-cart-heading .button { width: 100%; }
+    .payment-cart-section-head { align-items: flex-start; flex-direction: column; }
+    .payment-cart-section-head .payment-cart-identity-chip { white-space: normal; }
+    .payment-cart-group { margin: 12px; }
+    .payment-cart-student { align-items: flex-start; flex-wrap: wrap; }
+    .payment-cart-student-copy { flex-basis: calc(100% - 52px); }
+    .payment-cart-unit-chip { margin-left: 52px; }
+    .payment-cart-unit-name { padding-left: 68px; }
+    .payment-cart-item { grid-template-columns: auto minmax(0, 1fr); }
+    .payment-cart-item-amount { grid-column: 2; text-align: left; }
 }
