@@ -95,6 +95,11 @@ class DashboardTest extends TestCase
             ->assertSee('Pemasukan Bulan Ini')
             ->assertSee('Rp 500.000')
             ->assertSee('Lewat Jatuh Tempo')
+            ->assertSee('Tren Pemasukan')
+            ->assertSeeInOrder(['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'])
+            ->assertSee('Jun: Rp 500.000')
+            ->assertSee('Aktivitas Terbaru')
+            ->assertSee('Pembayaran yang baru saja diterima')
             ->assertSee('Ahmad Fauzan')
             ->assertSee('SMP MaWA');
     }
@@ -103,8 +108,65 @@ class DashboardTest extends TestCase
     {
         $this->actingAs(User::factory()->create())->get('/')
             ->assertOk()
+            ->assertSee('Filter Dashboard')
+            ->assertSee('Unit Pendidikan')
+            ->assertSee('Tahun Pelajaran')
             ->assertSee('Pemasukan Bulan Ini')
             ->assertSee('Belum ada transaksi diterima.');
+    }
+
+    public function test_dashboard_filters_financial_data_by_unit_and_academic_year(): void
+    {
+        $this->travelTo('2026-06-14 12:00:00');
+        $activeYear = AcademicYear::create([
+            'name' => '2026/2027',
+            'start_date' => '2026-06-01',
+            'end_date' => '2027-05-31',
+            'is_active' => true,
+        ]);
+        $archivedYear = AcademicYear::create([
+            'name' => '2025/2026',
+            'start_date' => '2025-06-01',
+            'end_date' => '2026-05-31',
+            'is_active' => false,
+        ]);
+        $selectedUnit = EducationUnit::create(['code' => 'MI', 'name' => 'MI Pilihan', 'is_active' => true]);
+        $otherUnit = EducationUnit::create(['code' => 'MA', 'name' => 'MA Lain', 'is_active' => true]);
+        $selectedClass = SchoolClass::create(['education_unit_id' => $selectedUnit->id, 'name' => 'I A', 'level' => '1', 'is_active' => true]);
+        $otherClass = SchoolClass::create(['education_unit_id' => $otherUnit->id, 'name' => 'X A', 'level' => '10', 'is_active' => true]);
+        $selectedStudent = Student::create([
+            'nis' => 'FILTER-001', 'name' => 'Siswa Tahun Pilihan', 'gender' => 'L',
+            'school_class_id' => $selectedClass->id, 'academic_year_id' => $archivedYear->id, 'is_active' => true,
+        ]);
+        $otherStudent = Student::create([
+            'nis' => 'FILTER-002', 'name' => 'Siswa Tahun Aktif', 'gender' => 'P',
+            'school_class_id' => $otherClass->id, 'academic_year_id' => $activeYear->id, 'is_active' => true,
+        ]);
+
+        foreach ([[$selectedStudent, 222222], [$otherStudent, 999999]] as [$student, $amount]) {
+            SppPayment::create([
+                'student_id' => $student->id,
+                'transaction_at' => '2026-06-14 09:00:00',
+                'payment_method' => 'Cash',
+                'status' => 'Diterima',
+                'original_amount' => $amount,
+                'discount_amount' => 0,
+                'total_amount' => $amount,
+                'paid_amount' => $amount,
+                'remaining_amount' => 0,
+                'payment_status' => 'Lunas',
+            ]);
+        }
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get('/?unit_id='.$selectedUnit->id.'&academic_year_id='.$archivedYear->id)
+            ->assertOk()
+            ->assertSee('value="'.$selectedUnit->id.'" selected', false)
+            ->assertSee('value="'.$archivedYear->id.'" selected', false)
+            ->assertSee('Siswa Tahun Pilihan')
+            ->assertSee('Rp 222.222')
+            ->assertDontSee('Siswa Tahun Aktif')
+            ->assertDontSee('Rp 999.999');
     }
 
     public function test_dashboard_cache_and_financial_data_are_scoped_to_assigned_units(): void
@@ -165,6 +227,13 @@ class DashboardTest extends TestCase
             ->assertDontSee('Siswa Rahasia')
             ->assertDontSee('MA Rahasia')
             ->assertSee('Rp 111.111')
+            ->assertDontSee('Rp 999.999');
+
+        $this->actingAs($bendahara)
+            ->get('/?unit_id='.$otherUnit->id.'&academic_year_id='.$year->id)
+            ->assertOk()
+            ->assertSee('Siswa Terakses')
+            ->assertDontSee('Siswa Rahasia')
             ->assertDontSee('Rp 999.999');
     }
 

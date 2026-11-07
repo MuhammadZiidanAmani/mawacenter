@@ -670,6 +670,58 @@ document.querySelectorAll('[data-auto-receipts]').forEach((launcher) => {
     if (urls.length) openReceipts();
 });
 
+const transferRejectModal = document.querySelector('[data-transfer-reject-modal]');
+if (transferRejectModal) {
+    const rejectForm = transferRejectModal.querySelector('[data-transfer-reject-form]');
+    const rejectStudent = transferRejectModal.querySelector('[data-transfer-reject-student]');
+    const rejectReason = transferRejectModal.querySelector('[data-transfer-reject-reason]');
+    const closeRejectModal = () => {
+        transferRejectModal.classList.remove('show');
+        transferRejectModal.hidden = true;
+        document.body.style.overflow = '';
+    };
+
+    document.querySelectorAll('[data-transfer-reject-open]').forEach((button) => {
+        button.addEventListener('click', () => {
+            rejectForm.action = button.dataset.transferRejectUrl || '';
+            rejectStudent.textContent = button.dataset.transferRejectStudent || '-';
+            rejectReason.value = '';
+            transferRejectModal.hidden = false;
+            transferRejectModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        });
+    });
+    transferRejectModal.querySelectorAll('[data-transfer-reject-cancel]').forEach((button) => button.addEventListener('click', closeRejectModal));
+    transferRejectModal.addEventListener('click', (event) => {
+        if (event.target === transferRejectModal) closeRejectModal();
+    });
+}
+
+document.querySelectorAll('.payment-one-stop-history-card').forEach((historyCard) => {
+    const filters = Array.from(historyCard.querySelectorAll('[data-payment-history-filter]'));
+    const items = Array.from(historyCard.querySelectorAll('[data-payment-history-type]'));
+    const emptyState = historyCard.querySelector('[data-payment-history-filter-empty]');
+    if (!filters.length || !items.length) return;
+
+    filters.forEach((filter) => {
+        filter.addEventListener('click', () => {
+            const selectedType = filter.dataset.paymentHistoryFilter || 'all';
+            let visibleCount = 0;
+            filters.forEach((control) => {
+                const active = control === filter;
+                control.classList.toggle('is-active', active);
+                control.setAttribute('aria-pressed', String(active));
+            });
+            items.forEach((item) => {
+                const visible = selectedType === 'all' || item.dataset.paymentHistoryType === selectedType;
+                item.hidden = !visible;
+                if (visible) visibleCount += 1;
+            });
+            if (emptyState) emptyState.hidden = visibleCount > 0;
+        });
+    });
+});
+
 document.querySelectorAll('[data-payment-context-switch]').forEach((control) => {
     control.addEventListener('change', () => {
         const form = control.form;
@@ -1028,7 +1080,7 @@ document.querySelectorAll('[data-alert]').forEach((alert) => {
 });
 
 const appModalSelector = '.modal-backdrop, .result-modal-backdrop, .spp-import-modal-backdrop';
-const appModalCloseSelector = '[data-alert-close], [data-app-confirm-cancel], [data-payment-success-close], [data-payment-delete-cancel], [data-modal-close], [data-spp-crud-close], [data-report-payment-close], [data-other-crud-close], [data-spp-import-close]';
+const appModalCloseSelector = '[data-alert-close], [data-app-confirm-cancel], [data-payment-success-close], [data-payment-delete-cancel], [data-transfer-reject-cancel], [data-modal-close], [data-spp-crud-close], [data-report-payment-close], [data-other-crud-close], [data-spp-import-close]';
 const appModalFocusableSelector = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
 const appModalFocusOrigins = new WeakMap();
 const visibleAppModals = () => Array.from(document.querySelectorAll(appModalSelector)).filter((modal) => !modal.hidden && modal.classList.contains('show'));
@@ -1046,7 +1098,7 @@ const restoreAppModalFocus = (modal) => {
 };
 const focusAppModal = (modal) => {
     rememberAppModalFocus(modal);
-    const preferredControl = modal.querySelector('[data-payment-delete-confirm], [data-alert-close], [data-payment-success-close], [data-modal-close], [data-spp-crud-close], [data-report-payment-close], [data-other-crud-close], [data-spp-import-close], button, a[href], input, select, textarea');
+    const preferredControl = modal.querySelector('[data-transfer-reject-reason], [data-payment-delete-confirm], [data-alert-close], [data-payment-success-close], [data-modal-close], [data-spp-crud-close], [data-report-payment-close], [data-other-crud-close], [data-spp-import-close], button, a[href], input, select, textarea');
     if (preferredControl) {
         preferredControl.focus();
         return;

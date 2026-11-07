@@ -83,6 +83,10 @@
                             </div>
                         </div>
                     @elseif(session('success') && $createdReceipts->isNotEmpty() && $paymentConfirmation->isNotEmpty())
+                        @php
+                            $confirmationStudent = collect($paymentConfirmation->get('student', []));
+                            $confirmationPayments = collect($paymentConfirmation->get('payments', []));
+                        @endphp
                         <div data-auto-receipts>
                             <script type="application/json" data-receipt-urls>@json($createdReceipts->pluck('receipt_url')->filter()->values())</script>
                             <script type="application/json" data-receipt-download-urls>@json($createdReceipts->pluck('download_url')->filter()->values())</script>
@@ -91,9 +95,42 @@
                                     <span class="result-icon" aria-hidden="true">{!! $icon('check-circle') !!}</span>
                                     <strong id="payment-success-title">Pembayaran Berhasil</strong>
                                     <p class="payment-success-message">Transaksi pembayaran berhasil disimpan dan tagihan telah diperbarui.</p>
+                                    <div class="payment-success-summary">
+                                        <div class="payment-success-student">
+                                            <span>Siswa</span>
+                                            <strong>{{ $confirmationStudent->get('name', '-') }}</strong>
+                                            <small>{{ collect([$confirmationStudent->get('nis'), $paymentConfirmation->get('context')])->filter()->join(' · ') }}</small>
+                                        </div>
+                                        <dl>
+                                            <div>
+                                                <dt>Total Pembayaran</dt>
+                                                <dd>Rp {{ number_format((int) $paymentConfirmation->get('paid_amount', 0), 0, ',', '.') }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Metode</dt>
+                                                <dd>{{ $paymentConfirmation->get('payment_method', '-') }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Status</dt>
+                                                <dd>{{ $paymentConfirmation->get('status', '-') }}</dd>
+                                            </div>
+                                        </dl>
+                                        <div class="payment-success-receipts">
+                                            <span>Nomor Struk</span>
+                                            @foreach($confirmationPayments as $confirmedPayment)
+                                                <div>
+                                                    @if($confirmationPayments->count() > 1)
+                                                        <small>{{ $confirmedPayment['label'] ?? 'Pembayaran' }}</small>
+                                                    @endif
+                                                    <strong>{{ $confirmedPayment['receipt_number'] ?? '-' }}</strong>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                     <div class="payment-success-actions">
                                         <button type="button" class="button button-primary" data-open-receipts>Cetak Struk</button>
-                                        <button type="button" class="button button-secondary payment-success-close" data-payment-success-close>Tutup</button>
+                                        <button type="button" class="button button-secondary" data-download-receipts>Download PDF</button>
+                                        <button type="button" class="button button-secondary payment-success-close" data-payment-success-close>Bayar Lagi</button>
                                     </div>
                                 </div>
                             </div>
@@ -741,6 +778,13 @@
                                                     <h2>Riwayat Terbaru</h2>
                                                     <span>Transaksi terakhir siswa ini</span>
                                                 </div>
+                                                @if($paymentHistory->isNotEmpty())
+                                                    <div class="payment-one-stop-history-filter" role="group" aria-label="Filter jenis riwayat pembayaran">
+                                                        <button type="button" class="is-active" data-payment-history-filter="all" aria-pressed="true">Semua</button>
+                                                        <button type="button" data-payment-history-filter="spp" aria-pressed="false">SPP</button>
+                                                        <button type="button" data-payment-history-filter="other" aria-pressed="false">Lainnya</button>
+                                                    </div>
+                                                @endif
                                             </div>
                                             @if($paymentHistory->isEmpty())
                                                 <div class="payment-one-stop-history-empty">
@@ -748,7 +792,7 @@
                                                     <span>Transaksi yang berhasil akan muncul di sini.</span>
                                                 </div>
                                             @else
-                                                <div class="payment-one-stop-history-list">
+                                                <div class="payment-one-stop-history-list" data-payment-history-list>
                                                     @foreach($paymentHistory as $history)
                                                         <article class="payment-one-stop-history-item" data-payment-history-type="{{ $history['type'] }}" data-payment-history-id="{{ $history['id'] }}">
                                                             <div class="payment-one-stop-history-copy">
@@ -756,7 +800,7 @@
                                                                 @if($history['detail'])
                                                                 <span class="payment-prd-history-detail">{{ $history['detail'] }}</span>
                                                                 @endif
-                                                                <span class="payment-prd-history-meta">{{ $history['date'] }} <span aria-hidden="true">•</span> {{ $history['method'] }}</span>
+                                                                <span class="payment-prd-history-meta">{{ $history['date'] }} <span aria-hidden="true">•</span> {{ $history['method'] }} <span aria-hidden="true">•</span> {{ $history['status'] }}</span>
                                                             </div>
                                                             <div class="payment-one-stop-history-side">
                                                                 <span class="payment-one-stop-history-amount">
@@ -778,6 +822,10 @@
                                                             </div>
                                                         </article>
                                                     @endforeach
+                                                </div>
+                                                <div class="payment-one-stop-history-empty" data-payment-history-filter-empty hidden>
+                                                    <strong>Tidak ada transaksi untuk filter ini.</strong>
+                                                    <span>Pilih jenis riwayat lain untuk melihat transaksi terbaru.</span>
                                                 </div>
                                             @endif
                                     </section>

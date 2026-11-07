@@ -414,6 +414,11 @@ class BillAccessTest extends TestCase
             ->assertSee('app-table-search', false)
             ->assertSee('sort=amount&amp;direction=desc', false)
             ->assertSee(route('finance.transfer-verifications.proof', $transfer), false)
+            ->assertSee('data-transfer-reject-open', false)
+            ->assertSee('data-transfer-reject-modal', false)
+            ->assertSee('name="rejected_reason"', false)
+            ->assertSee('Catatan Penolakan')
+            ->assertDontSee('value="Bukti transfer tidak valid"', false)
             ->assertDontSee('/storage/'.$transfer->proof_path, false);
 
         $this->get(route('finance.transfer-verifications.proof', $transfer))->assertOk();

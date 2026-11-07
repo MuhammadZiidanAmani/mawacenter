@@ -68,6 +68,34 @@
                 </div>
             </section>
 
+            <form method="GET" action="{{ route('dashboard') }}" class="dashboard-filter-panel" aria-labelledby="dashboard-filter-title">
+                <div class="dashboard-filter-heading">
+                    <h2 id="dashboard-filter-title">Filter Dashboard</h2>
+                    <p>Sesuaikan ringkasan dengan unit dan tahun pelajaran.</p>
+                </div>
+                <label>
+                    <span>Unit Pendidikan</span>
+                    <select name="unit_id">
+                        <option value="">Semua unit yang dapat diakses</option>
+                        @foreach($educationUnits as $unit)
+                            <option value="{{ $unit->id }}" @selected($selectedUnitId === $unit->id)>{{ $unit->name }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label>
+                    <span>Tahun Pelajaran</span>
+                    <select name="academic_year_id">
+                        @foreach($academicYears as $year)
+                            <option value="{{ $year->id }}" @selected($selectedAcademicYear?->id === $year->id)>{{ $year->name }}{{ $year->is_active ? ' (Aktif)' : '' }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <div class="dashboard-filter-actions">
+                    <button type="submit" class="button button-primary">Terapkan</button>
+                    <a href="{{ route('dashboard') }}" class="button button-secondary">Reset</a>
+                </div>
+            </form>
+
             <section class="metric-grid">
                 <article class="metric-card paid">
                     <div class="metric-head"><span class="metric-icon green">{!! $icon('wallet') !!}</span><span class="trend {{ $stats['income_trend'] >= 0 ? 'up' : 'down' }}">{{ $stats['income_trend'] >= 0 ? '+' : '' }}{{ $stats['income_trend'] }}%</span></div>
@@ -75,7 +103,7 @@
                     <small>Hari ini <strong>{{ $rupiah($stats['income_today']) }}</strong></small>
                 </article>
                 <article class="metric-card">
-                    <div class="metric-head"><span class="metric-icon indigo">{!! $icon('receipt') !!}</span><span class="period">Tahun aktif</span></div>
+                    <div class="metric-head"><span class="metric-icon indigo">{!! $icon('receipt') !!}</span><span class="period">{{ $selectedAcademicYear?->name ?? 'Semua tahun' }}</span></div>
                     <p>Sisa Tagihan</p><h2>{{ $rupiah($stats['outstanding']) }}</h2>
                     <small>Dari total tagihan <strong>{{ $rupiah($stats['total_billed']) }}</strong></small>
                 </article>
@@ -87,7 +115,7 @@
                 <article class="metric-card">
                     <div class="metric-head"><span class="metric-icon blue">{!! $icon('users') !!}</span><span class="status success">Aktif</span></div>
                     <p>Siswa Aktif</p><h2>{{ number_format($stats['active_students'], 0, ',', '.') }}</h2>
-                    <small>Tahun pelajaran <strong>{{ $activeAcademicYear?->name ?? 'belum diatur' }}</strong></small>
+                    <small>Tahun pelajaran <strong>{{ $selectedAcademicYear?->name ?? 'belum diatur' }}</strong></small>
                 </article>
             </section>
 
@@ -114,7 +142,7 @@
 
             <section class="dashboard-lower-grid">
                 <article class="card">
-                    <div class="card-header"><div><h3>Transaksi Terbaru</h3><p>Pembayaran yang baru saja diterima</p></div><a href="{{ route('reports.index') }}">Lihat semua {!! $icon('arrow') !!}</a></div>
+                    <div class="card-header"><div><h3>Aktivitas Terbaru</h3><p>Pembayaran yang baru saja diterima</p></div><a href="{{ route('reports.index') }}">Lihat semua {!! $icon('arrow') !!}</a></div>
                     <div class="payment-list">
                         @forelse($recentPayments as $payment)
                             <div class="payment-item">

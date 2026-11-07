@@ -20,9 +20,27 @@ class DashboardController extends Controller
     public function __invoke(Request $request): View
     {
         $activeAcademicYear = AcademicYear::where('is_active', true)->first();
+        $academicYears = AcademicYear::query()->orderByDesc('start_date')->get();
         $now = CarbonImmutable::now();
-        $unitIds = $request->user()?->accessibleUnitIds();
+        $accessibleUnitIds = $request->user()?->accessibleUnitIds();
         $studentIds = $request->user()?->accessibleStudentIds();
+        $educationUnits = EducationUnit::query()
+            ->where('is_active', true)
+            ->when(is_array($accessibleUnitIds), fn ($query) => $accessibleUnitIds === []
+                ? $query->whereRaw('1 = 0')
+                : $query->whereIn('id', $accessibleUnitIds))
+            ->orderBy('name')
+            ->get();
+
+        $requestedAcademicYearId = $request->integer('academic_year_id');
+        $selectedAcademicYear = $academicYears->firstWhere('id', $requestedAcademicYearId)
+            ?? $activeAcademicYear;
+        $requestedUnitId = $request->integer('unit_id');
+        $selectedUnitId = $educationUnits->contains('id', $requestedUnitId)
+            ? $requestedUnitId
+            : null;
+        $unitIds = $this->filteredUnitIds($accessibleUnitIds, $selectedUnitId);
+
         if (is_array($unitIds)) {
             sort($unitIds);
         }
@@ -33,17 +51,21 @@ class DashboardController extends Controller
         $payload = PerformanceCache::remember(
             'dashboard',
             [
-                'active_academic_year_id' => $activeAcademicYear?->id,
+                'academic_year_id' => $selectedAcademicYear?->id,
                 'date' => $now->toDateString(),
                 'unit_ids' => $unitIds ?? 'all',
                 'student_ids' => $studentIds ?? 'all',
             ],
             config('performance.query_cache.dashboard_ttl', 120),
-            fn () => $this->dashboardPayload($activeAcademicYear, $now, $unitIds, $studentIds),
+            fn () => $this->dashboardPayload($selectedAcademicYear, $now, $unitIds, $studentIds),
         );
 
         return view('welcome', [
             'activeAcademicYear' => $activeAcademicYear,
+            'academicYears' => $academicYears,
+            'educationUnits' => $educationUnits,
+            'selectedAcademicYear' => $selectedAcademicYear,
+            'selectedUnitId' => $selectedUnitId,
             'stats' => $payload['stats'],
             'monthlyTrend' => collect($payload['monthlyTrend']),
             'recentPayments' => collect($payload['recentPayments'])->map(fn (array $payment) => [
@@ -64,9 +86,9 @@ class DashboardController extends Controller
         $previousMonthStart = $monthStart->subMonth();
         $previousMonthEnd = $monthStart->subSecond();
 
-        $incomeThisMonth = $this->incomeBetween($monthStart, $now, $unitIds, $studentIds);
-        $incomePreviousMonth = $this->incomeBetween($previousMonthStart, $previousMonthEnd, $unitIds, $studentIds);
-        $incomeToday = $this->incomeBetween($now->startOfDay(), $now->endOfDay(), $unitIds, $studentIds);
+        $incomeThisMonth = $this->incomeBetween($monthStart, $now, $unitIds, $studentIds, $activeAcademicYear?->id);
+        $incomePreviousMonth = $this->incomeBetween($previousMonthStart, $previousMonthEnd, $unitIds, $studentIds, $activeAcademicYear?->id);
+        $incomeToday = $this->incomeBetween($now->startOfDay(), $now->endOfDay(), $unitIds, $studentIds, $activeAcademicYear?->id);
 
         $bills = $this->scopeByStudentAccess(Bill::query(), $unitIds, $studentIds)
             ->where('status', '!=', 'Dibatalkan')
@@ -93,8 +115,8 @@ class DashboardController extends Controller
                 'total_billed' => $totalBilled,
                 'total_paid' => $totalPaid,
             ],
-            'monthlyTrend' => $this->monthlyTrend($now, $unitIds, $studentIds)->all(),
-            'recentPayments' => $this->recentPayments($unitIds, $studentIds)->map(fn (array $payment) => [
+            'monthlyTrend' => $this->monthlyTrend($now, $unitIds, $studentIds, $activeAcademicYear?->id)->all(),
+            'recentPayments' => $this->recentPayments($unitIds, $studentIds, $activeAcademicYear?->id)->map(fn (array $payment) => [
                 ...$payment,
                 'date' => $payment['date']->toIso8601String(),
             ])->all(),
@@ -107,11 +129,12 @@ class DashboardController extends Controller
         CarbonImmutable $end,
         ?array $unitIds,
         ?array $studentIds,
+        ?int $academicYearId,
     ): int {
-        $spp = $this->scopeByStudentAccess(SppPayment::query(), $unitIds, $studentIds)
+        $spp = $this->scopeByAcademicYear($this->scopeByStudentAccess(SppPayment::query(), $unitIds, $studentIds), $academicYearId)
             ->where('status', 'Diterima')
             ->whereBetween('transaction_at', [$start, $end]);
-        $other = $this->scopeByStudentAccess(OtherPayment::query(), $unitIds, $studentIds)
+        $other = $this->scopeByAcademicYear($this->scopeByStudentAccess(OtherPayment::query(), $unitIds, $studentIds), $academicYearId)
             ->where('status', 'Diterima')
             ->whereBetween('transaction_at', [$start, $end]);
 
@@ -127,14 +150,14 @@ class DashboardController extends Controller
         return (int) round(($current - $previous) / $previous * 100);
     }
 
-    private function monthlyTrend(CarbonImmutable $now, ?array $unitIds, ?array $studentIds): Collection
+    private function monthlyTrend(CarbonImmutable $now, ?array $unitIds, ?array $studentIds, ?int $academicYearId): Collection
     {
         $start = $now->startOfMonth()->subMonths(5);
-        $spp = $this->scopeByStudentAccess(SppPayment::query(), $unitIds, $studentIds)
+        $spp = $this->scopeByAcademicYear($this->scopeByStudentAccess(SppPayment::query(), $unitIds, $studentIds), $academicYearId)
             ->where('status', 'Diterima')
             ->whereBetween('transaction_at', [$start, $now])
             ->get(['transaction_at', 'paid_amount']);
-        $other = $this->scopeByStudentAccess(OtherPayment::query(), $unitIds, $studentIds)
+        $other = $this->scopeByAcademicYear($this->scopeByStudentAccess(OtherPayment::query(), $unitIds, $studentIds), $academicYearId)
             ->where('status', 'Diterima')
             ->whereBetween('transaction_at', [$start, $now])
             ->get(['transaction_at', 'paid_amount']);
@@ -151,16 +174,16 @@ class DashboardController extends Controller
         });
     }
 
-    private function recentPayments(?array $unitIds, ?array $studentIds): Collection
+    private function recentPayments(?array $unitIds, ?array $studentIds, ?int $academicYearId): Collection
     {
-        $spp = $this->scopeByStudentAccess(SppPayment::with('student.schoolClass.educationUnit'), $unitIds, $studentIds)
+        $spp = $this->scopeByAcademicYear($this->scopeByStudentAccess(SppPayment::with('student.schoolClass.educationUnit'), $unitIds, $studentIds), $academicYearId)
             ->where('status', 'Diterima')->latest('transaction_at')->limit(6)->get()
             ->map(fn ($payment) => [
                 'type' => 'SPP', 'date' => $payment->transaction_at, 'amount' => $payment->paid_amount,
                 'student' => $payment->student?->name ?? 'Siswa tidak ditemukan',
                 'detail' => ($payment->student?->schoolClass?->educationUnit?->name ?? '-').' · '.($payment->student?->schoolClass?->name ?? '-'),
             ]);
-        $other = $this->scopeByStudentAccess(OtherPayment::with(['student.schoolClass.educationUnit', 'feeType']), $unitIds, $studentIds)
+        $other = $this->scopeByAcademicYear($this->scopeByStudentAccess(OtherPayment::with(['student.schoolClass.educationUnit', 'feeType']), $unitIds, $studentIds), $academicYearId)
             ->where('status', 'Diterima')->latest('transaction_at')->limit(6)->get()
             ->map(fn ($payment) => [
                 'type' => $payment->feeType?->name ?? 'Lain-lain', 'date' => $payment->transaction_at, 'amount' => $payment->paid_amount,
@@ -212,6 +235,21 @@ class DashboardController extends Controller
         }
 
         return $query;
+    }
+
+    private function scopeByAcademicYear(Builder $query, ?int $academicYearId): Builder
+    {
+        return $query->when($academicYearId, fn (Builder $paymentQuery, int $yearId) => $paymentQuery
+            ->whereHas('student', fn (Builder $studentQuery) => $studentQuery->where('academic_year_id', $yearId)));
+    }
+
+    private function filteredUnitIds(?array $accessibleUnitIds, ?int $selectedUnitId): ?array
+    {
+        if ($selectedUnitId !== null) {
+            return [$selectedUnitId];
+        }
+
+        return $accessibleUnitIds;
     }
 
     private function scopeStudents(Builder $query, ?array $unitIds, ?array $studentIds): Builder

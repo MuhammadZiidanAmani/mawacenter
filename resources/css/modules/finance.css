@@ -36,10 +36,18 @@ main.transfer-verification-page {
 .transfer-pagination-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .transfer-pagination-footer p { margin: 0; }
 .transfer-pagination-links { display: flex; }
+.transfer-reject-modal { width: min(100%, 520px); }
+.transfer-reject-modal .form-modal-header p { margin: 4px 0 0; color: var(--app-muted); font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
+.transfer-reject-form { padding: 20px; }
+.transfer-reject-form > p { margin: 0 0 16px; color: var(--app-label); }
+.transfer-reject-form > label { display: grid; gap: 6px; color: var(--app-label); font-weight: 600; }
+.transfer-reject-form textarea { width: 100%; min-height: 112px; resize: vertical; }
+.transfer-reject-form small { color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 400; line-height: var(--app-text-meta-leading); }
 
 @media (max-width: 760px) {
     main.transfer-verification-page { padding: 16px; }
     .transfer-verification-page .student-flat-header, .transfer-pagination-footer { flex-direction: column; }
     .transfer-filter { grid-template-columns: 1fr; }
     .transfer-filter-actions, .transfer-filter-actions .button { width: 100%; }
+    .transfer-reject-form { padding: var(--app-modal-padding-mobile); }
 }

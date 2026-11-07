@@ -85,7 +85,7 @@
                                         @if($transfer->status === 'Pending')
                                             <div class="transfer-actions">
                                                 <form method="POST" action="{{ route('finance.transfer-verifications.accept', $transfer) }}">@csrf<button class="app-table-action is-success is-icon-only transfer-accept-button" title="Terima transfer" aria-label="Terima transfer">{!! $icon('check') !!}</button></form>
-                                                <form method="POST" action="{{ route('finance.transfer-verifications.reject', $transfer) }}">@csrf<input type="hidden" name="rejected_reason" value="Bukti transfer tidak valid"><button class="app-table-action is-danger is-icon-only transfer-reject-button" title="Tolak transfer" aria-label="Tolak transfer">{!! $icon('x') !!}</button></form>
+                                                <button type="button" class="app-table-action is-danger is-icon-only transfer-reject-button" title="Tolak transfer" aria-label="Tolak transfer untuk {{ $transfer->student?->name }}" data-transfer-reject-open data-transfer-reject-url="{{ route('finance.transfer-verifications.reject', $transfer) }}" data-transfer-reject-student="{{ $transfer->student?->name }}">{!! $icon('x') !!}</button>
                                             </div>
                                         @else
                                             {{ $transfer->verifier?->name ?? '-' }}
@@ -105,6 +105,31 @@
                     </div>
                 </nav>
             </section>
+
+            <div class="modal-backdrop transfer-reject-backdrop" data-transfer-reject-modal role="dialog" aria-modal="true" aria-labelledby="transfer-reject-title" hidden>
+                <div class="form-modal transfer-reject-modal" role="document">
+                    <div class="form-modal-header">
+                        <div>
+                            <h2 id="transfer-reject-title">Tolak Transfer</h2>
+                            <p>Berikan alasan yang jelas agar catatan verifikasi dapat ditelusuri.</p>
+                        </div>
+                        <button type="button" class="icon-button" data-transfer-reject-cancel aria-label="Tutup dialog">×</button>
+                    </div>
+                    <form method="POST" class="transfer-reject-form" data-transfer-reject-form>
+                        @csrf
+                        <p>Transfer atas nama <strong data-transfer-reject-student>-</strong> akan ditolak.</p>
+                        <label for="transfer-rejected-reason">
+                            <span>Catatan Penolakan</span>
+                            <textarea id="transfer-rejected-reason" name="rejected_reason" rows="4" maxlength="500" required data-transfer-reject-reason placeholder="Contoh: nominal pada bukti tidak sesuai dengan pengajuan"></textarea>
+                            <small>Wajib diisi, maksimal 500 karakter.</small>
+                        </label>
+                        <div class="form-actions">
+                            <button type="button" class="button button-secondary" data-transfer-reject-cancel>Batal</button>
+                            <button type="submit" class="button button-danger">Tolak Transfer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </main>
         @include('partials.app-footer')
     </div>

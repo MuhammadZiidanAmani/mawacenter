@@ -735,6 +735,10 @@ main.payment-hub-page {
 .payment-one-stop-bills-head,
 .payment-one-stop-payment-head,
 .payment-one-stop-history-head { padding: 18px 20px; border-bottom: 1px solid var(--app-border-soft); }
+.payment-one-stop-history-filter { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 3px; background: var(--app-panel-soft); border: 1px solid var(--app-border-soft); border-radius: var(--app-radius); }
+.payment-one-stop-history-filter button { min-height: 32px; padding: 0 12px; color: var(--app-muted); background: transparent; border: 0; border-radius: calc(var(--app-radius) - 2px); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); cursor: pointer; }
+.payment-one-stop-history-filter button:hover { color: var(--app-primary); }
+.payment-one-stop-history-filter button.is-active { color: var(--app-on-primary); background: var(--app-primary); }
 .payment-one-stop-form-controls { display: grid; gap: 16px; padding: 20px; }
 .payment-prd-bill-section { padding: 18px 20px 0; }
 .payment-prd-bill-section:last-child { padding-bottom: 20px; }
@@ -892,6 +896,22 @@ main.payment-hub-page {
 .payment-one-stop-history-action { display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; color: var(--app-muted); border: 1px solid var(--app-border); border-radius: var(--app-radius); }
 .payment-one-stop-history-action span { display: none; }
 .payment-one-stop-history-action:hover { color: var(--app-primary); background: var(--app-success-subtle); border-color: var(--app-primary-border); }
+
+.payment-success-card { width: min(100%, 520px); }
+.payment-success-summary { display: grid; width: 100%; gap: 14px; padding: 16px; color: var(--app-label); background: var(--app-panel-soft); border: 1px solid var(--app-border-soft); border-radius: var(--app-radius); text-align: left; }
+.payment-success-student { display: grid; gap: 2px; }
+.payment-success-student > span,
+.payment-success-receipts > span { color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 600; line-height: var(--app-text-meta-leading); }
+.payment-success-student > strong { color: var(--app-text); font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.payment-success-student > small { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.payment-success-summary dl { display: grid; gap: 8px; margin: 0; }
+.payment-success-summary dl > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.payment-success-summary dt { color: var(--app-muted); font-size: var(--app-text-body-size); line-height: var(--app-text-body-leading); }
+.payment-success-summary dd { margin: 0; color: var(--app-text); font-size: var(--app-text-body-size); font-weight: 600; line-height: var(--app-text-body-leading); text-align: right; }
+.payment-success-receipts { display: grid; gap: 6px; padding-top: 12px; border-top: 1px solid var(--app-border-soft); }
+.payment-success-receipts > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.payment-success-receipts small { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.payment-success-receipts strong { color: var(--app-primary); font-size: var(--app-text-body-size); font-weight: 700; line-height: var(--app-text-body-leading); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; text-align: right; }
 .payment-one-stop-history-action.danger:hover { color: var(--app-danger); background: var(--app-danger-soft); border-color: var(--app-danger-border-soft); }
 
 @media (max-width: 960px) {
@@ -923,6 +943,8 @@ main.payment-hub-page {
     .payment-one-stop-bills-head,
     .payment-one-stop-payment-head,
     .payment-one-stop-history-head { flex-direction: column; }
+    .payment-one-stop-history-filter { width: 100%; }
+    .payment-one-stop-history-filter button { flex: 1 1 0; }
     .payment-overview-filter { grid-template-columns: 1fr; }
     .payment-overview-filter-actions { width: 100%; }
     .payment-overview-filter-actions .button { flex: 1; }

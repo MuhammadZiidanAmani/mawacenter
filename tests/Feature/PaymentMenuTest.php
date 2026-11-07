@@ -1181,15 +1181,20 @@ class PaymentMenuTest extends TestCase
             ->assertSeeInOrder([
                 'Pembayaran Berhasil',
                 'Transaksi pembayaran berhasil disimpan dan tagihan telah diperbarui.',
+                'Siswa Pembayaran Berhasil',
+                'Total Pembayaran',
+                'Rp 100.000',
+                'Nomor Struk',
                 'Cetak Struk',
-                'Tutup',
+                'Download PDF',
+                'Bayar Lagi',
             ])
             ->assertSee('payment-success-actions', false)
-            ->assertDontSee('payment-success-summary', false)
-            ->assertDontSee('payment-success-student', false)
+            ->assertSee('payment-success-summary', false)
+            ->assertSee('payment-success-student', false)
             ->assertDontSee('payment-success-popup-note', false)
-            ->assertDontSee('data-download-receipts', false)
-            ->assertDontSee('Bayar Lagi')
+            ->assertSee('data-download-receipts', false)
+            ->assertSee($confirmation['payments'][0]['receipt_number'])
             ->assertSee(route('finance.spp.receipt', $payment), false)
             ->assertSee(route('finance.spp.receipt.download', $payment), false);
     }
@@ -1275,6 +1280,10 @@ class PaymentMenuTest extends TestCase
             ], false)
             ->assertSee('Riwayat Terbaru')
             ->assertSee('Transaksi terakhir siswa ini')
+            ->assertSee('data-payment-history-filter="all"', false)
+            ->assertSee('data-payment-history-filter="spp"', false)
+            ->assertSee('data-payment-history-filter="other"', false)
+            ->assertSee('data-payment-history-filter-empty', false)
             ->assertDontSee('Lihat Semua di Laporan')
             ->assertDontSee('payment-prd-history-link', false)
             ->assertSee('title="Download PDF"', false)
