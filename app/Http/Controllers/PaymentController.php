@@ -821,7 +821,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function reconciliation(): View
+    public function reconciliation(Request $request): View
     {
         $transactions = collect([
             [
@@ -901,6 +901,9 @@ class PaymentController extends Controller
                 'recommendation' => 'Pastikan bukti penerimaan dana valid sebelum memperbarui status transaksi.',
             ],
         ]);
+        if ($request->string('mock_state')->toString() === 'empty') {
+            $transactions = collect();
+        }
 
         return view('finance.payment-reconciliation', [
             'activeAcademicYear' => AcademicYear::where('is_active', true)->first(),
@@ -908,6 +911,7 @@ class PaymentController extends Controller
             'totalDifference' => $transactions->sum(fn (array $transaction) => abs($transaction['difference'])),
             'criticalCount' => $transactions->where('severity_key', 'critical')->count(),
             'unallocatedCount' => $transactions->where('issue_key', 'unallocated')->count(),
+            'canTakeReconciliationAction' => $request->user()?->isSuperAdmin() ?? false,
         ]);
     }
 

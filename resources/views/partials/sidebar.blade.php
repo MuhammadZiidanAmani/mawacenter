@@ -28,6 +28,7 @@
     $canAccessPaymentMenu = $canAccess('payments.cash.create') || $canAccess('payments.view_unit');
     $guardianTransfersEnabled = (bool) config('payments.guardian_transfer_enabled');
     $paymentMenuUrl = $canAccess('payments.cash.create') ? route('finance.payments.index') : route('finance.payments.history');
+    $studentSavingsMenuUrl = $canAccess('payments.manage') ? route('finance.student-savings.index') : route('finance.student-savings.create');
     $masterMenuItems = [
         'academic-years' => ['Tahun Pelajaran', 'calendar', 'master.manage'],
         'education-units' => ['Unit Pendidikan', 'grid', 'master.manage'],
@@ -59,6 +60,9 @@
         @endif
         @if($canAccess('payments.manage'))
         <a href="{{ route('finance.payments.reconciliation') }}" class="nav-item {{ $activeMenu === 'payment-reconciliation' ? 'active' : '' }}" @if($activeMenu === 'payment-reconciliation') aria-current="page" @endif>{!! $sidebarIcon('switch') !!}<span>Rekonsiliasi Pembayaran</span></a>
+        @endif
+        @if($canAccess('payments.manage') || $canAccess('payments.cash.create'))
+        <a href="{{ $studentSavingsMenuUrl }}" class="nav-item {{ $activeMenu === 'student-savings' ? 'active' : '' }}" @if($activeMenu === 'student-savings') aria-current="page" @endif>{!! $sidebarIcon('wallet') !!}<span>Tabungan Santri</span></a>
         @endif
         @if($guardianTransfersEnabled && auth()->user()?->isSuperAdmin())
         <a href="{{ route('finance.transfer-verifications.index') }}" class="nav-item {{ $activeMenu === 'transfer-verification' ? 'active' : '' }}">{!! $sidebarIcon('wallet') !!}<span>Verifikasi Transfer</span></a>

@@ -5,6 +5,7 @@ use App\Http\Controllers\GuardianPortalController;
 use App\Http\Controllers\OtherPaymentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SppPaymentController;
+use App\Http\Controllers\StudentSavingsController;
 use App\Http\Controllers\TransferVerificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -64,6 +65,10 @@ Route::prefix('keuangan/tagihan')->name('finance.bills.')->controller(BillContro
     Route::post('/sync', 'sync')->name('sync');
 });
 Route::post('keuangan/tagihan/transfer', [GuardianPortalController::class, 'store'])->name('finance.bills.transfer');
+
+Route::get('keuangan/tabungan-santri', [StudentSavingsController::class, 'index'])->name('finance.student-savings.index');
+Route::get('keuangan/tabungan-santri/setor', [StudentSavingsController::class, 'create'])->name('finance.student-savings.create');
+Route::get('keuangan/tabungan-santri/{nis}', [StudentSavingsController::class, 'show'])->where('nis', '[A-Za-z0-9-]+')->name('finance.student-savings.show');
 
 Route::prefix('keuangan/verifikasi-transfer')->name('finance.transfer-verifications.')->controller(TransferVerificationController::class)->group(function () {
     Route::get('/', 'index')->name('index');

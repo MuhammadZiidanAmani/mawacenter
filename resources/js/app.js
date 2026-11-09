@@ -151,6 +151,76 @@ if (loginForm) {
 }
 // ============================================================
 
+document.querySelectorAll('[data-payment-cart]').forEach((cart) => {
+    const channels = Array.from(cart.querySelectorAll('[data-payment-cart-channel]'));
+    const instructionPanels = Array.from(cart.querySelectorAll('[data-payment-cart-instructions]'));
+    const bills = Array.from(cart.querySelectorAll('[data-payment-cart-bill]'));
+    const checkout = cart.querySelector('[data-payment-cart-checkout]');
+    const validation = cart.querySelector('[data-payment-cart-validation]');
+
+    const renderValidation = (announce = false) => {
+        const hasBill = bills.some((bill) => bill.checked);
+        const hasChannel = channels.some((channel) => channel.checked);
+        const isValid = hasBill && hasChannel;
+
+        if (checkout) checkout.disabled = !isValid;
+        if (!validation) return isValid;
+
+        validation.classList.toggle('is-success', announce && isValid);
+        validation.classList.toggle('is-error', !isValid);
+        if (!isValid) {
+            validation.textContent = bills.length === 0
+                ? 'Tambahkan minimal satu tagihan untuk memilih kanal pembayaran.'
+                : 'Pilih minimal satu tagihan dan satu kanal pembayaran.';
+            validation.hidden = false;
+        } else if (announce) {
+            validation.textContent = 'Validasi simulasi berhasil. Tidak ada transaksi yang dibuat.';
+            validation.hidden = false;
+        } else {
+            validation.hidden = true;
+        }
+
+        return isValid;
+    };
+
+    const renderChannel = () => {
+        const selectedChannel = channels.find((channel) => channel.checked)?.value;
+
+        channels.forEach((channel) => {
+            channel.closest('[data-payment-cart-channel-label]')?.classList.toggle('is-selected', channel.checked);
+        });
+        instructionPanels.forEach((panel) => {
+            panel.hidden = panel.dataset.paymentCartInstructions !== selectedChannel;
+        });
+        renderValidation();
+    };
+
+    channels.forEach((channel) => channel.addEventListener('change', renderChannel));
+    checkout?.addEventListener('click', () => renderValidation(true));
+    renderChannel();
+});
+
+document.querySelectorAll('[data-payment-cart-status-preview]').forEach((preview) => {
+    const statusButtons = Array.from(preview.querySelectorAll('[data-payment-cart-status]'));
+    const resultPanels = Array.from(preview.querySelectorAll('[data-payment-cart-result]'));
+
+    const renderStatus = (status) => {
+        statusButtons.forEach((button) => {
+            const isActive = button.dataset.paymentCartStatus === status;
+            button.classList.toggle('is-active', isActive);
+            button.setAttribute('aria-pressed', String(isActive));
+        });
+        resultPanels.forEach((panel) => {
+            panel.hidden = panel.dataset.paymentCartResult !== status;
+        });
+    };
+
+    statusButtons.forEach((button) => {
+        button.addEventListener('click', () => renderStatus(button.dataset.paymentCartStatus));
+    });
+    renderStatus(statusButtons.find((button) => button.classList.contains('is-active'))?.dataset.paymentCartStatus ?? 'pending');
+});
+
 const digitsOnly = (value) => String(value ?? '').replace(/\D/g, '');
 const formatThousands = (value) => {
     const digits = digitsOnly(value).replace(/^0+(?=\d)/, '');
@@ -697,6 +767,26 @@ if (transferRejectModal) {
     });
 }
 
+document.querySelectorAll('[data-student-savings]').forEach((page) => {
+    const search = page.querySelector('[data-student-savings-search]');
+    const rows = Array.from(page.querySelectorAll('[data-student-savings-row]'));
+    const count = page.querySelector('[data-student-savings-count]');
+    const empty = page.querySelector('[data-student-savings-empty]');
+
+    search?.addEventListener('input', () => {
+        const needle = search.value.trim().toLocaleLowerCase('id-ID');
+        let visible = 0;
+
+        rows.forEach((row) => {
+            const matches = !needle || row.dataset.search.includes(needle);
+            row.hidden = !matches;
+            if (matches) visible += 1;
+        });
+        if (count) count.textContent = String(visible);
+        if (empty) empty.hidden = visible > 0;
+    });
+});
+
 const paymentReconciliation = document.querySelector('[data-payment-reconciliation]');
 if (paymentReconciliation) {
     const rows = Array.from(paymentReconciliation.querySelectorAll('[data-reconciliation-row]'));
@@ -706,6 +796,19 @@ if (paymentReconciliation) {
     const count = paymentReconciliation.querySelector('[data-reconciliation-count]');
     const empty = paymentReconciliation.querySelector('[data-reconciliation-empty]');
     const modal = paymentReconciliation.querySelector('[data-reconciliation-modal]');
+    const followUp = modal?.querySelector('[data-reconciliation-follow-up]');
+    const note = modal?.querySelector('[data-reconciliation-note]');
+    const noteFeedback = modal?.querySelector('[data-reconciliation-note-feedback]');
+    const saveNote = modal?.querySelector('[data-reconciliation-save-note]');
+    const savedNote = modal?.querySelector('[data-reconciliation-saved-note]');
+    const savedFollowUp = modal?.querySelector('[data-reconciliation-saved-follow-up]');
+    const savedNoteText = modal?.querySelector('[data-reconciliation-saved-note-text]');
+    const confirmation = modal?.querySelector('[data-reconciliation-confirm]');
+    const confirmSave = modal?.querySelector('[data-reconciliation-confirm-save]');
+    const confirmCancel = modal?.querySelector('[data-reconciliation-confirm-cancel]');
+    const detailButtons = Array.from(paymentReconciliation.querySelectorAll('[data-reconciliation-detail]'));
+    const mockFollowUps = new Map();
+    let activeReference = null;
     const setModalText = (selector, value) => {
         const target = modal?.querySelector(selector);
         if (target) target.textContent = value || '-';
@@ -722,12 +825,47 @@ if (paymentReconciliation) {
             if (matches) visible += 1;
         });
         count.textContent = String(visible);
-        empty.hidden = visible > 0;
+        if (empty) empty.hidden = visible > 0;
+    };
+    const resetFollowUp = () => {
+        if (followUp) followUp.value = '';
+        if (note) note.value = '';
+        if (noteFeedback) {
+            noteFeedback.hidden = true;
+            noteFeedback.textContent = '';
+            noteFeedback.classList.remove('is-error', 'is-success');
+        }
+        if (saveNote) {
+            saveNote.disabled = false;
+            saveNote.textContent = 'Simpan Catatan Simulasi';
+        }
+        if (savedNote) savedNote.hidden = true;
+        if (confirmation) confirmation.hidden = true;
+    };
+    const renderSavedFollowUp = () => {
+        const state = mockFollowUps.get(activeReference);
+        if (!state) return;
+
+        if (followUp) followUp.value = state.value;
+        if (note) note.value = state.note;
+        if (savedFollowUp) savedFollowUp.textContent = state.label;
+        if (savedNoteText) savedNoteText.textContent = state.note;
+        if (savedNote) savedNote.hidden = false;
+        if (saveNote) saveNote.textContent = 'Perbarui Catatan Simulasi';
+    };
+    const showNoteFeedback = (message, state) => {
+        if (!noteFeedback) return;
+        noteFeedback.textContent = message;
+        noteFeedback.classList.toggle('is-error', state === 'error');
+        noteFeedback.classList.toggle('is-success', state === 'success');
+        noteFeedback.hidden = false;
     };
     const closeModal = () => {
         modal.classList.remove('show');
         modal.hidden = true;
         document.body.style.overflow = '';
+        resetFollowUp();
+        activeReference = null;
     };
 
     [search, issue, severity].forEach((control) => control.addEventListener(control === search ? 'input' : 'change', applyFilters));
@@ -738,7 +876,7 @@ if (paymentReconciliation) {
         applyFilters();
         search.focus();
     });
-    paymentReconciliation.querySelectorAll('[data-reconciliation-detail]').forEach((button) => button.addEventListener('click', () => {
+    detailButtons.forEach((button) => button.addEventListener('click', () => {
         setModalText('[data-reconciliation-modal-reference]', button.dataset.reference);
         setModalText('[data-reconciliation-modal-student]', button.dataset.student);
         setModalText('[data-reconciliation-modal-student-meta]', button.dataset.studentMeta);
@@ -748,11 +886,61 @@ if (paymentReconciliation) {
         setModalText('[data-reconciliation-modal-recorded]', button.dataset.recorded);
         setModalText('[data-reconciliation-modal-allocated]', button.dataset.allocated);
         setModalText('[data-reconciliation-modal-difference]', button.dataset.difference);
+        resetFollowUp();
+        activeReference = button.dataset.reconciliationReference;
+        renderSavedFollowUp();
         modal.hidden = false;
         modal.classList.add('show');
         document.body.style.overflow = 'hidden';
     }));
     modal.querySelectorAll('[data-reconciliation-close]').forEach((button) => button.addEventListener('click', closeModal));
+    saveNote?.addEventListener('click', () => {
+        if (!followUp?.value) {
+            showNoteFeedback('Pilih tindak lanjut sebelum menyimpan catatan simulasi.', 'error');
+            followUp?.focus();
+            return;
+        }
+        if (!note?.value.trim()) {
+            showNoteFeedback('Catatan petugas wajib diisi.', 'error');
+            note?.focus();
+            return;
+        }
+
+        if (confirmation) confirmation.hidden = false;
+        confirmSave?.focus();
+    });
+    confirmCancel?.addEventListener('click', () => {
+        if (confirmation) confirmation.hidden = true;
+        saveNote?.focus();
+    });
+    confirmSave?.addEventListener('click', () => {
+        const selectedOption = followUp.options[followUp.selectedIndex];
+        mockFollowUps.set(activeReference, {
+            value: followUp.value,
+            label: selectedOption?.textContent?.trim() || 'Tindak lanjut dipilih',
+            note: note.value.trim(),
+        });
+        const activeButton = detailButtons.find((button) => button.dataset.reconciliationReference === activeReference);
+        const badge = activeButton?.closest('[data-reconciliation-row]')?.querySelector('[data-reconciliation-follow-up-badge]');
+        if (badge) badge.hidden = false;
+        if (activeButton) {
+            activeButton.title = 'Tinjau kembali catatan simulasi';
+            activeButton.setAttribute('aria-label', `Tinjau kembali transaksi ${activeReference}`);
+        }
+        renderSavedFollowUp();
+        if (confirmation) confirmation.hidden = true;
+        showNoteFeedback('Catatan simulasi berhasil diperiksa. Tidak ada perubahan pada transaksi.', 'success');
+        saveNote.disabled = true;
+        saveNote.textContent = 'Catatan Simulasi Tersimpan';
+    });
+    [followUp, note].forEach((control) => control?.addEventListener(control === note ? 'input' : 'change', () => {
+        if (saveNote) {
+            saveNote.disabled = false;
+            saveNote.textContent = 'Simpan Catatan Simulasi';
+        }
+        if (noteFeedback) noteFeedback.hidden = true;
+        if (confirmation) confirmation.hidden = true;
+    }));
     modal.addEventListener('click', (event) => {
         if (event.target === modal) closeModal();
     });

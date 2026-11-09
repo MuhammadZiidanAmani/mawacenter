@@ -350,7 +350,34 @@ class PaymentMenuTest extends TestCase
             ->assertSee('data-reconciliation-modal', false)
             ->assertSee('SPP-20261106-000184')
             ->assertSee('Alokasi tidak sinkron')
+            ->assertSee('Nominal transaksi lebih besar daripada total alokasi pada tagihan SPP.')
+            ->assertSee('Periksa item SPP dan tautkan selisih ke periode yang benar sebelum transaksi ditutup.')
+            ->assertSee('data-recorded="Rp 450.000"', false)
+            ->assertSee('data-allocated="Rp 300.000"', false)
+            ->assertSee('data-difference="Rp 150.000"', false)
+            ->assertSee('data-student-meta="SIM-240184 · MI · VI A"', false)
+            ->assertSee('06/11/2026 08.42 WIB')
+            ->assertSee('Rp 500.000')
+            ->assertSee('-Rp 100.000')
             ->assertSee('Rekomendasi Pemeriksaan')
+            ->assertSee('Tindak Lanjut')
+            ->assertSee('Catatan Petugas')
+            ->assertSee('Catatan tidak dikirim atau disimpan ke transaksi.')
+            ->assertSee('Simpan Catatan Simulasi')
+            ->assertSee('data-reconciliation-follow-up', false)
+            ->assertSee('data-reconciliation-note', false)
+            ->assertSee('data-reconciliation-save-note', false)
+            ->assertSee('data-reconciliation-note-feedback', false)
+            ->assertSee('Ditindaklanjuti · Simulasi')
+            ->assertSee('State simulasi tersimpan di halaman ini')
+            ->assertSee('data-reconciliation-follow-up-badge', false)
+            ->assertSee('data-reconciliation-reference="SPP-20261106-000184"', false)
+            ->assertSee('data-reconciliation-saved-note', false)
+            ->assertSee('Konfirmasi tindak lanjut simulasi')
+            ->assertSee('Ya, Simpan Simulasi')
+            ->assertSee('data-reconciliation-confirm', false)
+            ->assertSee('data-reconciliation-confirm-save', false)
+            ->assertSee('Mode tindakan simulasi: Super Admin.')
             ->assertSee('href="'.route('finance.payments.reconciliation').'"', false);
 
         $dom = new \DOMDocument;
@@ -365,6 +392,45 @@ class PaymentMenuTest extends TestCase
         $this->actingAs(User::factory()->create(['role' => 'bendahara']))
             ->get(route('finance.payments.reconciliation'))
             ->assertForbidden();
+    }
+
+    public function test_payment_reconciliation_hides_mock_actions_for_non_admin_reviewer(): void
+    {
+        Role::create([
+            'key' => 'reconciliation-reviewer',
+            'name' => 'Peninjau Rekonsiliasi',
+            'permissions' => ['payments.manage'],
+            'is_active' => true,
+        ]);
+        $reviewer = User::factory()->create(['role' => 'reconciliation-reviewer']);
+
+        $this->actingAs($reviewer)
+            ->get(route('finance.payments.reconciliation'))
+            ->assertOk()
+            ->assertSee('Mode baca saja: tindakan disembunyikan untuk peran ini.')
+            ->assertSee('Peran Anda dapat meninjau detail, tetapi tidak dapat mengisi tindak lanjut atau catatan petugas.')
+            ->assertSee('data-reconciliation-detail', false)
+            ->assertDontSee('data-reconciliation-follow-up>', false)
+            ->assertDontSee('data-reconciliation-note', false)
+            ->assertDontSee('data-reconciliation-save-note', false);
+    }
+
+    public function test_payment_reconciliation_has_full_empty_list_state(): void
+    {
+        $response = $this->actingAs(User::factory()->create(['role' => 'admin']))
+            ->get(route('finance.payments.reconciliation', ['mock_state' => 'empty']));
+
+        $response->assertOk()
+            ->assertSee('Tidak ada transaksi yang perlu direkonsiliasi')
+            ->assertSee('Semua transaksi simulasi memiliki nominal, alokasi, dan status yang sesuai.')
+            ->assertSeeText('0 transaksi ditampilkan')
+            ->assertDontSee('data-reconciliation-row', false)
+            ->assertDontSee('data-reconciliation-empty', false);
+
+        $dom = new \DOMDocument;
+        @$dom->loadHTML($response->getContent());
+        $xpath = new \DOMXPath($dom);
+        $this->assertCount(0, $xpath->query('//*[@data-reconciliation-detail]'));
     }
 
     public function test_expiry_job_marks_only_old_pending_payments_without_accepting_them(): void

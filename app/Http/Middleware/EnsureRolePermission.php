@@ -75,6 +75,8 @@ class EnsureRolePermission
             str_starts_with($routeName, 'finance.transfer-verifications.') => ['payments.verify_transfer'],
             in_array($routeName, ['finance.payments.import', 'finance.spp.import.preview', 'finance.spp.import', 'finance.other.import.preview', 'finance.other.import'], true) => ['payments.import'],
             in_array($routeName, ['finance.payments.reconciliation', 'finance.payments.reconciliation.data'], true) => ['payments.manage'],
+            in_array($routeName, ['finance.student-savings.index', 'finance.student-savings.show'], true) => ['payments.manage'],
+            $routeName === 'finance.student-savings.create' => ['payments.cash.create'],
             in_array($routeName, ['finance.spp.correct', 'finance.spp.update', 'finance.spp.cancel', 'finance.spp.destroy', 'finance.other.update', 'finance.other.cancel', 'finance.other.destroy'], true) => ['payments.manage'],
             $routeName === 'finance.payments.store' => ['payments.cash.create'],
             in_array($routeName, ['finance.spp.store', 'finance.other.store', 'finance.spp.create', 'finance.other.create', 'finance.spp.months', 'finance.spp.quote', 'finance.other.months', 'finance.other.quote'], true) => ['payments.cash.create'],

@@ -11,36 +11,61 @@ class GuardianPaymentCartController extends Controller
     {
         abort_unless($request->user()?->isGuardian(), 403);
 
-        $cartGroups = collect([
+        $cartStudents = collect([
             [
-                'unit_code' => 'MI',
-                'unit_name' => 'MI Mambaul Hikmah',
-                'class_name' => '6A',
-                'nis' => '260184',
                 'student_name' => 'Ahmad Fauzan',
-                'items' => [
-                    ['title' => 'SPP November 2026', 'period' => 'November 2026', 'amount' => 125000],
-                    ['title' => 'Daftar Ulang', 'period' => 'Tahun Pelajaran 2026/2027', 'amount' => 250000],
+                'units' => [
+                    [
+                        'unit_code' => 'MI',
+                        'unit_name' => 'MI Mambaul Hikmah',
+                        'class_name' => '6A',
+                        'nis' => '260184',
+                        'items' => [
+                            ['title' => 'SPP November 2026', 'period' => 'November 2026', 'amount' => 125000],
+                            ['title' => 'Daftar Ulang', 'period' => 'Tahun Pelajaran 2026/2027', 'amount' => 250000],
+                        ],
+                    ],
+                    [
+                        'unit_code' => 'PONPES',
+                        'unit_name' => 'Pondok Pesantren Mambaul Hikmah',
+                        'class_name' => 'Hifdz 2',
+                        'nis' => 'PP-260184',
+                        'items' => [
+                            ['title' => 'Syahriah November 2026', 'period' => 'November 2026', 'amount' => 100000],
+                            ['title' => 'Uang Makan', 'period' => 'November 2026', 'amount' => 175000],
+                        ],
+                    ],
                 ],
             ],
             [
-                'unit_code' => 'PONPES',
-                'unit_name' => 'Pondok Pesantren Mambaul Hikmah',
-                'class_name' => 'Hifdz 2',
-                'nis' => 'PP-260184',
-                'student_name' => 'Ahmad Fauzan',
-                'items' => [
-                    ['title' => 'Syahriah November 2026', 'period' => 'November 2026', 'amount' => 100000],
-                    ['title' => 'Uang Makan', 'period' => 'November 2026', 'amount' => 175000],
+                'student_name' => 'Aisyah Rahma',
+                'units' => [
+                    [
+                        'unit_code' => 'RA',
+                        'unit_name' => 'RA Mambaul Hikmah',
+                        'class_name' => 'B1',
+                        'nis' => '260245',
+                        'items' => [
+                            ['title' => 'SPP November 2026', 'period' => 'November 2026', 'amount' => 90000],
+                        ],
+                    ],
                 ],
             ],
         ]);
-        $subtotal = (int) $cartGroups->sum(fn (array $group) => collect($group['items'])->sum('amount'));
+        if ($request->string('mock_state')->toString() === 'empty') {
+            $cartStudents = collect();
+        }
+
+        $subtotal = (int) $cartStudents->sum(
+            fn (array $student) => collect($student['units'])->sum(
+                fn (array $unit) => collect($unit['items'])->sum('amount')
+            )
+        );
 
         return view('guardian.payment-cart', [
-            'cartGroups' => $cartGroups,
+            'cartStudents' => $cartStudents,
             'subtotal' => $subtotal,
-            'serviceFee' => 4000,
+            'serviceFee' => $cartStudents->isEmpty() ? 0 : 4000,
         ]);
     }
 }

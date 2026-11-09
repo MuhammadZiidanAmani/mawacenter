@@ -43,6 +43,7 @@
 
             <div class="payment-reconciliation-notice" role="note">
                 Halaman ini masih menggunakan data simulasi. Tombol tinjau hanya menampilkan detail dan tidak mengubah transaksi.
+                <strong>{{ $canTakeReconciliationAction ? 'Mode tindakan simulasi: Super Admin.' : 'Mode baca saja: tindakan disembunyikan untuk peran ini.' }}</strong>
             </div>
 
             <section class="payment-reconciliation-stats" aria-label="Ringkasan transaksi bermasalah">
@@ -84,20 +85,25 @@
                             <tr><th>Transaksi</th><th>Siswa</th><th>Masalah</th><th>Nominal Tercatat</th><th>Alokasi</th><th>Selisih</th><th>Prioritas</th><th>Aksi</th></tr>
                         </thead>
                         <tbody>
-                            @foreach($transactions as $transaction)
+                            @forelse($transactions as $transaction)
                                 @php
                                     $searchText = strtolower(collect([$transaction['reference'], $transaction['student'], $transaction['nis'], $transaction['unit'], $transaction['source']])->join(' '));
                                 @endphp
                                 <tr data-reconciliation-row data-search="{{ $searchText }}" data-issue="{{ $transaction['issue_key'] }}" data-severity="{{ $transaction['severity_key'] }}">
                                     <td><strong>{{ $transaction['reference'] }}</strong><small>{{ $transaction['date'] }} · {{ $transaction['source'] }}</small></td>
                                     <td><strong>{{ $transaction['student'] }}</strong><small>{{ $transaction['nis'] }} · {{ $transaction['unit'] }} · {{ $transaction['class'] }}</small></td>
-                                    <td><strong>{{ $transaction['issue'] }}</strong><small>{{ $transaction['method'] }}</small></td>
+                                    <td>
+                                        <strong>{{ $transaction['issue'] }}</strong>
+                                        <small>{{ $transaction['method'] }}</small>
+                                        <span class="payment-reconciliation-follow-up-badge" data-reconciliation-follow-up-badge hidden>Ditindaklanjuti · Simulasi</span>
+                                    </td>
                                     <td class="payment-reconciliation-money">{{ $rupiah($transaction['recorded_amount']) }}</td>
                                     <td class="payment-reconciliation-money">{{ $rupiah($transaction['allocated_amount']) }}</td>
                                     <td @class(['payment-reconciliation-money', 'is-balanced' => $transaction['difference'] === 0, 'is-mismatch' => $transaction['difference'] !== 0])>{{ $transaction['difference'] < 0 ? '-' : '' }}{{ $rupiah(abs($transaction['difference'])) }}</td>
                                     <td><span @class(['app-status', 'danger' => $transaction['severity_key'] === 'critical', 'warning' => $transaction['severity_key'] === 'warning'])>{{ $transaction['severity'] }}</span></td>
                                     <td>
                                         <button type="button" class="app-table-action is-icon-only" title="Tinjau transaksi" aria-label="Tinjau transaksi {{ $transaction['reference'] }}" data-reconciliation-detail
+                                            data-reconciliation-reference="{{ $transaction['reference'] }}"
                                             data-reference="{{ $transaction['reference'] }}"
                                             data-student="{{ $transaction['student'] }}"
                                             data-student-meta="{{ $transaction['nis'] }} · {{ $transaction['unit'] }} · {{ $transaction['class'] }}"
@@ -109,8 +115,15 @@
                                             data-difference="{{ $transaction['difference'] < 0 ? '-' : '' }}{{ $rupiah(abs($transaction['difference'])) }}">{!! $icon('eye') !!}</button>
                                     </td>
                                 </tr>
-                            @endforeach
-                            <tr data-reconciliation-empty hidden><td colspan="8" class="app-table-empty empty-state">Tidak ada transaksi yang cocok dengan filter.</td></tr>
+                            @empty
+                                <tr><td colspan="8" class="app-table-empty payment-reconciliation-empty-state">
+                                    <strong>Tidak ada transaksi yang perlu direkonsiliasi</strong>
+                                    <span>Semua transaksi simulasi memiliki nominal, alokasi, dan status yang sesuai.</span>
+                                </td></tr>
+                            @endforelse
+                            @if($transactions->isNotEmpty())
+                                <tr data-reconciliation-empty hidden><td colspan="8" class="app-table-empty empty-state">Tidak ada transaksi yang cocok dengan filter.</td></tr>
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -132,8 +145,52 @@
                         </dl>
                         <section><span>Masalah</span><strong data-reconciliation-modal-issue>-</strong><p data-reconciliation-modal-description>-</p></section>
                         <section class="is-recommendation"><span>Rekomendasi Pemeriksaan</span><p data-reconciliation-modal-recommendation>-</p></section>
+                        @if($canTakeReconciliationAction)
+                        <div class="payment-reconciliation-follow-up">
+                            <label>
+                                <span>Tindak Lanjut</span>
+                                <select data-reconciliation-follow-up>
+                                    <option value="">Pilih tindak lanjut</option>
+                                    <option value="check-allocation">Periksa ulang alokasi tagihan</option>
+                                    <option value="verify-payment">Verifikasi bukti dan status pembayaran</option>
+                                    <option value="coordinate">Koordinasikan dengan petugas terkait</option>
+                                </select>
+                            </label>
+                            <label>
+                                <span>Catatan Petugas</span>
+                                <textarea rows="3" maxlength="500" placeholder="Tulis hasil pemeriksaan atau langkah berikutnya" data-reconciliation-note></textarea>
+                            </label>
+                            <p class="payment-reconciliation-note-help">Wajib diisi pada simulasi ini. Catatan tidak dikirim atau disimpan ke transaksi.</p>
+                            <p class="payment-reconciliation-note-feedback" role="status" data-reconciliation-note-feedback hidden></p>
+                            <div class="payment-reconciliation-saved-note" data-reconciliation-saved-note hidden>
+                                <strong>State simulasi tersimpan di halaman ini</strong>
+                                <span data-reconciliation-saved-follow-up>-</span>
+                                <p data-reconciliation-saved-note-text>-</p>
+                            </div>
+                            <div class="payment-reconciliation-confirm" role="alert" data-reconciliation-confirm hidden>
+                                <strong>Konfirmasi tindak lanjut simulasi</strong>
+                                <p>Pastikan pilihan dan catatan sudah benar. Aksi ini hanya mengubah state sementara di halaman.</p>
+                                <div>
+                                    <button type="button" class="button button-secondary" data-reconciliation-confirm-cancel>Kembali</button>
+                                    <button type="button" class="button button-primary" data-reconciliation-confirm-save>Ya, Simpan Simulasi</button>
+                                </div>
+                            </div>
+                        </div>
+                        @else
+                            <div class="payment-reconciliation-readonly" role="note">
+                                <strong>Mode baca saja</strong>
+                                <span>Peran Anda dapat meninjau detail, tetapi tidak dapat mengisi tindak lanjut atau catatan petugas.</span>
+                            </div>
+                        @endif
                     </div>
-                    <div class="form-actions payment-reconciliation-detail-actions"><button type="button" class="button button-primary" data-reconciliation-close>Selesai</button></div>
+                    <div class="form-actions payment-reconciliation-detail-actions">
+                        @if($canTakeReconciliationAction)
+                            <button type="button" class="button button-secondary" data-reconciliation-close>Batal</button>
+                            <button type="button" class="button button-primary" data-reconciliation-save-note>Simpan Catatan Simulasi</button>
+                        @else
+                            <button type="button" class="button button-primary" data-reconciliation-close>Selesai</button>
+                        @endif
+                    </div>
                 </div>
             </div>
         </main>
