@@ -15,6 +15,7 @@ use App\Models\Student;
 use App\Services\AuditLogService;
 use App\Services\GoogleDriveStorageException;
 use App\Services\GoogleDriveStorageService;
+use App\Services\PaymentReceiptService;
 use App\Services\SppPaymentImportService;
 use App\Services\SppPaymentService;
 use Carbon\CarbonImmutable;
@@ -33,6 +34,8 @@ use Throwable;
 
 class SppPaymentController extends Controller
 {
+    public function __construct(private PaymentReceiptService $receipts) {}
+
     public function index(Request $request)
     {
         $perPage = $this->perPage($request);
@@ -226,7 +229,7 @@ class SppPaymentController extends Controller
                 ],
                 'importFileName' => $file->getClientOriginalName(),
             ]);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $request->session()->forget("spp_imports.{$token}");
             Storage::delete($path);
 
@@ -355,7 +358,7 @@ class SppPaymentController extends Controller
         $logoPath = public_path('images/logo-yayasan-mambaul-hikmah.png');
         $html = view('finance.spp-receipt-pdf', [
             'payment' => $sppPayment,
-            'receiptNumber' => $this->receiptNumber($sppPayment),
+            'receiptNumber' => $this->receipts->number($sppPayment),
             'outstandingSummary' => $outstandingSummary,
             'logo' => 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)),
             'months' => [1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'],
@@ -519,11 +522,6 @@ class SppPaymentController extends Controller
         return redirect()->to($fallbackUrl);
     }
 
-    private function receiptNumber(SppPayment $payment): string
-    {
-        return 'SPP-'.$payment->transaction_at->format('Ymd').'-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
-    }
-
     private function monthName(int $month): string
     {
         return [
@@ -587,7 +585,7 @@ class SppPaymentController extends Controller
                 if ($date !== false) {
                     return $endOfDay ? $date->endOfDay() : $date->startOfDay();
                 }
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 //
             }
         }

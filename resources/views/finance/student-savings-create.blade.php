@@ -37,7 +37,13 @@
                 <span class="student-savings-mock-badge">Data Simulasi</span>
                 <h1>Setor Titipan Santri</h1>
                 <p>Catat setoran tunai santri melalui kasir. Form ini belum menyimpan transaksi ke server.</p>
+                <nav class="student-savings-transaction-nav" aria-label="Jenis transaksi titipan">
+                    <a href="{{ route('finance.student-savings.create') }}" class="is-active" aria-current="page">Setoran</a>
+                    <a href="{{ route('finance.student-savings.withdraw') }}">Pemakaian / Penarikan</a>
+                </nav>
             </header>
+
+            @include('finance.partials.student-savings-classification')
 
             <form class="student-savings-deposit-layout" action="#" data-student-savings-deposit-form>
                 <section class="student-savings-deposit-form" aria-labelledby="student-savings-deposit-title">

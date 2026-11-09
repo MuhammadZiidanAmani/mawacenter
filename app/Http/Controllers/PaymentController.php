@@ -17,6 +17,7 @@ use App\Services\GoogleDriveStorageException;
 use App\Services\GoogleDriveStorageService;
 use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentService;
+use App\Services\PaymentReceiptService;
 use App\Services\PaymentReconciliationService;
 use App\Services\SppPaymentService;
 use Illuminate\Contracts\View\View;
@@ -32,6 +33,8 @@ use Throwable;
 
 class PaymentController extends Controller
 {
+    public function __construct(private PaymentReceiptService $receipts) {}
+
     public function index(Request $request, SppPaymentService $sppPayments, OtherPaymentService $otherPayments, LaundryPaymentService $laundryPayments, BillQueryService $billQueries): View
     {
         $search = trim($request->string('search')->value());
@@ -437,7 +440,7 @@ class PaymentController extends Controller
                         'payment_method' => $payment->payment_method,
                         'status' => $payment->status,
                         'paid_amount' => (int) $payment->paid_amount,
-                        'receipt_number' => $this->receiptNumber($payment),
+                        'receipt_number' => $this->receipts->number($payment),
                         'receipt_url' => route('finance.other.receipt', $payment),
                         'download_url' => route('finance.other.receipt.download', $payment),
                     ]);
@@ -469,7 +472,7 @@ class PaymentController extends Controller
                             'payment_method' => $payment->payment_method,
                             'status' => $payment->status,
                             'paid_amount' => (int) $payment->paid_amount,
-                            'receipt_number' => $this->receiptNumber($payment),
+                            'receipt_number' => $this->receipts->number($payment),
                             'receipt_url' => route('finance.spp.receipt', $payment),
                             'download_url' => route('finance.spp.receipt.download', $payment),
                         ]);
@@ -505,7 +508,7 @@ class PaymentController extends Controller
                         'payment_method' => $payment->payment_method,
                         'status' => $payment->status,
                         'paid_amount' => (int) $payment->paid_amount,
-                        'receipt_number' => $this->receiptNumber($payment),
+                        'receipt_number' => $this->receipts->number($payment),
                         'receipt_url' => route('finance.spp.receipt', $payment),
                         'download_url' => route('finance.spp.receipt.download', $payment),
                     ]);
@@ -563,7 +566,7 @@ class PaymentController extends Controller
                         'payment_method' => $payment->payment_method,
                         'status' => $payment->status,
                         'paid_amount' => (int) $payment->paid_amount,
-                        'receipt_number' => $this->receiptNumber($payment),
+                        'receipt_number' => $this->receipts->number($payment),
                         'receipt_url' => route('finance.other.receipt', $payment),
                         'download_url' => route('finance.other.receipt.download', $payment),
                     ]);
@@ -685,7 +688,7 @@ class PaymentController extends Controller
                     return [
                         'type' => 'spp',
                         'payment' => $payment,
-                        'receiptNumber' => $this->receiptNumber($payment),
+                        'receiptNumber' => $this->receipts->number($payment),
                         'outstandingSummary' => $sppPayments->outstandingSummaryUntilCurrent($payment->student),
                     ];
                 }
@@ -705,7 +708,7 @@ class PaymentController extends Controller
                     return [
                         'type' => 'other',
                         'payment' => $payment,
-                        'receiptNumber' => $this->receiptNumber($payment),
+                        'receiptNumber' => $this->receipts->number($payment),
                         'outstandingSummary' => null,
                     ];
                 }
@@ -927,27 +930,6 @@ class PaymentController extends Controller
                 'total_difference' => $transactions->sum(fn (array $transaction) => abs($transaction['difference'])),
             ],
         ]);
-    }
-
-    private function receiptNumber(SppPayment|OtherPayment $payment): string
-    {
-        if ($payment instanceof SppPayment) {
-            return 'SPP-'.$payment->transaction_at->format('Ymd').'-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
-        }
-
-        return $this->receiptPrefix($payment).'-'.$payment->transaction_at->format('Ymd').'-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
-    }
-
-    private function receiptPrefix(OtherPayment $payment): string
-    {
-        $payment->loadMissing('feeType');
-
-        return match ($payment->feeType?->payment_group) {
-            'pendaftaran' => 'PD',
-            'daftar-ulang' => 'DU',
-            'laundry' => 'LD',
-            default => 'LL',
-        };
     }
 
     private function paymentMethodLabel(?string $method): string

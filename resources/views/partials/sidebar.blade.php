@@ -72,6 +72,7 @@
         @endif
         @if(auth()->user()?->isGuardian() && $canAccess('bills.view_guardian'))
         <a href="{{ route('guardian.payment-cart.index') }}" class="nav-item {{ $activeMenu === 'payment-cart' ? 'active' : '' }}" @if($activeMenu === 'payment-cart') aria-current="page" @endif>{!! $sidebarIcon('cart') !!}<span>Keranjang Pembayaran</span></a>
+        <a href="{{ route('guardian.savings.index') }}" class="nav-item {{ $activeMenu === 'guardian-savings' ? 'active' : '' }}" @if($activeMenu === 'guardian-savings') aria-current="page" @endif>{!! $sidebarIcon('wallet') !!}<span>Tabungan Anak</span></a>
         @endif
 
         @if($canAccess('reports.view') || $canAccess('reports.view_unit'))

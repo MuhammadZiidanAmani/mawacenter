@@ -787,6 +787,97 @@ document.querySelectorAll('[data-student-savings]').forEach((page) => {
     });
 });
 
+document.querySelectorAll('[data-student-savings-deposit]').forEach((page) => {
+    const form = page.querySelector('[data-student-savings-deposit-form]');
+    const account = page.querySelector('[data-student-savings-deposit-account]');
+    const amount = page.querySelector('[data-student-savings-deposit-amount]');
+    const name = page.querySelector('[data-student-savings-deposit-name]');
+    const identity = page.querySelector('[data-student-savings-deposit-identity]');
+    const balance = page.querySelector('[data-student-savings-deposit-balance]');
+    const depositValue = page.querySelector('[data-student-savings-deposit-value]');
+    const newBalance = page.querySelector('[data-student-savings-deposit-new-balance]');
+    const feedback = page.querySelector('[data-student-savings-deposit-feedback]');
+    const formatter = new Intl.NumberFormat('id-ID');
+    const rupiah = (value) => `Rp ${formatter.format(Math.max(0, Number(value) || 0))}`;
+
+    const updatePreview = () => {
+        const option = account?.selectedOptions?.[0];
+        if (!option) return;
+
+        const currentBalance = Number(option.dataset.balance) || 0;
+        const deposit = Math.max(0, Number(amount?.value) || 0);
+        if (name) name.textContent = option.dataset.name || '-';
+        if (identity) identity.textContent = `NIS ${option.value} · ${option.dataset.unit || '-'} / ${option.dataset.class || '-'}`;
+        if (balance) balance.textContent = rupiah(currentBalance);
+        if (depositValue) depositValue.textContent = `+${rupiah(deposit)}`;
+        if (newBalance) newBalance.textContent = rupiah(currentBalance + deposit);
+        if (feedback) feedback.textContent = 'Simulasi frontend: belum ada transaksi yang dibuat.';
+    };
+
+    account?.addEventListener('change', updatePreview);
+    amount?.addEventListener('input', updatePreview);
+    form?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        updatePreview();
+        if (feedback) feedback.textContent = 'Pratinjau setoran sudah siap. Penyimpanan transaksi menunggu integrasi backend.';
+    });
+    updatePreview();
+});
+
+document.querySelectorAll('[data-student-savings-withdrawal]').forEach((page) => {
+    const form = page.querySelector('[data-student-savings-withdrawal-form]');
+    const account = page.querySelector('[data-student-savings-withdrawal-account]');
+    const amount = page.querySelector('[data-student-savings-withdrawal-amount]');
+    const types = Array.from(page.querySelectorAll('[data-student-savings-withdrawal-type]'));
+    const name = page.querySelector('[data-student-savings-withdrawal-name]');
+    const identity = page.querySelector('[data-student-savings-withdrawal-identity]');
+    const balance = page.querySelector('[data-student-savings-withdrawal-balance]');
+    const transactionLabel = page.querySelector('[data-student-savings-withdrawal-label]');
+    const withdrawalValue = page.querySelector('[data-student-savings-withdrawal-value]');
+    const newBalance = page.querySelector('[data-student-savings-withdrawal-new-balance]');
+    const feedback = page.querySelector('[data-student-savings-withdrawal-feedback]');
+    const submit = page.querySelector('[data-student-savings-withdrawal-submit]');
+    const formatter = new Intl.NumberFormat('id-ID');
+    const rupiah = (value) => `Rp ${formatter.format(Math.max(0, Number(value) || 0))}`;
+
+    const updatePreview = () => {
+        const option = account?.selectedOptions?.[0];
+        if (!option) return;
+
+        const currentBalance = Number(option.dataset.balance) || 0;
+        const withdrawal = Math.max(0, Number(amount?.value) || 0);
+        const selectedType = types.find((input) => input.checked)?.value || 'usage';
+        const exceedsBalance = withdrawal > currentBalance;
+        if (name) name.textContent = option.dataset.name || '-';
+        if (identity) identity.textContent = `NIS ${option.value} · ${option.dataset.unit || '-'} / ${option.dataset.class || '-'}`;
+        if (balance) balance.textContent = rupiah(currentBalance);
+        if (transactionLabel) transactionLabel.textContent = selectedType === 'withdrawal' ? 'Penarikan' : 'Pemakaian';
+        if (withdrawalValue) withdrawalValue.textContent = `-${rupiah(withdrawal)}`;
+        if (newBalance) newBalance.textContent = rupiah(currentBalance - withdrawal);
+        if (amount) {
+            amount.max = String(currentBalance);
+            amount.setCustomValidity(exceedsBalance ? 'Nominal tidak boleh melebihi saldo titipan.' : '');
+        }
+        if (submit) submit.disabled = exceedsBalance;
+        if (feedback) {
+            feedback.classList.toggle('is-error', exceedsBalance);
+            feedback.textContent = exceedsBalance
+                ? `Nominal melebihi saldo tersedia sebesar ${rupiah(currentBalance)}.`
+                : 'Simulasi frontend: belum ada saldo yang dikurangi.';
+        }
+    };
+
+    account?.addEventListener('change', updatePreview);
+    amount?.addEventListener('input', updatePreview);
+    types.forEach((input) => input.addEventListener('change', updatePreview));
+    form?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        updatePreview();
+        if (feedback && !amount?.validationMessage) feedback.textContent = 'Pratinjau pengeluaran sudah siap. Penyimpanan transaksi menunggu integrasi backend.';
+    });
+    updatePreview();
+});
+
 const paymentReconciliation = document.querySelector('[data-payment-reconciliation]');
 if (paymentReconciliation) {
     const rows = Array.from(paymentReconciliation.querySelectorAll('[data-reconciliation-row]'));

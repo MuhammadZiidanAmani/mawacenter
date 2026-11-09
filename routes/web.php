@@ -8,6 +8,7 @@ use App\Http\Controllers\GuardianPaymentCartController;
 use App\Http\Controllers\GuardianPortalController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\StudentSavingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/duitku/callback', DuitkuWebhookController::class)->name('duitku.callback');
@@ -33,6 +34,8 @@ Route::middleware(['auth', 'role.access'])->group(function () {
     Route::get('/pengaturan', [SettingController::class, 'index'])->name('settings.index');
     Route::put('/pengaturan', [SettingController::class, 'update'])->name('settings.update');
     Route::get('/wali-santri/tagihan', [GuardianPortalController::class, 'index'])->name('guardian.bills.index');
+    Route::get('/wali-santri/tabungan', [StudentSavingsController::class, 'guardianIndex'])->name('guardian.savings.index');
+    Route::get('/wali-santri/tabungan/{student}', [StudentSavingsController::class, 'guardianShow'])->name('guardian.savings.show');
     Route::get('/wali-santri/keranjang-pembayaran', [GuardianPaymentCartController::class, 'index'])->name('guardian.payment-cart.index');
     Route::post('/wali-santri/pembayaran-online', [GuardianOnlinePaymentController::class, 'store'])->name('guardian.online-payments.store');
     Route::post('/wali-santri/transfer', [GuardianPortalController::class, 'store'])->name('guardian.transfers.store');

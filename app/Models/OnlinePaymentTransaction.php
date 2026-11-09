@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OnlinePaymentTransaction extends Model
 {
@@ -48,5 +49,11 @@ class OnlinePaymentTransaction extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function billAllocations(): HasMany
+    {
+        return $this->hasMany(BillPaymentAllocation::class, 'payment_id')
+            ->where('payment_type', BillPaymentAllocation::TYPE_ONLINE_PAYMENT);
     }
 }

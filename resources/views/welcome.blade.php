@@ -142,17 +142,17 @@
 
             <section class="dashboard-lower-grid">
                 <article class="card">
-                    <div class="card-header"><div><h3>Aktivitas Terbaru</h3><p>Pembayaran yang baru saja diterima</p></div><a href="{{ route('reports.index') }}">Lihat semua {!! $icon('arrow') !!}</a></div>
+                    <div class="card-header"><div><h3>Aktivitas Terbaru</h3><p>Pembayaran diterima dan perubahan data terbaru</p></div><a href="{{ route('reports.index') }}">Lihat semua {!! $icon('arrow') !!}</a></div>
                     <div class="payment-list">
-                        @forelse($recentPayments as $payment)
+                        @forelse($recentActivities as $activity)
                             <div class="payment-item">
-                                <span class="student-avatar">{{ strtoupper(substr($payment['student'], 0, 2)) }}</span>
-                                <div class="payment-name"><strong>{{ $payment['student'] }}</strong><small>{{ $payment['type'] }} · {{ $payment['detail'] }}</small></div>
-                                <div class="payment-amount"><strong>{{ $rupiah($payment['amount']) }}</strong><small>{{ $payment['date']->format('d M, H.i') }}</small></div>
-                                <span class="check-circle">{!! $icon('check') !!}</span>
+                                <span class="student-avatar">{{ strtoupper(substr($activity['student'], 0, 2)) }}</span>
+                                <div class="payment-name"><strong>{{ $activity['student'] }}</strong><small>{{ $activity['type'] }} · {{ $activity['detail'] }}</small></div>
+                                <div class="payment-amount"><strong>{{ $activity['kind'] === 'payment' ? $rupiah($activity['amount']) : 'Data diubah' }}</strong><small>{{ $activity['date']->format('d M, H.i') }}</small></div>
+                                <span class="check-circle">{!! $icon($activity['kind'] === 'payment' ? 'check' : 'clock') !!}</span>
                             </div>
                         @empty
-                            <div class="dashboard-list-empty">{!! $icon('wallet') !!}<span>Belum ada transaksi diterima.</span></div>
+                            <div class="dashboard-list-empty">{!! $icon('wallet') !!}<span>Belum ada aktivitas terbaru.</span></div>
                         @endforelse
                     </div>
                 </article>

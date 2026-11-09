@@ -1079,6 +1079,7 @@ main.payment-hub-page {
 .student-savings-page > * { width: min(100%, var(--app-content-width)); min-width: 0; margin-inline: auto; }
 .student-savings-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
 .student-savings-heading > div:first-child { display: grid; gap: 4px; }
+.student-savings-heading-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 12px; }
 .student-savings-heading h1, .student-savings-heading p { margin: 0; }
 .student-savings-heading h1 { font-size: var(--app-text-page-size); line-height: var(--app-text-page-leading); }
 .student-savings-heading p { color: var(--app-muted); }
@@ -1099,6 +1100,11 @@ main.payment-hub-page {
 .student-savings-money { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .student-savings-money strong { color: var(--app-primary); }
 .student-savings-empty { padding: 38px 20px; color: var(--app-muted); text-align: center; }
+.student-savings-classification { display: flex; min-width: 0; align-items: flex-start; padding: 13px 15px; gap: 11px; color: var(--app-label); background: var(--app-warning-soft); border: 1px solid var(--app-warning-border); border-radius: var(--app-radius-panel); }
+.student-savings-classification > span { display: grid; width: 24px; height: 24px; flex: 0 0 auto; place-items: center; color: var(--app-warning); background: var(--app-surface); border-radius: 50%; font-weight: 700; }
+.student-savings-classification > div { display: grid; min-width: 0; gap: 2px; }
+.student-savings-classification strong { color: var(--app-warning); }
+.student-savings-classification p { margin: 0; color: var(--app-muted); }
 .student-savings-detail-heading { display: flex; min-width: 0; align-items: flex-end; justify-content: space-between; gap: 20px; }
 .student-savings-detail-heading > div:first-child { display: grid; min-width: 0; gap: 4px; }
 .student-savings-detail-heading h1, .student-savings-detail-heading p { margin: 0; }
@@ -1106,23 +1112,146 @@ main.payment-hub-page {
 .student-savings-detail-heading p { color: var(--app-muted); overflow-wrap: anywhere; }
 .student-savings-back { width: max-content; margin-bottom: 6px; color: var(--app-primary); font-weight: 600; }
 .student-savings-back:hover { text-decoration: underline; }
-.student-savings-detail-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.student-savings-detail-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .student-savings-detail-stats article { display: grid; min-width: 0; padding: 16px; gap: 5px; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
 .student-savings-detail-stats span { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
 .student-savings-detail-stats strong { font-size: var(--app-text-section-size); font-variant-numeric: tabular-nums; line-height: var(--app-text-section-leading); overflow-wrap: anywhere; }
 .student-savings-detail-stats article.is-deposit { border-color: var(--app-success-border); }
 .student-savings-detail-stats article.is-deposit strong, .student-savings-mutation-table .is-deposit { color: var(--app-success); }
+.student-savings-detail-stats article.is-usage { border-color: var(--app-warning-border); }
+.student-savings-detail-stats article.is-usage strong { color: var(--app-warning); }
 .student-savings-detail-stats article.is-withdrawal { border-color: var(--app-danger-border); }
 .student-savings-detail-stats article.is-withdrawal strong, .student-savings-mutation-table .is-withdrawal { color: var(--app-danger); }
-.student-savings-mutation-table { width: 100%; min-width: 820px; }
+.student-savings-mutation-table { width: 100%; min-width: 900px; }
 .student-savings-mutation-table .is-deposit, .student-savings-mutation-table .is-withdrawal { font-weight: 700; }
+.student-savings-mutation-description strong, .student-savings-mutation-description small { display: block; }
+.student-savings-mutation-description small { margin-top: 2px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.student-savings-gateway-alert { flex: 0 0 auto; padding: 4px 8px; color: var(--app-danger); background: var(--app-danger-soft); border: 1px solid var(--app-danger-border); border-radius: var(--app-radius); font-size: var(--app-text-meta-size); font-weight: 700; line-height: var(--app-text-meta-leading); }
+.student-savings-gateway-notice { margin: 14px 16px; padding: 11px 12px; color: var(--app-muted); background: var(--app-info-soft); border: 1px solid var(--app-info-border); border-radius: var(--app-radius-field); }
+.student-savings-gateway-notice strong { color: var(--app-info); }
+.student-savings-gateway-table { width: 100%; min-width: 920px; }
+.student-savings-gateway-table td strong, .student-savings-gateway-table td small { display: block; }
+.student-savings-gateway-table td small { margin-top: 2px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.student-savings-gateway-table tr.is-failed { background: var(--app-danger-soft); }
+.student-savings-gateway-table .student-savings-gateway-failure { max-width: 250px; color: var(--app-danger); overflow-wrap: anywhere; }
+.student-savings-deposit-heading { display: grid; gap: 4px; }
+.student-savings-deposit-heading h1, .student-savings-deposit-heading p { margin: 0; }
+.student-savings-deposit-heading h1 { font-size: var(--app-text-page-size); line-height: var(--app-text-page-leading); }
+.student-savings-deposit-heading p { max-width: 700px; color: var(--app-muted); }
+.student-savings-transaction-nav { display: inline-flex; width: max-content; max-width: 100%; margin-top: 10px; padding: 3px; gap: 3px; overflow-x: auto; background: var(--app-panel-soft); border: 1px solid var(--app-border-soft); border-radius: var(--app-radius-field); }
+.student-savings-transaction-nav a { padding: 7px 10px; color: var(--app-muted); border-radius: var(--app-radius); font-weight: 600; white-space: nowrap; }
+.student-savings-transaction-nav a:hover { color: var(--app-primary); }
+.student-savings-transaction-nav a.is-active { color: var(--app-primary); background: var(--app-surface); box-shadow: var(--shadow-admin); }
+.student-savings-deposit-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 350px); min-width: 0; align-items: start; gap: 18px; }
+.student-savings-deposit-form, .student-savings-deposit-summary { min-width: 0; overflow: hidden; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.student-savings-deposit-section-head, .student-savings-deposit-summary-head { display: flex; min-width: 0; align-items: center; justify-content: space-between; padding: 16px 18px; gap: 12px; border-bottom: 1px solid var(--app-border-soft); }
+.student-savings-deposit-section-head > div, .student-savings-deposit-summary-head { min-width: 0; }
+.student-savings-deposit-section-head h2, .student-savings-deposit-summary-head h2 { margin: 0; font-size: var(--app-text-section-size); line-height: var(--app-text-section-leading); }
+.student-savings-deposit-section-head span, .student-savings-deposit-summary-head span { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.student-savings-deposit-section-head > div > span { display: block; margin-top: 2px; }
+.student-savings-deposit-section-head .student-savings-deposit-cash { flex: 0 0 auto; padding: 4px 8px; color: var(--app-success); background: var(--app-success-soft); border-radius: var(--app-radius); font-weight: 700; }
+.student-savings-deposit-section-head .student-savings-withdrawal-badge { flex: 0 0 auto; padding: 4px 8px; color: var(--app-danger); background: var(--app-danger-soft); border-radius: var(--app-radius); font-weight: 700; }
+.student-savings-deposit-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 18px; gap: 16px; }
+.student-savings-deposit-field { display: grid; min-width: 0; gap: 7px; color: var(--app-label); font-weight: 600; }
+.student-savings-deposit-field > span:first-child small { color: var(--app-muted); font-weight: 400; }
+.student-savings-deposit-field > small { color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 400; line-height: var(--app-text-meta-leading); }
+.student-savings-deposit-field-wide { grid-column: 1 / -1; }
+.student-savings-deposit-field :is(input, select, textarea) { width: 100%; }
+.student-savings-deposit-field textarea { resize: vertical; }
+.student-savings-withdrawal-types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; padding: 0; gap: 10px; border: 0; }
+.student-savings-withdrawal-types legend { margin-bottom: 7px; color: var(--app-label); font-weight: 600; }
+.student-savings-withdrawal-types label { position: relative; display: flex; min-width: 0; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid var(--app-border); border-radius: var(--app-radius-field); cursor: pointer; }
+.student-savings-withdrawal-types label:has(input:checked) { color: var(--app-danger); background: var(--app-danger-soft); border-color: var(--app-danger-border); }
+.student-savings-withdrawal-types label:has(input:focus-visible) { outline: 2px solid var(--app-danger); outline-offset: 2px; }
+.student-savings-withdrawal-types input { width: 16px; height: 16px; flex: 0 0 auto; margin-top: 2px; accent-color: var(--app-danger); }
+.student-savings-withdrawal-types label > span { display: grid; min-width: 0; gap: 2px; }
+.student-savings-withdrawal-types small { color: var(--app-muted); font-size: var(--app-text-meta-size); font-weight: 400; line-height: var(--app-text-meta-leading); }
+.student-savings-deposit-money { display: flex; min-width: 0; overflow: hidden; border: 1px solid var(--app-border); border-radius: var(--app-radius-field); }
+.student-savings-deposit-money:focus-within { border-color: var(--app-primary); outline: 2px solid var(--app-focus-ring); }
+.student-savings-deposit-money b { display: inline-flex; flex: 0 0 auto; align-items: center; padding: 0 12px; color: var(--app-muted); background: var(--app-panel-soft); border-right: 1px solid var(--app-border); }
+.student-savings-deposit-money input { min-width: 0; border: 0; border-radius: 0; outline: 0; font-variant-numeric: tabular-nums; }
+.student-savings-deposit-summary { position: sticky; top: 84px; }
+.student-savings-deposit-summary-head { align-items: baseline; }
+.student-savings-deposit-student { display: grid; margin: 16px 18px 0; padding: 13px 14px; gap: 3px; background: var(--app-primary-soft); border: 1px solid var(--app-primary-border); border-radius: var(--app-radius-field); }
+.student-savings-deposit-student strong { color: var(--app-text); }
+.student-savings-deposit-student span { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); overflow-wrap: anywhere; }
+.student-savings-deposit-totals { display: grid; margin: 0; padding: 16px 18px 4px; gap: 10px; }
+.student-savings-deposit-totals > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.student-savings-deposit-totals dt { color: var(--app-muted); }
+.student-savings-deposit-totals dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.student-savings-deposit-totals dd.is-deposit { color: var(--app-success); }
+.student-savings-deposit-totals dd.is-withdrawal { color: var(--app-danger); }
+.student-savings-deposit-totals .student-savings-deposit-new-balance { margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--app-border); }
+.student-savings-deposit-new-balance dt, .student-savings-deposit-new-balance dd { color: var(--app-text); font-size: var(--app-text-section-size); font-weight: 700; line-height: var(--app-text-section-leading); }
+.student-savings-deposit-new-balance dd { color: var(--app-primary); }
+.student-savings-deposit-note { margin: 10px 18px; padding: 10px 12px; color: var(--app-muted); background: var(--app-panel-soft); border-radius: var(--app-radius-field); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.student-savings-deposit-note.is-error { color: var(--app-danger); background: var(--app-danger-soft); }
+.student-savings-deposit-submit { width: calc(100% - 36px); margin: 2px 18px 18px; }
+.student-savings-deposit-empty { display: grid; padding: 42px 20px; gap: 5px; color: var(--app-muted); text-align: center; }
+.student-savings-deposit-empty strong { color: var(--app-text); font-size: var(--app-text-section-size); line-height: var(--app-text-section-leading); }
+.guardian-savings-heading { display: flex; min-width: 0; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.guardian-savings-heading > div:first-child { display: grid; min-width: 0; gap: 4px; }
+.guardian-savings-heading h1, .guardian-savings-heading p { margin: 0; }
+.guardian-savings-heading h1 { font-size: var(--app-text-page-size); line-height: var(--app-text-page-leading); }
+.guardian-savings-heading p { color: var(--app-muted); }
+.guardian-savings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.guardian-savings-card { min-width: 0; overflow: hidden; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.guardian-savings-card > header { display: flex; min-width: 0; align-items: center; padding: 16px 18px; gap: 12px; border-bottom: 1px solid var(--app-border-soft); }
+.guardian-savings-avatar { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; color: var(--app-primary); background: var(--app-primary-soft); border-radius: 50%; font-weight: 700; }
+.guardian-savings-card > header > div { display: grid; min-width: 0; gap: 2px; }
+.guardian-savings-card h2, .guardian-savings-card p { margin: 0; }
+.guardian-savings-card h2 { font-size: var(--app-text-section-size); line-height: var(--app-text-section-leading); overflow-wrap: anywhere; }
+.guardian-savings-card p { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); overflow-wrap: anywhere; }
+.guardian-savings-balance { display: grid; padding: 20px 18px; gap: 3px; }
+.guardian-savings-balance span { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.guardian-savings-balance strong { color: var(--app-primary); font-size: var(--app-text-total-size); font-variant-numeric: tabular-nums; line-height: var(--app-text-total-leading); }
+.guardian-savings-card > footer { display: flex; align-items: center; justify-content: space-between; padding: 11px 18px; gap: 12px; color: var(--app-muted); background: var(--app-panel-soft); border-top: 1px solid var(--app-border-soft); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.guardian-savings-card > footer strong { color: var(--app-label); font-variant-numeric: tabular-nums; }
+.guardian-savings-notice { margin: 0; padding: 11px 13px; color: var(--app-muted); background: var(--app-info-soft); border: 1px solid var(--app-info-border); border-radius: var(--app-radius-field); }
+.guardian-savings-empty { display: grid; min-height: 320px; place-content: center; justify-items: center; padding: 38px 20px; gap: 8px; text-align: center; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.guardian-savings-empty-icon { display: grid; width: 54px; height: 54px; place-items: center; color: var(--app-primary); background: var(--app-primary-soft); border-radius: 50%; }
+.guardian-savings-empty-icon .icon { width: 26px; height: 26px; }
+.guardian-savings-empty h2, .guardian-savings-empty p { margin: 0; }
+.guardian-savings-empty h2 { font-size: var(--app-text-section-size); line-height: var(--app-text-section-leading); }
+.guardian-savings-empty p { max-width: 520px; color: var(--app-muted); }
+.guardian-savings-empty .button { margin-top: 6px; }
+.student-savings-recap-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.student-savings-recap-stats article { display: grid; min-width: 0; padding: 16px; gap: 4px; background: var(--app-surface); border: 1px solid var(--app-border); border-radius: var(--app-radius-panel); box-shadow: var(--shadow-admin); }
+.student-savings-recap-stats span { color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.student-savings-recap-stats strong { font-size: var(--app-text-total-size); font-variant-numeric: tabular-nums; line-height: var(--app-text-total-leading); overflow-wrap: anywhere; }
+.student-savings-recap-stats article.is-total { border-color: var(--app-primary-border); }
+.student-savings-recap-stats article.is-total strong { color: var(--app-primary); }
+.student-savings-recap-table { width: 100%; min-width: 840px; }
+.student-savings-recap-table td > strong, .student-savings-recap-table td > small { display: block; }
+.student-savings-recap-table td > small { margin-top: 2px; color: var(--app-muted); font-size: var(--app-text-meta-size); line-height: var(--app-text-meta-leading); }
+.student-savings-recap-table tfoot th { background: var(--app-panel-soft); border-top: 1px solid var(--app-border); }
+.student-savings-recap-progress { width: 130px; height: 7px; overflow: hidden; background: var(--app-border-soft); border-radius: 999px; }
+.student-savings-recap-progress span { display: block; width: calc(var(--app-chart-progress, 0) * 1%); height: 100%; background: var(--app-primary); border-radius: inherit; }
+.student-savings-recap-table td:last-child > small { margin-top: 4px; }
+.student-savings-recap-empty { display: grid; padding: 44px 20px; gap: 5px; color: var(--app-muted); text-align: center; }
+.student-savings-recap-empty strong { color: var(--app-text); font-size: var(--app-text-section-size); line-height: var(--app-text-section-leading); }
+
+@media (max-width: 900px) {
+    .student-savings-deposit-layout { grid-template-columns: 1fr; }
+    .student-savings-deposit-summary { position: static; }
+    .student-savings-detail-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 
 @media (max-width: 720px) {
     .student-savings-page { padding: 16px; }
     .student-savings-heading, .student-savings-detail-heading, .student-savings-toolbar { align-items: stretch; flex-direction: column; }
+    .guardian-savings-heading { align-items: stretch; flex-direction: column; }
+    .student-savings-heading-actions { align-items: stretch; flex-direction: column; }
+    .student-savings-heading-actions .button { width: 100%; }
     .student-savings-total { min-width: 0; text-align: left; }
     .student-savings-search { width: 100%; max-width: none; }
     .student-savings-detail-stats { grid-template-columns: 1fr; }
+    .student-savings-deposit-section-head { align-items: flex-start; flex-direction: column; }
+    .student-savings-deposit-fields { grid-template-columns: 1fr; padding: 16px; }
+    .student-savings-deposit-field-wide { grid-column: auto; }
+    .student-savings-withdrawal-types { grid-template-columns: 1fr; }
+    .guardian-savings-grid { grid-template-columns: 1fr; }
+    .student-savings-recap-stats { grid-template-columns: 1fr; }
 }
 
 /* Guardian payment cart mock. */

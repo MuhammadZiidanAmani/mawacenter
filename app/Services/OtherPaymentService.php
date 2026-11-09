@@ -69,45 +69,49 @@ class OtherPaymentService
 
     public function record(Student $student, FeeType $feeType, array $data): OtherPayment
     {
-        $transactionDate = CarbonImmutable::parse($data['transaction_date']);
-        $quote = $this->quote($student, $feeType, $transactionDate);
-        if ($data['paid_amount'] > $quote['remaining_amount']) {
-            throw ValidationException::withMessages([
-                'paid_amount' => 'Nominal dibayar tidak boleh melebihi sisa tagihan Rp '.number_format($quote['remaining_amount'], 0, ',', '.').'.',
+        return DB::transaction(function () use ($student, $feeType, $data): OtherPayment {
+            $student = Student::query()->lockForUpdate()->findOrFail($student->id);
+            $feeType = FeeType::query()->lockForUpdate()->findOrFail($feeType->id);
+            $transactionDate = CarbonImmutable::parse($data['transaction_date']);
+            $quote = $this->quote($student, $feeType, $transactionDate);
+            if ($data['paid_amount'] > $quote['remaining_amount']) {
+                throw ValidationException::withMessages([
+                    'paid_amount' => 'Nominal dibayar tidak boleh melebihi sisa tagihan Rp '.number_format($quote['remaining_amount'], 0, ',', '.').'.',
+                ]);
+            }
+
+            $isAccepted = $data['status'] === 'Diterima';
+            $remainingAmount = $isAccepted
+                ? $quote['remaining_amount'] - $data['paid_amount']
+                : $quote['remaining_amount'];
+
+            $payment = OtherPayment::create([
+                'student_id' => $student->id,
+                'fee_type_id' => $feeType->id,
+                'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
+                'payment_method' => $data['payment_method'],
+                'transfer_proof_path' => $data['transfer_proof_path'] ?? null,
+                'transfer_proof_file_id' => $data['transfer_proof_file_id'] ?? null,
+                'transfer_proof_metadata' => $data['transfer_proof_metadata'] ?? null,
+                'status' => $data['status'],
+                'operator_name' => $data['operator_name'] ?? null,
+                'operator_user_id' => $data['operator_user_id'] ?? null,
+                'import_source' => $data['import_source'] ?? null,
+                'import_key' => $data['import_key'] ?? null,
+                'original_amount' => $quote['original_amount'],
+                'discount_amount' => $quote['discount_amount'],
+                'total_amount' => $quote['total_amount'],
+                'paid_amount' => $data['paid_amount'],
+                'remaining_amount' => $remainingAmount,
+                'payment_status' => $isAccepted
+                    ? ($remainingAmount === 0 ? 'Lunas' : 'Belum Lunas')
+                    : 'Pending',
             ]);
-        }
 
-        $isAccepted = $data['status'] === 'Diterima';
-        $remainingAmount = $isAccepted
-            ? $quote['remaining_amount'] - $data['paid_amount']
-            : $quote['remaining_amount'];
+            $this->bills->syncOtherPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']));
 
-        $payment = OtherPayment::create([
-            'student_id' => $student->id,
-            'fee_type_id' => $feeType->id,
-            'transaction_at' => $data['transaction_date'].' '.$data['transaction_time'],
-            'payment_method' => $data['payment_method'],
-            'transfer_proof_path' => $data['transfer_proof_path'] ?? null,
-            'transfer_proof_file_id' => $data['transfer_proof_file_id'] ?? null,
-            'transfer_proof_metadata' => $data['transfer_proof_metadata'] ?? null,
-            'status' => $data['status'],
-            'operator_name' => $data['operator_name'] ?? null,
-            'operator_user_id' => $data['operator_user_id'] ?? null,
-            'import_source' => $data['import_source'] ?? null,
-            'import_key' => $data['import_key'] ?? null,
-            'original_amount' => $quote['original_amount'],
-            'discount_amount' => $quote['discount_amount'],
-            'total_amount' => $quote['total_amount'],
-            'paid_amount' => $data['paid_amount'],
-            'remaining_amount' => $remainingAmount,
-            'payment_status' => $isAccepted
-                ? ($remainingAmount === 0 ? 'Lunas' : 'Belum Lunas')
-                : 'Pending',
-        ]);
-
-        $this->bills->syncOtherPayment($payment->load(['student.academicYear', 'student.schoolClass.educationUnit', 'feeType']));
-
-        return $payment;
+            return $payment;
+        });
     }
 
     public function updateMetadata(OtherPayment $payment, array $data): OtherPayment

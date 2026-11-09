@@ -36,23 +36,26 @@
                 <div class="student-savings-total"><span>Saldo Saat Ini</span><strong>{{ $rupiah($account['balance']) }}</strong><small>per {{ $account['last_activity'] }}</small></div>
             </header>
 
+            @include('finance.partials.student-savings-classification')
+
             <section class="student-savings-detail-stats" aria-label="Ringkasan mutasi">
                 <article><span>Saldo Awal</span><strong>{{ $rupiah($openingBalance) }}</strong></article>
                 <article class="is-deposit"><span>Total Setoran</span><strong>+{{ $rupiah($totalDeposits) }}</strong></article>
-                <article class="is-withdrawal"><span>Total Penarikan</span><strong>-{{ $rupiah($totalWithdrawals) }}</strong></article>
+                <article class="is-usage"><span>Total Pemakaian</span><strong>-{{ $rupiah($totalUsage) }}</strong></article>
+                <article class="is-withdrawal"><span>Total Penarikan Tunai</span><strong>-{{ $rupiah($totalCashWithdrawals) }}</strong></article>
             </section>
 
             <section class="student-savings-panel">
                 <div class="student-savings-toolbar"><div><h2>Riwayat Mutasi</h2><span>{{ $mutations->count() }} mutasi simulasi</span></div></div>
                 <div class="app-table-scroll table-wrap">
                     <table class="app-data-table student-savings-mutation-table">
-                        <thead><tr><th>Tanggal</th><th>Jenis</th><th>Keterangan</th><th class="student-savings-money">Nominal</th><th class="student-savings-money">Saldo</th></tr></thead>
+                        <thead><tr><th>Tanggal</th><th>Jenis</th><th>Keterangan / Petugas</th><th class="student-savings-money">Nominal</th><th class="student-savings-money">Saldo</th></tr></thead>
                         <tbody>
                             @foreach($mutations as $mutation)
                                 <tr>
                                     <td>{{ $mutation['date'] }}</td>
-                                    <td><span @class(['app-status', 'success' => $mutation['amount'] > 0, 'warning' => $mutation['amount'] < 0])>{{ $mutation['type'] }}</span></td>
-                                    <td>{{ $mutation['description'] }}</td>
+                                    <td><span @class(['app-status', 'success' => $mutation['type_key'] === 'deposit', 'warning' => $mutation['type_key'] === 'usage', 'danger' => $mutation['type_key'] === 'withdrawal'])>{{ $mutation['type'] }}</span></td>
+                                    <td class="student-savings-mutation-description"><strong>{{ $mutation['description'] }}</strong><small>{{ $mutation['actor'] }}</small></td>
                                     <td @class(['student-savings-money', 'is-deposit' => $mutation['amount'] > 0, 'is-withdrawal' => $mutation['amount'] < 0])>{{ $mutation['amount'] > 0 ? '+' : '-' }}{{ $rupiah(abs($mutation['amount'])) }}</td>
                                     <td class="student-savings-money"><strong>{{ $rupiah($mutation['balance']) }}</strong></td>
                                 </tr>

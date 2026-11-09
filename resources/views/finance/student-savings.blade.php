@@ -39,10 +39,14 @@
                     <p>Pantau saldo titipan santri dari seluruh unit dalam satu daftar.</p>
                 </div>
                 <div class="student-savings-heading-actions">
+                    <a href="{{ route('finance.student-savings.recap') }}" class="button button-secondary">Rekap per Unit</a>
+                    <a href="{{ route('finance.student-savings.withdraw') }}" class="button button-secondary">Pakai / Tarik</a>
                     <a href="{{ route('finance.student-savings.create') }}" class="button button-primary">Setor Titipan</a>
                     <div class="student-savings-total"><span>Total Saldo Titipan</span><strong>{{ $rupiah($totalBalance) }}</strong><small>{{ $accounts->count() }} rekening simulasi</small></div>
                 </div>
             </header>
+
+            @include('finance.partials.student-savings-classification')
 
             <section class="student-savings-panel" aria-labelledby="student-savings-list-title">
                 <div class="student-savings-toolbar">
@@ -63,6 +67,35 @@
                                 </tr>
                             @endforeach
                             <tr data-student-savings-empty hidden><td colspan="5" class="app-table-empty student-savings-empty">Tidak ada santri yang cocok dengan pencarian.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="student-savings-panel student-savings-gateway" aria-labelledby="student-savings-gateway-title">
+                <div class="student-savings-toolbar">
+                    <div><h2 id="student-savings-gateway-title">Setoran Gateway</h2><span>{{ $gatewayDeposits->count() }} transaksi simulasi terbaru</span></div>
+                    <span class="student-savings-gateway-alert">{{ $failedGatewayDeposits }} gagal</span>
+                </div>
+                <p class="student-savings-gateway-notice"><strong>Status memengaruhi saldo:</strong> hanya setoran berstatus Berhasil yang menambah saldo titipan. Setoran Diproses dan Gagal tidak diperhitungkan.</p>
+                <div class="app-table-scroll table-wrap">
+                    <table class="app-data-table student-savings-gateway-table">
+                        <thead><tr><th>Referensi / Waktu</th><th>Santri</th><th>Kanal</th><th class="student-savings-money">Nominal</th><th>Status</th></tr></thead>
+                        <tbody>
+                            @foreach($gatewayDeposits as $deposit)
+                                <tr data-student-savings-gateway-row @class(['is-failed' => $deposit['status_key'] === 'failed'])>
+                                    <td><strong>{{ $deposit['reference'] }}</strong><small>{{ $deposit['date'] }}</small></td>
+                                    <td><strong>{{ $deposit['name'] }}</strong><small>NIS {{ $deposit['nis'] }}</small></td>
+                                    <td>{{ $deposit['channel'] }}</td>
+                                    <td class="student-savings-money"><strong>{{ $rupiah($deposit['amount']) }}</strong></td>
+                                    <td>
+                                        <span @class(['app-status', 'success' => $deposit['status_key'] === 'success', 'warning' => $deposit['status_key'] === 'pending', 'danger' => $deposit['status_key'] === 'failed'])>{{ $deposit['status'] }}</span>
+                                        @if($deposit['failure_reason'])
+                                            <small class="student-savings-gateway-failure">{{ $deposit['failure_reason'] }} · Saldo tidak berubah</small>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>

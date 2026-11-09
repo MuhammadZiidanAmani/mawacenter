@@ -20,6 +20,7 @@ use App\Services\GoogleDriveStorageService;
 use App\Services\LaundryPaymentService;
 use App\Services\OtherPaymentImportService;
 use App\Services\OtherPaymentService;
+use App\Services\PaymentReceiptService;
 use Carbon\CarbonImmutable;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -35,6 +36,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class OtherPaymentController extends Controller
 {
+    public function __construct(private PaymentReceiptService $receipts) {}
+
     public function index(Request $request)
     {
         $perPage = $this->perPage($request);
@@ -241,7 +244,7 @@ class OtherPaymentController extends Controller
 
         return view('finance.other-receipt', [
             'payment' => $otherPayment,
-            'receiptNumber' => $this->receiptNumber($otherPayment),
+            'receiptNumber' => $this->receipts->number($otherPayment),
             'receiptSettings' => AppSetting::values(),
             'backParams' => $this->paymentSectionParams($otherPayment),
         ]);
@@ -259,7 +262,7 @@ class OtherPaymentController extends Controller
         $logoPath = public_path('images/logo-yayasan-mambaul-hikmah.png');
         $html = view('finance.other-receipt-pdf', [
             'payment' => $otherPayment,
-            'receiptNumber' => $this->receiptNumber($otherPayment),
+            'receiptNumber' => $this->receipts->number($otherPayment),
             'logo' => 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath)),
             'receiptSettings' => AppSetting::values(),
         ])->render();
@@ -269,7 +272,7 @@ class OtherPaymentController extends Controller
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        $filename = 'kwitansi-'.$this->receiptPrefix($otherPayment).'-'.$otherPayment->student?->nis.'-'.$otherPayment->id.'.pdf';
+        $filename = 'kwitansi-'.$this->receipts->prefix($otherPayment).'-'.$otherPayment->student?->nis.'-'.$otherPayment->id.'.pdf';
 
         return response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
@@ -728,23 +731,6 @@ class OtherPaymentController extends Controller
         $group = $payment->feeType?->payment_group;
 
         return in_array($group, ['pendaftaran', 'daftar-ulang', 'laundry'], true) ? ['category' => $group] : [];
-    }
-
-    private function receiptNumber(OtherPayment $payment): string
-    {
-        return $this->receiptPrefix($payment).'-'.$payment->transaction_at->format('Ymd').'-'.str_pad((string) $payment->id, 6, '0', STR_PAD_LEFT);
-    }
-
-    private function receiptPrefix(OtherPayment $payment): string
-    {
-        $payment->loadMissing('feeType');
-
-        return match ($payment->feeType?->payment_group) {
-            'pendaftaran' => 'PD',
-            'daftar-ulang' => 'DU',
-            'laundry' => 'LD',
-            default => 'LL',
-        };
     }
 
     private function filterDate(Request $request, string $key, bool $endOfDay = false): ?CarbonImmutable

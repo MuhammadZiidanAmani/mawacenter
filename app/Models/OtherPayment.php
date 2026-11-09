@@ -48,4 +48,10 @@ class OtherPayment extends Model
     {
         return $this->hasMany(OtherPaymentItem::class);
     }
+
+    public function billAllocations(): HasMany
+    {
+        return $this->hasMany(BillPaymentAllocation::class, 'payment_id')
+            ->where('payment_type', BillPaymentAllocation::TYPE_OTHER);
+    }
 }

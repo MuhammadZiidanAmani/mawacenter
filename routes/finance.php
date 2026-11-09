@@ -68,6 +68,8 @@ Route::post('keuangan/tagihan/transfer', [GuardianPortalController::class, 'stor
 
 Route::get('keuangan/tabungan-santri', [StudentSavingsController::class, 'index'])->name('finance.student-savings.index');
 Route::get('keuangan/tabungan-santri/setor', [StudentSavingsController::class, 'create'])->name('finance.student-savings.create');
+Route::get('keuangan/tabungan-santri/pemakaian', [StudentSavingsController::class, 'withdraw'])->name('finance.student-savings.withdraw');
+Route::get('keuangan/tabungan-santri/rekap-unit', [StudentSavingsController::class, 'recap'])->name('finance.student-savings.recap');
 Route::get('keuangan/tabungan-santri/{nis}', [StudentSavingsController::class, 'show'])->where('nis', '[A-Za-z0-9-]+')->name('finance.student-savings.show');
 
 Route::prefix('keuangan/verifikasi-transfer')->name('finance.transfer-verifications.')->controller(TransferVerificationController::class)->group(function () {
